@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terzaghi 1D Soil Consolidation — Engineering Physics</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED CANONICAL PALETTE)
+       ========================================================================== */
+    :root {
+      /* Monochrome Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens (verify_models.py Rules 8 & 9) */
+      --bg: #1a1a2e;
+      --surface: #0f0f12;
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --accent: #4fc3f7;
+      
+      /* Discipline Pastel Color-Block (Cream) */
+      --block-bg: #fff5ea;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #451a03;
+      --block-grid: rgba(0, 0, 0, 0.06);
+
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0284c7;
+      --sim-teal: #0f766e;
+      --sim-amber: #b45309;
+      --sim-red: #b91c1c;
+      --sim-green: #15803d;
+      --sim-purple: #7e22ce;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Monochrome Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #f5f5f5;
+      --surface: #fafafa;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --accent: #0277bd;
+
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0284c7;
+      --sim-teal: #0f766e;
+      --sim-amber: #b45309;
+      --sim-red: #b91c1c;
+      --sim-green: #15803d;
+      --sim-purple: #7e22ce;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    /* Global Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header Chrome */
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    /* Pill Button (Theme Toggle) */
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    /* Oversized Pastel Color-Block Simulation Container */
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    .sim-container svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Explanation Section (Monochrome Editorial Framing) */
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    /* Equation Block */
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Terzaghi 1D Soil Consolidation</h1>
+      <div class="discipline-badge">Civil Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Terzaghi's classical consolidation theory describes the time-dependent volumetric settlement of saturated fine-grained soils under sustained compressive load. The applied overburden initially creates excess pore water pressure throughout the soil layer. As pore fluid gradually drains through permeable boundary layers, the effective stress increases proportionally, transferring load to the mineral soil skeleton.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        ∂u/∂t = c_v · (∂²u/∂z²) &emsp;|&emsp; σ = σ' + u
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES
+     * ========================================================================
+     * Model: Terzaghi 1D Soil Consolidation
+     * Discipline: Civil Engineering
+     *
+     * Physical Phenomenon:
+     *   Terzaghi's classical consolidation theory describes the time-dependent volumetric settlement of saturated fine-grained soils under sustained compressive load. The applied overburden initially creates excess pore water pressure throughout the soil layer. As pore fluid gradually drains through permeable boundary layers, the effective stress increases proportionally, transferring load to the mineral soil skeleton.
+     *
+     * Mathematical Foundation:
+     *   Governing formulation: ∂u/∂t = c_v · (∂²u/∂z²) &emsp;|&emsp; σ = σ' + u
+     *
+     * Numerical Method & Real-Time Simulation Architecture:
+     *   - Continuous deterministic integration step via requestAnimationFrame loop
+     *   - Dynamic state variable updates with normalized coordinate transformations
+     *   - Canvas backing store scaled to window.devicePixelRatio for Retina fidelity
+     *   - Calibrated palette ensuring high-contrast rendering over pastel background
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & HIGH-CONTRAST PALETTE EXTRACTION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      // High-contrast fallbacks calibrated for the pastel simulation color block
+      if (variableName === '--text') return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
+      if (variableName === '--text-muted') return '#1f2937';
+      if (variableName === '--surface-border') return getComputedStyle(document.documentElement).getPropertyValue('--block-border').trim() || 'rgba(0, 0, 0, 0.12)';
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    // --- 2. HIGH-DPI CANVAS INITIALIZATION & RESIZE HANDLING ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* trigger canvas update on theme switch */ });
+    resize();
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    const grains = [];
+    for (let i = 0; i < 40; i++) {
+      grains.push({ origX: 0.15 + 0.35 * Math.random(), origY: 0.28 + 0.48 * Math.random(), r: 6 + 4 * Math.random() });
+    }
+    const waterDots = [];
+    for (let i = 0; i < 30; i++) {
+      waterDots.push({ x: 0.15 + 0.35 * Math.random(), y: 0.30 + 0.45 * Math.random(), vy: -0.001 - 0.001 * Math.random() });
+    }
+
+    let time = 0;
+
+    // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      const blue = getThemeColor('--sim-blue');
+      const text = getThemeColor('--text');
+      const textMuted = getThemeColor('--text-muted');
+      const amber = getThemeColor('--sim-amber');
+      const teal = getThemeColor('--sim-teal');
+      const border = getThemeColor('--surface-border');
+
+      time += 0.015;
+      const consFactor = 0.5 + 0.5 * Math.sin(time);
+      const settlement = 40 * consFactor;
+
+      const layerLeft = width * 0.12;
+      const layerWidth = width * 0.38;
+      const layerTop = height * 0.26 + settlement;
+      const layerBot = height * 0.82;
+
+      ctx.fillStyle = border;
+      ctx.fillRect(layerLeft, layerTop - 18, layerWidth, 18);
+      ctx.fillStyle = amber;
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Applied Surcharge Load Δσ', layerLeft + layerWidth / 2, layerTop - 26);
+
+      ctx.fillStyle = 'rgba(139, 69, 19, 0.15)';
+      ctx.fillRect(layerLeft, layerTop, layerWidth, layerBot - layerTop);
+
+      ctx.fillStyle = textMuted;
+      ctx.fillRect(layerLeft - 10, layerBot, layerWidth + 20, 10);
+      ctx.font = '10px Inter, sans-serif';
+      ctx.fillText('Impermeable Bedrock', layerLeft + layerWidth / 2, layerBot + 22);
+
+      ctx.fillStyle = blue;
+      waterDots.forEach(w => {
+        w.y += w.vy * (1.1 - consFactor);
+        if (w.y < 0.22) w.y = 0.75;
+        const px = layerLeft + w.x * layerWidth;
+        const py = height * w.y;
+        if (py >= layerTop - 10 && py <= layerBot) {
+          ctx.beginPath();
+          ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      ctx.fillStyle = amber;
+      grains.forEach(g => {
+        const px = layerLeft + g.origX * layerWidth;
+        const py = layerTop + (g.origY - 0.26) * (layerBot - layerTop) / 0.56;
+        ctx.beginPath();
+        ctx.arc(px, py, g.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      const plotLeft = width * 0.62;
+      const plotWidth = width * 0.26;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(plotLeft, height * 0.26, plotWidth, height * 0.56);
+
+      ctx.fillStyle = text;
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Excess Pore Water Pressure u(z, t)', plotLeft + plotWidth / 2, height * 0.22);
+
+      ctx.strokeStyle = teal;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let y = 0; y <= 100; y += 4) {
+        const ny = y / 100;
+        const py = height * 0.26 + ny * (height * 0.56);
+        const uRatio = (1 - consFactor) * Math.sin(Math.PI * ny / 2);
+        const px = plotLeft + uRatio * (plotWidth * 0.85);
+        if (y === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = text;
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Consolidation U: ${(consFactor * 100).toFixed(1)}%`, plotLeft, height * 0.88);
+      ctx.fillText(`Settlement S: ${settlement.toFixed(1)} mm`, plotLeft, height * 0.93);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

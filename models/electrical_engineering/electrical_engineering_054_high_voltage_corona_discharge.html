@@ -3,52 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>High Voltage Corona Discharge</title>
+  <title>High Voltage Corona Discharge — Physics Simulation</title>
   <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM — NAVY PASTEL COLOR BLOCK
+       Discipline: Electrical Engineering | Palette: Navy Block (#1c2042)
+       ========================================================================== */
     :root {
-      --bg: #1a1a2e;
-      --surface: #22223a;
-      --surface-border: #33334d;
-      --text: #e0e0e0;
-      --text-muted: #9e9eb4;
-      --accent: #4fc3f7;
-      --accent-rgb: 79, 195, 247;
+      /* Chrome Surfaces (Monochrome Dark Canvas) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
       
+      /* Discipline Pastel Color-Block (Navy Block #1c2042) */
+      --block-bg: #1c2042;
+      --block-text: #ffffff;
+      --block-border: rgba(255, 255, 255, 0.12);
+      --block-accent: #4fc3f7;
+      --block-grid: rgba(255, 255, 255, 0.08);
+      
+      /* Backward Compatibility Tokens (verify_models.py Rules) */
+      --bg: #1c2042;
+      --surface: #252b56;
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --accent: #4fc3f7;
+      
+      /* Simulation Color Palette (High Contrast on Navy) */
       --sim-blue: #4fc3f7;
       --sim-teal: #4db6ac;
+      --sim-mint: #d2f8e5;
       --sim-amber: #ffb74d;
       --sim-red: #e57373;
       --sim-green: #81c784;
       --sim-purple: #ba68c8;
-      --sim-grid: rgba(255, 255, 255, 0.08);
-      --sim-axis: rgba(255, 255, 255, 0.22);
       
+      /* Typography */
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
       --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
       
+      /* Geometry & Pill Invariants */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
       --max-width: 960px;
     }
 
     [data-theme="light"] {
-      --bg: #f5f5f5;
-      --surface: #ffffff;
-      --surface-border: #e0e0e0;
-      --text: #1a1a1a;
-      --text-muted: #616161;
-      --accent: #0277bd;
-      --accent-rgb: 2, 119, 189;
+      /* Chrome Surfaces (Monochrome Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
       
-      --sim-blue: #0277bd;
-      --sim-teal: #00897b;
-      --sim-amber: #f57c00;
-      --sim-red: #c62828;
-      --sim-green: #2e7d32;
-      --sim-purple: #6a1b9a;
-      --sim-grid: rgba(0, 0, 0, 0.06);
-      --sim-axis: rgba(0, 0, 0, 0.22);
+      /* Simulation container remains signature Navy color block in both themes */
+      --block-bg: #1c2042;
+      --block-text: #ffffff;
+      --block-border: rgba(255, 255, 255, 0.12);
+      --block-accent: #4fc3f7;
+      --block-grid: rgba(255, 255, 255, 0.08);
+      
+      /* Canvas internal tokens preserve crisp contrast on Navy container */
+      --bg: #1c2042;
+      --surface: #252b56;
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --accent: #0277bd;
     }
 
+    /* Reset & Base */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -56,83 +80,105 @@
     }
 
     body {
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: var(--canvas);
+      color: var(--ink);
       font-family: var(--font-sans);
       font-size: 16px;
       line-height: 1.5;
-      padding: 20px 16px 40px 16px;
+      padding: 24px 16px 48px 16px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: background-color 0.25s ease, color 0.25s ease;
+      transition: background-color 0.2s ease, color 0.2s ease;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
+    /* Header Chrome */
     .header {
       position: relative;
       width: 100%;
       max-width: var(--max-width);
-      margin: 0 auto 16px auto;
+      margin: 0 auto 20px auto;
       text-align: center;
-      padding: 4px 48px 0 48px;
+      padding: 0 48px;
     }
 
     .title-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--ink);
       margin: 0;
-      color: var(--text);
-      letter-spacing: -0.01em;
-      line-height: 1.25;
     }
 
     .discipline-badge {
       display: inline-block;
-      font-size: 0.6875rem;
-      font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      padding: 3px 10px;
-      border-radius: 4px;
-      background: rgba(var(--accent-rgb), 0.12);
-      color: var(--accent);
-      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      padding: 4px 14px;
+      border-radius: 50px;
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
       line-height: 1.2;
     }
 
-    .theme-toggle {
+    /* Pill Button (#theme-toggle and all CTAs) */
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
       position: absolute;
       top: 0;
       right: 0;
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--surface-border);
-      border-radius: 6px;
-      padding: 6px 8px;
-      cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
       line-height: 1;
     }
 
     .theme-toggle:hover {
-      border-color: var(--accent);
-      color: var(--accent);
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
     }
 
     .theme-toggle svg {
+      width: 14px;
+      height: 14px;
       display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     :root .icon-sun,
@@ -143,7 +189,6 @@
     [data-theme="dark"] .icon-moon {
       display: none;
     }
-
     [data-theme="light"] .icon-sun {
       display: none;
     }
@@ -151,130 +196,159 @@
       display: block;
     }
 
-    main, .simulation-viewport {
-      position: relative;
+    /* Oversized Navy Pastel Color-Block Simulation Container */
+    main,
+    .sim-container,
+    .simulation-viewport {
       width: 100%;
       max-width: var(--max-width);
       height: 62vh;
       min-height: 380px;
       max-height: 640px;
-      margin: 0 auto 16px auto;
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: 8px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      color: var(--block-text);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
       overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: background 0.25s ease, border-color 0.25s ease;
+      box-shadow: none;
     }
 
     .simulation-viewport canvas,
-    .simulation-viewport svg,
-    main canvas,
-    main svg {
+    .sim-container canvas,
+    main canvas {
       display: block;
       width: 100%;
       height: 100%;
     }
 
-    .explanation, .explanation-section {
+    /* Explanation Section (Monochrome Framing) */
+    .explanation,
+    .explanation-section {
       width: 100%;
       max-width: var(--max-width);
       margin: 0 auto 32px auto;
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: 8px;
-      padding: 20px 24px;
-      transition: background 0.25s ease, border-color 0.25s ease;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
 
-    .explanation h2, .explanation-section h2 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin: 0 0 10px 0;
-      color: var(--accent);
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
       letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
     }
 
-    .explanation p, .explanation-text {
+    /* Zero mid-gray text: weight 320 carries reading hierarchy */
+    .explanation-text,
+    .explanation p {
       font-size: 0.9375rem;
+      font-weight: 320;
       line-height: 1.6;
-      margin: 0 0 16px 0;
-      color: var(--text);
+      margin: 0 0 18px 0;
+      color: var(--ink);
     }
 
-    .equation, .equation-container {
-      background: var(--bg);
-      border: 1px solid var(--surface-border);
-      border-radius: 6px;
-      padding: 12px 16px;
+    /* Equation Block */
+    .formula-card,
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
       text-align: center;
-      transition: background 0.25s ease, border-color 0.25s ease;
     }
 
+    .formula-label,
     .equation-label {
-      font-size: 0.6875rem;
-      font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-muted);
+      color: var(--ink);
       margin-bottom: 6px;
     }
 
     .equation-formula {
-      font-family: var(--font-math);
-      font-size: 1.25rem;
-      letter-spacing: 0.03em;
-      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
       overflow-x: auto;
-      padding: 4px 0;
+      padding: 2px 0;
     }
-    
   </style>
 </head>
 <body>
+  <!-- Header Chrome -->
   <header class="header">
     <div class="title-container">
       <h1>High Voltage Corona Discharge</h1>
       <div class="discipline-badge">Electrical Engineering</div>
     </div>
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
-      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="5"></circle>
-        <line x1="12" y1="1" x2="12" y2="3"></line>
-        <line x1="12" y1="21" x2="12" y2="23"></line>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-        <line x1="1" y1="12" x2="3" y2="12"></line>
-        <line x1="21" y1="12" x2="23" y2="12"></line>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-      </svg>
-      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-      </svg>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
     </button>
   </header>
 
-  <main class="simulation-viewport" id="simulation-viewport">
+  <!-- Oversized Navy Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container color-block" id="simulation-viewport">
     <canvas id="sim-canvas"></canvas>
   </main>
 
+  <!-- Scientific Explanation Section -->
   <section class="explanation explanation-section">
     <h2>How It Works</h2>
     <p class="explanation-text">
       High voltage corona discharge is an electrical ionization phenomenon occurring in regions of extreme electric field divergence, typically surrounding sharp pointed conductors or thin power transmission lines. When the local electric field gradient surpasses the dielectric breakdown strength of ambient air (~30 kV/cm at standard temperature and pressure), accelerated free electrons trigger Townsend avalanche ionization. The resulting electron transitions and ion recombination produce an audible hissing noise, ozone formation, and a characteristic violet luminous glow.
     </p>
-    <div class="equation equation-container">
-      <div class="equation-label">Governing Equation</div>
+    <div class="formula-card">
+      <div class="formula-label">Governing Equation</div>
       <div class="equation-formula">
         E_crit = 30 · m · δ · (1 + 0.301 / √(r · δ)) &nbsp;&nbsp;|&nbsp;&nbsp; P_corona ∝ (f + 25) · √(r / D) · (V - V_d)²
       </div>
     </div>
   </section>
 
+  <!-- Simulation Logic & Comprehensive Scientific Comments -->
   <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES
+     * ========================================================================
+     * Model: High Voltage Corona Discharge
+     * Discipline: Electrical Engineering
+     *
+     * Physical Phenomenon:
+     *   High voltage corona discharge is an electrical ionization phenomenon occurring in regions of extreme electric field divergence, typically surrounding sharp pointed conductors or thin power transmission lines. When the local electric field gradient surpasses the dielectric breakdown strength of ambie
+     *
+     * Mathematical Foundation:
+     *   Governing relations: E_crit = 30 · m · δ · (1 + 0.301 / √(r · δ))   |   P_corona ∝ (f + 25) · √(r / D) · (V - V_d)²
+     *
+     * Numerical Method:
+     *   - Continuous 60fps simulation loop stepping physical time and state variables
+     *   - Dynamic canvas backing store buffer normalization via devicePixelRatio
+     *   - High-contrast rendering pipeline on Navy pastel color block (#1c2042)
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & HIGH-CONTRAST TOKEN RESOLVER ---
     const themeToggleBtn = document.getElementById('theme-toggle');
     if (themeToggleBtn) {
       themeToggleBtn.addEventListener('click', () => {
@@ -289,7 +363,7 @@
       return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
     }
 
-    
+    // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
 
@@ -299,14 +373,17 @@
       const dpr = window.devicePixelRatio || 1;
       width = rect.width;
       height = rect.height;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
     }
     window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* Clean redraw on next frame */ });
     resize();
 
+    // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
+    // Physical parameters, differential equation coefficients, and state vectors
     let time = 0;
 
     // Corona streamer discharge particles
@@ -334,7 +411,7 @@
       const simRed = getThemeColor('--sim-red') || '#ef5350';
       const simTeal = getThemeColor('--sim-teal') || '#26a69a';
       const textColor = getThemeColor('--text') || '#e0e0e0';
-      const mutedColor = getThemeColor('--text-muted') || '#9e9eb4';
+      const mutedColor = getThemeColor('--text-muted') || '#ffffff';
       const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
 
       // 1. High Voltage Pointed Needle Electrode
@@ -439,7 +516,6 @@
       ctx.fillText('Ionization Zone (E > E_crit)', gX + gW * 0.35, gY + gH * 0.32);
     }
     animate();
-
   </script>
 </body>
 </html>

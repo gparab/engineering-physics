@@ -1,53 +1,65 @@
-<div align="center">
-  <h1>🔬 Engineering Physics UI Component Library</h1>
-  <p>🌐 <strong>Live Demo: <a href="https://gparab.github.io/engineering-physics/">gparab.github.io/engineering-physics</a></strong></p>
-  <p><strong>348 Enterprise-Grade Micro-Scientific Interactive Models Across 24 Engineering Disciplines</strong></p>
-</div>
+<h1 align="center">Engineering Physics UI Component Library</h1>
 
----
+<p align="center">
+  <strong>348 Scientific Interactive Models Across 23 Engineering Disciplines</strong><br>
+  <a href="https://gparab.github.io/engineering-physics/">View the Live Dashboard</a>
+</p>
 
-## 🌟 Overview
+<hr>
 
-In modern web development, capturing user attention requires polished, high-fidelity micro-interactions. This repository provides a comprehensive suite of 348 interactive physics models designed to be seamlessly integrated into enterprise dashboards, educational platforms, and professional web applications.
+## Overview
 
-By incorporating scientifically accurate, aesthetically refined micro-animations, product teams can significantly enhance user engagement, reduce bounce rates, and elevate the technical prestige of their digital platforms.
+In modern software development, bridging the gap between deep technical capability and refined visual design is a persistent challenge. This repository provides a comprehensive, production-ready suite of 348 interactive physics models, designed to be seamlessly integrated into enterprise dashboards, educational platforms, and professional web applications.
 
-## 💼 Business Value & Use Cases
+Every model in this library conforms strictly to a high-fidelity, editorial design system inspired by top-tier SaaS marketing surfaces. The architecture relies on contrast: a stark monochrome canvas juxtaposed against oversized pastel simulation blocks, driven by fine-grained variable typography and continuous, fluid mechanics.
 
-- **EdTech & E-Learning Platforms:** Embed accurate, interactive physics models directly into digital course materials to increase student retention, interactivity, and comprehension.
-- **Enterprise Dashboards & SaaS:** Replace standard loading spinners, empty states, or static icons with engaging, industry-specific visual elements (e.g., visualizing a data pipeline through fluid dynamics concepts).
-- **Corporate Portfolios & Tech Agencies:** Differentiate your brand by showcasing deep technical polish, sophisticated UI architecture, and an exceptional attention to detail.
+## Architectural Standards
 
-## ✨ The Component Experience
+This library was heavily refactored via a massive parallel engineering effort to guarantee 100% adherence to a unified, academic design system.
 
-Every model in this library is engineered for maximum visual impact with minimal performance overhead:
+### The Design System
+- **Monochrome Chrome:** The surrounding application frame strictly utilizes `#000000` (dark mode default) and `#ffffff` (light mode), carrying all primary text and interaction surfaces.
+- **Pastel Simulation Blocks:** The physics simulations are housed within full-content-width containers featuring 24px (`rounded.lg`) corners, mapped to an approved palette of soft pastels (Lime, Lilac, Cream, Mint, Pink, Coral, Navy).
+- **Variable Typography:** The system exclusively utilizes the `Inter` font family (or standard sans-serif fallbacks) at precise weight increments (320, 340, 480, 540, 700). Hierarchy is established through structural weight, entirely eliminating intermediate gray text.
+- **Pill Interactions:** All user controls, themes, and interactive toggles are rendered as stark 50px pill buttons (`rounded.pill`).
 
-1. **The Idle State:** A highly optimized (~20px), continuous CSS/GSAP animation that sits quietly within the UI, consuming minimal CPU/GPU resources while keeping the interface feeling "alive."
-2. **The Click Interaction:** When engaged by the user, the component triggers a dramatic, page-spanning cinematic transition perfectly tailored to the specific physics concept, driving immediate user delight.
+### Technical & Scientific Integrity
+- **Continuous Pure Mechanics:** All arbitrary gimmicks, click-to-explode transitions, and DOM-destroying events have been purged. The models display pure, continuous 60fps physical simulations utilizing Canvas, SVG, or CSS animations.
+- **Textbook Documentation:** Every model includes a dedicated "How It Works" structural section, containing concise, textbook-quality explanations and governing equations rendered exclusively in standard HTML unicode (no external LaTeX dependencies).
+- **Zero External Dependencies:** With the exception of the standard GSAP CDN for complex tweening, every model is a completely standalone HTML document with inline styles and isolated JavaScript execution contexts.
 
-## 🚀 Featured Examples
+## Repository Structure
 
-While there are 348 models in the library, here are a few standout examples of what you can integrate into your products:
+The 348 models are organized into 23 canonical academic engineering directories, representing fields from Aerospace to Quantum Mechanics. 
 
-- ✈️ **Aerodynamics:** `aero_030_shock_wave_mach_cone.html` 
-  - *Interaction:* A supersonic point trailing a wake expands into a massive shockwave on click.
-- ⚛️ **Quantum Mechanics:** `fundamental_physics_041_quantum_tunneling.html` 
-  - *Interaction:* A particle oscillating against a barrier probabilistically teleports across the viewport upon user engagement.
-- 🧬 **Biomedical Engineering:** `biomech_012_dna_torsion.html` 
-  - *Interaction:* A rotating double helix gracefully uncoils and replicates to fill the screen.
-- ⚡️ **Electrical Engineering:** `electrical_044_faradays_law_of_induction.html` 
-  - *Interaction:* A magnetic induction visualization sweeps the page with a cinematic electromagnetic pulse.
+```text
+models/
+├── aerospace_engineering/
+├── chemical_engineering/
+├── civil_engineering/
+├── computer_science/
+├── electrical_engineering/
+├── fundamental_physics/
+├── materials_science/
+├── mechanical_engineering/
+├── robotics_engineering/
+└── ... (14 additional disciplines)
+```
 
-## 📂 Integration & Deployment
+## Quality Assurance & Ratings
 
-These components are zero-dependency, pure HTML/CSS/JS (utilizing GSAP for physics transitions), making them universally adaptable to any modern tech stack.
+Every component in this repository has undergone rigorous automated and adversarial auditing. The central `model_ratings.md` ledger tracks the evaluation of all 348 models across three axes: Code Quality, Scientific Accuracy, and Visual Fidelity. 
 
-1. **Preview the Library:** 
-   Clone the repository and open `index.html` to access the master dashboard. You can interact with and preview all 348 models instantly.
-2. **Review the Specifications:** 
-   The `micro_physics_master_catalog.md` contains the exact physics logic, color palettes (hex codes), and animation specifications for every model, ensuring brand consistency and scientific accuracy.
-3. **Port to Your Stack:** 
-   Simply extract the HTML/CSS/GSAP logic from any `.html` file and drop it directly into your React, Vue, Angular, or Next.js architecture.
+The current repository mean score is **9.59 / 10.0**.
 
----
-*Elevating digital experiences through applied physics and interaction design.*
+## Integration Guide
+
+These components are engineered for rapid porting to modern component-based frameworks (React, Vue, Svelte, Angular). For detailed AI agent integration patterns, consult `AI_INTEGRATION.md`.
+
+1. **Review the Live Dashboard:** Navigate to the [GitHub Pages deployment](https://gparab.github.io/engineering-physics/) to inspect the models in action.
+2. **Consult the Master Catalog:** `micro_physics_master_catalog.md` contains the architectural blueprint for the entire collection.
+3. **Extract and Port:** Isolate the target `.html` file. Extract the CSS custom properties, convert the structural HTML to your framework's templating syntax (e.g., JSX), and map the inline GSAP/Canvas logic to your component's mount lifecycle (e.g., `useEffect`).
+
+## License
+
+MIT License. Copyright 2026 Gautam Parab.

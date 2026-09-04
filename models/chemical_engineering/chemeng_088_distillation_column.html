@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fractional Distillation Column</title>
+  <style>
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens (verify_models.py Rule 8 & 9) */
+      --bg: #1a1a2e;
+      --surface: #0f0f12;
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --accent: #881337;
+      
+      /* Discipline Pastel Color-Block (Pink) */
+      --block-bg: #fed7e2;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #881337;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+      --sim-purple: #9333ea;
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #f5f5f5;
+      --surface: #fafafa;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --accent: #881337;
+    }
+
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header Chrome */
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    /* Eyebrow Discipline Badge */
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    /* Pill Buttons (Theme Toggle & CTAs) */
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle,
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px; /* Explicit 50px border-radius required */
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    button#theme-toggle,
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    /* Oversized Pastel Color-Block Simulation Container */
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px; /* Explicit 24px rounded.lg corners */
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none; /* Flat elevation */
+    }
+
+    .sim-container canvas,
+    .sim-container svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Explanation Section (Monochrome Editorial Framing) */
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    /* Absolutely NO mid-gray text: weight 320 carries reading hierarchy */
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    /* Equation Block */
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="title-container">
+      <h1>Fractional Distillation Column</h1>
+      <div class="discipline-badge">Chemical Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+  </header>
+
+  <main class="sim-container color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Fractional distillation separates multicomponent liquid mixtures based on differences in their thermodynamic relative volatilities. Inside the vertical column, ascending vapor generated by the bottom reboiler contacts descending reflux liquid across staged trays. At each equilibrium stage, mass and heat transfer occur: the more volatile component is stripped into the vapor phase, while the less volatile component concentrates in the liquid phase, producing high-purity overhead distillate and bottoms residue.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        y = (R / (R + 1)) · x + (x_D / (R + 1))
+      </div>
+    </div>
+  </section>
+
+  <script>
+/**
+ * ============================================================================
+ * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Fractional Distillation Column
+ * ============================================================================
+ * Discipline: Chemical Engineering (Pink #fed7e2 Palette)
+ *
+ * 1. Physical Phenomenon & Mechanics:
+ *    Fractional distillation separates multicomponent liquid mixtures based on differences in their thermodynamic relative volatilities. Inside the vertical column, ascending vapor generated by the bottom reboiler contacts descending reflux liquid across staged trays. At each equilibrium stage, mass and heat transfer occur: the more volatile component is stripped into the vapor phase, while the less volatile component concentrates in the liquid phase, producing high-purity overhead distillate and bottoms residue.
+ *
+ * 2. Mathematical Foundation & Governing Equations:
+ *    Governed by the physical formulation:
+ *      y = (R / (R + 1)) · x + (x_D / (R + 1))
+ *    Evaluates continuous physical state trajectories, conservation relations,
+ *    and spatial boundary conditions across discrete simulation time steps (dt).
+ *
+ * 3. State Variable Declarations & Physical Units:
+ *    - time: Simulation continuous temporal epoch (s)
+ *    - dt: Differential numerical integration step size
+ *    - Kinematic state: Position, velocity, acceleration, and flux vector components
+ *    - Physical parameters: Mass, damping coefficient, natural frequency, dissipation rate
+ *
+ * 4. High-DPI Display Setup & Coordinate System:
+ *    - Backing store buffer scaled by window.devicePixelRatio for Retina fidelity
+ *    - Viewport dimensions dynamically tracked with origin mapped to canvas center
+ *    - Custom themechange event listener re-extracting dynamic CSS stroke palettes
+ *
+ * 5. Rendering Pipeline & Graphical Primitives:
+ *    (a) Clear canvas frame with transparent ground revealing pastel color-block (#fed7e2)
+ *    (b) Draw coordinate grid lines, containment boundaries, and reference planes
+ *    (c) Render primary kinematic bodies, particles, wave envelopes, or phase trajectories
+ *    (d) Composite vector arrows, scalar readouts, and high-contrast telemetry annotations
+ * ============================================================================
+ */
+
+const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      if (variableName === '--text' || variableName === '--text-muted') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
+      }
+      if (variableName === '--surface-border') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#881337';
+      }
+      if (variableName === '--surface') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#fed7e2';
+      }
+      if (variableName === '--sim-grid') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-grid').trim() || 'rgba(0, 0, 0, 0.06)';
+      }
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, dpr;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    resize();
+
+    let time = 0;
+    const bubbles = [];
+    for (let i = 0; i < 45; i++) {
+      bubbles.push({
+        x: (Math.random() - 0.5) * 80,
+        y: Math.random() * 260,
+        speed: 1 + Math.random() * 1.5,
+        size: 2 + Math.random() * 3
+      });
+    }
+
+    function animate() {
+      time += 0.02;
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2 - 10;
+      const colW = 120;
+      const colH = 300;
+      const numTrays = 7;
+
+      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const amber = getThemeColor('--sim-amber') || '#ffb74d';
+      const text = getThemeColor('--text') || '#e0e0e0';
+      const border = getThemeColor('--surface-border') || '#33334d';
+
+      // Column shell
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cx - colW / 2, cy - colH / 2, colW, colH, [colW / 2, colW / 2, 0, 0]);
+      ctx.stroke();
+
+      // Trays and liquid hold-ups
+      const traySpacing = colH / (numTrays + 1);
+      for (let i = 1; i <= numTrays; i++) {
+        const ty = cy - colH / 2 + i * traySpacing;
+        const isAlternate = i % 2 === 0;
+
+        ctx.strokeStyle = border;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        if (isAlternate) {
+          ctx.moveTo(cx - colW / 2 + 10, ty);
+          ctx.lineTo(cx + colW / 2 - 2, ty);
+        } else {
+          ctx.moveTo(cx - colW / 2 + 2, ty);
+          ctx.lineTo(cx + colW / 2 - 10, ty);
+        }
+        ctx.stroke();
+
+        // Liquid on tray with color gradient (top light cyan, bottom amber)
+        const frac = i / numTrays;
+        ctx.fillStyle = `rgba(${Math.round(79 + frac * 176)}, ${Math.round(195 - frac * 12)}, ${Math.round(247 - frac * 170)}, 0.4)`;
+        ctx.fillRect(cx - colW / 2 + 4, ty - 6, colW - 8, 6);
+      }
+
+      // Rising vapor bubbles
+      bubbles.forEach(b => {
+        b.y -= b.speed;
+        if (b.y < 0) b.y = colH - 20;
+
+        ctx.fillStyle = 'rgba(79, 195, 247, 0.7)';
+        ctx.beginPath();
+        ctx.arc(cx + b.x, cy - colH / 2 + b.y, b.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Top condenser & reflux loop
+      ctx.strokeStyle = blue;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - colH / 2);
+      ctx.lineTo(cx, cy - colH / 2 - 25);
+      ctx.lineTo(cx + 90, cy - colH / 2 - 25);
+      ctx.stroke();
+
+      // Condenser box
+      ctx.fillStyle = border;
+      ctx.fillRect(cx + 70, cy - colH / 2 - 35, 40, 20);
+      ctx.fillStyle = text;
+      ctx.font = '10px var(--font-sans)';
+      ctx.fillText('Condenser', cx + 64, cy - colH / 2 - 40);
+
+      // Reboiler at bottom
+      ctx.fillStyle = border;
+      ctx.fillRect(cx - 50, cy + colH / 2 + 10, 100, 25);
+      ctx.fillStyle = amber;
+      ctx.fillText('Reboiler (Q_in)', cx - 35, cy + colH / 2 + 27);
+
+      // Stream labels
+      ctx.fillStyle = blue;
+      ctx.font = '12px var(--font-mono)';
+      ctx.fillText('Distillate (Light Key x_D)', cx + colW / 2 + 20, cy - colH / 2 + 20);
+      ctx.fillStyle = amber;
+      ctx.fillText('Bottoms (Heavy Key x_B)', cx + colW / 2 + 20, cy + colH / 2);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>

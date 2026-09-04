@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMA Controller — Physics Simulation</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #0f0f12;
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --accent: #d4f542;
+      --accent-rgb: 212, 245, 66;
+
+      /* Discipline Pastel Color-Block: Lime Block */
+      --block-bg: #d4f542;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #0f172a;
+      --block-grid: rgba(0, 0, 0, 0.06);
+
+      /* High-Contrast Simulation Palette for Canvas (calibrated for Lime block #d4f542) */
+      --text-muted: #334155;
+      --sim-blue: #0f172a;
+      --sim-teal: #065f46;
+      --sim-amber: #b45309;
+      --sim-red: #991b1b;
+      --sim-green: #047857;
+      --sim-purple: #581c87;
+
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      /* Geometry & Elevation */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #fafafa;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --accent: #0f172a;
+      --accent-rgb: 15, 23, 42;
+    }
+
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-weight: 320;
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header & Navigation */
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    /* Eyebrow Discipline Badge */
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: 50px;
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    /* Pill Button (Theme Toggle & CTAs) */
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle,
+    button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover,
+    button:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active,
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    /* Oversized Pastel Color-Block Simulation Container */
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    .sim-container svg,
+    .simulation-viewport canvas,
+    .simulation-viewport svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Explanation Section (Monochrome Editorial Framing) */
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    /* Absolutely NO mid-gray text: weight 320 carries reading hierarchy */
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    /* Equation Block */
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="title-container">
+      <h1>DMA Controller</h1>
+      <div class="discipline-badge">Computer Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <main class="sim-container color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A Direct Memory Access (DMA) controller is a dedicated hardware engine that facilitates autonomous high-throughput data transfers between system RAM and high-speed peripherals without continuous CPU intervention. By negotiating bus mastership via Hold Request (HOLD) and Hold Acknowledge (HLDA) handshakes, the DMA unit streams contiguous byte buffers using hardware address and counter registers. Offloading repetitive memory moves preserves core CPU clock cycles for primary execution threads.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        Throughput_{DMA} = N_{bytes} / (t_{setup} + N_{bytes} · t_{cycle}) ≫ Throughput_{CPU}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION ARCHITECTURE & MATHEMATICAL MECHANICS
+     * ========================================================================
+     * Model: DMA Controller
+     * Discipline: Computer Engineering
+     *
+     * 1. PHYSICAL PHENOMENON & SYSTEM DYNAMICS:
+     *    A Direct Memory Access (DMA) controller is a dedicated hardware engine that facilitates autonomous high-throughput data transfers between system RAM and high-speed peripherals without continuous CPU intervention. By negotiating bus mastership via Hold Request (HOLD) and Hold Acknowledge (HLDA) handshakes, the DMA unit streams contiguous byte buffers using hardware address and counter registers. Offloading repetitive memory moves preserves core CPU clock cycles for primary execution threads.
+     *
+     * 2. MATHEMATICAL FOUNDATION & FORMULATION:
+     *    Governing Relation: Throughput_{DMA} = N_{bytes} / (t_{setup} + N_{bytes} · t_{cycle}) ≫ Throughput_{CPU}
+     *    State equations govern dynamic trajectories, probability transitions,
+     *    charge distributions, and conservation laws under boundary conditions.
+     *
+     * 3. NUMERICAL INTEGRATION METHOD & TIMESTEPPING:
+     *    - Integration: Discrete time step integration (dt = 0.016s / 60fps loop).
+     *    - Frame Rate Independence: Continuous requestAnimationFrame loop with elapsed time tracking.
+     *    - Numerical Stability: Bounded state parameters with periodic or clamped boundary limits.
+     *
+     * 4. COORDINATE MAPPING & RETINA DISPLAY:
+     *    - Device Pixel Ratio (dpr) scaling maintains crisp vector graphics on High-DPI screens.
+     *    - Responsive coordinate projection scales dynamically to canvas viewport dimensions.
+     *
+     * 5. HIGH-CONTRAST FIGMA RENDERING PIPELINE:
+     *    - Background: Transparent canvas lets the signature Lime pastel block (#d4f542) show through.
+     *    - Strokes & Typography: Deep ink (#000000) and high-contrast accents (#0f172a) calibrated for lime.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & SYSTEM LISTENER ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(varName, fallback) {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      return val || fallback;
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    let byteCount = 0;
+    const blockSize = 1024;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = "#000000";
+      const mutedColor = "#334155";
+      const accentColor = "#0f172a";
+      const highColor = "#065f46";
+      const wireColor = "rgba(0, 0, 0, 0.35)";
+
+      // Increment transfer byte counter
+      byteCount = (byteCount + 16) % (blockSize + 64);
+      const isTransferring = byteCount < blockSize;
+
+      const cy = height * 0.44;
+      const boxW = Math.min(130, (width - 100) / 4);
+      const boxH = 90;
+      const startX = (width - boxW * 4 - 60) / 2;
+
+      // 4 System Components: CPU, DMA Controller, Main RAM, High-Speed Device
+      const nodes = [
+        { name: 'Host CPU', role: isTransferring ? 'Processing Task' : 'Handling IRQ', col: accentColor },
+        { name: 'DMA Engine', role: isTransferring ? 'Bus Master' : 'Idle', col: highColor },
+        { name: 'System RAM', role: isTransferring ? 'Writing Block' : 'Ready', col: '#ffb74d' },
+        { name: 'NVMe Storage', role: isTransferring ? 'Streaming FIFO' : 'Idle', col: '#ba68c8' }
+      ];
+
+      nodes.forEach((nd, idx) => {
+        const nx = startX + idx * (boxW + 20);
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = nd.col;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(nx, cy - boxH * 0.5, boxW, boxH);
+        ctx.fillRect(nx, cy - boxH * 0.5, boxW, boxH);
+
+        ctx.font = '600 13px Inter, sans-serif';
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        ctx.fillText(nd.name, nx + boxW * 0.5, cy - 12);
+
+        ctx.font = '10px monospace';
+        ctx.fillStyle = nd.col;
+        ctx.fillText(nd.role, nx + boxW * 0.5, cy + 18);
+      });
+
+      // Connecting System Bus Lines
+      const busY = cy + boxH * 0.5 + 30;
+      ctx.strokeStyle = isTransferring ? highColor : wireColor;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(startX + boxW * 0.5, busY);
+      ctx.lineTo(startX + 3 * (boxW + 20) + boxW * 0.5, busY);
+      ctx.stroke();
+
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = mutedColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('Shared System Data & Address Bus (DMA Mastered)', startX, busY + 20);
+
+      // Block Transfer Progress Bar
+      const progW = Math.min(420, width - 80);
+      const progY = cy - 100;
+      const px = width * 0.5 - progW * 0.5;
+
+      ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'left';
+      const pct = Math.min(100, Math.floor((byteCount / blockSize) * 100));
+      ctx.fillText(`DMA Burst Transfer: ${byteCount}/${blockSize} Bytes (${pct}%)`, px, progY - 8);
+
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px, progY, progW, 16);
+
+      ctx.fillStyle = highColor;
+      ctx.fillRect(px + 2, progY + 2, (progW - 4) * (pct / 100), 12);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

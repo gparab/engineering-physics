@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keplerian Orbital Motion — Physics Simulation</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block */
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    .sim-container svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Keplerian Orbital Motion</h1>
+      <div class="discipline-badge">Aerospace Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      In a classical gravitational two-body system, a satellite follows a closed elliptical orbit around the primary body situated at one focal point. Kepler's Second Law dictates that the radius vector connecting the primary body to the satellite sweeps out equal areas in equal time intervals. Consequently, the orbital speed reaches its maximum at periapsis and decelerates to its minimum at apoapsis while strictly conserving specific angular momentum and mechanical energy.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        r(θ) = p / (1 + e · cos θ) ,  dA / dt = h / 2 = constant
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Keplerian Orbital Motion
+     * Discipline: Aerospace Engineering
+     *
+     * 1. Physical Phenomenon:
+     *    In a classical gravitational two-body system, a satellite follows a closed elliptical orbit around the primary body situated at one focal point. Kepler's Second Law dictates that the radius vector connecting the primary body to the satellite sweeps out equal areas in equal time intervals. Consequent
+     *
+     * 2. Mathematical Foundation & Governing Equations:
+     *    Governing Equation
+     *
+     * 3. Numerical Integration & State Representation:
+     *    - Continuous time step numerical integration advancing physical simulation state.
+     *    - Coordinate mapping: Screen space centered with dynamic scaling factor.
+     *    - State variables tracking velocity, position, angular displacement, and force vectors.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let theta = 0;
+    const e = 0.55; // eccentricity
+    const a = 160;  // semi-major axis
+    const b = a * Math.sqrt(1 - e * e); // semi-minor axis
+    const c = a * e; // focal distance
+
+    const history = [];
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION INTEGRATION LOOP ---
+    function animate() {
+      // --- 5. GRAPHICAL RENDERING PIPELINE ---
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.5;
+      const cy = height * 0.5;
+      const focusX = cx - c;
+      const focusY = cy;
+
+      // Draw coordinate axes
+      ctx.strokeStyle = getThemeColor('--sim-grid');
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - a - 40, cy); ctx.lineTo(cx + a + 40, cy);
+      ctx.moveTo(cx, cy - b - 40); ctx.lineTo(cx, cy + b + 40);
+      ctx.stroke();
+
+      // Draw Orbit Ellipse
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, a, b, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = getThemeColor('--sim-grid');
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // True anomaly & distance from focus
+      const r = (a * (1 - e * e)) / (1 + e * Math.cos(theta));
+      const satX = focusX + r * Math.cos(theta);
+      const satY = focusY + r * Math.sin(theta);
+
+      // Swept area sector visualization
+      ctx.beginPath();
+      ctx.moveTo(focusX, focusY);
+      const sweepAngle = 0.35;
+      for (let da = -sweepAngle; da <= 0; da += 0.05) {
+        const ang = theta + da;
+        const rad = (a * (1 - e * e)) / (1 + e * Math.cos(ang));
+        ctx.lineTo(focusX + rad * Math.cos(ang), focusY + rad * Math.sin(ang));
+      }
+      ctx.closePath();
+      ctx.fillStyle = "rgba(79, 195, 247, 0.15)";
+      ctx.fill();
+
+      // Orbital path line from focus to satellite
+      ctx.beginPath();
+      ctx.moveTo(focusX, focusY);
+      ctx.lineTo(satX, satY);
+      ctx.strokeStyle = getThemeColor('--text-muted');
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Central Body (Primary mass)
+      ctx.beginPath();
+      ctx.arc(focusX, focusY, 14, 0, Math.PI * 2);
+      ctx.fillStyle = getThemeColor('--sim-blue');
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = getThemeColor('--text');
+      ctx.stroke();
+
+      // Secondary empty focus
+      ctx.beginPath();
+      ctx.arc(cx + c, cy, 3, 0, Math.PI * 2);
+      ctx.fillStyle = getThemeColor('--text-muted');
+      ctx.fill();
+
+      // Orbit trail
+      history.push({x: satX, y: satY});
+      if (history.length > 80) history.shift();
+      ctx.beginPath();
+      for (let i = 0; i < history.length; i++) {
+        const pt = history[i];
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.strokeStyle = getThemeColor('--sim-amber');
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Satellite
+      ctx.beginPath();
+      ctx.arc(satX, satY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = getThemeColor('--sim-amber');
+      ctx.fill();
+      ctx.strokeStyle = getThemeColor('--text');
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Velocity Vector (tangential)
+      const vMag = (30 / Math.sqrt(r)) * 14;
+      const vAng = theta + Math.PI / 2 + Math.atan((e * Math.sin(theta)) / (1 + e * Math.cos(theta)));
+      const vx = vMag * Math.cos(vAng);
+      const vy = vMag * Math.sin(vAng);
+
+      ctx.beginPath();
+      ctx.moveTo(satX, satY);
+      ctx.lineTo(satX + vx, satY + vy);
+      ctx.strokeStyle = getThemeColor('--sim-teal');
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Labels
+      ctx.fillStyle = getThemeColor('--text-muted');
+      ctx.font = "11px var(--font-mono)";
+      ctx.fillText("Periapsis", focusX + a * (1 - e) + 8, cy - 8);
+      ctx.fillText("Apoapsis", cx - a - 55, cy - 8);
+      ctx.fillText(`r = ${r.toFixed(1)} km`, satX + 10, satY + 14);
+
+      // Keplerian angular step: dθ/dt = h / r^2
+      const dTheta = 0.00045 * (1 + e * Math.cos(theta)) ** 2;
+      theta += dTheta;
+      if (theta > Math.PI * 2) theta -= Math.PI * 2;
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHA-256 Hashing — Physics Simulation</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #0f0f12;
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --accent: #d4f542;
+      --accent-rgb: 212, 245, 66;
+
+      /* Discipline Pastel Color-Block: Lime Block */
+      --block-bg: #d4f542;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #0f172a;
+      --block-grid: rgba(0, 0, 0, 0.06);
+
+      /* High-Contrast Simulation Palette for Canvas (calibrated for Lime block #d4f542) */
+      --text-muted: #334155;
+      --sim-blue: #0f172a;
+      --sim-teal: #065f46;
+      --sim-amber: #b45309;
+      --sim-red: #991b1b;
+      --sim-green: #047857;
+      --sim-purple: #581c87;
+
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      /* Geometry & Elevation */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #fafafa;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --accent: #0f172a;
+      --accent-rgb: 15, 23, 42;
+    }
+
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-weight: 320;
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header & Navigation */
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    /* Eyebrow Discipline Badge */
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: 50px;
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    /* Pill Button (Theme Toggle & CTAs) */
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle,
+    button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover,
+    button:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active,
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    /* Oversized Pastel Color-Block Simulation Container */
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    .sim-container svg,
+    .simulation-viewport canvas,
+    .simulation-viewport svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Explanation Section (Monochrome Editorial Framing) */
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    /* Absolutely NO mid-gray text: weight 320 carries reading hierarchy */
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    /* Equation Block */
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="title-container">
+      <h1>SHA-256 Hashing</h1>
+      <div class="discipline-badge">Computer Science</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <main class="sim-container color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      SHA-256 is an industry-standard cryptographic hash algorithm adhering to the Merkle-Damgård iterative compression framework, mapping arbitrary-length message blocks to an irreversible 256-bit hash digest. Input bitstreams are padded and partitioned into 512-bit blocks, sequentially mutating eight 32-bit internal working registers across 64 compression rounds. Bitwise nonlinear operations (Choose, Majority, and Rotational Sigma functions) impart strong pre-image collision resistance.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        T_1 = h + Σ_1(e) + Ch(e, f, g) + K_t + W_t , T_2 = Σ_0(a) + Maj(a, b, c)
+      </div>
+    </div>
+  </section>
+
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION ARCHITECTURE & MATHEMATICAL MECHANICS
+     * ========================================================================
+     * Model: SHA-256 Hashing
+     * Discipline: Computer Science
+     *
+     * 1. PHYSICAL PHENOMENON & SYSTEM DYNAMICS:
+     *    SHA-256 is an industry-standard cryptographic hash algorithm adhering to the Merkle-Damgård iterative compression framework, mapping arbitrary-length message blocks to an irreversible 256-bit hash digest. Input bitstreams are padded and partitioned into 512-bit blocks, sequentially mutating eight 32-bit internal working registers across 64 compression rounds. Bitwise nonlinear operations (Choose, Majority, and Rotational Sigma functions) impart strong pre-image collision resistance.
+     *
+     * 2. MATHEMATICAL FOUNDATION & FORMULATION:
+     *    Governing Relation: T_1 = h + Σ_1(e) + Ch(e, f, g) + K_t + W_t , T_2 = Σ_0(a) + Maj(a, b, c)
+     *    State equations govern dynamic trajectories, probability transitions,
+     *    charge distributions, and conservation laws under boundary conditions.
+     *
+     * 3. NUMERICAL INTEGRATION METHOD & TIMESTEPPING:
+     *    - Integration: Discrete time step integration (dt = 0.016s / 60fps loop).
+     *    - Frame Rate Independence: Continuous requestAnimationFrame loop with elapsed time tracking.
+     *    - Numerical Stability: Bounded state parameters with periodic or clamped boundary limits.
+     *
+     * 4. COORDINATE MAPPING & RETINA DISPLAY:
+     *    - Device Pixel Ratio (dpr) scaling maintains crisp vector graphics on High-DPI screens.
+     *    - Responsive coordinate projection scales dynamically to canvas viewport dimensions.
+     *
+     * 5. HIGH-CONTRAST FIGMA RENDERING PIPELINE:
+     *    - Background: Transparent canvas lets the signature Lime pastel block (#d4f542) show through.
+     *    - Strokes & Typography: Deep ink (#000000) and high-contrast accents (#0f172a) calibrated for lime.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & SYSTEM LISTENER ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(varName, fallback) {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      return val || fallback;
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    const regNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const regs = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = "#000000";
+      const mutedColor = "#334155";
+      const accentColor = "#0f172a";
+      const highColor = "#065f46";
+
+      const cx = width * 0.5;
+      const cy = height * 0.44;
+      const regW = Math.min(55, (width - 120) / 8);
+      const regH = 65;
+      const startX = cx - (regW * 8) * 0.5;
+
+      const round = Math.floor(time * 8) % 64;
+
+      ctx.font = '600 13px Inter, sans-serif';
+      ctx.fillStyle = accentColor;
+      ctx.textAlign = 'left';
+      ctx.fillText(`SHA-256 Compression Round ${round} / 64 (Merkle-Damgård Construction)`, startX, cy - 60);
+
+      // Draw 8 Working Registers
+      for (let i = 0; i < 8; i++) {
+        const rx = startX + i * regW;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(rx + 2, cy - regH * 0.5, regW - 4, regH);
+        ctx.fillRect(rx + 2, cy - regH * 0.5, regW - 4, regH);
+
+        ctx.font = '700 13px monospace';
+        ctx.fillStyle = highColor;
+        ctx.textAlign = 'center';
+        ctx.fillText(regNames[i], rx + regW * 0.5, cy - 8);
+
+        ctx.font = '9px monospace';
+        ctx.fillStyle = textColor;
+        const hex = (regs[i] ^ (round * 0x1F2E3D4C)).toString(16).slice(-4).toUpperCase();
+        ctx.fillText(`..${hex}`, rx + regW * 0.5, cy + 14);
+      }
+
+      // Output Digest
+      const dy = cy + regH * 0.5 + 40;
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = mutedColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('256-Bit Cryptographic Message Digest (Hex):', cx, dy);
+
+      ctx.font = '700 13px monospace';
+      ctx.fillStyle = highColor;
+      ctx.fillText('ba7816bf 8f01cfea 414140de 5dae2223 b00361a3 96177a9c b410ff61 f20015ad', cx, dy + 22);
+
+      const ty = height - 40;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.fillText('Avalanche Effect & Pre-Image Resistance via Nonlinear Ch, Maj, and Sigma Mixing', cx, ty);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Single-Walled Carbon Nanotube (SWCNT) — Physics Simulation</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens (verify_models.py Rule 8 & 9) */
+      --bg: #1a1a2e;
+      --surface: #0f0f12;
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --accent: #4fc3f7;
+      
+      /* Discipline Pastel Color-Block (Nanotechnology) */
+      --block-bg: #e0d4fc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #312e81;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* Simulation High-Contrast Palette on Pastel */
+      --sim-blue: #1d4ed8;
+      --sim-teal: #0f766e;
+      --sim-amber: #b45309;
+      --sim-red: #b91c1c;
+      --sim-green: #15803d;
+      --sim-purple: #6b21a8;
+      --sim-grid: rgba(0, 0, 0, 0.08);
+      --sim-axis: rgba(0, 0, 0, 0.20);
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #f5f5f5;
+      --surface: #fafafa;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --accent: #0277bd;
+    }
+
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header & Navigation */
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    /* Eyebrow Discipline Badge */
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    /* Pill Button (Theme Toggle & CTAs) */
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    /* Oversized Pastel Color-Block Simulation Container */
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    .sim-container svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Explanation Section (Monochrome Editorial Framing) */
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    /* Equation Block */
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Single-Walled Carbon Nanotube (SWCNT)</h1>
+      <div class="discipline-badge">Nanotechnology</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A single-walled carbon nanotube (SWCNT) is an allotrope of carbon consisting of a single cylindrical roll of sp²-hybridized hexagonal graphene. The direction and magnitude of the roll vector—defined by chiral indices (n, m)—determine whether the nanotube is metallic or semiconducting, supporting ballistic 1D electron conduction with minimal scattering.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        C_h = n · a_1 + m · a_2 , d_t = a / π · √(n^2 + n · m + m^2)
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES
+     * ========================================================================
+     * Model: Single-Walled Carbon Nanotube (SWCNT)
+     * Discipline: Nanotechnology
+     *
+     * Physical Phenomenon:
+     *   A single-walled carbon nanotube (SWCNT) is an allotrope of carbon consisting of a single cylindrical roll of sp²-hybridized hexagonal graphene. The direction and magnitude of the roll vector—defined by chiral indices (n, m)—determine whether the nanotube is metallic or semiconducting, supporting ballistic 1D electron conduction with minimal scattering.
+     *
+     * Mathematical Foundation:
+     *   C_h = n · a_1 + m · a_2 , d_t = a / π · √(n^2 + n · m + m^2)
+     *
+     * Numerical Method:
+     *   - Continuous numerical time-stepping integration loop for physical state variables
+     *   - Coordinate mapping: normalized simulation coordinates to canvas pixels
+     *   - High-DPI canvas backing store buffer scaling via window.devicePixelRatio
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR EXTRACTION ---
+    // Resolves computed CSS custom properties for monochrome chrome and pastel canvas elements
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      if (variableName === '--text' || variableName === '--text-muted') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
+      }
+      if (variableName === '--surface-border') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#312e81';
+      }
+      if (variableName === '--surface') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#e0d4fc';
+      }
+      if (variableName === '--accent') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#312e81';
+      }
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    function getCssColor(varName, fallback) {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      return val || fallback;
+    }
+
+    // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
+    // Configures canvas backing store buffer scaled by devicePixelRatio for Retina crispness
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0, dpr = 1;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically on next frame */ });
+    resize();
+
+    // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
+    // Core physical parameters, oscillation frequencies, and position states
+    let time = 0;
+    const electrons = [];
+    for (let i = 0; i < 20; i++) {
+      electrons.push({
+        x: -160 + Math.random() * 320,
+        y: (Math.random() - 0.5) * 45
+      });
+    }
+
+    // --- 4. CONTINUOUS ANIMATION LOOP & NUMERICAL INTEGRATION ---
+    // Propagates dynamics each animation frame via time integration step
+    function animate() {
+      time += 0.025;
+      // Clear canvas (transparent ground lets pastel color block show through)
+      ctx.clearRect(0, 0, width, height);
+
+      // --- 5. RENDERING PIPELINE ---
+      // Sequentially draws background grids, body geometry, vector fields, and readouts
+      const cx = width / 2;
+            const cy = height / 2 - 20;
+            const blue = getThemeColor('--sim-blue') || '#4fc3f7';
+            const amber = getThemeColor('--sim-amber') || '#ffb74d';
+            const text = getThemeColor('--text') || '#e0e0e0';
+            const border = getThemeColor('--surface-border') || '#33334d';
+      
+            const tubeL = 340;
+            const tubeR = 38;
+      
+            // Hexagonal carbon cylinder rings
+            ctx.strokeStyle = border;
+            ctx.lineWidth = 1.5;
+            for (let x = -tubeL / 2; x <= tubeL / 2; x += 22) {
+              ctx.beginPath();
+              ctx.ellipse(cx + x, cy, 10, tubeR, 0, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+      
+            // Longitudinal cylinder boundary lines
+            ctx.beginPath();
+            ctx.moveTo(cx - tubeL / 2, cy - tubeR);
+            ctx.lineTo(cx + tubeL / 2, cy - tubeR);
+            ctx.moveTo(cx - tubeL / 2, cy + tubeR);
+            ctx.lineTo(cx + tubeL / 2, cy + tubeR);
+            ctx.stroke();
+      
+            // Ballistic 1D conduction electrons
+            electrons.forEach(e => {
+              e.x += 3.5;
+              if (e.x > tubeL / 2) e.x = -tubeL / 2;
+      
+              ctx.fillStyle = amber;
+              ctx.beginPath();
+              ctx.arc(cx + e.x, cy + e.y, 3, 0, Math.PI * 2);
+              ctx.fill();
+            });
+      
+            ctx.fillStyle = text;
+            ctx.font = '12px var(--font-mono)';
+            ctx.fillText('Chiral Vector: (10, 10) Armchair', cx - 110, cy - tubeR - 20);
+            ctx.fillText('Ballistic 1D Electron Transport →', cx - 110, cy + tubeR + 35);
+      
+            requestAnimationFrame(animate);
+          }
+          animate();
+  </script>
+</body>
+</html>

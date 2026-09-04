@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aircraft Principal Axes & Rotations — Physics Simulation</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block */
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    .sim-container svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Aircraft Principal Axes & Rotations</h1>
+      <div class="discipline-badge">Aerospace Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Aircraft rotational dynamics are described by an orthogonal right-handed body axis system centered at the center of gravity. Motion comprises roll about the longitudinal axis (X-axis), pitch about the lateral axis (Y-axis), and yaw about the normal axis (Z-axis). Euler's equations of rotational motion govern the dynamic cross-coupling between angular rate vectors and inertial moments.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        I_x · dω_x/dt - (I_y - I_z) · ω_y · ω_z = M_x ,  I_y · dω_y/dt - (I_z - I_x) · ω_z · ω_x = M_y
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Aircraft Principal Axes & Rotations
+     * Discipline: Aerospace Engineering
+     *
+     * 1. Physical Phenomenon:
+     *    Aircraft rotational dynamics are described by an orthogonal right-handed body axis system centered at the center of gravity. Motion comprises roll about the longitudinal axis (X-axis), pitch about the lateral axis (Y-axis), and yaw about the normal axis (Z-axis). Euler's equations of rotational moti
+     *
+     * 2. Mathematical Foundation & Governing Equations:
+     *    Governing Equation
+     *
+     * 3. Numerical Integration & State Representation:
+     *    - Continuous time step numerical integration advancing physical simulation state.
+     *    - Coordinate mapping: Screen space centered with dynamic scaling factor.
+     *    - State variables tracking velocity, position, angular displacement, and force vectors.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let rollAngle = 0;
+    let pitchAngle = 0;
+    let yawAngle = 0;
+    let time = 0;
+
+    function project3D(x, y, z, cx, cy) {
+      const cosR = Math.cos(rollAngle), sinR = Math.sin(rollAngle);
+      const cosP = Math.cos(pitchAngle), sinP = Math.sin(pitchAngle);
+      const cosY = Math.cos(yawAngle), sinY = Math.sin(yawAngle);
+
+      // Rotate Yaw (Z)
+      let x1 = x * cosY - y * sinY;
+      let y1 = x * sinY + y * cosY;
+      let z1 = z;
+
+      // Rotate Pitch (Y)
+      let x2 = x1 * cosP + z1 * sinP;
+      let y2 = y1;
+      let z2 = -x1 * sinP + z1 * cosP;
+
+      // Rotate Roll (X)
+      let x3 = x2;
+      let y3 = y2 * cosR - z2 * sinR;
+      let z3 = y2 * sinR + z2 * cosR;
+
+      const fov = 400;
+      const scale = fov / (fov + x3);
+      return {
+        px: cx + y3 * scale,
+        py: cy - z3 * scale,
+        depth: x3
+      };
+    }
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION INTEGRATION LOOP ---
+    function animate() {
+      // --- 5. GRAPHICAL RENDERING PIPELINE ---
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.5;
+      const cy = height * 0.5;
+
+      time += 0.02;
+      rollAngle = Math.sin(time * 0.8) * 0.35;
+      pitchAngle = Math.sin(time * 0.6) * 0.22;
+      yawAngle = Math.cos(time * 0.5) * 0.28;
+
+      // Aircraft geometry coordinates (nose forward along +X, right wing along +Y, down along +Z)
+      const points = [
+        {x: 90, y: 0, z: 0},     // 0: Nose
+        {x: -60, y: 0, z: 0},    // 1: Tail base
+        {x: 0, y: -110, z: 0},   // 2: Left wingtip
+        {x: 0, y: 110, z: 0},    // 3: Right wingtip
+        {x: -45, y: -45, z: 0},  // 4: Left stabilizer
+        {x: -45, y: 45, z: 0},   // 5: Right stabilizer
+        {x: -55, y: 0, z: 45}    // 6: Vertical fin tip
+      ];
+
+      const proj = points.map(p => project3D(p.x, p.y, p.z, cx, cy));
+
+      // Draw Principal Axes
+      const axisLen = 130;
+      const origin = project3D(0, 0, 0, cx, cy);
+      const xAxis = project3D(axisLen, 0, 0, cx, cy);
+      const yAxis = project3D(0, axisLen, 0, cx, cy);
+      const zAxis = project3D(0, 0, axisLen, 0, cx, cy);
+
+      // X - Roll Axis
+      ctx.beginPath();
+      ctx.moveTo(origin.px, origin.py); ctx.lineTo(xAxis.px, xAxis.py);
+      ctx.strokeStyle = getThemeColor('--sim-red'); ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = getThemeColor('--sim-red');
+      ctx.fillText("X (Roll)", xAxis.px + 5, xAxis.py);
+
+      // Y - Pitch Axis
+      ctx.beginPath();
+      ctx.moveTo(origin.px, origin.py); ctx.lineTo(yAxis.px, yAxis.py);
+      ctx.strokeStyle = getThemeColor('--sim-green'); ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = getThemeColor('--sim-green');
+      ctx.fillText("Y (Pitch)", yAxis.px + 5, yAxis.py);
+
+      // Z - Yaw Axis
+      ctx.beginPath();
+      ctx.moveTo(origin.px, origin.py); ctx.lineTo(zAxis.px, zAxis.py);
+      ctx.strokeStyle = getThemeColor('--sim-blue'); ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = getThemeColor('--sim-blue');
+      ctx.fillText("Z (Yaw)", zAxis.px + 5, zAxis.py);
+
+      // Aircraft wireframe
+      ctx.beginPath();
+      // Fuselage line
+      ctx.moveTo(proj[0].px, proj[0].py); ctx.lineTo(proj[1].px, proj[1].py);
+      // Main wings
+      ctx.moveTo(proj[2].px, proj[2].py); ctx.lineTo(proj[3].px, proj[3].py);
+      // Tail stabilizers
+      ctx.moveTo(proj[4].px, proj[4].py); ctx.lineTo(proj[5].px, proj[5].py);
+      // Vertical fin
+      ctx.moveTo(proj[1].px, proj[1].py); ctx.lineTo(proj[6].px, proj[6].py);
+      ctx.strokeStyle = getThemeColor('--text');
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Rate readouts
+      ctx.fillStyle = getThemeColor('--text-muted');
+      ctx.font = "11px var(--font-mono)";
+      ctx.fillText(`Roll  (p): ${(rollAngle * 180 / Math.PI).toFixed(1)}°`, 20, 30);
+      ctx.fillText(`Pitch (q): ${(pitchAngle * 180 / Math.PI).toFixed(1)}°`, 20, 48);
+      ctx.fillText(`Yaw   (r): ${(yawAngle * 180 / Math.PI).toFixed(1)}°`, 20, 66);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>

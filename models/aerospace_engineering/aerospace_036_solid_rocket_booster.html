@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solid Rocket Motor Internal Ballistics — Physics Simulation</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block */
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    .sim-container svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Solid Rocket Motor Internal Ballistics</h1>
+      <div class="discipline-badge">Aerospace Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A solid rocket motor utilizes an internal propellant grain cast inside a high-strength pressure casing. When ignited, combustion regresses perpendicular to the exposed propellant surface area (A_b) according to Saint-Robert's empirical burn rate law. Internal chamber pressure reaches a steady-state equilibrium when the mass burning rate from the propellant grain matches the choked sonic mass discharge capacity through the convergent-divergent nozzle throat.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        p_c = (a · ρ_p · (A_b / A_t) · c*)^(1 / (1 - n)) ,  r_burn = a · p_cⁿ
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Solid Rocket Motor Internal Ballistics
+     * Discipline: Aerospace Engineering
+     *
+     * 1. Physical Phenomenon:
+     *    A solid rocket motor utilizes an internal propellant grain cast inside a high-strength pressure casing. When ignited, combustion regresses perpendicular to the exposed propellant surface area (A_b) according to Saint-Robert's empirical burn rate law. Internal chamber pressure reaches a steady-state 
+     *
+     * 2. Mathematical Foundation & Governing Equations:
+     *    Governing Equation
+     *
+     * 3. Numerical Integration & State Representation:
+     *    - Continuous time step numerical integration advancing physical simulation state.
+     *    - Coordinate mapping: Screen space centered with dynamic scaling factor.
+     *    - State variables tracking velocity, position, angular displacement, and force vectors.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let burnProgress = 0;
+    const exhaustParticles = [];
+    for (let i = 0; i < 70; i++) {
+      exhaustParticles.push({
+        x: 0,
+        y: 0,
+        vx: 4 + Math.random() * 4,
+        vy: (Math.random() - 0.5) * 3
+      });
+    }
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION INTEGRATION LOOP ---
+    function animate() {
+      // --- 5. GRAPHICAL RENDERING PIPELINE ---
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.42;
+      const cy = height * 0.5;
+      const length = 260;
+      const casingRadius = 45;
+
+      // Burn progress oscillation
+      burnProgress += 0.005;
+      if (burnProgress > 1.0) burnProgress = 0;
+      const coreRadius = 12 + burnProgress * 25;
+
+      // Steel Casing Walls
+      ctx.beginPath();
+      // Upper wall
+      ctx.moveTo(cx - length / 2, cy - casingRadius);
+      ctx.lineTo(cx + length / 2, cy - casingRadius);
+      // Lower wall
+      ctx.moveTo(cx - length / 2, cy + casingRadius);
+      ctx.lineTo(cx + length / 2, cy + casingRadius);
+      // Forward dome
+      ctx.arc(cx - length / 2, cy, casingRadius, -Math.PI / 2, Math.PI / 2, true);
+      ctx.strokeStyle = getThemeColor('--text-muted');
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Solid Propellant Grain
+      ctx.beginPath();
+      ctx.rect(cx - length / 2 + 10, cy - casingRadius + 4, length - 15, casingRadius * 2 - 8);
+      ctx.fillStyle = getThemeColor('--sim-red');
+      ctx.fill();
+
+      // Internal Perforation / Burning Core Channel
+      ctx.beginPath();
+      ctx.rect(cx - length / 2 + 10, cy - coreRadius, length - 10, coreRadius * 2);
+      ctx.fillStyle = getThemeColor('--bg');
+      ctx.fill();
+      ctx.strokeStyle = getThemeColor('--sim-amber');
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Burning Flame at Regression Interface
+      ctx.fillStyle = "rgba(255, 183, 77, 0.4)";
+      ctx.fillRect(cx - length / 2 + 10, cy - coreRadius - 3, length - 10, 6);
+      ctx.fillRect(cx - length / 2 + 10, cy + coreRadius - 3, length - 10, 6);
+
+      // De Laval Nozzle at Aft
+      const aftX = cx + length / 2;
+      ctx.beginPath();
+      ctx.moveTo(aftX, cy - casingRadius);
+      ctx.lineTo(aftX + 15, cy - 14); // Throat
+      ctx.lineTo(aftX + 55, cy - 36); // Exit bell
+      ctx.lineTo(aftX + 55, cy + 36);
+      ctx.lineTo(aftX + 15, cy + 14);
+      ctx.lineTo(aftX, cy + casingRadius);
+      ctx.strokeStyle = getThemeColor('--text');
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Exhaust Plume Particles
+      for (let p of exhaustParticles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x > 180) {
+          p.x = 0;
+          p.y = (Math.random() - 0.5) * 16;
+          p.vx = 4.5 + Math.random() * 4.5;
+          p.vy = (Math.random() - 0.5) * (p.x * 0.2 + 2);
+        }
+
+        ctx.beginPath();
+        ctx.arc(aftX + 25 + p.x, cy + p.y, 2 + p.x * 0.03, 0, Math.PI * 2);
+        ctx.fillStyle = p.x < 60 ? getThemeColor('--sim-amber') : getThemeColor('--sim-red');
+        ctx.fill();
+      }
+
+      // Readouts & Annotations
+      ctx.fillStyle = getThemeColor('--text-muted');
+      ctx.font = "11px var(--font-sans)";
+      ctx.fillText("Forward Closure Dome", cx - length / 2 - 50, cy - casingRadius - 15);
+      ctx.fillText("Propellant Grain (Composite AP/HTPB)", cx - 80, cy - casingRadius - 15);
+      ctx.fillText("Sonic Throat (A_t)", aftX - 10, cy + casingRadius + 22);
+      ctx.fillText("Supersonic Exhaust", aftX + 65, cy + 50);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>

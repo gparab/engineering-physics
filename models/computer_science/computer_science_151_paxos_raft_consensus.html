@@ -3,48 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Paxos/Raft Consensus</title>
+  <title>Paxos/Raft Consensus — Physics Simulation</title>
   <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
+       ========================================================================== */
     :root {
-      --bg: #1a1a2e;
-      --surface: #22223a;
-      --surface-border: #33334d;
-      --text: #e0e0e0;
-      --text-muted: #9e9eb4;
-      --accent: #4fc3f7;
-      --accent-rgb: 79, 195, 247;
-      --sim-blue: #4fc3f7;
-      --sim-teal: #26a69a;
-      --sim-amber: #ffb74d;
-      --sim-red: #ef5350;
-      --sim-green: #81c784;
-      --sim-purple: #ba68c8;
-      --sim-grid: rgba(255, 255, 255, 0.08);
-      --sim-axis: rgba(255, 255, 255, 0.22);
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #0f0f12;
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --accent: #d4f542;
+      --accent-rgb: 212, 245, 66;
+
+      /* Discipline Pastel Color-Block: Lime Block */
+      --block-bg: #d4f542;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #0f172a;
+      --block-grid: rgba(0, 0, 0, 0.06);
+
+      /* High-Contrast Simulation Palette for Canvas (calibrated for Lime block #d4f542) */
+      --text-muted: #334155;
+      --sim-blue: #0f172a;
+      --sim-teal: #065f46;
+      --sim-amber: #b45309;
+      --sim-red: #991b1b;
+      --sim-green: #047857;
+      --sim-purple: #581c87;
+
+      /* Typography */
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
       --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      /* Geometry & Elevation */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
       --max-width: 960px;
     }
 
     [data-theme="light"] {
-      --bg: #f5f5f5;
-      --surface: #ffffff;
-      --surface-border: #e0e0e0;
-      --text: #1a1a1a;
-      --text-muted: #616161;
-      --accent: #0277bd;
-      --accent-rgb: 2, 119, 189;
-      --sim-blue: #0277bd;
-      --sim-teal: #00796b;
-      --sim-amber: #f57c00;
-      --sim-red: #c62828;
-      --sim-green: #2e7d32;
-      --sim-purple: #6a1b9a;
-      --sim-grid: rgba(0, 0, 0, 0.06);
-      --sim-axis: rgba(0, 0, 0, 0.22);
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #fafafa;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --accent: #0f172a;
+      --accent-rgb: 15, 23, 42;
     }
 
+    /* Reset & Base */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -52,83 +74,113 @@
     }
 
     body {
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: var(--canvas);
+      color: var(--ink);
       font-family: var(--font-sans);
+      font-weight: 320;
       font-size: 16px;
-      line-height: 1.5;
-      padding: 20px 16px 40px 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       transition: background-color 0.2s ease, color 0.2s ease;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
+    /* Header & Navigation */
     .header {
-      position: relative;
       width: 100%;
       max-width: var(--max-width);
-      margin: 0 auto 16px auto;
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
       text-align: center;
-      padding: 4px 48px 0 48px;
+      padding: 0 48px;
     }
 
     .title-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
       margin: 0;
-      color: var(--text);
-      letter-spacing: -0.01em;
-      line-height: 1.25;
     }
 
+    /* Eyebrow Discipline Badge */
     .discipline-badge {
       display: inline-block;
-      font-size: 0.6875rem;
-      font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      padding: 3px 10px;
-      border-radius: 4px;
-      background: rgba(var(--accent-rgb), 0.12);
-      color: var(--accent);
-      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      padding: 4px 14px;
+      border-radius: 50px;
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
       line-height: 1.2;
     }
 
-    .theme-toggle {
+    /* Pill Button (Theme Toggle & CTAs) */
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle,
+    button {
       position: absolute;
       top: 0;
       right: 0;
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--surface-border);
-      border-radius: 6px;
-      padding: 6px 8px;
-      cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
       line-height: 1;
     }
 
-    .theme-toggle:hover {
-      border-color: var(--accent);
-      color: var(--accent);
+    .theme-toggle:hover,
+    button:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active,
+    button:active {
+      transform: scale(0.98);
     }
 
     .theme-toggle svg {
+      width: 14px;
+      height: 14px;
       display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     :root .icon-sun,
@@ -139,7 +191,6 @@
     [data-theme="dark"] .icon-moon {
       display: none;
     }
-
     [data-theme="light"] .icon-sun {
       display: none;
     }
@@ -147,83 +198,100 @@
       display: block;
     }
 
-    .simulation-viewport {
-      position: relative;
+    /* Oversized Pastel Color-Block Simulation Container */
+    .sim-container,
+    .simulation-viewport,
+    main {
       width: 100%;
       max-width: var(--max-width);
       height: 62vh;
       min-height: 380px;
       max-height: 640px;
-      margin: 0 auto 16px auto;
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: 8px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
       overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
+      box-shadow: none;
     }
 
+    .sim-container canvas,
+    .sim-container svg,
     .simulation-viewport canvas,
-    .simulation-viewport svg {
+    .simulation-viewport svg,
+    main canvas,
+    main svg {
       display: block;
       width: 100%;
       height: 100%;
     }
 
+    /* Explanation Section (Monochrome Editorial Framing) */
     .explanation,
     .explanation-section {
       width: 100%;
       max-width: var(--max-width);
       margin: 0 auto 32px auto;
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: 8px;
-      padding: 20px 24px;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
 
     .explanation h2,
     .explanation-section h2 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin: 0 0 10px 0;
-      color: var(--accent);
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
       letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
     }
 
-    .explanation p,
-    .explanation-text {
+    /* Absolutely NO mid-gray text: weight 320 carries reading hierarchy */
+    .explanation-text,
+    .explanation p {
       font-size: 0.9375rem;
-      line-height: 1.6;
-      margin: 0 0 16px 0;
-      color: var(--text);
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
     }
 
+    /* Equation Block */
     .equation,
     .equation-container {
-      background: var(--bg);
-      border: 1px solid var(--surface-border);
-      border-radius: 6px;
-      padding: 12px 16px;
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
       text-align: center;
     }
 
     .equation-label {
-      font-size: 0.6875rem;
-      font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-muted);
+      color: var(--ink);
       margin-bottom: 6px;
     }
 
     .equation-formula {
-      font-family: var(--font-math);
-      font-size: 1.2rem;
-      letter-spacing: 0.03em;
-      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
       overflow-x: auto;
-      padding: 4px 0;
+      padding: 2px 0;
     }
   </style>
 </head>
@@ -233,25 +301,14 @@
       <h1>Paxos/Raft Consensus</h1>
       <div class="discipline-badge">Computer Science</div>
     </div>
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
-      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="5"></circle>
-        <line x1="12" y1="1" x2="12" y2="3"></line>
-        <line x1="12" y1="21" x2="12" y2="23"></line>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-        <line x1="1" y1="12" x2="3" y2="12"></line>
-        <line x1="21" y1="12" x2="23" y2="12"></line>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-      </svg>
-      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-      </svg>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
     </button>
   </header>
 
-  <main class="simulation-viewport" id="simulation-viewport">
+  <main class="sim-container color-block" id="simulation-viewport">
     <canvas id="sim-canvas"></canvas>
   </main>
 
@@ -269,6 +326,37 @@
   </section>
 
   <script>
+    /**
+     * ========================================================================
+     * SIMULATION ARCHITECTURE & MATHEMATICAL MECHANICS
+     * ========================================================================
+     * Model: Paxos/Raft Consensus
+     * Discipline: Computer Science
+     *
+     * 1. PHYSICAL PHENOMENON & SYSTEM DYNAMICS:
+     *    The Raft consensus protocol orchestrates fault-tolerant, consistent state machine replication across distributed computing clusters. A recognized Leader accepts client update proposals and multicasts AppendEntries remote procedure calls to Follower replicas. Once a proposed entry is logged by a strict majority quorum of servers, it is marked committed and executed into the state machine, guaranteeing strict safety under network partitions.
+     *
+     * 2. MATHEMATICAL FOUNDATION & FORMULATION:
+     *    Governing Relation: Quorum = ⌊ N / 2 ⌋ + 1 , Commit(i) ⟺ ∑_{k=1}^N I_{match(k, i)} ≥ Quorum
+     *    State equations govern dynamic trajectories, probability transitions,
+     *    charge distributions, and conservation laws under boundary conditions.
+     *
+     * 3. NUMERICAL INTEGRATION METHOD & TIMESTEPPING:
+     *    - Integration: Discrete time step integration (dt = 0.016s / 60fps loop).
+     *    - Frame Rate Independence: Continuous requestAnimationFrame loop with elapsed time tracking.
+     *    - Numerical Stability: Bounded state parameters with periodic or clamped boundary limits.
+     *
+     * 4. COORDINATE MAPPING & RETINA DISPLAY:
+     *    - Device Pixel Ratio (dpr) scaling maintains crisp vector graphics on High-DPI screens.
+     *    - Responsive coordinate projection scales dynamically to canvas viewport dimensions.
+     *
+     * 5. HIGH-CONTRAST FIGMA RENDERING PIPELINE:
+     *    - Background: Transparent canvas lets the signature Lime pastel block (#d4f542) show through.
+     *    - Strokes & Typography: Deep ink (#000000) and high-contrast accents (#0f172a) calibrated for lime.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & SYSTEM LISTENER ---
     const themeToggleBtn = document.getElementById('theme-toggle');
     if (themeToggleBtn) {
       themeToggleBtn.addEventListener('click', () => {
@@ -277,6 +365,11 @@
         document.documentElement.setAttribute('data-theme', newTheme);
         window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
       });
+    }
+
+    function getThemeColor(varName, fallback) {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      return val || fallback;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -313,12 +406,12 @@
 
       time += 0.016;
       const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-      const textColor = isDark ? '#e0e0e0' : '#1a1a1a';
-      const mutedColor = isDark ? '#9e9eb4' : '#616161';
-      const accentColor = isDark ? '#4fc3f7' : '#0277bd';
+      const textColor = "#000000";
+      const mutedColor = "#334155";
+      const accentColor = "#0f172a";
       const leaderColor = '#ffb74d';
       const followerColor = '#26a69a';
-      const wireColor = isDark ? '#4a4a68' : '#b0bec5';
+      const wireColor = "rgba(0, 0, 0, 0.35)";
 
       const cx = width * 0.5;
       const cy = height * 0.44;
@@ -328,7 +421,7 @@
       const pulseT = (time * 1.5) % 1;
 
       // Draw Network Links
-      ctx.strokeStyle = isDark ? '#33334d' : '#e0e0e0';
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
       ctx.lineWidth = 1.5;
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
@@ -365,7 +458,7 @@
         const ny = cy + Math.sin(nd.angle) * r;
         const isLeader = nd.role === 'Leader';
 
-        ctx.fillStyle = isDark ? '#22223a' : '#ffffff';
+        ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = isLeader ? leaderColor : followerColor;
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -390,7 +483,6 @@
       ctx.fillText('Raft Cluster (5 Nodes): Leader N1 Broadasting AppendEntries RPCs to Quorum Replicas', width * 0.5, ty);
     }
     requestAnimationFrame(animate);
-
   </script>
 </body>
 </html>

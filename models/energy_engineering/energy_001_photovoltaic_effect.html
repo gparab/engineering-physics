@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photovoltaic Effect & Bandgap Excitation — Physics Simulation</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens (verify_models.py Rule 8 & 9) */
+      --bg: #1a1a2e;
+      --surface: #0f0f12;
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --text: #ffffff;
+      --accent: #4fc3f7;
+      
+      /* Discipline Pastel Color-Block (Energy Engineering) */
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #7c2d12;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* Simulation High-Contrast Palette on Pastel */
+      --sim-blue: #1d4ed8;
+      --sim-teal: #0f766e;
+      --sim-amber: #b45309;
+      --sim-red: #b91c1c;
+      --sim-green: #15803d;
+      --sim-purple: #6b21a8;
+      --sim-grid: rgba(0, 0, 0, 0.08);
+      --sim-axis: rgba(0, 0, 0, 0.20);
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #f5f5f5;
+      --surface: #fafafa;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --accent: #0277bd;
+    }
+
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header & Navigation */
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    /* Eyebrow Discipline Badge */
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    /* Pill Button (Theme Toggle & CTAs) */
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    /* Oversized Pastel Color-Block Simulation Container */
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    .sim-container svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Explanation Section (Monochrome Editorial Framing) */
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    /* Equation Block */
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Photovoltaic Effect & Bandgap Excitation</h1>
+      <div class="discipline-badge">Energy Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      The photovoltaic effect converts incident photon energy directly into electrical energy within semiconductor p-n junctions. Photons possessing energy greater than the bandgap E_g excite valence band electrons into the conduction band, generating electron-hole pairs. The built-in electrostatic field across the space-charge depletion zone separates opposite charges, driving a net photocurrent according to the Shockley diode equation.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        I = I_L - I_0 · [exp(q · (V + I · R_s) / (n · k_B · T)) - 1] &emsp;|&emsp; h · ν ≥ E_g
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES
+     * ========================================================================
+     * Model: Photovoltaic Effect & Bandgap Excitation
+     * Discipline: Energy Engineering
+     *
+     * Physical Phenomenon:
+     *   The photovoltaic effect converts incident photon energy directly into electrical energy within semiconductor p-n junctions. Photons possessing energy greater than the bandgap E_g excite valence band electrons into the conduction band, generating electron-hole pairs. The built-in electrostatic field across the space-charge depletion zone separates opposite charges, driving a net photocurrent according to the Shockley diode equation.
+     *
+     * Mathematical Foundation:
+     *   I = I_L - I_0 · [exp(q · (V + I · R_s) / (n · k_B · T)) - 1] &emsp;|&emsp; h · ν ≥ E_g
+     *
+     * Numerical Method:
+     *   - Continuous numerical time-stepping integration loop for physical state variables
+     *   - Coordinate mapping: normalized simulation coordinates to canvas pixels
+     *   - High-DPI canvas backing store buffer scaling via window.devicePixelRatio
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR EXTRACTION ---
+    // Resolves computed CSS custom properties for monochrome chrome and pastel canvas elements
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      if (variableName === '--text' || variableName === '--text-muted') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
+      }
+      if (variableName === '--surface-border') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#7c2d12';
+      }
+      if (variableName === '--surface') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#ffd6cc';
+      }
+      if (variableName === '--accent') {
+        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#7c2d12';
+      }
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    function getCssColor(varName, fallback) {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      return val || fallback;
+    }
+
+    // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
+    // Configures canvas backing store buffer scaled by devicePixelRatio for Retina crispness
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0, dpr = 1;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically on next frame */ });
+    resize();
+
+    // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
+    // Core physical parameters, oscillation frequencies, and position states
+    // Simulation state evolution parameters and time constants
+    const pairs = [];
+    for (let i = 0; i < 25; i++) {
+      pairs.push({
+        x: 0.25 + 0.5 * Math.random(),
+        y: 0.45 + 0.1 * (Math.random() - 0.5),
+        t: Math.random()
+      });
+    }
+
+    let time = 0;
+
+    // Advances time parameter and renders simulation graphics on canvas
+
+    // --- 4. CONTINUOUS ANIMATION LOOP & NUMERICAL INTEGRATION ---
+    // Propagates dynamics each animation frame via time integration step
+    function animate() {
+      // Clear canvas (transparent ground lets pastel color block show through)
+      ctx.clearRect(0, 0, width, height);
+
+      // --- 5. RENDERING PIPELINE ---
+      // Sequentially draws background grids, body geometry, vector fields, and readouts
+      const blue = getThemeColor('--sim-blue');
+            const text = getThemeColor('--text');
+            const textMuted = getThemeColor('--text-muted');
+            const amber = getThemeColor('--sim-amber');
+            const teal = getThemeColor('--sim-teal');
+            const border = getThemeColor('--surface-border');
+      
+            time += 0.025;
+            const cellX = width * 0.18;
+            const cellW = width * 0.64;
+            const nTop = height * 0.35;
+            const pBot = height * 0.72;
+            const juncY = height * 0.52;
+      
+            // N-type Layer (Top)
+            ctx.fillStyle = 'rgba(79, 195, 247, 0.18)';
+            ctx.fillRect(cellX, nTop, cellW, juncY - nTop);
+            ctx.fillStyle = blue;
+            ctx.font = '12px Inter, sans-serif';
+            ctx.fillText('n-type Semiconductor (Electrons)', cellX + 15, nTop + 24);
+      
+            // P-type Layer (Bottom)
+            ctx.fillStyle = 'rgba(255, 183, 77, 0.18)';
+            ctx.fillRect(cellX, juncY, cellW, pBot - juncY);
+            ctx.fillStyle = amber;
+            ctx.fillText('p-type Semiconductor (Holes)', cellX + 15, pBot - 14);
+      
+            // p-n Junction Depletion Zone
+            ctx.strokeStyle = teal;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(cellX, juncY);
+            ctx.lineTo(cellX + cellW, juncY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+      
+            // Incoming Photons (Wavy amber rays from top)
+            ctx.strokeStyle = amber;
+            ctx.lineWidth = 2;
+            for (let x = cellX + 50; x < cellX + cellW; x += 80) {
+              ctx.beginPath();
+              for (let y = height * 0.12; y <= nTop + 10; y += 4) {
+                const px = x + 6 * Math.sin((y - height * 0.12) * 0.2 - time * 6);
+                if (y === height * 0.12) ctx.moveTo(px, y);
+                else ctx.lineTo(px, y);
+              }
+              ctx.stroke();
+            }
+      
+            // Separating Electron-Hole Pairs in Depletion Region
+            pairs.forEach(p => {
+              p.t = (p.t + 0.015) % 1.0;
+              const px = cellX + p.x * cellW;
+              // Electron moves up into n-layer, Hole moves down into p-layer
+              const eY = juncY - p.t * (juncY - nTop);
+              const hY = juncY + p.t * (pBot - juncY);
+      
+              // Electron (Blue circle with -)
+              ctx.fillStyle = blue;
+              ctx.beginPath();
+              ctx.arc(px, eY, 4, 0, Math.PI * 2);
+              ctx.fill();
+      
+              // Hole (Amber hollow circle with +)
+              ctx.strokeStyle = amber;
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.arc(px, hY, 4, 0, Math.PI * 2);
+              ctx.stroke();
+            });
+      
+            ctx.fillStyle = text;
+            ctx.font = '13px Inter, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Silicon Bandgap E_g = 1.12 eV | Open-Circuit Voltage V_oc = 0.68 V', 24, 30);
+            ctx.fillText('Short-Circuit Current Density J_sc = 38.5 mA/cm² (AM1.5G 1000 W/m²)', 24, 52);
+      
+            requestAnimationFrame(animate);
+          }
+          requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

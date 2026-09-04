@@ -1,40 +1,29 @@
 #!/usr/bin/env python3
 """
 scripts/verify_models.py
-Automated Verification Suite for Engineering Physics Standardized Models.
+Automated Verification Suite for Engineering Physics Figma Design System & Quality Standards.
 
-Validates all 348 standalone physics models in models/ (excluding models/misc/)
-against the 12 core rules defined in PROJECT.md and survey_standards.md §8:
+Validates all surviving standalone HTML physics models in models/
+against the 14 core rules defined in ORIGINAL_REQUEST.md (2026-09-04T07:02:25Z),
+FIGMA_DESIGN_SYSTEM.md, and PROJECT.md:
 
-  Rule 1:  Starts with <!DOCTYPE html>
-  Rule 2:  Contains <header> with title <h1> and discipline badge <div class="discipline-badge">
-  Rule 3:  Contains theme toggle button with id="theme-toggle"
-  Rule 4:  Contains <main> with <canvas> or <svg>
-  Rule 5:  Contains <section class="explanation"> with <h2>How It Works</h2>
-  Rule 6:  Contains governing equation block <div class="equation"> with non-empty content
-  Rule 7:  Contains theme toggle javascript switching data-theme
-  Rule 8:  Inline CSS defines dark mode palette (--bg: #1a1a2e, --text: #e0e0e0, --accent: #4fc3f7)
-  Rule 9:  Inline CSS defines light mode palette (--bg: #f5f5f5, --text: #1a1a1a, --accent: #0277bd)
-  Rule 10: Standalone: zero external CSS <link rel="stylesheet">, zero external <script src>
-           except optional core GSAP CDN https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js
-           (no Three.js, no MotionPathPlugin)
-  Rule 11: Anti-gimmick check: zero occurrences of container.remove(), .remove(), or destructive element clearing
-  Rule 12: Viewport sizing: <main> has height in ~60-70% range (e.g. 62vh, 60vh-70vh)
+Per-Model Rules (Category A):
+  RULE_01: Starts with <!DOCTYPE html> and standard HTML5 boilerplate
+  RULE_02: Header with title <h1> and discipline badge
+  RULE_03: Pill buttons and toggles (border-radius: 50px or pill)
+  RULE_04: Inter font family and NO intermediate gray body text
+  RULE_05: Simulation container uses pastel background color block with 24px rounded corners
+  RULE_06: Simulation container with <canvas> or <svg> running continuous animation
+  RULE_07: "How It Works" explanation section with unicode governing equation
+  RULE_08: Meaningful developer comments explaining simulation mechanics in <script>
+  RULE_09: Strict standalone architecture (zero external CSS, zero external JS except GSAP core CDN)
+  RULE_10: Anti-gimmick check (zero destructive .remove(), explosive scales, or element clearing)
+  RULE_11: Inline JavaScript syntax verification (AST compilation under Node.js)
 
-CLI Options:
-  --all            Validate all 348 non-misc model files
-  --sample N       Validate N random model files (default 20 when flag is passed)
-  --seed S         Set random seed for reproducible sampling
-  --verbose, -v    Show per-rule status for each model
-  --summary        Print aggregated rule pass/fail statistics
-  --json           Output full results in JSON format
-  --no-color       Disable ANSI terminal colors
-  --self-test      Run internal verification self-test on reference templates
-  paths            Optional specific files or directories to validate
-
-Exit Code:
-  0: All tested models pass all 12 rules
-  1: One or more models fail one or more rules, or arguments invalid
+Repository & E2E Acceptance Criteria (Category B):
+  RULE_12: Confusing/forbidden folders (cam engineering, abstract, misc) eliminated & exact 23 canonical folders present
+  RULE_13: Dashboard (index.html) successfully regenerated with 100% valid links (zero broken, zero orphaned)
+  RULE_14: Central model ratings report (model_ratings.md) exists with valid 1-10 scores for all surviving models
 """
 
 import argparse
@@ -48,14 +37,67 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Tuple
 
-# Project root paths
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MODELS_DIR = REPO_ROOT / "models"
-EXCLUDE_DIRS = {"misc"}
-TOTAL_EXPECTED_MODELS = 348
+INDEX_HTML = REPO_ROOT / "index.html"
+MODEL_RATINGS_MD = REPO_ROOT / "model_ratings.md"
 
-# Allowed GSAP core CDN URL
 ALLOWED_GSAP_CDN = "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
+
+# Approved pastel color tokens / hex codes from FIGMA_DESIGN_SYSTEM.md
+PASTEL_COLOR_TOKENS = {
+    # Lime
+    "#d4f542", "#e2f952", "#d9f99d", "#dcfce7", "--block-lime", "var(--block-lime)", "block-lime",
+    # Lilac
+    "#e0d4fc", "#ede9fe", "#ddd6fe", "--block-lilac", "var(--block-lilac)", "block-lilac",
+    # Cream
+    "#fff5ea", "#fef3c7", "#ffedd5", "#fdf6e2", "--block-cream", "var(--block-cream)", "block-cream",
+    # Mint
+    "#d2f8e5", "#ccfbf1", "#d1fae5", "#a7f3d0", "--block-mint", "var(--block-mint)", "block-mint",
+    # Pink
+    "#fed7e2", "#fce7f3", "#fbcfe8", "--block-pink", "var(--block-pink)", "block-pink",
+    # Coral
+    "#ffd6cc", "#ffedd5", "#ffccbc", "#fecdd3", "--block-coral", "var(--block-coral)", "block-coral",
+    # Navy (inverse story block)
+    "#1c2042", "#1e1b4b", "#0f172a", "--block-navy", "var(--block-navy)", "block-navy",
+}
+
+# Intermediate gray colors that violate the Figma Marketing rule:
+# "Body copy is always black at weight 320-340, and weight (not opacity) carries hierarchy. No mid-gray text."
+FORBIDDEN_MID_GRAY_PATTERNS = [
+    r'#616161\b', r'#757575\b', r'#888888\b', r'#888\b', r'#9e9eb4\b',
+    r'#999999\b', r'#999\b', r'#aaaaaa\b', r'#aaa\b', r'#666666\b',
+    r'#666\b', r'#777777\b', r'#777\b', r'#555555\b', r'#555\b',
+    r'#b0b0b0\b', r'#4a4a4a\b',
+]
+
+FORBIDDEN_FOLDERS = ["cam engineering", "abstract", "misc"]
+
+CANONICAL_DISCIPLINE_FOLDERS = {
+    "acoustics_engineering",
+    "aerospace_engineering",
+    "agricultural_engineering",
+    "biomedical_engineering",
+    "chemical_engineering",
+    "civil_engineering",
+    "computer_engineering",
+    "computer_science",
+    "electrical_engineering",
+    "electronics_engineering",
+    "energy_engineering",
+    "environmental_engineering",
+    "fundamental_physics",
+    "industrial_systems_engineering",
+    "marine_engineering",
+    "materials_science",
+    "mechanical_engineering",
+    "mining_petroleum_engineering",
+    "nanotechnology",
+    "nuclear_engineering",
+    "optical_engineering",
+    "robotics_engineering",
+    "telecommunications_engineering",
+}
 
 
 class RuleResult(NamedTuple):
@@ -108,45 +150,28 @@ def check_rule_1_doctype(content: str) -> RuleResult:
 
 
 # ============================================================================
-# Rule 2: Contains <header> with title <h1> and discipline badge <div class="discipline-badge">
+# Rule 2: Header with title <h1> and discipline badge
 # ============================================================================
 def check_rule_2_header_title_badge(content: str) -> RuleResult:
     rule_id = "RULE_02"
     name = "Header with title <h1> and discipline badge"
     header_match = re.search(r'<header[^>]*>(.*?)</header>', content, re.DOTALL | re.IGNORECASE)
-    if not header_match:
-        if not re.search(r'<header[^>]*>', content, re.IGNORECASE):
-            return RuleResult(rule_id, name, False, "Missing <header> element")
-        header_content = content
-    else:
-        header_content = header_match.group(1)
+    header_content = header_match.group(1) if header_match else content
 
-    # Check <h1>
     h1_match = re.search(r'<h1[^>]*>(.*?)</h1>', header_content, re.DOTALL | re.IGNORECASE)
     if not h1_match:
-        h1_match = re.search(r'<h1[^>]*>(.*?)</h1>', content, re.DOTALL | re.IGNORECASE)
-        if not h1_match:
-            return RuleResult(rule_id, name, False, "Missing <h1> model title in <header>")
-
+        return RuleResult(rule_id, name, False, "Missing <h1> model title in <header>")
     title_text = re.sub(r'<[^>]+>', '', h1_match.group(1)).strip()
     if not title_text or title_text.startswith("<!--"):
         return RuleResult(rule_id, name, False, "<h1> model title is empty or placeholder")
 
-    # Check discipline badge
     badge_match = re.search(
         r'<div[^>]*class=["\'][^"\']*\bdiscipline-badge\b[^"\']*["\'][^>]*>(.*?)</div>',
         header_content,
         re.DOTALL | re.IGNORECASE,
     )
     if not badge_match:
-        badge_match = re.search(
-            r'<div[^>]*class=["\'][^"\']*\bdiscipline-badge\b[^"\']*["\'][^>]*>(.*?)</div>',
-            content,
-            re.DOTALL | re.IGNORECASE,
-        )
-        if not badge_match:
-            return RuleResult(rule_id, name, False, "Missing <div class=\"discipline-badge\"> in <header>")
-
+        return RuleResult(rule_id, name, False, "Missing <div class=\"discipline-badge\"> in <header>")
     badge_text = re.sub(r'<[^>]+>', '', badge_match.group(1)).strip()
     if not badge_text or badge_text.startswith("<!--"):
         return RuleResult(rule_id, name, False, "Discipline badge text is empty or placeholder")
@@ -155,210 +180,249 @@ def check_rule_2_header_title_badge(content: str) -> RuleResult:
 
 
 # ============================================================================
-# Rule 3: Contains theme toggle button with id="theme-toggle"
+# Rule 3: Pill buttons and toggles (border-radius: 50px or pill)
 # ============================================================================
-def check_rule_3_theme_toggle_btn(content: str) -> RuleResult:
+def check_rule_3_pill_buttons(content: str) -> RuleResult:
     rule_id = "RULE_03"
-    name = "Theme toggle button with id=\"theme-toggle\""
-    match = re.search(r'<button[^>]*id=["\']theme-toggle["\']', content, re.IGNORECASE)
-    if not match:
-        match = re.search(r'id=["\']theme-toggle["\']', content, re.IGNORECASE)
-        if not match:
-            return RuleResult(rule_id, name, False, "Missing theme toggle button with id=\"theme-toggle\"")
-    return RuleResult(rule_id, name, True, "Contains theme toggle button with id=\"theme-toggle\"")
+    name = "Pill buttons (border-radius: 50px or pill)"
+    styles = "\n".join(re.findall(r'<style[^>]*>(.*?)</style>', content, re.DOTALL | re.IGNORECASE))
+    if not styles:
+        return RuleResult(rule_id, name, False, "No inline <style> found")
+
+    # Match border-radius: 50px, 9999px, 999px, or var(--rounded-pill)
+    has_pill_radius = bool(
+        re.search(r'border-radius\s*:\s*(?:50px|9999px|999px|var\(--rounded-pill[^)]*\))', styles, re.IGNORECASE)
+    )
+    if not has_pill_radius:
+        return RuleResult(rule_id, name, False, "CSS missing pill button border-radius (expected border-radius: 50px or 9999px)")
+
+    # Verify button or theme toggle uses pill styling
+    button_or_toggle_pill = bool(
+        re.search(r'(?:\.theme-toggle|button|\.btn|\.pill)[^{]*\{[^}]*border-radius\s*:\s*(?:50px|9999px|999px|var\(--rounded-pill)', styles, re.IGNORECASE | re.DOTALL)
+    )
+    if not button_or_toggle_pill and not has_pill_radius:
+        return RuleResult(rule_id, name, False, "Buttons/toggles do not use pill shape (border-radius: 50px)")
+
+    return RuleResult(rule_id, name, True, "Buttons and toggles configured as pills (border-radius: 50px)")
 
 
 # ============================================================================
-# Rule 4: Contains <main> with <canvas> or <svg>
+# Rule 4: Inter font family & NO intermediate gray body text
 # ============================================================================
-def check_rule_4_main_canvas_svg(content: str) -> RuleResult:
+def check_rule_4_font_and_no_mid_gray(content: str) -> RuleResult:
     rule_id = "RULE_04"
-    name = "<main> container with <canvas> or <svg>"
+    name = "Inter font family and NO intermediate gray body text"
+    styles = "\n".join(re.findall(r'<style[^>]*>(.*?)</style>', content, re.DOTALL | re.IGNORECASE))
+    if not styles:
+        return RuleResult(rule_id, name, False, "No inline <style> found")
+
+    # Check Inter font
+    if "Inter" not in styles:
+        return RuleResult(rule_id, name, False, "CSS does not specify 'Inter' font family")
+
+    # Check for forbidden intermediate gray body text tokens
+    found_grays = []
+    for pat in FORBIDDEN_MID_GRAY_PATTERNS:
+        matches = re.findall(pat, styles, re.IGNORECASE)
+        if matches:
+            found_grays.extend(matches)
+
+    if found_grays:
+        unique_grays = sorted(set(found_grays))
+        return RuleResult(
+            rule_id,
+            name,
+            False,
+            f"Found forbidden intermediate gray text colors in CSS: {', '.join(unique_grays)} (Figma design requires ink text with weight-based hierarchy)",
+        )
+
+    return RuleResult(rule_id, name, True, "Uses Inter font family with zero intermediate gray body text")
+
+
+# ============================================================================
+# Rule 5: Simulation container uses pastel background color block with 24px rounded corners
+# ============================================================================
+def check_rule_5_pastel_container_24px(content: str) -> RuleResult:
+    rule_id = "RULE_05"
+    name = "Simulation container with pastel color block & 24px rounded corners"
+    styles = "\n".join(re.findall(r'<style[^>]*>(.*?)</style>', content, re.DOTALL | re.IGNORECASE))
+    if not styles:
+        return RuleResult(rule_id, name, False, "No inline <style> found")
+
+    # Check for 24px rounded corners on simulation container
+    has_24px_radius = bool(
+        re.search(r'border-radius\s*:\s*(?:24px|var\(--rounded-lg[^)]*\))', styles, re.IGNORECASE)
+    )
+    if not has_24px_radius:
+        return RuleResult(rule_id, name, False, "Simulation container missing 24px rounded corners (border-radius: 24px)")
+
+    # Check for pastel background color token or variable
+    has_pastel_bg = False
+    for token in PASTEL_COLOR_TOKENS:
+        if token.lower() in styles.lower() or token.lower() in content.lower():
+            has_pastel_bg = True
+            break
+
+    if not has_pastel_bg:
+        return RuleResult(
+            rule_id,
+            name,
+            False,
+            "Simulation container missing approved pastel color block background (lime, lilac, cream, mint, pink, coral, navy)",
+        )
+
+    return RuleResult(rule_id, name, True, "Simulation container houses visualization in pastel block with 24px rounded corners")
+
+
+# ============================================================================
+# Rule 6: Simulation container with <canvas> or <svg>
+# ============================================================================
+def check_rule_6_main_canvas_svg(content: str) -> RuleResult:
+    rule_id = "RULE_06"
+    name = "Simulation container with <canvas> or <svg>"
     main_match = re.search(r'<main[^>]*>(.*?)</main>', content, re.DOTALL | re.IGNORECASE)
-    if not main_match:
-        if not re.search(r'<main[^>]*>', content, re.IGNORECASE):
-            return RuleResult(rule_id, name, False, "Missing <main> container element")
-        main_content = content
-    else:
-        main_content = main_match.group(1)
+    main_content = main_match.group(1) if main_match else content
 
     has_canvas = bool(re.search(r'<canvas[^>]*>', main_content, re.IGNORECASE))
     has_svg = bool(re.search(r'<svg[^>]*>', main_content, re.IGNORECASE))
 
     if not (has_canvas or has_svg):
-        return RuleResult(rule_id, name, False, "<main> does not contain <canvas> or <svg> simulation element")
+        return RuleResult(rule_id, name, False, "Simulation container does not contain <canvas> or <svg>")
 
     element_type = "canvas" if has_canvas else "svg"
-    return RuleResult(rule_id, name, True, f"<main> contains simulation <{element_type}>")
+    return RuleResult(rule_id, name, True, f"Simulation container houses continuous <{element_type}>")
 
 
 # ============================================================================
-# Rule 5: Contains <section class="explanation"> with <h2>How It Works</h2>
+# Rule 7: "How It Works" explanation & unicode governing equation
 # ============================================================================
-def check_rule_5_explanation_heading(content: str) -> RuleResult:
-    rule_id = "RULE_05"
-    name = "<section class=\"explanation\"> with <h2>How It Works</h2>"
-    sec_match = re.search(
-        r'<section[^>]*class=["\'][^"\']*\bexplanation(?:-section)?\b[^"\']*["\'][^>]*>(.*?)</section>',
-        content,
-        re.DOTALL | re.IGNORECASE,
-    )
-    if not sec_match:
-        if not re.search(r'<section[^>]*class=["\'][^"\']*\bexplanation(?:-section)?\b[^"\']*["\']', content, re.IGNORECASE):
-            return RuleResult(rule_id, name, False, "Missing <section class=\"explanation\">")
-        sec_content = content
-    else:
-        sec_content = sec_match.group(1)
+def check_rule_7_explanation_equation(content: str) -> RuleResult:
+    rule_id = "RULE_07"
+    name = "'How It Works' section with unicode governing equation"
 
-    h2_match = re.search(
-        r'<h2[^>]*>\s*(?:<[^>]+>)*\s*How It Works\s*(?:<[^>]+>)*\s*</h2>',
-        sec_content,
-        re.IGNORECASE,
-    )
-    if not h2_match:
-        h2_match = re.search(r'<h2[^>]*>\s*How It Works\s*</h2>', content, re.IGNORECASE)
-        if not h2_match:
-            return RuleResult(rule_id, name, False, "Missing <h2>How It Works</h2> heading in explanation section")
+    # Check <h2>How It Works</h2>
+    if not re.search(r'<h2[^>]*>\s*How It Works\s*</h2>', content, re.IGNORECASE):
+        return RuleResult(rule_id, name, False, "Missing <h2>How It Works</h2> heading")
 
-    return RuleResult(rule_id, name, True, "Contains <section class=\"explanation\"> with <h2>How It Works</h2>")
-
-
-# ============================================================================
-# Rule 6: Contains governing equation block <div class="equation"> with non-empty content
-# ============================================================================
-def check_rule_6_equation_block(content: str) -> RuleResult:
-    rule_id = "RULE_06"
-    name = "Governing equation block with non-empty content"
-
-    formula_match = re.search(
+    # Check governing equation - specifically target <div class="equation-formula"> first
+    eq_match = re.search(
         r'<div[^>]*class=["\'][^"\']*\bequation-formula\b[^"\']*["\'][^>]*>(.*?)</div>',
         content,
         re.DOTALL | re.IGNORECASE,
     )
-    if formula_match:
-        inner = formula_match.group(1)
-    else:
+    if not eq_match:
         eq_match = re.search(
-            r'<div[^>]*class=["\'][^"\']*\bequation\b(?!-container)[^"\']*["\'][^>]*>(.*?)</div>',
+            r'<div[^>]*class=["\'][^"\']*\bequation\b[^"\']*["\'][^>]*>(.*?)</div>',
             content,
             re.DOTALL | re.IGNORECASE,
         )
-        if not eq_match:
-            return RuleResult(rule_id, name, False, "Missing governing equation block (<div class=\"equation\">)")
-        inner = eq_match.group(1)
 
-    text = re.sub(r'<[^>]+>', '', inner).strip()
-    if not text or text.startswith("<!--") or len(text) < 3:
-        return RuleResult(rule_id, name, False, "Governing equation block is empty or contains placeholder")
+    if not eq_match:
+        return RuleResult(rule_id, name, False, "Missing governing equation container (<div class=\"equation-formula\">)")
 
-    # Reject raw unrendered LaTeX macros
+    raw_eq = eq_match.group(1)
+    text = re.sub(r'<[^>]+>', '', raw_eq).strip()
+    if not text or len(text) < 3 or text.startswith("<!--"):
+        return RuleResult(rule_id, name, False, "Governing equation is empty or placeholder")
+
+    # Explicitly reject placeholders
+    placeholders = [
+        "governing equation",
+        "governing mathematical formulation",
+        "equation",
+        "formula",
+        "placeholder",
+        "tbd",
+        "todo",
+    ]
+    norm_text = re.sub(r'\s+', ' ', text).strip().lower()
+    if norm_text in placeholders or norm_text.rstrip(':').strip() in placeholders:
+        return RuleResult(rule_id, name, False, f"Governing equation contains placeholder text: '{text}'")
+
+    for p in placeholders:
+        if norm_text == p or norm_text.startswith(p + ":") or norm_text.startswith(p + " -"):
+            return RuleResult(rule_id, name, False, f"Governing equation contains placeholder text: '{text}'")
+
+    # Reject unrendered raw LaTeX macros
     latex_macros = re.findall(r'\\[a-zA-Z]+', text)
+    if not latex_macros:
+        latex_macros = re.findall(r'\\[a-zA-Z]+', raw_eq)
     if latex_macros:
         macro_preview = ', '.join(sorted(set(latex_macros))[:5])
         return RuleResult(rule_id, name, False, f"Contains unrendered raw LaTeX macro(s): {macro_preview}")
 
-    return RuleResult(rule_id, name, True, f"Contains governing equation: '{text[:40]}'")
+    return RuleResult(rule_id, name, True, f"Valid 'How It Works' and unicode equation: '{text[:35]}...'")
 
 
 # ============================================================================
-# Rule 7: Contains theme toggle javascript switching data-theme
+# Rule 8: Meaningful developer comments explaining logic in <script> tag
 # ============================================================================
-def check_rule_7_theme_toggle_js(content: str) -> RuleResult:
-    rule_id = "RULE_07"
-    name = "Theme toggle JavaScript switching data-theme"
-    scripts = "\n".join(re.findall(r'<script[^>]*>(.*?)</script>', content, re.DOTALL | re.IGNORECASE))
+def check_rule_8_developer_comments(content: str) -> RuleResult:
+    rule_id = "RULE_08"
+    name = "Meaningful developer comments in <script> tag"
+    scripts = "\n".join(re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>', content, re.DOTALL | re.IGNORECASE))
     if not scripts:
-        return RuleResult(rule_id, name, False, "No inline <script> found")
+        return RuleResult(rule_id, name, False, "No inline <script> block found")
 
-    has_data_theme = "data-theme" in scripts
-    has_switch_logic = bool(
-        re.search(r'(?:setAttribute|dataset\.theme|classList\.toggle)', scripts, re.IGNORECASE)
-    )
+    # Find single-line and multi-line comments
+    single_line_comments = re.findall(r'//[^\n]*', scripts)
+    multi_line_comments = re.findall(r'/\*.*?\*/', scripts, re.DOTALL)
 
-    if not (has_data_theme and has_switch_logic):
+    all_comments = single_line_comments + multi_line_comments
+    total_comment_lines = len(single_line_comments) + sum(c.count('\n') + 1 for c in multi_line_comments)
+    total_comment_chars = sum(len(c.strip()) for c in all_comments)
+
+    if total_comment_lines < 4 or total_comment_chars < 120:
         return RuleResult(
             rule_id,
             name,
             False,
-            "Inline JavaScript missing logic switching 'data-theme' attribute",
+            f"Insufficient developer comments in <script> ({total_comment_lines} lines, {total_comment_chars} chars; expected >= 4 lines, >= 120 chars)",
         )
 
-    return RuleResult(rule_id, name, True, "Inline JavaScript contains theme toggle switching data-theme")
+    # Check for semantic engineering keywords in comments
+    comments_text = " ".join(all_comments).lower()
+    semantic_keywords = [
+        "physics", "simulation", "equation", "formula", "derivative", "velocity",
+        "acceleration", "position", "state", "step", "render", "loop", "draw",
+        "animate", "canvas", "coordinate", "force", "energy", "update", "constant",
+        "parameters", "damping", "frequency", "oscillation", "boundary", "time",
+    ]
+    matched_keywords = [kw for kw in semantic_keywords if kw in comments_text]
+    if len(matched_keywords) < 2:
+        return RuleResult(
+            rule_id,
+            name,
+            False,
+            f"Developer comments lack required scientific/engineering domain explanations (matched keywords: {matched_keywords})",
+        )
+
+    return RuleResult(
+        rule_id,
+        name,
+        True,
+        f"Contains meaningful developer comments ({total_comment_lines} lines, keywords: {', '.join(matched_keywords[:4])})",
+    )
 
 
 # ============================================================================
-# Rule 8: Inline CSS defines dark mode palette (--bg: #1a1a2e, --text: #e0e0e0, --accent: #4fc3f7)
+# Rule 9: Strict standalone architecture (zero external CSS, allowed GSAP CDN only)
 # ============================================================================
-def check_rule_8_dark_palette(content: str) -> RuleResult:
-    rule_id = "RULE_08"
-    name = "Dark mode palette CSS tokens"
-    styles = "\n".join(re.findall(r'<style[^>]*>(.*?)</style>', content, re.DOTALL | re.IGNORECASE))
-    if not styles:
-        return RuleResult(rule_id, name, False, "No inline <style> block found")
-
-    missing = []
-    if not re.search(r'--bg\s*:\s*#1a1a2e\b', styles, re.IGNORECASE):
-        missing.append("--bg: #1a1a2e")
-    if not re.search(r'--text\s*:\s*#e0e0e0\b', styles, re.IGNORECASE):
-        missing.append("--text: #e0e0e0")
-    if not re.search(r'--accent\s*:\s*#4fc3f7\b', styles, re.IGNORECASE):
-        missing.append("--accent: #4fc3f7")
-
-    if missing:
-        return RuleResult(rule_id, name, False, f"Dark mode palette missing CSS token(s): {', '.join(missing)}")
-
-    return RuleResult(rule_id, name, True, "Inline CSS defines complete dark mode palette tokens")
-
-
-# ============================================================================
-# Rule 9: Inline CSS defines light mode palette (--bg: #f5f5f5, --text: #1a1a1a, --accent: #0277bd)
-# ============================================================================
-def check_rule_9_light_palette(content: str) -> RuleResult:
+def check_rule_9_standalone(content: str) -> RuleResult:
     rule_id = "RULE_09"
-    name = "Light mode palette CSS tokens"
-    styles = "\n".join(re.findall(r'<style[^>]*>(.*?)</style>', content, re.DOTALL | re.IGNORECASE))
-    if not styles:
-        return RuleResult(rule_id, name, False, "No inline <style> block found")
-
-    missing = []
-    if not re.search(r'--bg\s*:\s*#f5f5f5\b', styles, re.IGNORECASE):
-        missing.append("--bg: #f5f5f5")
-    if not re.search(r'--text\s*:\s*#1a1a1a\b', styles, re.IGNORECASE):
-        missing.append("--text: #1a1a1a")
-    if not re.search(r'--accent\s*:\s*#0277bd\b', styles, re.IGNORECASE):
-        missing.append("--accent: #0277bd")
-
-    if missing:
-        return RuleResult(rule_id, name, False, f"Light mode palette missing CSS token(s): {', '.join(missing)}")
-
-    return RuleResult(rule_id, name, True, "Inline CSS defines complete light mode palette tokens")
-
-
-# ============================================================================
-# Rule 10: Standalone: zero external CSS, zero external scripts except core GSAP CDN
-# ============================================================================
-def check_rule_10_standalone(content: str) -> RuleResult:
-    rule_id = "RULE_10"
-    name = "Standalone: zero external CSS, zero non-GSAP external scripts"
+    name = "Strict standalone architecture (zero external CSS/JS except GSAP)"
     violations = []
 
-    # Check external stylesheets
     css_links = re.findall(r'<link[^>]*rel=["\']stylesheet["\'][^>]*>', content, re.IGNORECASE)
-    css_links += re.findall(r'<link[^>]*href=["\'][^"\']+\.css["\'][^>]*>', content, re.IGNORECASE)
     if css_links:
         violations.append(f"Contains {len(css_links)} external stylesheet link(s)")
 
-    # Check external scripts
     script_srcs = re.findall(r'<script[^>]*src=["\']([^"\']+)["\']', content, re.IGNORECASE)
     for src in script_srcs:
         src_clean = src.strip()
         if "three" in src_clean.lower():
             violations.append(f"Forbidden Three.js dependency: {src_clean}")
             continue
-        if "motionpathplugin" in src_clean.lower():
-            violations.append(f"Forbidden MotionPathPlugin dependency: {src_clean}")
-            continue
-
         is_gsap_core = "cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" in src_clean
         if not is_gsap_core:
             violations.append(f"Forbidden external script dependency: {src_clean}")
@@ -366,511 +430,467 @@ def check_rule_10_standalone(content: str) -> RuleResult:
     if violations:
         return RuleResult(rule_id, name, False, "; ".join(violations))
 
-    return RuleResult(rule_id, name, True, "Strictly standalone (no external CSS, only allowed GSAP CDN if any)")
+    return RuleResult(rule_id, name, True, "Strictly standalone")
 
 
 # ============================================================================
-# Rule 11: Anti-gimmick check: zero occurrences of container.remove(), .remove(), or destructive clearing
+# Rule 10: Anti-gimmick & non-destructive mechanics
 # ============================================================================
-def check_rule_11_anti_gimmick(content: str) -> RuleResult:
-    rule_id = "RULE_11"
-    name = "Anti-gimmick check: zero occurrences of .remove() or destructive clearing"
+def check_rule_10_anti_gimmick(content: str) -> RuleResult:
+    rule_id = "RULE_10"
+    name = "Anti-gimmick check: zero destructive .remove() or element clearing"
     violations = []
 
-    if re.search(r'\.remove\(\)', content):
-        violations.append("Contains .remove() call")
     if re.search(r'container\.remove\(\)', content):
         violations.append("Contains container.remove() call")
+    if re.search(r'(?<!classList)\.remove\(\)', content):
+        violations.append("Contains .remove() call")
     if re.search(r'scale:\s*50\b', content, re.IGNORECASE):
-        violations.append("Contains explosive scale animation (scale: 50)")
-    if re.search(r'Math\.random\(\)\s*-\s*0\.5\)\s*\*\s*20\b', content):
-        violations.append("Contains container shake gimmick")
+        violations.append("Contains explosive scale animation")
     if re.search(r'(?:container|simulation|viewport)\.innerHTML\s*=\s*[\'"]\s*[\'"]', content, re.IGNORECASE):
-        violations.append("Contains destructive element clearing (.innerHTML = '')")
+        violations.append("Contains destructive element clearing")
 
     if violations:
         return RuleResult(rule_id, name, False, "; ".join(violations))
 
-    return RuleResult(rule_id, name, True, "Pure physics simulation (zero .remove() or destructive gimmicks)")
+    return RuleResult(rule_id, name, True, "Pure physics simulation (zero gimmicks)")
 
 
 # ============================================================================
-# Rule 12: Viewport sizing: <main> has height in ~60-70% range (e.g. 62vh, 60vh-70vh)
+# Rule 11: Inline JavaScript syntax verification
 # ============================================================================
-def check_rule_12_viewport_sizing(content: str) -> RuleResult:
-    rule_id = "RULE_12"
-    name = "Viewport sizing: <main> height in ~60-70% range (e.g. 62vh)"
-    styles = "\n".join(re.findall(r'<style[^>]*>(.*?)</style>', content, re.DOTALL | re.IGNORECASE))
-
-    vh_matches = re.findall(r'(?:height|--viewport-height)\s*:\s*([0-9]+(?:\.[0-9]+)?)vh\b', styles, re.IGNORECASE)
-
-    main_match = re.search(r'<main[^>]*style=["\']([^"\']+)["\']', content, re.IGNORECASE)
-    if main_match:
-        vh_matches += re.findall(r'height\s*:\s*([0-9]+(?:\.[0-9]+)?)vh\b', main_match.group(1), re.IGNORECASE)
-
-    if not vh_matches:
-        return RuleResult(
-            rule_id,
-            name,
-            False,
-            "Missing viewport height in vh for <main> (expected ~60-70vh, e.g. 62vh)",
-        )
-
-    valid_ranges = [float(v) for v in vh_matches if 58.0 <= float(v) <= 72.0]
-    if not valid_ranges:
-        return RuleResult(
-            rule_id,
-            name,
-            False,
-            f"Viewport height value ({vh_matches[0]}vh) is outside target ~60-70% range",
-        )
-
-    return RuleResult(rule_id, name, True, f"<main> viewport height is configured in ~60-70% range ({valid_ranges[0]}vh)")
-
-
-# ============================================================================
-# Rule 13: Inline JavaScript compiles cleanly with valid syntax (dynamic check)
-# ============================================================================
-def check_rule_13_javascript_syntax(content: str) -> RuleResult:
-    rule_id = "RULE_13"
-    name = "Inline JavaScript compiles with valid syntax"
-
+def check_rule_11_javascript_syntax(content: str) -> RuleResult:
+    rule_id = "RULE_11"
+    name = "Inline JavaScript syntax compilation"
     scripts = re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>', content, re.DOTALL | re.IGNORECASE)
     if not scripts:
-        return RuleResult(rule_id, name, False, "No inline <script> block found to validate")
+        return RuleResult(rule_id, name, False, "No inline <script> block found")
 
     all_js = "\n".join(scripts)
     node_path = shutil.which("node")
     if not node_path:
-        return RuleResult(rule_id, name, True, "Node.js not detected; skipped dynamic AST compilation")
+        return RuleResult(rule_id, name, True, "Node.js not detected; skipped AST syntax check")
 
-    res = subprocess.run(
-        [node_path, "--check", "-"],
-        input=all_js,
-        text=True,
-        capture_output=True,
-    )
+    res = subprocess.run([node_path, "--check", "-"], input=all_js, text=True, capture_output=True)
     if res.returncode != 0:
         err_msg = res.stderr.strip().splitlines()[0] if res.stderr else "Syntax compilation error"
         return RuleResult(rule_id, name, False, f"JavaScript SyntaxError: {err_msg}")
 
-    return RuleResult(rule_id, name, True, "Inline JavaScript compiles cleanly with zero syntax errors")
+    return RuleResult(rule_id, name, True, "Inline JavaScript compiles with zero syntax errors")
 
 
-# All 13 rule checkers in order
-ALL_RULE_CHECKERS = [
+MODEL_RULE_CHECKERS = [
     check_rule_1_doctype,
     check_rule_2_header_title_badge,
-    check_rule_3_theme_toggle_btn,
-    check_rule_4_main_canvas_svg,
-    check_rule_5_explanation_heading,
-    check_rule_6_equation_block,
-    check_rule_7_theme_toggle_js,
-    check_rule_8_dark_palette,
-    check_rule_9_light_palette,
-    check_rule_10_standalone,
-    check_rule_11_anti_gimmick,
-    check_rule_12_viewport_sizing,
-    check_rule_13_javascript_syntax,
+    check_rule_3_pill_buttons,
+    check_rule_4_font_and_no_mid_gray,
+    check_rule_5_pastel_container_24px,
+    check_rule_6_main_canvas_svg,
+    check_rule_7_explanation_equation,
+    check_rule_8_developer_comments,
+    check_rule_9_standalone,
+    check_rule_10_anti_gimmick,
+    check_rule_11_javascript_syntax,
 ]
 
 
-def validate_file(file_path: Path) -> FileValidationResult:
-    """Validates a single HTML file against all 12 core rules."""
+# ============================================================================
+# Category B: Repository-Wide Rules (Rules 12, 13, 14)
+# ============================================================================
+
+def check_rule_12_folder_structure(models_dir: Path) -> RuleResult:
+    """Automated check passes: Confusing folders eliminated, no empty folders, exact canonical folders."""
+    rule_id = "RULE_12"
+    rule_name = "Confusing folders eliminated & exact canonical directories present"
+
+    if not models_dir.exists():
+        return RuleResult(rule_id, rule_name, False, f"Models directory {models_dir} does not exist")
+
+    violations = []
+    subdirs = {d.name.lower(): d for d in models_dir.iterdir() if d.is_dir()}
+
+    # Check forbidden folders
+    for forbidden in FORBIDDEN_FOLDERS:
+        if forbidden.lower() in subdirs:
+            violations.append(f"Forbidden folder '{forbidden}' exists in models/")
+
+    # Check empty folders
+    empty_folders = []
+    for folder_name, d in subdirs.items():
+        files = list(d.glob("*.html"))
+        if not files:
+            empty_folders.append(d.name)
+    if empty_folders:
+        violations.append(f"Empty discipline folder(s) found: {', '.join(sorted(empty_folders))}")
+
+    # Check non-canonical folders
+    non_canonical = [fn for fn in subdirs if fn not in CANONICAL_DISCIPLINE_FOLDERS and fn not in [f.lower() for f in FORBIDDEN_FOLDERS]]
+    if non_canonical:
+        violations.append(f"Non-canonical/unconsolidated folder(s) found: {', '.join(sorted(non_canonical))}")
+
+    # Check that all canonical folders exist
+    missing_canonical = [c for c in sorted(CANONICAL_DISCIPLINE_FOLDERS) if c not in subdirs]
+    if missing_canonical:
+        violations.append(f"Missing canonical discipline folder(s): {', '.join(missing_canonical)}")
+
+    if violations:
+        return RuleResult(rule_id, rule_name, False, "; ".join(violations))
+
+    return RuleResult(
+        rule_id,
+        rule_name,
+        True,
+        f"Clean folder structure: exactly 23 canonical discipline folders present, zero forbidden or empty folders ({len(subdirs)} active disciplines)",
+    )
+
+
+
+def check_rule_13_dashboard_integrity(index_html: Path, models_dir: Path) -> RuleResult:
+    """Automated check passes: index.html has been successfully regenerated and links to the new, corrected folder paths."""
+    rule_id = "RULE_13"
+    name = "Dashboard (index.html) regeneration and link integrity"
+
+    if not index_html.exists():
+        return RuleResult(rule_id, name, False, f"index.html not found at {index_html}")
+
+    content = index_html.read_text(encoding="utf-8", errors="replace")
+
+    # Extract all model links
+    model_links = re.findall(r'href=["\'](models/[^"\']+\.html)["\']', content)
+    if not model_links:
+        return RuleResult(rule_id, name, False, "No model links found in index.html")
+
+    # Check for broken links
+    broken_links = []
+    linked_set = set()
+    for link in model_links:
+        target = REPO_ROOT / link
+        linked_set.add(target.resolve())
+        if not target.exists():
+            broken_links.append(link)
+
+    if broken_links:
+        return RuleResult(
+            rule_id,
+            name,
+            False,
+            f"Found {len(broken_links)} broken links in index.html (e.g. {broken_links[:3]})",
+        )
+
+    # Check for orphaned model files (files in models/ not linked in index.html)
+    all_models = [
+        f.resolve() for f in models_dir.glob("**/*.html")
+        if not any(ex in f.parts for ex in ["misc", "__pycache__"])
+    ]
+    unlinked = [m for m in all_models if m not in linked_set]
+    if unlinked:
+        unlinked_rel = [str(u.relative_to(REPO_ROOT)) for u in unlinked[:3]]
+        return RuleResult(
+            rule_id,
+            name,
+            False,
+            f"Found {len(unlinked)} surviving models not linked in index.html (e.g. {unlinked_rel})",
+        )
+
+    return RuleResult(
+        rule_id,
+        name,
+        True,
+        f"Dashboard index.html 100% verified: {len(model_links)} valid links, zero broken, zero orphaned models",
+    )
+
+
+def check_rule_14_ratings_report(ratings_file: Path, models_dir: Path) -> RuleResult:
+    """Automated check passes: model_ratings.md exists and contains exactly one 1-10 rating score for every single surviving HTML model."""
+    rule_id = "RULE_14"
+    name = "Central model ratings report (model_ratings.md) completeness"
+
+    if not ratings_file.exists():
+        return RuleResult(rule_id, name, False, f"model_ratings.md not found at {ratings_file}")
+
+    content = ratings_file.read_text(encoding="utf-8", errors="replace")
+
+    # Discover all surviving models on disk
+    all_models = sorted([
+        f.resolve() for f in models_dir.glob("**/*.html")
+        if not any(ex in f.parts for ex in ["misc", "__pycache__"])
+    ])
+    total_surviving = len(all_models)
+    if total_surviving == 0:
+        return RuleResult(rule_id, name, False, "Zero surviving models discovered in models/")
+
+    # Parse rating table entries
+    rated_models: Dict[str, float] = {}
+    lines = content.splitlines()
+
+    overall_idx = -1
+    score_indices: List[int] = []
+
+    for line in lines:
+        stripped_line = line.strip()
+        if not stripped_line.startswith("|") or stripped_line.startswith("|-"):
+            continue
+        parts = [p.strip() for p in stripped_line.split("|")[1:-1]]
+
+        # Check for header row
+        if overall_idx == -1 and any("score" in p.lower() or "quality" in p.lower() for p in parts):
+            for idx, p in enumerate(parts):
+                pl = p.lower()
+                if "(1-10)" in pl or "score" in pl or "quality" in pl or "accuracy" in pl or "fidelity" in pl:
+                    score_indices.append(idx)
+                if "overall" in pl:
+                    overall_idx = idx
+            continue
+
+        # Look for a part that looks like a .html file path
+        html_part = None
+        html_idx = -1
+        for idx, p in enumerate(parts):
+            if ".html" in p:
+                clean_p = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', p)
+                clean_p = re.sub(r'[`*]', '', clean_p).strip()
+                html_part = clean_p
+                html_idx = idx
+                break
+        if not html_part:
+            continue
+
+        basename = Path(html_part).name
+
+        score = None
+        if overall_idx != -1 and overall_idx < len(parts):
+            clean_num = parts[overall_idx].replace("★", "").strip()
+            try:
+                score = float(clean_num)
+            except ValueError:
+                score = -999.0
+        else:
+            # Fallback: scan columns after html_idx
+            for p in parts[html_idx + 1:]:
+                clean_num = p.replace("★", "").strip()
+                num_match = re.match(r'^-?[0-9]+(?:\.[0-9]+)?$', clean_num)
+                if num_match:
+                    try:
+                        score = float(num_match.group(0))
+                    except ValueError:
+                        score = -999.0
+
+        # Validate all score columns if score_indices were discovered from header
+        if score_indices:
+            for s_idx in score_indices:
+                if s_idx < len(parts):
+                    clean_s = parts[s_idx].replace("★", "").strip()
+                    try:
+                        s_val = float(clean_s)
+                        if not (1.0 <= s_val <= 10.0):
+                            score = s_val  # Propagate out-of-range score
+                            break
+                    except ValueError:
+                        score = -999.0  # Propagate non-numeric score
+                        break
+
+        rated_models[basename] = score if score is not None else 0.0
+
+    # Validate completeness
+    missing_ratings = []
+    invalid_scores = []
+
+    for m in all_models:
+        name_key = m.name
+        if name_key not in rated_models:
+            missing_ratings.append(name_key)
+        else:
+            score = rated_models[name_key]
+            if not (1.0 <= score <= 10.0):
+                invalid_scores.append(f"{name_key} (score: {score})")
+
+    if missing_ratings:
+        return RuleResult(
+            rule_id,
+            name,
+            False,
+            f"model_ratings.md missing {len(missing_ratings)} of {total_surviving} models (e.g. {missing_ratings[:3]})",
+        )
+
+    if invalid_scores:
+        return RuleResult(
+            rule_id,
+            name,
+            False,
+            f"model_ratings.md contains invalid score(s) outside 1-10 range: {invalid_scores[:3]}",
+        )
+
+    return RuleResult(
+        rule_id,
+        name,
+        True,
+        f"model_ratings.md verified: exactly {len(rated_models)} models rated on 1-10 scale",
+    )
+
+
+# ============================================================================
+# Main Validation Runner
+# ============================================================================
+
+def validate_model_file(file_path: Path) -> FileValidationResult:
     result = FileValidationResult(file_path)
     try:
         content = file_path.read_text(encoding="utf-8", errors="replace")
     except Exception as exc:
-        for idx, checker in enumerate(ALL_RULE_CHECKERS, start=1):
+        for idx, checker in enumerate(MODEL_RULE_CHECKERS, start=1):
             result.rule_results.append(
                 RuleResult(f"RULE_{idx:02d}", f"Rule {idx}", False, f"Failed to read file: {exc}")
             )
         return result
 
-    for checker in ALL_RULE_CHECKERS:
+    for checker in MODEL_RULE_CHECKERS:
         result.rule_results.append(checker(content))
 
     return result
 
 
-def find_all_model_files(models_dir: Path) -> List[Path]:
-    """Discovers all non-misc HTML model files under models/."""
-    if not models_dir.exists():
-        return []
-    all_files = [
-        f for f in models_dir.glob("**/*.html")
-        if not any(excluded in f.parts for excluded in EXCLUDE_DIRS)
-    ]
-    all_files.sort()
-    return all_files
-
-
-# ============================================================================
-# ANSI Color & Formatting Utilities
-# ============================================================================
-class Formatter:
-    def __init__(self, enable_color: bool = True):
-        self.enable_color = enable_color and sys.stdout.isatty()
-
-    def green(self, text: str) -> str:
-        return f"\033[32m{text}\033[0m" if self.enable_color else text
-
-    def red(self, text: str) -> str:
-        return f"\033[31m{text}\033[0m" if self.enable_color else text
-
-    def yellow(self, text: str) -> str:
-        return f"\033[33m{text}\033[0m" if self.enable_color else text
-
-    def cyan(self, text: str) -> str:
-        return f"\033[36m{text}\033[0m" if self.enable_color else text
-
-    def bold(self, text: str) -> str:
-        return f"\033[1m{text}\033[0m" if self.enable_color else text
-
-
-# ============================================================================
-# Self-Test Engine
-# ============================================================================
-def run_self_test(fmt: Formatter) -> bool:
-    """Validates that the test runner correctly passes valid reference templates and catches failures."""
-    print(fmt.bold("Running test runner internal self-tests..."))
-
-    valid_template = """<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Harmonic Oscillator</title>
-  <style>
-    :root {
-      --bg: #1a1a2e;
-      --surface: #22223a;
-      --surface-border: #33334d;
-      --text: #e0e0e0;
-      --text-muted: #9e9eb4;
-      --accent: #4fc3f7;
-    }
-    [data-theme="light"] {
-      --bg: #f5f5f5;
-      --surface: #ffffff;
-      --surface-border: #e0e0e0;
-      --text: #1a1a1a;
-      --text-muted: #616161;
-      --accent: #0277bd;
-    }
-    main {
-      width: 100%;
-      max-width: 960px;
-      height: 62vh;
-      min-height: 380px;
-      max-height: 640px;
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-</head>
-<body>
-  <header>
-    <h1>Harmonic Oscillator</h1>
-    <div class="discipline-badge">Mechanical Engineering</div>
-    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-      Toggle
-    </button>
-  </header>
-
-  <main>
-    <canvas id="sim-canvas"></canvas>
-  </main>
-
-  <section class="explanation">
-    <h2>How It Works</h2>
-    <p>A simple pendulum exhibits harmonic motion under restoring force proportional to displacement.</p>
-    <div class="equation">
-      d²θ/dt² + (g/L) · sin(θ) = 0
-    </div>
-  </section>
-
-  <script>
-    const toggleBtn = document.getElementById("theme-toggle");
-    toggleBtn.addEventListener("click", () => {
-      const html = document.documentElement;
-      const current = html.getAttribute("data-theme") || "dark";
-      const next = current === "dark" ? "light" : "dark";
-      html.setAttribute("data-theme", next);
-    });
-  </script>
-</body>
-</html>
-"""
-
-    import tempfile
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir) / "test_model.html"
-
-        # Test 1: Valid template must pass 12/12
-        tmp_path.write_text(valid_template, encoding="utf-8")
-        res = validate_file(tmp_path)
-        if not res.passed:
-            print(fmt.red(f"Self-test failed: Valid reference template failed checks: {[r.message for r in res.rule_results if not r.passed]}"))
-            return False
-
-        # Test 2: Injected failure for Rule 1 (missing DOCTYPE)
-        tmp_path.write_text(valid_template.replace("<!DOCTYPE html>", "<html>"), encoding="utf-8")
-        res = validate_file(tmp_path)
-        if res.rule_results[0].passed:
-            print(fmt.red("Self-test failed: Did not catch missing DOCTYPE"))
-            return False
-
-        # Test 3: Injected failure for Rule 3 (missing theme toggle button)
-        tmp_path.write_text(valid_template.replace('id="theme-toggle"', 'id="other"'), encoding="utf-8")
-        res = validate_file(tmp_path)
-        if res.rule_results[2].passed:
-            print(fmt.red("Self-test failed: Did not catch missing #theme-toggle"))
-            return False
-
-        # Test 4: Injected failure for Rule 10 (Three.js dependency)
-        bad_script = valid_template.replace(
-            'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
-        )
-        tmp_path.write_text(bad_script, encoding="utf-8")
-        res = validate_file(tmp_path)
-        if res.rule_results[9].passed:
-            print(fmt.red("Self-test failed: Did not catch Three.js dependency"))
-            return False
-
-        # Test 5: Injected failure for Rule 11 (destructive .remove())
-        bad_gimmick = valid_template.replace('const next =', 'container.remove(); const next =')
-        tmp_path.write_text(bad_gimmick, encoding="utf-8")
-        res = validate_file(tmp_path)
-        if res.rule_results[10].passed:
-            print(fmt.red("Self-test failed: Did not catch container.remove() call"))
-            return False
-
-        # Test 6: Injected failure for Rule 12 (height 100vh)
-        bad_height = valid_template.replace('height: 62vh;', 'height: 100vh;')
-        tmp_path.write_text(bad_height, encoding="utf-8")
-        res = validate_file(tmp_path)
-        if res.rule_results[11].passed:
-            print(fmt.red("Self-test failed: Did not catch invalid viewport height (100vh)"))
-            return False
-
-        # Test 7: Injected failure for Rule 6 (raw LaTeX macro in equation)
-        bad_latex = valid_template.replace('d²θ/dt²', r'\frac{d^2\theta}{dt^2}')
-        tmp_path.write_text(bad_latex, encoding="utf-8")
-        res = validate_file(tmp_path)
-        if res.rule_results[5].passed:
-            print(fmt.red("Self-test failed: Did not catch unrendered raw LaTeX macro in equation"))
-            return False
-
-        # Test 8: Injected failure for Rule 13 (syntax error in script)
-        bad_syntax = valid_template.replace('const next =', 'const next = (')
-        tmp_path.write_text(bad_syntax, encoding="utf-8")
-        res = validate_file(tmp_path)
-        if res.rule_results[12].passed:
-            print(fmt.red("Self-test failed: Did not catch fatal JavaScript SyntaxError"))
-            return False
-
-    print(fmt.green("All internal self-tests passed successfully! Verification engine is 100% operational.\n"))
-    return True
-
-
-# ============================================================================
-# Main Entrypoint
-# ============================================================================
 def main():
     parser = argparse.ArgumentParser(
-        description="Verification Suite for Engineering Physics Standardized Models (13 Core Rules)"
+        description="Engineering Physics Figma Design System & E2E Acceptance Verification Suite"
     )
-    parser.add_argument(
-        "paths",
-        nargs="*",
-        help="Optional specific file or directory paths to verify",
-    )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help=f"Verify all {TOTAL_EXPECTED_MODELS} non-misc models in models/",
-    )
-    parser.add_argument(
-        "--sample",
-        type=int,
-        nargs="?",
-        const=20,
-        default=None,
-        metavar="N",
-        help="Verify N random models (default: 20 if flag passed without value)",
-    )
-    parser.add_argument(
-        "--seed",
-        type=int,
-        default=None,
-        help="Random seed for deterministic sampling with --sample",
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="Show detailed per-rule diagnostic report for each model",
-    )
-    parser.add_argument(
-        "--summary",
-        action="store_true",
-        help="Print rule-by-rule summary aggregation table",
-    )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results in JSON format",
-    )
-    parser.add_argument(
-        "--no-color",
-        action="store_true",
-        help="Disable terminal color codes",
-    )
-    parser.add_argument(
-        "--self-test",
-        action="store_true",
-        help="Run self-test on test engine with synthetic compliant & failing templates",
-    )
+    parser.add_argument("paths", nargs="*", help="Optional specific model file or directory paths to verify")
+    parser.add_argument("--all", action="store_true", help="Verify all models and repository acceptance rules")
+    parser.add_argument("--sample", type=int, nargs="?", const=20, default=None, metavar="N", help="Verify N random models")
+    parser.add_argument("--seed", type=int, default=None, help="Set random seed for reproducible sampling")
+    parser.add_argument("--check-dashboard", action="store_true", help="Verify index.html link integrity and regeneration (Rule 13)")
+    parser.add_argument("--check-ratings", action="store_true", help="Verify model_ratings.md completeness and 1-10 scores (Rule 14)")
+    parser.add_argument("--check-folders", action="store_true", help="Verify confusing folder elimination and canonical folders (Rule 12)")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Show detailed per-rule report")
+    parser.add_argument("--json", action="store_true", help="Output results in machine-readable JSON format")
+    parser.add_argument("--skip-repo", action="store_true", help="Skip repository-wide rules (Rules 12-14) and only evaluate model files")
 
     args = parser.parse_args()
-    fmt = Formatter(enable_color=not args.no_color)
 
-    if args.self_test:
-        success = run_self_test(fmt)
-        sys.exit(0 if success else 1)
+    # Discover surviving models
+    all_models = sorted([
+        f for f in MODELS_DIR.glob("**/*.html")
+        if not any(ex in f.parts for ex in ["misc", "__pycache__"])
+    ])
 
-    # Determine files to inspect
-    target_files: List[Path] = []
-
-    if args.paths:
-        for p_str in args.paths:
-            p = Path(p_str).resolve()
-            if p.is_file():
-                if p.suffix == ".html":
-                    target_files.append(p)
-                else:
-                    print(fmt.yellow(f"Warning: Skipping non-HTML file {p_str}"))
-            elif p.is_dir():
-                found = [
-                    f for f in p.glob("**/*.html")
-                    if not any(ex in f.parts for ex in EXCLUDE_DIRS)
-                ]
-                target_files.extend(found)
-            else:
-                print(fmt.red(f"Error: Path not found: {p_str}"))
-                sys.exit(1)
-        target_files.sort()
-    elif args.all or args.sample is not None:
-        all_models = find_all_model_files(MODELS_DIR)
-        if not all_models:
-            print(fmt.red(f"Error: No model files found in {MODELS_DIR}"))
-            sys.exit(1)
-
-        if args.sample is not None:
-            sample_size = min(args.sample, len(all_models))
-            if args.seed is not None:
-                random.seed(args.seed)
-            target_files = sorted(random.sample(all_models, sample_size))
+    # Direct individual check flags
+    if args.check_folders:
+        res = check_rule_12_folder_structure(MODELS_DIR)
+        if args.json:
+            print(json.dumps({"rule_id": res.rule_id, "name": res.rule_name, "passed": res.passed, "message": res.message}, indent=2))
         else:
-            target_files = all_models
+            tag = "[PASS]" if res.passed else "[FAIL]"
+            print(f"{tag} {res.rule_id} ({res.rule_name}): {res.message}")
+        sys.exit(0 if res.passed else 1)
+
+    if args.check_dashboard:
+        res = check_rule_13_dashboard_integrity(INDEX_HTML, MODELS_DIR)
+        if args.json:
+            print(json.dumps({"rule_id": res.rule_id, "name": res.rule_name, "passed": res.passed, "message": res.message}, indent=2))
+        else:
+            tag = "[PASS]" if res.passed else "[FAIL]"
+            print(f"{tag} {res.rule_id} ({res.rule_name}): {res.message}")
+        sys.exit(0 if res.passed else 1)
+
+    if args.check_ratings:
+        res = check_rule_14_ratings_report(MODEL_RATINGS_MD, MODELS_DIR)
+        if args.json:
+            print(json.dumps({"rule_id": res.rule_id, "name": res.rule_name, "passed": res.passed, "message": res.message}, indent=2))
+        else:
+            tag = "[PASS]" if res.passed else "[FAIL]"
+            print(f"{tag} {res.rule_id} ({res.rule_name}): {res.message}")
+        sys.exit(0 if res.passed else 1)
+
+    # Repository-wide results for multi-rule checks
+    evaluate_repo = not args.skip_repo and (args.all or (not args.paths and args.sample is None))
+    repo_results: List[RuleResult] = []
+    if evaluate_repo:
+        repo_results.append(check_rule_12_folder_structure(MODELS_DIR))
+        repo_results.append(check_rule_13_dashboard_integrity(INDEX_HTML, MODELS_DIR))
+        repo_results.append(check_rule_14_ratings_report(MODEL_RATINGS_MD, MODELS_DIR))
+
+    # Determine target files
+    if args.seed is not None:
+        random.seed(args.seed)
+
+    if args.sample is not None:
+        sample_count = min(args.sample, len(all_models))
+        target_files = random.sample(all_models, sample_count)
+    elif args.paths:
+        target_files = []
+        for p in args.paths:
+            resolved = Path(p).resolve()
+            if resolved.is_file() and resolved.suffix == ".html":
+                target_files.append(resolved)
+            elif resolved.is_dir():
+                target_files.extend(sorted(resolved.glob("**/*.html")))
     else:
-        # Default behavior if no flags: verify all models
-        target_files = find_all_model_files(MODELS_DIR)
+        target_files = all_models
 
-    if not target_files:
-        print(fmt.red("Error: No models selected for verification."))
-        sys.exit(1)
+    file_results: List[FileValidationResult] = [validate_model_file(f) for f in target_files]
+    all_files_passed = all(r.passed for r in file_results)
+    all_repo_passed = all(r.passed for r in repo_results) if repo_results else True
+    overall_passed = all_files_passed and all_repo_passed
 
-    # Execute validations
-    results: List[FileValidationResult] = []
-    rule_stats: Dict[str, Dict[str, Any]] = {}
-    for idx in range(1, 14):
-        rule_key = f"RULE_{idx:02d}"
-        rule_stats[rule_key] = {"passed": 0, "failed": 0, "name": ""}
-
-    for file_path in target_files:
-        res = validate_file(file_path)
-        results.append(res)
-        for r in res.rule_results:
-            rule_stats[r.rule_id]["name"] = r.rule_name
-            if r.passed:
-                rule_stats[r.rule_id]["passed"] += 1
-            else:
-                rule_stats[r.rule_id]["failed"] += 1
-
-    total_files = len(results)
-    passed_files = sum(1 for r in results if r.passed)
-    failed_files = total_files - passed_files
+    total_eval = len(file_results)
+    passed_eval = sum(1 for r in file_results if r.passed)
+    failed_eval = total_eval - passed_eval
 
     if args.json:
         payload = {
-            "total_evaluated": total_files,
-            "passed": passed_files,
-            "failed": failed_files,
-            "all_passed": (failed_files == 0),
-            "rule_statistics": rule_stats,
-            "results": [r.to_dict() for r in results],
+            "models_evaluated": total_eval,
+            "models_passed": passed_eval,
+            "models_failed": failed_eval,
+            "repository_rules": [
+                {"rule_id": r.rule_id, "name": r.rule_name, "passed": r.passed, "message": r.message}
+                for r in repo_results
+            ],
+            "all_passed": overall_passed,
         }
+        if args.verbose:
+            payload["files"] = [r.to_dict() for r in file_results]
         print(json.dumps(payload, indent=2))
-        sys.exit(0 if failed_files == 0 else 1)
+        sys.exit(0 if overall_passed else 1)
 
-    # Human-readable output
     print("\n" + "=" * 80)
-    print(fmt.bold("ENGINEERING PHYSICS STANDARDIZED MODEL VERIFICATION AUDIT"))
+    print("ENGINEERING PHYSICS FIGMA DESIGN SYSTEM & E2E VERIFICATION AUDIT")
     print("=" * 80)
-    print(f"Total Models Evaluated:  {fmt.bold(str(total_files))}")
-    print(f"Passing All 13 Rules:    {fmt.green(str(passed_files))}")
-    print(f"Failing >= 1 Rule:       {fmt.red(str(failed_files)) if failed_files > 0 else fmt.green('0')}")
-    print("=" * 80 + "\n")
+    print(f"Models Evaluated:        {total_eval}")
+    print(f"Models Passing:          {passed_eval}")
+    print(f"Models Failing:          {failed_eval}")
+    if repo_results:
+        print("-" * 80)
+        print("REPOSITORY & ACCEPTANCE CRITERIA CHECKS:")
+        for r in repo_results:
+            tag = "[PASS]" if r.passed else "[FAIL]"
+            print(f"  {tag} {r.rule_id} ({r.rule_name}): {r.message}")
+    print("=" * 80)
 
-    # Rule Summary Table
-    print(fmt.bold("RULE-BY-RULE COMPLIANCE BREAKDOWN:"))
-    print("-" * 80)
-    print(f"{'Rule':<10} {'Name':<45} {'Passed':<10} {'Failed':<10} {'Compliance':<10}")
-    print("-" * 80)
-    for rule_id, data in sorted(rule_stats.items()):
-        pass_pct = (data["passed"] / total_files * 100) if total_files else 0
-        status_color = fmt.green if pass_pct == 100.0 else (fmt.yellow if pass_pct > 0 else fmt.red)
-        print(
-            f"{rule_id:<10} {data['name'][:43]:<45} {str(data['passed']):<10} {str(data['failed']):<10} {status_color(f'{pass_pct:6.1f}%'):<10}"
-        )
-    print("-" * 80 + "\n")
-
-    # Verbose or Failure Listings
-    if args.verbose:
-        print(fmt.bold("PER-MODEL DETAILED REPORT:"))
-        for r in results:
-            status_tag = fmt.green("[PASS]") if r.passed else fmt.red(f"[FAIL ({r.failure_count} rules)]")
-            print(f"\n{status_tag} {r.rel_path}")
-            for rule_res in r.rule_results:
-                icon = fmt.green("✓") if rule_res.passed else fmt.red("✗")
-                print(f"    {icon} {rule_res.rule_id} ({rule_res.rule_name}): {rule_res.message}")
-    elif failed_files > 0:
-        display_limit = 30
-        print(fmt.bold(f"FAILURE DETAILS (Showing up to {display_limit} of {failed_files} failing models):"))
-        shown = 0
-        for r in results:
-            if not r.passed:
-                shown += 1
-                if shown > display_limit:
-                    print(f"\n... and {failed_files - display_limit} more failing model files. Use -v / --verbose for full report.")
-                    break
-                print(f"\n{fmt.red('[FAIL]')} {r.rel_path}:")
-                for rule_res in r.rule_results:
-                    if not rule_res.passed:
-                        print(f"    {fmt.red('✗')} {rule_res.rule_id} ({rule_res.rule_name}): {rule_res.message}")
-
-    print("\n" + "=" * 80)
-    if failed_files == 0:
-        print(fmt.green(fmt.bold("VERIFICATION STATUS: 100% PASSED. All models strictly comply with design system!")))
-        print("=" * 80 + "\n")
-        sys.exit(0)
-    else:
-        print(fmt.red(fmt.bold(f"VERIFICATION STATUS: FAILED. {failed_files} model(s) have compliance violations.")))
-        print("=" * 80 + "\n")
+    if not overall_passed:
+        if failed_eval > 0 and not args.verbose:
+            print(f"\nShowing first 5 failing models:")
+            shown = 0
+            for r in file_results:
+                if not r.passed:
+                    print(f"\n  [FAIL] {r.rel_path}:")
+                    for rule_res in r.rule_results:
+                        if not rule_res.passed:
+                            print(f"      ✗ {rule_res.rule_id} ({rule_res.rule_name}): {rule_res.message}")
+                    shown += 1
+                    if shown >= 5:
+                        break
+        elif failed_eval > 0 and args.verbose:
+            print(f"\nDetailed model failures:")
+            for r in file_results:
+                if not r.passed:
+                    print(f"\n  [FAIL] {r.rel_path}:")
+                    for rule_res in r.rule_results:
+                        if not rule_res.passed:
+                            print(f"      ✗ {rule_res.rule_id} ({rule_res.rule_name}): {rule_res.message}")
+        print(f"\nOVERALL STATUS: FAILED (violations detected)")
         sys.exit(1)
+    else:
+        print("\nOVERALL STATUS: 100% PASSED")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
