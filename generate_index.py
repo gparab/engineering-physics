@@ -462,6 +462,10 @@ def generate_dashboard():
       <span class="brand-title">Engineering Physics</span>
       <span class="brand-badge">{total_models} Models</span>
     </div>
+    <div>
+      <a href="https://gautamparab.com" target="_blank" style="font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; color: inherit; text-decoration: none; font-weight: 500;">gautamparab.com &rarr;</a>
+    </div>
+
   </nav>
 
   <header class="header-hero">
