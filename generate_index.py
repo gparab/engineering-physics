@@ -462,9 +462,6 @@ def generate_dashboard():
       <span class="brand-title">Engineering Physics</span>
       <span class="brand-badge">{total_models} Models</span>
     </div>
-    <div>
-      <span style="font-family: var(--font-mono); font-size: 12px; text-transform: uppercase;">Figma Design System</span>
-    </div>
   </nav>
 
   <header class="header-hero">
