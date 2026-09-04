@@ -1,123 +1,372 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quantum Dot</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #111;
-    font-family: sans-serif;
-    overflow: hidden;
-  }
-  .container {
-    position: relative;
-    cursor: pointer;
-    width: 20px;
-    height: 20px;
-  }
-  .quantum-dot {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: #ff00ff;
-    box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
-    position: absolute;
-    top: 0; left: 0;
-  }
-  .exciton {
-    position: absolute;
-    width: 4px; height: 4px;
-    border-radius: 50%;
-    top: 8px; left: 8px;
-    opacity: 0;
-  }
-  .electron { background: #00ffff; box-shadow: 0 0 5px #00ffff; }
-  .hole { background: #ff0000; box-shadow: 0 0 5px #ff0000; }
-  .photon {
-    position: absolute;
-    width: 2px; height: 10px;
-    background: #fff;
-    box-shadow: 0 0 5px #fff;
-    top: -100px; left: 9px;
-    opacity: 0;
-  }
-  .flash {
-    position: fixed;
-    top: 50%; left: 50%;
-    width: 0; height: 0;
-    background: #ff00ff;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    mix-blend-mode: screen;
-    z-index: 10;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantum Dot (Quantum Confinement)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div class="flash" id="flash"></div>
-<div class="container" id="model">
-  <div class="photon" id="photon"></div>
-  <div class="quantum-dot" id="dot"></div>
-  <div class="exciton electron" id="electron"></div>
-  <div class="exciton hole" id="hole"></div>
-</div>
-<script>
-  gsap.registerPlugin(MotionPathPlugin);
+  <header class="header">
+    <div class="title-container">
+      <h1>Quantum Dot (Quantum Confinement)</h1>
+      <div class="discipline-badge">Nanotechnology</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-  const dot = document.getElementById('dot');
-  const model = document.getElementById('model');
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-  const idleTl = gsap.timeline({repeat: -1, yoyo: true, ease: "sine.inOut"});
-  idleTl.fromTo(dot, 
-    { scale: 0.7, backgroundColor: '#0088ff', boxShadow: '0 0 10px #0088ff' },
-    { scale: 1.3, backgroundColor: '#ff0044', boxShadow: '0 0 20px #ff0044', duration: 2 }
-  );
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A quantum dot is a semiconductor nanocrystal whose physical dimensions are smaller than the exciton Bohr radius, confining electrons and holes in all three spatial dimensions. This 3D quantum confinement collapses continuous energy bands into discrete, atomic-like energy levels. Consequently, the effective bandgap energy and resulting photoluminescent emission color are precisely tunable simply by adjusting nanoparticle radius.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        E_{gap}(R) = E_{bulk} + (ħ^2 π^2) / (2 · m_{red} · R^2) - (1.786 · e^2) / (4π ε · R)
+      </div>
+    </div>
+  </section>
 
-  let isAnimating = false;
-  model.addEventListener('click', () => {
-    if (isAnimating) return;
-    isAnimating = true;
-    idleTl.kill();
-    
-    gsap.to(dot, {scale: 1, backgroundColor: '#ff00ff', boxShadow: '0 0 10px #ff00ff, 0 0 20px #ff00ff', duration: 0.3});
-    
-    const tl = gsap.timeline();
-    
-    tl.to('#photon', {opacity: 1, duration: 0.1})
-      .to('#photon', {y: 100, duration: 0.3, ease: "power2.in"})
-      .to('#photon', {opacity: 0, duration: 0.01});
-      
-    tl.to(['#electron', '#hole'], {opacity: 1, duration: 0.1})
-      .to('#dot', {scale: 0.8, opacity: 0.5, duration: 0.2}, "<")
-      .to('#electron', {
-        motionPath: { path: [{x: -30, y: -20}, {x: -50, y: 10}, {x: -10, y: 30}, {x: 0, y: 0}], curviness: 1.5 },
-        duration: 1, ease: "power1.inOut"
-      }, "+=0.1")
-      .to('#hole', {
-        motionPath: { path: [{x: 30, y: 20}, {x: 50, y: -10}, {x: 10, y: -30}, {x: 0, y: 0}], curviness: 1.5 },
-        duration: 1, ease: "power1.inOut"
-      }, "<")
-      .to(['#electron', '#hole', '#dot'], {opacity: 0, duration: 0.1})
-      .to('#flash', {
-        width: '300vw', height: '300vw',
-        backgroundColor: '#ffffff',
-        duration: 0.5, ease: "power4.out"
-      })
-      .to('#flash', {
-        opacity: 0, duration: 1
-      })
-      .set('#model', {display: 'none'});
-  });
-</script>
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, dpr;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    resize();
+
+    let time = 0;
+
+    function animate() {
+      time += 0.02;
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2 - 20;
+      const text = getThemeColor('--text') || '#e0e0e0';
+
+      // Nanoparticle radius breathes periodically
+      const radius = 35 + Math.sin(time) * 18;
+
+      // Color shifts from blue (small R, high E) to red (large R, lower E)
+      const frac = (radius - 17) / 36;
+      const rVal = Math.round(79 + frac * 160);
+      const gVal = Math.round(195 - frac * 110);
+      const bVal = Math.round(247 - frac * 167);
+      const glowColor = `rgb(${rVal}, ${gVal}, ${bVal})`;
+
+      // Emitted radial glow waves
+      ctx.strokeStyle = glowColor;
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 3; i++) {
+        const waveR = radius + ((time * 40 + i * 35) % 90);
+        const alpha = Math.max(0, 1 - waveR / 125);
+        ctx.strokeStyle = `rgba(${rVal}, ${gVal}, ${bVal}, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(cx, cy, waveR, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Quantum dot nanoparticle core
+      const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, radius);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.4, glowColor);
+      grad.addColorStop(1, '#112233');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Core atoms lattice preview
+      for (let a = -radius * 0.6; a <= radius * 0.6; a += 12) {
+        for (let b = -radius * 0.6; b <= radius * 0.6; b += 12) {
+          if (a * a + b * b < (radius * 0.7) ** 2) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.arc(cx + a, cy + b, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      ctx.fillStyle = text;
+      ctx.font = '12px var(--font-mono)';
+      ctx.fillText(`Radius: R = ${(radius * 0.1).toFixed(1)} nm`, cx - 55, cy + 115);
+      ctx.fillText(`Tunable Bandgap: E_g ∝ 1/R²`, cx - 80, cy + 135);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>

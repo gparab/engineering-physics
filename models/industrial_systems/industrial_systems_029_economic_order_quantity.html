@@ -1,174 +1,382 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <title>29. Economic Order Quantity (EOQ)</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #0d0f12;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: monospace;
-        }
-        #info {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            color: #555;
-            font-size: 12px;
-            letter-spacing: 1px;
-        }
-        #eoq-container {
-            width: 400px;
-            height: 400px;
-            position: relative;
-            transform-origin: bottom right;
-        }
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economic Order Quantity (EOQ) Inventory</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
-    <div id="info">ECONOMIC ORDER QUANTITY // 029</div>
-    <div id="eoq-container">
-        <canvas id="chart"></canvas>
+  <header class="header">
+    <div class="title-container">
+      <h1>Economic Order Quantity (EOQ) Inventory</h1>
+      <div class="discipline-badge">Industrial & Systems Engineering</div>
     </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
     
-    <script>
-        const canvas = document.getElementById('chart');
-        const ctx = canvas.getContext('2d');
-        const width = 400;
-        const height = 400;
-        canvas.width = width;
-        canvas.height = height;
+  </main>
 
-        const mainColor = '#6B8E23';
-        const reorderY = 320;
-        const maxY = 100;
-        
-        let inventoryLevel = maxY;
-        let time = 0;
-        let crashed = false;
-        let demandRate = 2; // drop per frame
-        
-        let points = [{x: 0, y: maxY}];
-        
-        let tower = { angle: 0, scaleY: 1, offsetY: 0 };
-        const container = document.getElementById('eoq-container');
+  <section class="explanation-section explanation">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      The classical Harris-Wilson Economic Order Quantity (EOQ) model determines the optimal purchase batch size that minimizes total annual inventory management costs. By balancing fixed transaction order costs against linear holding costs of carrying inventory, total cost calculus yields a minimum at the intersection of ordering and holding curves, forming a continuous sawtooth inventory cycle.
+    </p>
+    <div class="equation-container equation">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        TC(Q) = (D / Q) · S + (Q / 2) · H &emsp;|&emsp; Q* = √[(2 · D · S) / H]
+      </div>
+    </div>
+  </section>
 
-        function draw() {
-            ctx.clearRect(0, 0, width, height);
-            
-            // Draw axis
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(40, 20); ctx.lineTo(40, 360);
-            ctx.lineTo(380, 360);
-            ctx.stroke();
+  <script>
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
 
-            // Draw reorder line
-            ctx.strokeStyle = '#444';
-            ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.moveTo(40, reorderY); ctx.lineTo(380, reorderY);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            
-            ctx.save();
-            // In case of crash, we transform the context slightly or just let CSS do it
-            
-            ctx.strokeStyle = mainColor;
-            ctx.fillStyle = mainColor;
-            ctx.lineWidth = 3;
-            
-            ctx.beginPath();
-            if(points.length > 0) {
-                ctx.moveTo(points[0].x + 40, points[0].y);
-                for(let i=1; i<points.length; i++) {
-                    ctx.lineTo(points[i].x + 40, points[i].y);
-                }
-            }
-            ctx.stroke();
-            
-            // Fill under curve
-            ctx.beginPath();
-            if(points.length > 0) {
-                ctx.moveTo(points[0].x + 40, 360);
-                for(let i=0; i<points.length; i++) {
-                    ctx.lineTo(points[i].x + 40, points[i].y);
-                }
-                ctx.lineTo(points[points.length-1].x + 40, 360);
-                ctx.globalAlpha = 0.2;
-                ctx.fill();
-            }
-            ctx.globalAlpha = 1.0;
-            
-            ctx.restore();
-        }
+    // Helper to read current computed CSS variables for Canvas contexts
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
 
-        function update() {
-            if (!crashed) {
-                inventoryLevel += demandRate;
-                time += 1;
-                
-                points.push({x: time, y: inventoryLevel});
-                
-                if (inventoryLevel >= reorderY) {
-                    // Instantly shoot up
-                    inventoryLevel = maxY;
-                    points.push({x: time, y: inventoryLevel});
-                }
-                
-                // scroll left
-                if (time > 320) {
-                    points.forEach(p => p.x -= 1);
-                    time -= 1;
-                    if(points[0].x < 0) points.shift();
-                }
-            } else {
-                // Infinitely pile high
-                inventoryLevel -= 15;
-                points.push({x: time, y: inventoryLevel});
-                // Shift all points down so it looks like it's growing up
-                points.forEach(p => p.y += 14);
-            }
-            
-            draw();
-            requestAnimationFrame(update);
-        }
-        
-        update();
+    
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-        window.addEventListener('click', () => {
-            if(crashed) return;
-            crashed = true;
-            
-            // Demand flatlines: it stopped dropping because crashed=true handles the logic differently.
-            // Wait, flatline means horizontal.
-            // Oh, "demand instantly flatlines, inventory stack piles infinitely high".
-            // If demand flatlines, inventory doesn't drop. Then an order comes in and it goes UP infinitely.
-            
-            inventoryLevel = points[points.length-1].y; // hold current
-            
-            gsap.delayedCall(1, () => {
-                // The tower falls over
-                gsap.to(container, {
-                    rotation: 90,
-                    y: 400,
-                    duration: 1.5,
-                    ease: "bounce.out"
-                });
-            });
-        });
-    </script>
+    let time = 0;
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      const blue = getThemeColor('--sim-blue');
+      const text = getThemeColor('--text');
+      const textMuted = getThemeColor('--text-muted');
+      const amber = getThemeColor('--sim-amber');
+      const teal = getThemeColor('--sim-teal');
+      const border = getThemeColor('--surface-border');
+
+      time += 0.02;
+      const chartX = width * 0.15;
+      const chartY = height * 0.72;
+      const chartW = width * 0.72;
+      const chartH = height * 0.45;
+
+      // Axes
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(chartX, chartY);
+      ctx.lineTo(chartX + chartW, chartY);
+      ctx.moveTo(chartX, chartY);
+      ctx.lineTo(chartX, chartY - chartH);
+      ctx.stroke();
+
+      // Sawtooth Inventory Cycles
+      const cycleW = chartW / 3;
+      ctx.strokeStyle = blue;
+      ctx.lineWidth = 2.5;
+      for (let c = 0; c < 3; c++) {
+        const sx = chartX + c * cycleW;
+        ctx.beginPath();
+        ctx.moveTo(sx, chartY - chartH * 0.85);
+        ctx.lineTo(sx + cycleW, chartY);
+        ctx.lineTo(sx + cycleW, chartY - chartH * 0.85);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(79, 195, 247, 0.1)';
+        ctx.lineTo(sx + cycleW, chartY);
+        ctx.lineTo(sx, chartY);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Reorder Point & Safety Stock Lines
+      ctx.strokeStyle = amber;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(chartX, chartY - chartH * 0.35);
+      ctx.lineTo(chartX + chartW, chartY - chartH * 0.35);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = amber;
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('Reorder Point (ROP)', chartX + chartW, chartY - chartH * 0.35 - 6);
+
+      ctx.fillStyle = text;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Annual Demand D = 12,000 units | Setup S = $150/order | Holding H = $4/unit/yr', 24, 30);
+      ctx.fillText('Optimal Order Batch Q* = 948 units | Cycle Time T* = 28.8 days', 24, 52);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+    
+  </script>
 </body>
 </html>

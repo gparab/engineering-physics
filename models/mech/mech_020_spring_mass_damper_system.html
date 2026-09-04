@@ -1,122 +1,388 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spring-Mass-Damper</title>
-<style>
-  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; cursor: pointer; }
-  #container { position: relative; width: 60px; height: 120px; }
-  .ceiling { position: absolute; top: 0; left: 10px; width: 40px; height: 4px; background: #fff; }
-  .spring { position: absolute; left: 18px; top: 4px; width: 10px; height: 50px; }
-  .spring path { stroke: #3498DB; stroke-width: 2; fill: none; }
-  .dashpot { position: absolute; right: 18px; top: 4px; width: 12px; height: 50px; }
-  .dash-outer { position: absolute; bottom: 0; width: 10px; height: 25px; border: 2px solid #555; border-top: none; }
-  .dash-inner { position: absolute; top: 0; left: 3px; width: 4px; height: 35px; background: #aaa; }
-  .dash-piston { position: absolute; bottom: 0; left: -2px; width: 8px; height: 4px; background: #aaa; }
-  .mass { position: absolute; left: 15px; top: 54px; width: 30px; height: 20px; background: #3498DB; border-radius: 2px; }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forced Harmonic Resonance of SDOF System</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div id="container">
-  <div class="ceiling"></div>
-  <svg class="spring" viewBox="0 0 10 50" preserveAspectRatio="none">
-    <path d="M5,0 L5,5 L0,10 L10,15 L0,20 L10,25 L0,30 L10,35 L0,40 L10,45 L5,50" id="spring-path" />
-  </svg>
-  <div class="dashpot">
-    <div class="dash-inner"><div class="dash-piston"></div></div>
-    <div class="dash-outer"></div>
-  </div>
-  <div class="mass"></div>
-</div>
-<script>
-  const mass = document.querySelector('.mass');
-  const springPath = document.getElementById('spring-path');
-  const dashInner = document.querySelector('.dash-inner');
-  const dashOuter = document.querySelector('.dash-outer');
-  
-  let time = 0;
-  let clicked = false;
-  
-  let drawSpring = (h) => {
-    let segments = 8;
-    let segmentHeight = (h - 10) / segments;
-    let d = `M5,0 L5,5 `;
-    for(let i=0; i<segments; i++){
-      let x = i%2===0 ? 0 : 10;
-      d += `L${x},${5 + (i+1)*segmentHeight} `;
+  <header class="header">
+    <div class="title-container">
+      <h1>Forced Harmonic Resonance of SDOF System</h1>
+      <div class="discipline-badge">Mechanical Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A single-degree-of-freedom spring-mass-damper system subjected to sinusoidal external harmonic excitation exhibits resonant behavior. When the forcing frequency (ω) matches the system's undamped natural frequency (ω_n = √(k/m)), the dynamic magnification factor (DMF) peaks sharply. Viscous damping limits the maximum resonant vibration amplitude and introduces a 90-degree phase lag.
+    </p>
+    <div class="equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        DMF = 1 / √((1 - (ω/ω_n)²)² + (2 · ζ · ω/ω_n)²) ,  ω_n = √(k / m) ,  tan φ = (2ζ · r) / (1 - r²)
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
     }
-    d += `L5,${h}`;
-    springPath.setAttribute('d', d);
-  };
 
-  let idleAnim = gsap.ticker.add(() => {
-    time += 0.05;
-    let y = Math.sin(time) * 10;
-    gsap.set(mass, { y: y });
-    
-    // adjust spring and dashpot
-    let h = 50 + y;
-    gsap.set('.spring', { height: h });
-    drawSpring(h);
-    gsap.set(dashOuter, { y: y });
-  });
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
 
-  document.body.addEventListener('click', () => {
-    if (clicked) return;
-    clicked = true;
-    gsap.ticker.remove(idleAnim);
-    
-    // Resonance!
-    let resObj = { y: gsap.getProperty(mass, "y"), amp: 10 };
-    
-    gsap.to(resObj, {
-      amp: 100,
-      duration: 1,
-      ease: "power2.in",
-      onUpdate: () => {
-        time += 0.3;
-        let y = Math.sin(time) * resObj.amp;
-        gsap.set(mass, { y: y });
-        let h = Math.max(10, 50 + y);
-        gsap.set('.spring', { height: h });
-        drawSpring(h);
-        gsap.set(dashOuter, { y: y });
-      },
-      onComplete: () => {
-        // Shatter spring, fly away
-        document.querySelector('.spring').style.opacity = 0;
-        document.querySelector('.dashpot').style.opacity = 0;
-        
-        // spring fragments
-        for(let i=0; i<5; i++){
-          let frag = document.createElement('div');
-          frag.style.position = 'absolute';
-          frag.style.width = '10px'; frag.style.height = '2px';
-          frag.style.background = '#3498DB';
-          frag.style.left = '25px'; frag.style.top = '50px';
-          document.body.appendChild(frag);
-          gsap.to(frag, {
-            x: (Math.random()-0.5)*300,
-            y: (Math.random()-0.5)*300,
-            rotation: Math.random()*720,
-            opacity: 0,
-            duration: 1,
-            ease: "power2.out"
-          });
-        }
-        
-        gsap.to(mass, {
-          y: window.innerHeight,
-          rotation: 360,
-          scale: 2,
-          duration: 1,
-          ease: "power2.in"
-        });
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+
+    let simTime = 0;
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.5;
+      const cy = height * 0.45;
+      simTime += 0.04;
+
+      // Excitation near resonance (r = w / wn ≈ 1.0)
+      const forcingAmp = 15;
+      const dmf = 4.2; // Damped magnification peak
+      const massDisp = dmf * forcingAmp * Math.sin(simTime);
+
+      const massY = cy + massDisp;
+
+      // Overhead fixed ceiling
+      ctx.fillStyle = getThemeColor('--text-muted');
+      ctx.fillRect(cx - 90, 40, 180, 12);
+
+      // Spring on left
+      const springX = cx - 40;
+      ctx.beginPath();
+      ctx.moveTo(springX, 52);
+      const nCoils = 12;
+      const curSpringH = massY - 35 - 52;
+      for (let i = 0; i <= nCoils; i++) {
+        const sy = 52 + (i / nCoils) * curSpringH;
+        const sx = springX + (i % 2 === 1 ? -14 : 14);
+        ctx.lineTo(sx, sy);
       }
-    });
-  });
-</script>
+      ctx.lineTo(springX, massY - 35);
+      ctx.strokeStyle = getThemeColor('--sim-blue');
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Damper on right
+      const damperX = cx + 40;
+      ctx.beginPath();
+      ctx.moveTo(damperX, 52);
+      ctx.lineTo(damperX, massY - 75);
+      ctx.strokeStyle = getThemeColor('--sim-teal');
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.strokeRect(damperX - 12, massY - 75, 24, 40);
+      ctx.beginPath();
+      ctx.moveTo(damperX, massY - 55); ctx.lineTo(damperX, massY - 35);
+      ctx.stroke();
+
+      // Mass Block
+      ctx.beginPath();
+      ctx.roundRect(cx - 55, massY - 35, 110, 70, 8);
+      ctx.fillStyle = getThemeColor('--surface');
+      ctx.fill();
+      ctx.strokeStyle = getThemeColor('--sim-amber');
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Harmonic Forcing Vector F(t)
+      const fMag = 35 * Math.sin(simTime);
+      ctx.beginPath();
+      ctx.moveTo(cx, massY + 35);
+      ctx.lineTo(cx, massY + 35 + fMag);
+      ctx.strokeStyle = getThemeColor('--sim-red');
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Labels
+      ctx.fillStyle = getThemeColor('--text');
+      ctx.font = "11px var(--font-sans)";
+      ctx.fillText("Spring (k)", springX - 55, cy);
+      ctx.fillText("Damper (c)", damperX + 20, cy);
+      ctx.fillText("Mass m (Resonance: ω ≈ ω_n)", cx - 75, massY + 5);
+      ctx.fillText("Harmonic Forcing F(t) = F₀ · sin(ω·t)", cx - 95, height - 35);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+  </script>
 </body>
 </html>

@@ -1,101 +1,375 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Model Predictive Control</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #001a1a;
-    overflow: hidden;
-    cursor: pointer;
-  }
-  .container {
-    width: 40px;
-    height: 40px;
-    position: relative;
-  }
-  svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-  }
-  .traj { stroke: #00CED1; fill: none; stroke-linecap: round; opacity: 0.4; stroke-width: 1; }
-  .optimal { stroke: #00CED1; fill: none; stroke-linecap: round; stroke-width: 2; opacity: 1; }
-  .dot { fill: #fff; }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Predictive Control</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #26a69a;
+      --sim-amber: #ffb74d;
+      --sim-red: #ef5350;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00796b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.2rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
+  <header class="header">
+    <div class="title-container">
+      <h1>Model Predictive Control</h1>
+      <div class="discipline-badge">Robotics Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<div class="container" id="icon">
-  <svg viewBox="0 0 40 40">
-    <!-- Future Trajectories -->
-    <path id="t1" class="traj" d="M 5 20 Q 15 5 35 10" />
-    <path id="t2" class="traj" d="M 5 20 Q 20 10 35 15" />
-    <path id="t3" class="traj" d="M 5 20 Q 20 30 35 25" />
-    <path id="t4" class="traj" d="M 5 20 Q 15 35 35 30" />
-    
-    <!-- Optimal Trajectory -->
-    <path id="opt" class="optimal" d="M 5 20 Q 20 20 35 20" />
-    
-    <!-- Current State Dot -->
-    <circle cx="5" cy="20" r="2" class="dot" />
-  </svg>
-</div>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-<script>
-  // Idle Animation: Future trajectories recalculate and wiggle
-  gsap.to("#t1", { attr: { d: "M 5 20 Q 15 10 35 5" }, duration: 0.8, yoyo: true, repeat: -1, ease: "sine.inOut" });
-  gsap.to("#t2", { attr: { d: "M 5 20 Q 20 5 35 18" }, duration: 1.1, yoyo: true, repeat: -1, ease: "sine.inOut" });
-  gsap.to("#t3", { attr: { d: "M 5 20 Q 20 35 35 22" }, duration: 0.9, yoyo: true, repeat: -1, ease: "sine.inOut" });
-  gsap.to("#t4", { attr: { d: "M 5 20 Q 15 30 35 35" }, duration: 1.2, yoyo: true, repeat: -1, ease: "sine.inOut" });
-  
-  gsap.to("#opt", { attr: { d: "M 5 20 Q 20 18 35 20" }, duration: 1.5, yoyo: true, repeat: -1, ease: "sine.inOut" });
-  
-  // Forward motion feel
-  gsap.to("#icon", { x: 2, duration: 1, yoyo: true, repeat: -1, ease: "sine.inOut" });
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Model Predictive Control (MPC) is an advanced optimal trajectory control methodology that solves a constrained finite-horizon optimization problem numerically online at each discrete sampling instant. Employing a dynamic system model of the robot, the optimizer predicts future state trajectories across N forward steps while observing state boundaries and physical actuator constraints. Only the immediate first control increment is executed, continuously repeating the receding-horizon optimization cycle.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        min_{u} ∑_{k=0}^(N-1) (x_k^T Q x_k + u_k^T R u_k) + x_N^T P x_N s.t. x_{k+1} = Ax_k + Bu_k
+      </div>
+    </div>
+  </section>
 
-  // Click Disappearance Motion: Time horizon stretches to infinity, thinning trajectories until they snap.
-  document.body.addEventListener('click', () => {
-    gsap.killTweensOf("*");
-    
-    const clickTl = gsap.timeline();
-    
-    clickTl.to(".traj, .optimal", {
-      attr: { d: "M 5 20 Q 50 20 200 20" },
-      strokeWidth: 0.1,
-      opacity: 0.8,
-      duration: 0.6,
-      ease: "power2.in"
-    }, 0)
-    .to(".dot", {
-      cx: 200,
-      duration: 0.6,
-      ease: "power2.in"
-    }, 0)
-    // Snap
-    .to(".traj, .optimal", {
-      opacity: 0,
-      duration: 0.1
-    }, 0.6)
-    .to(".dot", {
-      opacity: 0,
-      duration: 0.1
-    }, 0.6)
-    .to("body", {
-      backgroundColor: "#003333",
-      duration: 0.2,
-      yoyo: true,
-      repeat: 1
-    }, 0.6);
-  }, { once: true });
-</script>
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#e0e0e0' : '#1a1a1a';
+      const mutedColor = isDark ? '#9e9eb4' : '#616161';
+      const accentColor = isDark ? '#4fc3f7' : '#0277bd';
+      const predColor = '#26a69a';
+      const refColor = '#ffb74d';
+
+      const cx = width * 0.5;
+      const cy = height * 0.44;
+
+      // Reference Path
+      ctx.strokeStyle = refColor;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      for (let x = -200; x <= 200; x += 10) {
+        const px = cx + x;
+        const py = cy + Math.sin((x + time * 60) * 0.02) * 50;
+        if (x === -200) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Robot Vehicle Position
+      const robotX = cx - 120;
+      const robotY = cy + Math.sin((-120 + time * 60) * 0.02) * 50;
+
+      // Draw Predicted Horizon Curve (N=10 steps)
+      ctx.strokeStyle = predColor;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(robotX, robotY);
+      const horizon = 10;
+      for (let k = 1; k <= horizon; k++) {
+        const hx = robotX + k * 24;
+        const targetPy = cy + Math.sin((hx - cx + time * 60) * 0.02) * 50;
+        ctx.lineTo(hx, targetPy);
+      }
+      ctx.stroke();
+
+      // Vehicle Chassis
+      ctx.fillStyle = isDark ? '#22223a' : '#ffffff';
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(robotX, robotY, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Legend
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = refColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('-- Reference Trajectory (x_ref)', cx - 180, cy - 90);
+      ctx.fillStyle = predColor;
+      ctx.fillText('— Optimal Predicted Horizon (N = 10)', cx + 20, cy - 90);
+
+      const ty = height - 40;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('Finite-Horizon Receding Optimal Control Subject to Actuator Constraints', cx, ty);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
 </body>
 </html>

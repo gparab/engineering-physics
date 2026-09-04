@@ -1,91 +1,392 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>Propeller Cavitation</title>
-<style>
-  body { margin: 0; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-  .icon-container { position: relative; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-  .foil { position: absolute; width: 24px; height: 6px; background: #9B9B9B; border-radius: 12px 3px 3px 12px; transform-origin: center; }
-  .bubble { position: absolute; background: rgba(255,255,255,0.8); border: 1px solid #777; border-radius: 50%; opacity: 0; pointer-events: none; }
-  .shockwave { position: absolute; width: 0; height: 0; border: 2px solid #9B9B9B; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marine Propeller Cavitation</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-  <div class="icon-container" id="icon">
-    <div class="foil" id="foil"></div>
-  </div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Marine Propeller Cavitation</h1>
+      <div class="discipline-badge">Marine Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Marine propeller cavitation occurs when high rotational blade velocity accelerates flow across the suction face, causing local static pressure to drop below the saturated vapor pressure of seawater (p_v). The water locally vaporizes into micro-cavitation bubbles. When these vapor bubbles are swept downstream into higher-pressure regions, they implode violently within microseconds, generating localized micro-jets and shockwaves exceeding 1 GPa that cause severe structural blade pitting and acoustic noise.
+    </p>
+    <div class="equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        σ = (p_ambient - p_vapor) / ((1/2) · ρ · V_rel²) ,  p_min < p_v ⇒ Cavitation
+      </div>
+    </div>
+  </section>
+
   <script>
-    const foil = document.getElementById('foil');
-    const icon = document.getElementById('icon');
-    let isAnimating = false;
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
 
-    const spin = gsap.to(foil, { rotation: 360, duration: 1, repeat: -1, ease: "none" });
-    
-    let bubbleInterval = setInterval(() => {
-      if(isAnimating) return;
-      let b = document.createElement('div');
-      b.className = 'bubble';
-      let size = Math.random() * 3 + 1;
-      b.style.width = size + 'px'; b.style.height = size + 'px';
-      
-      icon.appendChild(b);
-      let angle = gsap.getProperty(foil, "rotation") * Math.PI / 180;
-      let r = 12;
-      gsap.set(b, { x: Math.cos(angle) * r, y: Math.sin(angle) * r, opacity: 1 });
-      gsap.to(b, { scale: 0, opacity: 0, duration: 0.3, onComplete: () => b.remove() });
-    }, 100);
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
 
-    icon.addEventListener('click', () => {
-      if (isAnimating) return;
-      isAnimating = true;
-      clearInterval(bubbleInterval);
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
 
-      gsap.to(spin, { timeScale: 15, duration: 0.5, ease: "power2.in" });
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-      let giantBubble = document.createElement('div');
-      giantBubble.className = 'bubble';
-      giantBubble.style.border = '2px solid #555';
-      icon.appendChild(giantBubble);
-      
-      gsap.fromTo(giantBubble, 
-        { width: 0, height: 0, opacity: 0.8, x: 0, y: 0 }, 
-        { width: 60, height: 60, x: -30, y: -30, duration: 0.5, delay: 0.5 }
-      );
 
-      setTimeout(() => {
-        gsap.to(giantBubble, { width: 0, height: 0, x: 0, y: 0, opacity: 0, duration: 0.1 });
-        foil.style.display = 'none';
-        
-        let sw = document.createElement('div');
-        sw.className = 'shockwave';
-        document.body.appendChild(sw);
-        
-        const rect = icon.getBoundingClientRect();
-        gsap.set(sw, { top: rect.top + 20, left: rect.left + 20 });
-        
-        gsap.to(sw, {
-          width: window.innerWidth * 2, height: window.innerWidth * 2,
-          opacity: 1, borderWidth: 20, duration: 0.5, ease: "power2.out",
-          onComplete: () => gsap.to(sw, { opacity: 0, duration: 0.3 })
+    const bubbles = [];
+    for (let i = 0; i < 60; i++) {
+      bubbles.push({
+        x: 0,
+        y: 0,
+        r: 1,
+        active: false
+      });
+    }
+
+    let foilAngle = 0;
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.42;
+      const cy = height * 0.5;
+      const chord = 180;
+      foilAngle += 0.02;
+
+      // Propeller Hydrofoil Section
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-0.12);
+
+      ctx.beginPath();
+      ctx.moveTo(-chord / 2, 0);
+      // Suction side (top curve)
+      ctx.bezierCurveTo(-chord * 0.3, -40, chord * 0.2, -35, chord / 2, 0);
+      // Pressure side (bottom curve)
+      ctx.bezierCurveTo(chord * 0.1, 10, -chord * 0.3, 8, -chord / 2, 0);
+      ctx.closePath();
+      ctx.fillStyle = getThemeColor('--surface');
+      ctx.fill();
+      ctx.strokeStyle = getThemeColor('--sim-blue');
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      ctx.restore();
+
+      // Flow streamline particles & cavitation bubbles
+      if (Math.random() < 0.6) {
+        bubbles.push({
+          x: cx - chord * 0.25 + (Math.random() * 20 - 10),
+          y: cy - 25 + (Math.random() * 8 - 4),
+          vx: 4.5 + Math.random() * 2,
+          vy: (Math.random() - 0.5) * 1.5,
+          r: 1.5 + Math.random() * 2.5,
+          life: 1.0
         });
-        
-        for(let i=0; i<8; i++) {
-          let shard = document.createElement('div');
-          shard.style.position = 'absolute'; shard.style.background = '#9B9B9B';
-          shard.style.width = '6px'; shard.style.height = '2px';
-          document.body.appendChild(shard);
-          gsap.set(shard, { top: rect.top + 20, left: rect.left + 20 });
-          
-          let a = (Math.PI * 2 / 8) * i;
-          gsap.to(shard, {
-            x: Math.cos(a) * window.innerWidth, y: Math.sin(a) * window.innerWidth,
-            rotation: Math.random()*720, duration: 1, ease: "power2.out"
-          });
+      }
+
+      for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        b.x += b.vx;
+        b.y += b.vy;
+        b.life -= 0.025;
+
+        // Implosion / collapse near trailing edge
+        if (b.x > cx + chord * 0.45) {
+          b.r *= 0.85; // Bubble collapses
         }
-      }, 1000);
-    });
+
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, Math.max(0.5, b.r), 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.fill();
+        ctx.strokeStyle = getThemeColor('--sim-teal');
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        if (b.life <= 0 || b.r < 0.6) bubbles.splice(i, 1);
+      }
+
+      // Labels
+      ctx.fillStyle = getThemeColor('--text');
+      ctx.font = "11px var(--font-sans)";
+      ctx.fillText("Suction Side: Low Pressure Zone (p < p_v)", cx - 120, cy - 45);
+      ctx.fillText("Vapor Cavitation Bubble Formation", cx - 40, cy - 65);
+      ctx.fillText("Violent Bubble Collapse & Shock Implosions", cx + 80, cy - 45);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
   </script>
 </body>
 </html>

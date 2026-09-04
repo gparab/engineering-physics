@@ -1,75 +1,389 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fracture Comminution</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f8f9fa;
-            overflow: hidden;
-        }
-        .container {
-            position: relative;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seed Comminution & Milling Fracture</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
-    <div class="container" id="model">
-        <svg width="40" height="40" viewBox="0 0 40 40" overflow="visible">
-            <circle class="roller r1" cx="10" cy="20" r="8" fill="none" stroke="#D8D8D8" stroke-width="2" stroke-dasharray="4,2"/>
-            <circle class="roller r2" cx="30" cy="20" r="8" fill="none" stroke="#D8D8D8" stroke-width="2" stroke-dasharray="4,2"/>
-            <polygon class="seed" points="20,14 24,18 20,26 16,18" fill="#F39C12" />
-            <path class="fracture" d="M18,16 L20,20 L18,24" fill="none" stroke="#FFF" stroke-width="0.5" opacity="0"/>
-        </svg>
+  <header class="header">
+    <div class="title-container">
+      <h1>Seed Comminution & Milling Fracture</h1>
+      <div class="discipline-badge">Agricultural Engineering</div>
     </div>
-    <script>
-        gsap.to('.r1', { rotation: 360, transformOrigin: "center", duration: 4, repeat: -1, ease: "none" });
-        gsap.to('.r2', { rotation: -360, transformOrigin: "center", duration: 4, repeat: -1, ease: "none" });
-        
-        gsap.to('.seed', { scaleY: 0.9, duration: 1, yoyo: true, repeat: -1, ease: "sine.inOut" });
-        gsap.to('.fracture', { opacity: 1, duration: 0.2, yoyo: true, repeat: -1, delay: 0.8 });
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-        document.getElementById('model').addEventListener('click', () => {
-            gsap.killTweensOf('*');
-            const container = document.querySelector('svg');
-            const dustGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            for(let i=0; i<40; i++) {
-                let p = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-                p.setAttribute("points", "0,0 2,0 1,2");
-                p.setAttribute("fill", "#F39C12");
-                p.setAttribute("class", "dust");
-                p.setAttribute("transform", `translate(20, 20)`);
-                dustGroup.appendChild(p);
-            }
-            container.appendChild(dustGroup);
-            gsap.set('.seed, .fracture', { display: 'none' });
-            
-            gsap.to('.dust', {
-                x: () => (Math.random() - 0.5) * window.innerWidth,
-                y: () => (Math.random() - 0.5) * window.innerHeight,
-                rotation: () => Math.random() * 720,
-                scale: () => Math.random() * 3,
-                opacity: 0,
-                duration: 0.8,
-                ease: "expo.out"
-            });
-            gsap.to('.r1', { x: -window.innerWidth, opacity: 0, duration: 0.8, ease: "power2.in" });
-            gsap.to('.r2', { x: window.innerWidth, opacity: 0, duration: 0.8, ease: "power2.in" });
-        });
-    </script>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+    
+  </main>
+
+  <section class="explanation-section explanation">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Mechanical grain milling and comminution reduce crop seeds into flour or animal feed through high-stress compressive and shearing roller forces. Fracture propagation initiates when internal tensile stress concentrates at pre-existing microcracks, exceeding the critical fracture toughness K_Ic. Bond's comminution law relates mechanical energy consumption to the reduction in particle size distribution.
+    </p>
+    <div class="equation-container equation">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        E = 10 · W_i · [1 / √(P_80) - 1 / √(F_80)] &emsp;|&emsp; K_Ic = σ · √(π · a)
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // Helper to read current computed CSS variables for Canvas contexts
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let time = 0;
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      const blue = getThemeColor('--sim-blue');
+      const text = getThemeColor('--text');
+      const textMuted = getThemeColor('--text-muted');
+      const amber = getThemeColor('--sim-amber');
+      const red = getThemeColor('--sim-red');
+      const border = getThemeColor('--surface-border');
+
+      time += 0.03;
+      const rollerR = 60;
+      const r1X = width * 0.38;
+      const r2X = width * 0.62;
+      const rollerY = height * 0.52;
+
+      // Two Counter-Rotating Rollers
+      ctx.save();
+      ctx.translate(r1X, rollerY);
+      ctx.rotate(time);
+      ctx.fillStyle = border;
+      ctx.beginPath();
+      ctx.arc(0, 0, rollerR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = textMuted;
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(r2X, rollerY);
+      ctx.rotate(-time);
+      ctx.fillStyle = border;
+      ctx.beginPath();
+      ctx.arc(0, 0, rollerR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = textMuted;
+      ctx.stroke();
+      ctx.restore();
+
+      // Seed entering nip point and fracturing into fine flour
+      const nipX = (r1X + r2X) / 2;
+      const nipY = rollerY;
+
+      ctx.fillStyle = amber;
+      ctx.beginPath();
+      ctx.arc(nipX, nipY - 35, 14, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Fracture cracks
+      ctx.strokeStyle = red;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(nipX, nipY - 45);
+      ctx.lineTo(nipX + 4, nipY - 35);
+      ctx.lineTo(nipX - 3, nipY - 25);
+      ctx.stroke();
+
+      // Fine particles exiting below nip
+      ctx.fillStyle = amber;
+      for (let i = 0; i < 25; i++) {
+        const px = nipX + (Math.sin(i * 1.7) * 18);
+        const py = nipY + 25 + ((i * 4 + time * 60) % 70);
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = text;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Roller Mill Gap: 0.5 mm | Specific Energy E = 12.4 kWh/t', 24, 30);
+      ctx.fillText('Feed F₈₀ = 3,500 μm → Product P₈₀ = 250 μm', 24, 52);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+    
+  </script>
 </body>
 </html>

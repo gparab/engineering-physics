@@ -1,152 +1,386 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Froth Flotation</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #1e1e1e;
-    overflow: hidden;
-  }
-  
-  .container {
-    position: relative;
-    width: 20px;
-    height: 30px;
-    cursor: pointer;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Froth Flotation Mineral Separation</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
 
-  .tank {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 2px solid #555;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
 
-  .bubble {
-    position: absolute;
-    bottom: 0;
-    width: 4px;
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
-  }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  .gold-dot {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 2px;
-    height: 2px;
-    background-color: #FFD700;
-    border-radius: 50%;
-  }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
 
-  .gangue {
-    position: absolute;
-    top: 50%;
-    width: 2px;
-    height: 2px;
-    background-color: #888;
-    border-radius: 50%;
-  }
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
 
-  .cascade {
-    position: fixed;
-    top: -100vh;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(to bottom, #FFD700, #DAA520);
-    z-index: 10;
-    pointer-events: none;
-  }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
+  <header class="header">
+    <div class="title-container">
+      <h1>Froth Flotation Mineral Separation</h1>
+      <div class="discipline-badge">Mining & Petroleum Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<div class="container" id="model">
-  <div class="tank" id="tank"></div>
-</div>
-
-<div class="cascade" id="cascade"></div>
-
-<script>
-  const tank = document.getElementById('tank');
-  const model = document.getElementById('model');
-
-  // Generate bubbles and gangue
-  for(let i=0; i<6; i++) {
-    let b = document.createElement('div');
-    b.className = 'bubble';
-    b.style.left = (Math.random() * 12) + 'px';
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
     
-    let gold = document.createElement('div');
-    gold.className = 'gold-dot';
-    b.appendChild(gold);
-    tank.appendChild(b);
+  </main>
 
-    gsap.fromTo(b, 
-      { y: 30, opacity: 1 },
-      {
-        y: -10,
-        opacity: 0,
-        duration: 1 + Math.random(),
-        repeat: -1,
-        delay: Math.random() * 2,
-        ease: "power1.in"
-      }
-    );
+  <section class="explanation-section explanation">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Froth flotation separates valuable hydrophobic mineral particles from hydrophilic gangue in aerated mineral pulps. Chemical collector surfactants selectively adsorb onto targeted sulfide or oxide minerals, increasing the contact angle θ governed by the Young-Dupré equation. Hydrophobic grains adhere to ascending air bubbles, forming an enriched surface froth layer while waste tailings sink.
+    </p>
+    <div class="equation-container equation">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        W_a = γ_lv · (1 + cos θ) &emsp;|&emsp; dN_p/dt = -k_float · N_p · N_b
+      </div>
+    </div>
+  </section>
 
-    let g = document.createElement('div');
-    g.className = 'gangue';
-    g.style.left = (Math.random() * 16) + 'px';
-    tank.appendChild(g);
+  <script>
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
 
-    gsap.fromTo(g,
-      { y: -10 },
-      {
-        y: 30,
-        duration: 1.5 + Math.random(),
-        repeat: -1,
-        delay: Math.random() * 2,
-        ease: "linear"
-      }
-    );
-  }
+    // Helper to read current computed CSS variables for Canvas contexts
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
 
-  model.addEventListener('click', () => {
-    gsap.killTweensOf(".bubble");
-    gsap.killTweensOf(".gangue");
-
-    // Golden cascade covers UI
-    gsap.to("#cascade", {
-      top: 0,
-      duration: 1.2,
-      ease: "bounce.out"
-    });
     
-    gsap.to(model, {
-      opacity: 0,
-      duration: 0.3
-    });
-  });
-</script>
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const bubbles = [];
+    for (let i = 0; i < 40; i++) {
+      bubbles.push({
+        x: 0.2 + 0.6 * Math.random(),
+        y: 0.35 + 0.45 * Math.random(),
+        r: 5 + 4 * Math.random(),
+        vy: 0.003 + 0.004 * Math.random()
+      });
+    }
+
+    let time = 0;
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      const blue = getThemeColor('--sim-blue');
+      const text = getThemeColor('--text');
+      const textMuted = getThemeColor('--text-muted');
+      const amber = getThemeColor('--sim-amber');
+      const teal = getThemeColor('--sim-teal');
+      const border = getThemeColor('--surface-border');
+
+      time += 0.02;
+      const tankX = width * 0.18;
+      const tankW = width * 0.64;
+      const tankTop = height * 0.22;
+      const tankBot = height * 0.82;
+      const frothH = 35;
+
+      // Flotation Cell Tank
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(tankX, tankTop, tankW, tankBot - tankTop);
+
+      // Pulp Liquid
+      ctx.fillStyle = 'rgba(77, 182, 172, 0.12)';
+      ctx.fillRect(tankX, tankTop + frothH, tankW, tankBot - (tankTop + frothH));
+
+      // Froth Layer on top
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.35)';
+      ctx.fillRect(tankX, tankTop, tankW, frothH);
+      ctx.fillStyle = amber;
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Mineral-Rich Froth Overflow (Chalcopyrite CuFeS₂)', width / 2, tankTop + 22);
+
+      // Rising bubbles carrying attached hydrophobic ore particles
+      bubbles.forEach(b => {
+        b.y -= b.vy;
+        if (b.y < 0.25) b.y = 0.8;
+
+        const bx = width * b.x;
+        const by = height * b.y;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(bx, by, b.r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Mineral dot attached to bubble
+        ctx.fillStyle = amber;
+        ctx.beginPath();
+        ctx.arc(bx + b.r * 0.7, by + b.r * 0.5, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.fillStyle = text;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Collector: Potassium Amyl Xanthate (PAX) | Contact Angle θ = 72°', 24, 30);
+      ctx.fillText('Copper Recovery: 92.4% | Concentrate Grade: 28.5% Cu', 24, 52);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+    
+  </script>
 </body>
 </html>

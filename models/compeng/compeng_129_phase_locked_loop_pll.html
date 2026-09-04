@@ -1,110 +1,392 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phase-Locked Loop (PLL)</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    background-color: #0f172a;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-  }
-  .container {
-    width: 250px;
-    height: 250px;
-    cursor: pointer;
-  }
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-  .loop {
-    fill: none;
-    stroke: #E74C3C;
-    stroke-width: 2;
-    stroke-dasharray: 4;
-  }
-  .box {
-    fill: #0f172a;
-    stroke: #E74C3C;
-    stroke-width: 2;
-  }
-  .wave-ref {
-    fill: none;
-    stroke: rgba(231, 76, 60, 0.4);
-    stroke-width: 2;
-  }
-  .wave-vco {
-    fill: none;
-    stroke: #E74C3C;
-    stroke-width: 3;
-    filter: drop-shadow(0 0 3px #E74C3C);
-  }
-  text {
-    fill: #E74C3C;
-    font-family: monospace;
-    font-size: 8px;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase-Locked Loop (PLL)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #26a69a;
+      --sim-amber: #ffb74d;
+      --sim-red: #ef5350;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00796b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.2rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div class="container" id="model">
-  <svg viewBox="0 0 100 100" id="svg-element">
-    <path class="loop" d="M50,70 A25,25 0 1,1 50,20 A25,25 0 0,1 50,70" />
-    
-    <rect class="box" x="40" y="10" width="20" height="20" rx="2" />
-    <text x="44" y="23">PD</text>
-    
-    <rect class="box" x="70" y="40" width="20" height="20" rx="2" />
-    <text x="72" y="53">VCO</text>
-    
-    <rect x="25" y="40" width="40" height="20" fill="none" stroke="#334155" stroke-width="1" />
-    
-    <g clip-path="url(#wave-clip)">
-      <clipPath id="wave-clip">
-        <rect x="25" y="40" width="40" height="20" />
-      </clipPath>
-      <path class="wave-ref" d="M25,50 Q30,40 35,50 T45,50 T55,50 T65,50 T75,50 T85,50" />
-      <g id="vco-wave-group">
-        <path class="wave-vco" d="M25,50 Q30,40 35,50 T45,50 T55,50 T65,50 T75,50 T85,50" id="vco-wave" />
-      </g>
-    </g>
-  </svg>
-</div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Phase-Locked Loop (PLL)</h1>
+      <div class="discipline-badge">Computer Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script>
-  const vcoGroup = document.getElementById('vco-wave-group');
-  const vcoPath = document.getElementById('vco-wave');
-  
-  const tl = gsap.timeline({ repeat: -1 });
-  tl.fromTo(vcoGroup, { x: -5 }, { x: 0, duration: 1, ease: "elastic.out(1, 0.3)" })
-    .to(vcoGroup, { x: 0, duration: 1 }); // perfectly locked hold
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-  const model = document.getElementById('model');
-  model.addEventListener('click', () => {
-    tl.kill();
-    
-    const clickTl = gsap.timeline();
-    // Frequency ramps to infinity
-    clickTl.to(vcoGroup, {
-      scaleX: 0.1,
-      transformOrigin: "25px 50px",
-      duration: 1,
-      ease: "power4.in"
-    })
-    .to(vcoPath, {
-      opacity: 0,
-      duration: 0.1
-    })
-    .to("#svg-element", { scale: 0, opacity: 0, rotation: 180, duration: 0.5, ease: "back.in(1)" }, "+=0.1");
-  });
-</script>
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A phase-locked loop (PLL) is an electronic closed-loop control system that aligns the phase and frequency of a synthesized oscillator signal with an external reference clock. A phase-frequency detector (PFD) generates charge error pulses proportional to instantaneous phase differences, which a low-pass loop filter smooths into an analog control voltage V_ctrl. This voltage drives a Voltage-Controlled Oscillator (VCO), enabling dynamic frequency multiplication, clock de-skewing, and low-jitter distribution.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        θ_{error}(t) = θ_{ref}(t) - θ_{out}(t) , ω_{out}(t) = ω_0 + K_{VCO} · V_{ctrl}(t)
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#e0e0e0' : '#1a1a1a';
+      const mutedColor = isDark ? '#9e9eb4' : '#616161';
+      const accentColor = isDark ? '#4fc3f7' : '#0277bd';
+      const highColor = '#26a69a';
+      const warnColor = '#ffb74d';
+
+      // Lock cycle over 6 seconds: 0..3s acquiring, 3..6s locked
+      const lockPhase = (time % 6.0);
+      const isLocked = lockPhase > 3.0;
+      const errorFactor = isLocked ? 0 : Math.exp(-(lockPhase * 1.2));
+
+      const cx = width * 0.5;
+      const cy = height * 0.4;
+
+      // Waveform Display Area
+      const waveW = Math.min(680, width - 80);
+      const startX = (width - waveW) / 2;
+
+      // 1. Reference Clock Waveform
+      const refY = cy - 70;
+      ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillStyle = accentColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('Reference Clock (f_ref)', startX, refY - 14);
+
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x < waveW; x++) {
+        const sq = Math.sin((x * 0.06) + time * 6) >= 0 ? 1 : -1;
+        const wy = refY - sq * 16;
+        if (x === 0) ctx.moveTo(startX + x, wy);
+        else ctx.lineTo(startX + x, wy);
+      }
+      ctx.stroke();
+
+      // 2. VCO Output Clock Waveform
+      const vcoY = cy + 30;
+      ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillStyle = highColor;
+      ctx.fillText('VCO Synthesized Clock (f_out)', startX, vcoY - 14);
+
+      ctx.strokeStyle = highColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x < waveW; x++) {
+        const phaseShift = errorFactor * Math.sin(time * 3);
+        const sq = Math.sin((x * 0.06) + time * 6 + phaseShift) >= 0 ? 1 : -1;
+        const wy = vcoY - sq * 16;
+        if (x === 0) ctx.moveTo(startX + x, wy);
+        else ctx.lineTo(startX + x, wy);
+      }
+      ctx.stroke();
+
+      // Status Badge
+      const statusY = cy + 100;
+      ctx.fillStyle = isLocked ? highColor : warnColor;
+      ctx.font = '700 14px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(isLocked ? 'STATUS: PHASE LOCKED (Zero Steady-State Error)' : 'STATUS: ACQUIRING LOCK (Loop Filter Settling)', cx, statusY);
+
+      // Control Voltage V_ctrl Progress Bar
+      const barW = Math.min(400, width - 120);
+      const barY = height - 55;
+      const barX = (width - barW) / 2;
+
+      ctx.font = '11px Inter, sans-serif';
+      ctx.fillStyle = mutedColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('VCO Control Voltage (V_ctrl)', barX, barY - 8);
+
+      ctx.strokeStyle = isDark ? '#33334d' : '#e0e0e0';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(barX, barY, barW, 16);
+
+      const targetV = 0.7;
+      const currentV = isLocked ? targetV : targetV - errorFactor * 0.3 * Math.sin(time * 5);
+      ctx.fillStyle = accentColor;
+      ctx.fillRect(barX + 2, barY + 2, (barW - 4) * currentV, 12);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
 </body>
 </html>

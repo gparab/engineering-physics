@@ -1,127 +1,410 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SLAM Graph</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #1a1410;
-    overflow: hidden;
-    cursor: pointer;
-  }
-  .container {
-    width: 60px;
-    height: 60px;
-    position: relative;
-  }
-  svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-  }
-  .node { fill: #F4A460; }
-  .landmark { fill: #c48440; }
-  .edge { stroke: #F4A460; stroke-width: 1; opacity: 0.5; }
-  .robot { fill: #fff; }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SLAM Graph</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #26a69a;
+      --sim-amber: #ffb74d;
+      --sim-red: #ef5350;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00796b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.2rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
+  <header class="header">
+    <div class="title-container">
+      <h1>SLAM Graph</h1>
+      <div class="discipline-badge">Robotics Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<div class="container" id="icon">
-  <svg viewBox="0 0 60 60" id="graph">
-    <!-- Edges -->
-    <g id="edges">
-      <line class="edge" x1="10" y1="30" x2="25" y2="20" />
-      <line class="edge" x1="25" y1="20" x2="40" y2="30" />
-      <line class="edge" x1="40" y1="30" x2="35" y2="45" />
-      <line class="edge" x1="35" y1="45" x2="20" y2="45" />
-      
-      <!-- Landmark edges -->
-      <line class="edge" x1="10" y1="30" x2="30" y2="10" stroke-dasharray="2 2" />
-      <line class="edge" x1="25" y1="20" x2="30" y2="10" stroke-dasharray="2 2" />
-      <line class="edge" x1="40" y1="30" x2="50" y2="20" stroke-dasharray="2 2" />
-    </g>
-    
-    <!-- Landmarks -->
-    <rect class="landmark" x="28" y="8" width="4" height="4" />
-    <rect class="landmark" x="48" y="18" width="4" height="4" />
-    
-    <!-- Pose Nodes -->
-    <circle class="node" cx="10" cy="30" r="2" />
-    <circle class="node" cx="25" cy="20" r="2" />
-    <circle class="node" cx="40" cy="30" r="2" />
-    <circle class="node" cx="35" cy="45" r="2" />
-    
-    <!-- Current Pose (Robot) -->
-    <circle class="node" cx="20" cy="45" r="2" />
-    
-    <g id="robot-group" transform="translate(20,45)">
-      <circle class="robot" cx="0" cy="0" r="3" />
-    </g>
-  </svg>
-</div>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-<script>
-  // Idle Animation: Loop closure optimization shift
-  gsap.to("#graph", {
-    rotation: 5,
-    scaleX: 1.05,
-    scaleY: 0.95,
-    x: 2,
-    y: -2,
-    duration: 2,
-    yoyo: true,
-    repeat: -1,
-    ease: "sine.inOut"
-  });
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Graph-based Simultaneous Localization and Mapping (Graph-SLAM) formulates spatial mapping as a non-linear graph optimization problem across state space. Robot spatial poses form graph vertices linked by odometric motion constraints, while sensor observations link pose nodes to stationary landmark vertices. Detecting loop closures introduces spatial constraints between distant trajectory segments; non-linear least squares optimization (e.g. Levenberg-Marquardt) relaxes graph deformations to minimize cumulative error.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        F(x) = ∑_{ij} e_{ij}^T Ω_{ij} e_{ij} , Δ x = -(J^T Ω J)^(-1) J^T Ω e
+      </div>
+    </div>
+  </section>
 
-  // Robot moving slightly
-  gsap.to("#robot-group", {
-    x: -3,
-    y: 2,
-    duration: 1,
-    yoyo: true,
-    repeat: -1,
-    ease: "sine.inOut"
-  });
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
 
-  // Click Disappearance Motion: Catastrophic loop-closure failure; graph violently folds in on itself into a tangled knot and disappears.
-  document.body.addEventListener('click', () => {
-    gsap.killTweensOf("*");
-    
-    const clickTl = gsap.timeline();
-    
-    clickTl.to("#graph", {
-      rotation: 720,
-      scale: 0.1,
-      duration: 0.8,
-      ease: "back.in(2)"
-    }, 0)
-    .to(".node, .landmark, .edge, .robot", {
-      x: 30, // center
-      y: 30,
-      duration: 0.5,
-      ease: "power2.in"
-    }, 0)
-    .to("#icon", {
-      opacity: 0,
-      duration: 0.2
-    }, 0.6)
-    .to("body", {
-      backgroundColor: "#2e1f14",
-      duration: 0.2,
-      yoyo: true,
-      repeat: 1
-    }, 0.5);
-  }, { once: true });
-</script>
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#e0e0e0' : '#1a1a1a';
+      const mutedColor = isDark ? '#9e9eb4' : '#616161';
+      const accentColor = isDark ? '#4fc3f7' : '#0277bd';
+      const landmarkColor = '#ffb74d';
+      const loopColor = '#26a69a';
+
+      const cx = width * 0.5;
+      const cy = height * 0.44;
+
+      // Robot Pose Trajectory Nodes (Loop closure)
+      const poses = [
+        { x: -140, y: 50 },
+        { x: -120, y: -40 },
+        { x: -40,  y: -80 },
+        { x: 50,   y: -70 },
+        { x: 120,  y: -20 },
+        { x: 110,  y: 60 },
+        { x: 20,   y: 80 },
+        { x: -130, y: 55 } // Loop closure return
+      ];
+
+      // Landmarks
+      const landmarks = [
+        { x: -40, y: -10 },
+        { x: 40,  y: 10 }
+      ];
+
+      // Draw Odometry Edges
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i < poses.length - 1; i++) {
+        if (i === 0) ctx.moveTo(cx + poses[i].x, cy + poses[i].y);
+        else ctx.lineTo(cx + poses[i].x, cy + poses[i].y);
+      }
+      ctx.stroke();
+
+      // Loop Closure Edge (Dashed Green)
+      ctx.strokeStyle = loopColor;
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(cx + poses[6].x, cy + poses[6].y);
+      ctx.lineTo(cx + poses[0].x, cy + poses[0].y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Landmark Observation Lines
+      ctx.strokeStyle = isDark ? 'rgba(255, 183, 77, 0.4)' : 'rgba(245, 124, 0, 0.4)';
+      ctx.lineWidth = 1;
+      landmarks.forEach(lm => {
+        poses.forEach(p => {
+          ctx.beginPath();
+          ctx.moveTo(cx + lm.x, cy + lm.y);
+          ctx.lineTo(cx + p.x, cy + p.y);
+          ctx.stroke();
+        });
+      });
+
+      // Draw Landmark Nodes (Diamonds)
+      landmarks.forEach((lm, idx) => {
+        const lx = cx + lm.x;
+        const ly = cy + lm.y;
+        ctx.fillStyle = landmarkColor;
+        ctx.beginPath();
+        ctx.moveTo(lx, ly - 8);
+        ctx.lineTo(lx + 8, ly);
+        ctx.lineTo(lx, ly + 8);
+        ctx.lineTo(lx - 8, ly);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.font = '700 10px monospace';
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        ctx.fillText(`L${idx + 1}`, lx, ly - 12);
+      });
+
+      // Draw Pose Nodes (Circles)
+      poses.forEach((p, idx) => {
+        if (idx === poses.length - 1) return;
+        const px = cx + p.x;
+        const py = cy + p.y;
+        ctx.fillStyle = isDark ? '#22223a' : '#ffffff';
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(px, py, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+
+      const ty = height - 40;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('Non-Linear Least Squares Pose Graph Optimization with Loop Closure Constraints', cx, ty);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
 </body>
 </html>

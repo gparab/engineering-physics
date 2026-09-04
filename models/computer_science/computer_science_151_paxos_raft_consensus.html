@@ -1,141 +1,396 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paxos/Raft Consensus</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-            font-family: sans-serif;
-            overflow: hidden;
-        }
-        .container {
-            position: relative;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-        }
-        .node {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background-color: #8E44AD;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-        .node-1 { top: 0; left: 16px; } /* Leader */
-        .node-2 { bottom: 0; left: 0; }
-        .node-3 { bottom: 0; right: 0; }
-        
-        .crown {
-            position: absolute;
-            top: -6px;
-            left: -2px;
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-bottom: 5px solid gold;
-            opacity: 0.8;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paxos/Raft Consensus</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #26a69a;
+      --sim-amber: #ffb74d;
+      --sim-red: #ef5350;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
 
-        .token {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            background-color: #8E44AD;
-            border-radius: 50%;
-            opacity: 0;
-        }
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00796b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .node-1 { animation: pulse 2s infinite; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        @keyframes heartbeat12 {
-            0% { top: 4px; left: 16px; opacity: 1; }
-            90% { top: 32px; left: 4px; opacity: 1; }
-            100% { top: 32px; left: 4px; opacity: 0; }
-        }
-        @keyframes heartbeat13 {
-            0% { top: 4px; left: 24px; opacity: 1; }
-            90% { top: 32px; left: 36px; opacity: 1; }
-            100% { top: 32px; left: 36px; opacity: 0; }
-        }
-        @keyframes heartbeat23 {
-            0% { top: 36px; left: 8px; opacity: 1; }
-            90% { top: 36px; left: 32px; opacity: 1; }
-            100% { top: 36px; left: 32px; opacity: 0; }
-        }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
 
-        .t1 { animation: heartbeat12 1.5s infinite linear; }
-        .t2 { animation: heartbeat13 1.5s infinite linear 0.5s; }
-        .t3 { animation: heartbeat23 1.5s infinite linear 1s; }
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
 
-        .partition-line {
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            width: 2px;
-            height: 60px;
-            background-color: red;
-            transform: rotate(15deg);
-            display: none;
-            clip-path: polygon(0 0, 100% 10%, 0 20%, 100% 30%, 0 40%, 100% 50%, 0 60%, 100% 70%, 0 80%, 100% 90%, 0 100%);
-        }
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
 
-        .clicked .partition-line {
-            display: block;
-            animation: slash 0.2s forwards;
-        }
-        @keyframes slash {
-            0% { height: 0; }
-            100% { height: 60px; }
-        }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
 
-        .clicked .node-1 { animation: flyOut1 1s forwards cubic-bezier(0.1, 0.9, 0.2, 1); }
-        .clicked .node-2 { animation: flyOut2 1s forwards cubic-bezier(0.1, 0.9, 0.2, 1); }
-        .clicked .node-3 { animation: flyOut3 1s forwards cubic-bezier(0.1, 0.9, 0.2, 1); }
-        .clicked .token, .clicked .crown { display: none; }
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
 
-        @keyframes flyOut1 {
-            to { transform: translate(-200vw, -100vh); opacity: 0; }
-        }
-        @keyframes flyOut2 {
-            to { transform: translate(-200vw, 100vh); opacity: 0; }
-        }
-        @keyframes flyOut3 {
-            to { transform: translate(200vw, 100vh); opacity: 0; }
-        }
-    </style>
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.2rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="container" id="model">
-        <div class="node node-1"><div class="crown"></div></div>
-        <div class="node node-2"></div>
-        <div class="node node-3"></div>
-        
-        <div class="token t1"></div>
-        <div class="token t2"></div>
-        <div class="token t3"></div>
-
-        <div class="partition-line"></div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Paxos/Raft Consensus</h1>
+      <div class="discipline-badge">Computer Science</div>
     </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-    <script>
-        document.getElementById('model').addEventListener('click', function() {
-            this.classList.add('clicked');
-        });
-    </script>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      The Raft consensus protocol orchestrates fault-tolerant, consistent state machine replication across distributed computing clusters. A recognized Leader accepts client update proposals and multicasts AppendEntries remote procedure calls to Follower replicas. Once a proposed entry is logged by a strict majority quorum of servers, it is marked committed and executed into the state machine, guaranteeing strict safety under network partitions.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        Quorum = ⌊ N / 2 ⌋ + 1 , Commit(i) ⟺ ∑_{k=1}^N I_{match(k, i)} ≥ Quorum
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    const nodes = [
+      { id: 1, role: 'Leader', term: 2, angle: 0 },
+      { id: 2, role: 'Follower', term: 2, angle: (Math.PI * 2 / 5) * 1 },
+      { id: 3, role: 'Follower', term: 2, angle: (Math.PI * 2 / 5) * 2 },
+      { id: 4, role: 'Follower', term: 2, angle: (Math.PI * 2 / 5) * 3 },
+      { id: 5, role: 'Follower', term: 2, angle: (Math.PI * 2 / 5) * 4 }
+    ];
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#e0e0e0' : '#1a1a1a';
+      const mutedColor = isDark ? '#9e9eb4' : '#616161';
+      const accentColor = isDark ? '#4fc3f7' : '#0277bd';
+      const leaderColor = '#ffb74d';
+      const followerColor = '#26a69a';
+      const wireColor = isDark ? '#4a4a68' : '#b0bec5';
+
+      const cx = width * 0.5;
+      const cy = height * 0.44;
+      const r = Math.min(130, height * 0.28);
+
+      // Heartbeat pulse waves emitted by Leader
+      const pulseT = (time * 1.5) % 1;
+
+      // Draw Network Links
+      ctx.strokeStyle = isDark ? '#33334d' : '#e0e0e0';
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const x1 = cx + Math.cos(nodes[i].angle) * r;
+          const y1 = cy + Math.sin(nodes[i].angle) * r;
+          const x2 = cx + Math.cos(nodes[j].angle) * r;
+          const y2 = cy + Math.sin(nodes[j].angle) * r;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      }
+
+      // Replicated Log Heartbeat Pulses (from Node 1 Leader to all followers)
+      const lx = cx + Math.cos(nodes[0].angle) * r;
+      const ly = cy + Math.sin(nodes[0].angle) * r;
+
+      for (let i = 1; i < nodes.length; i++) {
+        const fx = cx + Math.cos(nodes[i].angle) * r;
+        const fy = cy + Math.sin(nodes[i].angle) * r;
+        const px = lx + (fx - lx) * pulseT;
+        const py = ly + (fy - ly) * pulseT;
+
+        ctx.fillStyle = leaderColor;
+        ctx.beginPath();
+        ctx.arc(px, py, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw Nodes
+      nodes.forEach(nd => {
+        const nx = cx + Math.cos(nd.angle) * r;
+        const ny = cy + Math.sin(nd.angle) * r;
+        const isLeader = nd.role === 'Leader';
+
+        ctx.fillStyle = isDark ? '#22223a' : '#ffffff';
+        ctx.strokeStyle = isLeader ? leaderColor : followerColor;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(nx, ny, 26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = '700 12px Inter, sans-serif';
+        ctx.fillStyle = isLeader ? leaderColor : followerColor;
+        ctx.textAlign = 'center';
+        ctx.fillText(`N${nd.id}`, nx, ny - 2);
+
+        ctx.font = '9px monospace';
+        ctx.fillStyle = textColor;
+        ctx.fillText(nd.role, nx, ny + 11);
+      });
+
+      const ty = height - 40;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('Raft Cluster (5 Nodes): Leader N1 Broadasting AppendEntries RPCs to Quorum Replicas', width * 0.5, ty);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
 </body>
 </html>

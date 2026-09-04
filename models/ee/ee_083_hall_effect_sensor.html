@@ -1,131 +1,422 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hall Effect Sensor</title>
-    <style>
-        body { margin: 0; padding: 0; background: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        #container { position: relative; width: 400px; height: 300px; cursor: pointer; }
-        canvas { position: absolute; top: 0; left: 0; }
-        #magnet {
-            position: absolute; width: 60px; height: 30px; background: linear-gradient(to right, #E74C3C 50%, #3498DB 50%); border-radius: 4px; top: 50px; left: -60px; z-index: 10; font-family: sans-serif; font-weight: bold; color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; box-sizing: border-box; font-size: 12px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hall Effect Sensor</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    main, .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation, .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2, .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p, .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation, .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
-    <div id="container">
-        <div id="magnet"><span>N</span><span>S</span></div>
-        <canvas id="hallCanvas" width="400" height="300"></canvas>
+  <header class="header">
+    <div class="title-container">
+      <h1>Hall Effect Sensor</h1>
+      <div class="discipline-badge">Electrical Engineering</div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script>
-        const container = document.getElementById('container');
-        const canvas = document.getElementById('hallCanvas');
-        const magnet = document.getElementById('magnet');
-        const ctx = canvas.getContext('2d');
-        const width = 400, height = 300;
-        const color = '#8E44AD'; // purple
-        
-        let electrons = [];
-        for (let i = 0; i < 100; i++) {
-            electrons.push({
-                x: Math.random() * width,
-                y: 130 + Math.random() * 40,
-                vx: 2 + Math.random(),
-                vy: 0,
-                baseY: 130 + Math.random() * 40
-            });
-        }
-        
-        let isDestroyed = false;
-        let magnetActive = false;
-        let scramble = false;
-        
-        function passMagnet() {
-            if (isDestroyed) return;
-            gsap.fromTo(magnet, 
-                { left: -60, top: 50, scale: 1 }, 
-                { left: 400, duration: 3, ease: 'none', 
-                  onUpdate: function() {
-                      let x = parseFloat(magnet.style.left);
-                      magnetActive = (x > 100 && x < 300);
-                  },
-                  onComplete: () => {
-                      magnetActive = false;
-                      setTimeout(passMagnet, 2000);
-                  }
-                }
-            );
-        }
-        passMagnet();
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-        function draw() {
-            ctx.clearRect(0, 0, width, height);
-            
-            // Draw semiconductor slab
-            ctx.fillStyle = 'rgba(142, 68, 173, 0.2)';
-            ctx.fillRect(50, 120, 300, 60);
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
-            ctx.strokeRect(50, 120, 300, 60);
-            
-            ctx.fillStyle = '#fff';
-            
-            electrons.forEach(e => {
-                if (!scramble) {
-                    e.x += e.vx;
-                    if (e.x > 350) {
-                        e.x = 50;
-                        e.y = e.baseY;
-                    }
-                    
-                    // Hall effect: pushed sideways
-                    if (magnetActive && e.x > 150 && e.x < 250) {
-                        e.y -= 1; // pushed up
-                    } else {
-                        e.y += (e.baseY - e.y) * 0.1; // return to base
-                    }
-                } else {
-                    e.x += e.vx;
-                    e.y += e.vy;
-                    e.vx += (Math.random() - 0.5) * 2;
-                    e.vy += (Math.random() - 0.5) * 2;
-                }
-                
-                ctx.beginPath();
-                ctx.arc(e.x, e.y, 2, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            
-            // Draw voltage indication
-            if (magnetActive && !scramble) {
-                ctx.fillStyle = '#E74C3C';
-                ctx.fillText("+ + + +", 180, 115);
-                ctx.fillStyle = '#3498DB';
-                ctx.fillText("- - - -", 180, 195);
-            }
-            
-            requestAnimationFrame(draw);
-        }
-        draw();
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-        container.addEventListener('click', () => {
-            if (isDestroyed) return;
-            isDestroyed = true;
-            scramble = true;
-            magnetActive = false;
-            
-            gsap.killTweensOf(magnet);
-            gsap.to(magnet, { scale: 3, top: 135, left: 170, rotation: 1080, duration: 1.5 });
-            
-            electrons.forEach(e => {
-                e.vx = (Math.random() - 0.5) * 10;
-                e.vy = (Math.random() - 0.5) * 10;
-            });
-            
-            gsap.to(container, { opacity: 0, duration: 2, delay: 1 });
-        });
-    </script>
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      The Hall effect sensor exploits the transverse deflection experienced by moving charge carriers in an electrical conductor or semiconductor when subjected to an orthogonal magnetic field. When a longitudinal current I flows through the thin semiconductor slab in the presence of a perpendicular magnetic flux density B, the magnetic Lorentz force F = q(v × B) deflects carriers toward one lateral edge. This charge accumulation creates an electrostatic Hall voltage V_H that linearly measures magnetic field intensity.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        V_H = (I · B) / (n · q · t) = R_H · (I · B / t) &nbsp;&nbsp;|&nbsp;&nbsp; E_H = -v_d × B
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let time = 0;
+
+    // Moving electrons deflected by Lorentz force
+    const electrons = [];
+    for (let i = 0; i < 40; i++) {
+      electrons.push({
+        x: Math.random(),
+        y: Math.random()
+      });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.02;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
+      const simRed = getThemeColor('--sim-red') || '#ef5350';
+      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
+      const textColor = getThemeColor('--text') || '#e0e0e0';
+      const mutedColor = getThemeColor('--text-muted') || '#9e9eb4';
+      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+
+      const sX = width * 0.15;
+      const sY = height * 0.22;
+      const sW = width * 0.7;
+      const sH = height * 0.44;
+
+      // 1. Semiconductor Hall Element Slab
+      ctx.fillStyle = 'rgba(79, 195, 247, 0.15)';
+      ctx.fillRect(sX, sY, sW, sH);
+      ctx.strokeStyle = surfaceBorder;
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(sX, sY, sW, sH);
+
+      // Longitudinal Current I (Left to Right)
+      ctx.fillStyle = simTeal;
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Current I →', sX - 75, sY + sH / 2 + 5);
+
+      // External Magnetic Field B (Perpendicular into screen: circled crosses ⊗)
+      ctx.fillStyle = 'rgba(255, 183, 77, 0.45)';
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 7; c++) {
+          const fx = sX + (c + 0.5) * (sW / 7);
+          const fy = sY + (r + 0.5) * (sH / 3);
+          ctx.fillText('⊗', fx, fy + 5);
+        }
+      }
+
+      ctx.fillStyle = simAmber;
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('Magnetic Field B (Into Screen ⊗)', sX + sW / 2, sY - 14);
+
+      // 2. Deflected Conduction Electrons (Deflected downward by F = -e(v x B))
+      for (let e of electrons) {
+        e.x += 0.008;
+        if (e.x > 1) {
+          e.x = 0;
+          e.y = Math.random() * 0.6 + 0.1;
+        }
+        // Downward magnetic Lorentz force drift
+        if (e.y < 0.88) e.y += 0.0025;
+
+        const ex = sX + e.x * sW;
+        const ey = sY + e.y * sH;
+
+        ctx.fillStyle = simBlue;
+        ctx.beginPath();
+        ctx.arc(ex, ey, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Accumulated Charges on Edges
+      // Top Edge: Positive surface charge (+)
+      ctx.fillStyle = simRed;
+      ctx.font = 'bold 14px sans-serif';
+      for (let c = 1; c < 8; c++) {
+        ctx.fillText('+', sX + (c / 8) * sW, sY + 16);
+      }
+      // Bottom Edge: Negative accumulated electrons (-)
+      ctx.fillStyle = simBlue;
+      for (let c = 1; c < 8; c++) {
+        ctx.fillText('–', sX + (c / 8) * sW, sY + sH - 8);
+      }
+
+      // 3. Hall Voltage Readout V_H (Transverse Leads)
+      ctx.strokeStyle = simRed;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(sX + sW * 0.5, sY); ctx.lineTo(sX + sW * 0.5, sY - 30);
+      ctx.stroke();
+
+      ctx.strokeStyle = simBlue;
+      ctx.beginPath();
+      ctx.moveTo(sX + sW * 0.5, sY + sH); ctx.lineTo(sX + sW * 0.5, sY + sH + 30);
+      ctx.stroke();
+
+      ctx.fillStyle = simAmber;
+      ctx.font = 'bold 15px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Transverse Hall Voltage: V_H = 12.5 mV', sX + sW * 0.5, height - 25);
+    }
+    animate();
+
+  </script>
 </body>
 </html>

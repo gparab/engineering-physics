@@ -1,86 +1,389 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<style>
-  body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-  .container { position: relative; cursor: pointer; }
-  canvas { display: block; }
-  .label { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dipole Antenna (Telecom)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    main, .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation, .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2, .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p, .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation, .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
-<div class="container" id="container">
-  <canvas id="simCanvas" width="400" height="400"></canvas>
-  <div class="label">Dipole Antenna (Telecom)</div>
-</div>
-<script>
-const canvas = document.getElementById('simCanvas');
-const ctx = canvas.getContext('2d');
-const COLOR = '#E67E22';
-let state = 'idle';
-let time = 0;
-let waves = [];
-let particles = [];
+  <header class="header">
+    <div class="title-container">
+      <h1>Dipole Antenna (Telecom)</h1>
+      <div class="discipline-badge">Telecommunications</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-document.getElementById('container').addEventListener('click', () => {
-  if(state === 'idle') {
-    state = 'clicked';
-    for(let i=0; i<200; i++) {
-      particles.push({
-        x: 200 + (Math.random()-0.5)*100, y: 200,
-        vx: (Math.random()-0.5)*30, vy: (Math.random()-0.5)*30,
-        life: 1
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      In wireless telecommunications, the resonant half-wave dipole is the reference antenna against which directive antenna gains are measured (in dBd or dBi). High-frequency alternating radio currents generate oscillating charge accelerations along the metallic elements, launching spherical transverse electromagnetic (TEM) wavefronts into space with an omnidirectional toroidal radiation pattern and 2.15 dBi directivity gain.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        P_{rad} = (η₀ / 4π) · I₀² · ∫₀^π (cos²((π/2) cos θ) / sin θ) dθ &nbsp;&nbsp;|&nbsp;&nbsp; G_d = 2.15 dBi &nbsp;&nbsp;|&nbsp;&nbsp; R_{in} ≈ 73 Ω
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
       });
     }
-  }
-});
 
-function draw() {
-  ctx.clearRect(0, 0, 400, 400);
-  time += 0.05;
-  if(state === 'idle') {
-    if (Math.random() < 0.1) waves.push(0);
-    ctx.strokeStyle = COLOR;
-    ctx.lineWidth = 1;
-    for(let i=0; i<waves.length; i++) {
-      waves[i] += 1;
-      ctx.globalAlpha = Math.max(0, 1 - waves[i]/150);
-      ctx.beginPath(); ctx.arc(200, 200, waves[i], 0, Math.PI*2); ctx.stroke();
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
     }
-    waves = waves.filter(w => w < 150);
-    ctx.globalAlpha = 1;
+
     
-    ctx.fillStyle = '#8b949e';
-    ctx.fillRect(130, 198, 65, 4);
-    ctx.fillRect(205, 198, 65, 4);
-    
-    let offset = Math.sin(time) * 30;
-    ctx.fillStyle = COLOR;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = COLOR;
-    ctx.beginPath();
-    ctx.arc(165 + offset, 200, 3, 0, Math.PI*2);
-    ctx.arc(235 - offset, 200, 3, 0, Math.PI*2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  } else if (state === 'clicked') {
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = COLOR;
-    for(let p of particles) {
-      p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-      if (p.life > 0) {
-        ctx.globalAlpha = p.life;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let time = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.025;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
+      const simRed = getThemeColor('--sim-red') || '#ef5350';
+      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
+      const textColor = getThemeColor('--text') || '#e0e0e0';
+      const mutedColor = getThemeColor('--text-muted') || '#9e9eb4';
+      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+
+      const cx = width * 0.35;
+      const cy = height * 0.46;
+      const dH = 150;
+
+      // 1. Radiated Wavefront Ripples (Left / Center)
+      for (let i = 0; i < 6; i++) {
+        const rad = ((time * 45 + i * 40) % 240);
+        const alpha = Math.max(0, 1 - rad / 240);
+        ctx.strokeStyle = `rgba(79, 195, 247, ${alpha * 0.55})`;
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.ellipse(cx - rad * 0.5, cy, rad * 0.5, rad * 0.38, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.ellipse(cx + rad * 0.5, cy, rad * 0.5, rad * 0.38, 0, 0, Math.PI * 2);
+        ctx.stroke();
       }
+
+      // 2. Dipole Antenna Rods
+      ctx.strokeStyle = simAmber;
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 8); ctx.lineTo(cx, cy - dH / 2);
+      ctx.moveTo(cx, cy + 8); ctx.lineTo(cx, cy + dH / 2);
+      ctx.stroke();
+
+      ctx.fillStyle = simRed;
+      ctx.beginPath(); ctx.arc(cx, cy - 8, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy + 8, 4, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Transmitter Dipole (λ/2)', cx, cy + dH / 2 + 25);
+
+      // 3. Receiver Antenna (Far Right)
+      const rxX = width * 0.82;
+      ctx.strokeStyle = simTeal;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(rxX, cy - 40); ctx.lineTo(rxX, cy + 40);
+      ctx.stroke();
+
+      ctx.fillStyle = simTeal;
+      ctx.fillText('Receiver Dipole', rxX, cy + 60);
+
+      // Received Signal Voltage Display
+      const rxSignal = Math.sin(time * 3);
+      ctx.fillStyle = simAmber;
+      ctx.fillText(`Received RF: ${(rxSignal * 3.2).toFixed(2)} µV`, rxX, cy - 50);
+
+      // Status
+      ctx.textAlign = 'center';
+      ctx.fillStyle = textColor;
+      ctx.font = '13px sans-serif';
+      ctx.fillText('Free-Space Path Loss: P_rx = P_tx · G_tx · G_rx · (λ / 4πd)²', width / 2, height - 20);
     }
-    ctx.globalAlpha = 1;
-    ctx.shadowBlur = 0;
-  }
-  requestAnimationFrame(draw);
-}
-draw();
-</script>
+    animate();
+
+  </script>
 </body>
 </html>

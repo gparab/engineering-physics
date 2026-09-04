@@ -1,143 +1,410 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <title>34. Petri Net</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #0d0f12;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: -apple-system, sans-serif;
-            transition: background-color 3s;
-        }
-        #info {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            color: #555;
-            font-size: 12px;
-            letter-spacing: 1px;
-            transition: color 3s;
-        }
-        svg {
-            width: 400px;
-            height: 400px;
-            overflow: visible;
-        }
-        .place {
-            fill: none;
-            stroke: #8B4513;
-            stroke-width: 4;
-        }
-        .transition {
-            fill: #8B4513;
-        }
-        .arc {
-            fill: none;
-            stroke: #8B4513;
-            stroke-width: 2;
-            marker-end: url(#arrow);
-        }
-        .token {
-            fill: #8B4513;
-            transition: fill 1s;
-        }
-        .deadlock .token {
-            fill: #FF0000 !important;
-        }
-        .deadlock #info {
-            color: #222;
-        }
-        .fade-out {
-            opacity: 0.1;
-            transition: opacity 4s ease-in;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discrete Event Petri Net Concurrency</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
-    <div id="info">PETRI NET // 034</div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Discrete Event Petri Net Concurrency</h1>
+      <div class="discipline-badge">Industrial & Systems Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
     
-    <svg id="net" viewBox="0 0 400 400">
-        <defs>
-            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="#8B4513" />
-            </marker>
-        </defs>
+  </main>
 
-        <!-- Arcs -->
-        <path class="arc" d="M 200,80 L 200,140" />
-        <path class="arc" d="M 200,160 L 120,240" />
-        <path class="arc" d="M 200,160 L 280,240" />
-        
-        <path class="arc" d="M 120,280 L 200,340" />
-        <path class="arc" d="M 280,280 L 200,340" />
-        
-        <path class="arc" d="M 180,350 Q 50,200 180,70" fill="none" marker-end="url(#arrow)" />
+  <section class="explanation-section explanation">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Petri nets provide a formal graphical and mathematical framework for modeling concurrent, asynchronous, distributed discrete-event manufacturing systems. Bipartite directed graphs connect places (representing state conditions) and transitions (representing events). A transition fires when all input places contain sufficient tokens, updating the global system marking vector according to incidence matrix algebra.
+    </p>
+    <div class="equation-container equation">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        M_k = M_(k-1) + C · u_k &emsp;|&emsp; u_k ∈ {0, 1}
+      </div>
+    </div>
+  </section>
 
-        <!-- Places -->
-        <circle class="place" cx="200" cy="60" r="20" />
-        <circle class="place" cx="120" cy="260" r="20" />
-        <circle class="place" cx="280" cy="260" r="20" />
+  <script>
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
 
-        <!-- Transitions -->
-        <rect class="transition" x="170" y="140" width="60" height="10" />
-        <rect class="transition" x="170" y="340" width="60" height="10" />
+    // Helper to read current computed CSS variables for Canvas contexts
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
 
-        <!-- Tokens -->
-        <circle class="token" id="t1" cx="200" cy="60" r="8" opacity="1" />
-        <circle class="token" id="t2" cx="120" cy="260" r="8" opacity="0" />
-        <circle class="token" id="t3" cx="280" cy="260" r="8" opacity="0" />
-    </svg>
+    
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-    <script>
-        const tl = gsap.timeline({ repeat: -1 });
-        let crashed = false;
+    let time = 0;
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      const blue = getThemeColor('--sim-blue');
+      const text = getThemeColor('--text');
+      const textMuted = getThemeColor('--text-muted');
+      const amber = getThemeColor('--sim-amber');
+      const teal = getThemeColor('--sim-teal');
+      const border = getThemeColor('--surface-border');
 
-        function animateCycle() {
-            if(crashed) return;
+      time += 0.02;
+      const midY = height * 0.52;
 
-            const cycle = gsap.timeline();
-            
-            // T1 moves down to transition 1
-            cycle.to("#t1", { y: 80, duration: 0.5, ease: "power1.in" })
-                 .to("#t1", { opacity: 0, duration: 0.1 })
-                 
-                 // Split to t2 and t3
-                 .to(["#t2", "#t3"], { opacity: 1, duration: 0.1 }, "+=0.1")
-                 
-                 // t2 and t3 move to transition 2
-                 .to("#t2", { x: 60, y: 70, duration: 1, ease: "power1.inOut" })
-                 .to("#t3", { x: -60, y: 70, duration: 1, ease: "power1.inOut" }, "<")
-                 
-                 // disappear at transition 2
-                 .to(["#t2", "#t3"], { opacity: 0, duration: 0.1 })
-                 
-                 // back to t1
-                 .set("#t1", { y: 0 })
-                 .to("#t1", { opacity: 1, duration: 0.1 });
-                 
-            return cycle;
-        }
+      // Places (Circles): P1 (left), P2 (center-top), P3 (center-bot), P4 (right)
+      const p1 = { x: width * 0.2, y: midY, name: 'P1 (Buffer)' };
+      const p2 = { x: width * 0.5, y: midY - 60, name: 'P2 (Machining)' };
+      const p3 = { x: width * 0.5, y: midY + 60, name: 'P3 (Resource)' };
+      const p4 = { x: width * 0.8, y: midY, name: 'P4 (Finished)' };
 
-        tl.add(animateCycle());
+      // Transitions (Bars): T1 (left), T2 (right)
+      const t1 = { x: width * 0.35, y: midY, name: 'T1' };
+      const t2 = { x: width * 0.65, y: midY, name: 'T2' };
 
-        window.addEventListener('click', () => {
-            if(crashed) return;
-            crashed = true;
-            
-            tl.pause();
-            document.body.classList.add("deadlock");
-            
-            // Fades to black
-            document.body.style.backgroundColor = "#000";
-            document.getElementById("net").classList.add("fade-out");
-        });
-    </script>
+      // Connecting Arcs
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 2;
+      function drawArc(from, to) {
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+      }
+
+      drawArc(p1, t1);
+      drawArc(t1, p2);
+      drawArc(t1, p3);
+      drawArc(p2, t2);
+      drawArc(p3, t2);
+      drawArc(t2, p4);
+
+      // Draw Transitions (Solid Rectangles)
+      [t1, t2].forEach(t => {
+        ctx.fillStyle = textMuted;
+        ctx.fillRect(t.x - 6, t.y - 30, 12, 60);
+        ctx.fillStyle = text;
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(t.name, t.x, t.y - 36);
+      });
+
+      // Draw Places (Circles)
+      [p1, p2, p3, p4].forEach(p => {
+        ctx.fillStyle = 'rgba(79, 195, 247, 0.15)';
+        ctx.strokeStyle = blue;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = textMuted;
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(p.name, p.x, p.y + 36);
+      });
+
+      // Token Firing Cycling between states
+      const state = Math.floor((time * 0.8) % 3);
+      ctx.fillStyle = amber;
+
+      if (state === 0) {
+        // Token at P1
+        ctx.beginPath();
+        ctx.arc(p1.x, p1.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (state === 1) {
+        // Tokens at P2 and P3 concurrently
+        ctx.beginPath();
+        ctx.arc(p2.x, p2.y, 6, 0, Math.PI * 2);
+        ctx.arc(p3.x, p3.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Token at P4
+        ctx.beginPath();
+        ctx.arc(p4.x, p4.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = text;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Bipartite Directed Graph (Places P, Transitions T)', 24, 30);
+      ctx.fillText(`Current Marking Vector M = [${state === 0 ? 1 : 0}, ${state === 1 ? 1 : 0}, ${state === 1 ? 1 : 0}, ${state === 2 ? 1 : 0}]ᵀ`, 24, 52);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+    
+  </script>
 </body>
 </html>

@@ -1,128 +1,433 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Multiplexer (MUX)</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    background-color: #0f172a;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-  }
-  .container {
-    width: 250px;
-    height: 250px;
-    cursor: pointer;
-  }
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-  .trapezoid {
-    fill: none;
-    stroke: #E67E22;
-    stroke-width: 3;
-  }
-  .stream {
-    stroke: #E67E22;
-    stroke-width: 2;
-    stroke-linecap: round;
-    opacity: 0.5;
-  }
-  .selected-stream {
-    stroke: #E67E22;
-    stroke-width: 3;
-    opacity: 1;
-    filter: drop-shadow(0 0 5px #E67E22);
-  }
-  .spark {
-    fill: #E67E22;
-    opacity: 0;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multiplexer (4-to-1 MUX)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #26a69a;
+      --sim-amber: #ffb74d;
+      --sim-red: #ef5350;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00796b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.2rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div class="container" id="model">
-  <svg viewBox="0 0 100 100" id="svg-element">
-    <g id="mux-group">
-      <!-- MUX trapezoid -->
-      <polygon class="trapezoid" points="40,20 60,35 60,65 40,80" id="mux-shape" />
-      <!-- Inputs -->
-      <line class="stream" x1="10" y1="30" x2="35" y2="30" id="in1" />
-      <line class="stream" x1="10" y1="50" x2="35" y2="50" id="in2" />
-      <line class="stream" x1="10" y1="70" x2="35" y2="70" id="in3" />
-      <!-- Selector -->
-      <line class="stream" x1="50" y1="90" x2="50" y2="75" />
-      <!-- Output -->
-      <line class="selected-stream" x1="65" y1="50" x2="90" y2="50" id="out" />
-    </g>
-    
-    <!-- Streams passing through -->
-    <circle r="2" fill="#E67E22" id="packet1" />
-    <circle r="2" fill="#E67E22" id="packet2" />
-    
-    <!-- Sparks -->
-    <g id="sparks"></g>
-  </svg>
-</div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Multiplexer (4-to-1 MUX)</h1>
+      <div class="discipline-badge">Computer Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script>
-  gsap.set(["#packet1", "#packet2"], { opacity: 0 });
-  
-  const tl = gsap.timeline({ repeat: -1 });
-  tl.set("#packet1", { x: 10, y: 50, opacity: 1 })
-    .to("#packet1", { x: 90, duration: 1.5, ease: "none" })
-    .to("#packet1", { opacity: 0, duration: 0.1 }, "-=0.1")
-    .set("#packet2", { x: 10, y: 30, opacity: 1 })
-    .to("#packet2", { x: 40, duration: 0.5, ease: "none" })
-    .to("#packet2", { opacity: 0, duration: 0.1 });
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-  // Create sparks
-  const sparksGroup = document.getElementById('sparks');
-  for (let i = 0; i < 12; i++) {
-    const spark = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    spark.setAttribute('class', 'spark');
-    spark.setAttribute('r', Math.random() * 2 + 1);
-    spark.setAttribute('cx', 40);
-    spark.setAttribute('cy', i % 2 === 0 ? 30 : 70);
-    sparksGroup.appendChild(spark);
-  }
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A multiplexer (MUX) is a combinational digital data selector that directs one of 2^N input lines to a single common output line using N binary selection lines. In a 4-to-1 multiplexer, two select control bits (S1, S0) decode to enable one of four internal AND gates, channeling the selected input signal through a unifying OR stage. Multiplexers form vital routing switches for ALU operand selection, data bus steering, and FPGA logic implementation.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        Y = (D_0 · S̄_1 · S̄_0) + (D_1 · S̄_1 · S_0) + (D_2 · S_1 · S̄_0) + (D_3 · S_1 · S_0)
+      </div>
+    </div>
+  </section>
 
-  const model = document.getElementById('model');
-  model.addEventListener('click', () => {
-    tl.kill();
-    gsap.killTweensOf("*");
-    
-    const clickTl = gsap.timeline();
-    // Unselected streams disintegrate
-    const sparks = document.querySelectorAll('.spark');
-    sparks.forEach((s, i) => {
-      const startY = i % 2 === 0 ? 30 : 70;
-      clickTl.to(s, {
-        opacity: 1,
-        x: 40 - Math.random() * 20,
-        y: startY + (Math.random() - 0.5) * 40,
-        duration: 0.5 + Math.random() * 0.5,
-        ease: "power2.out",
-        opacity: 0
-      }, 0);
-    });
-    
-    clickTl.to(["#in1", "#in3", "#packet1", "#packet2"], { opacity: 0, duration: 0.2 }, 0)
-           .to("#mux-shape", {
-             attr: { points: "40,50 60,50 60,50 40,50" }, // collapse to line
-             duration: 0.4,
-             ease: "power2.inOut"
-           }, 0.2)
-           .to(["#mux-shape", "#in2", "#out"], { x: 150, opacity: 0, duration: 0.6, ease: "power2.in" }, 0.6);
-  });
-</script>
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#e0e0e0' : '#1a1a1a';
+      const mutedColor = isDark ? '#9e9eb4' : '#616161';
+      const accentColor = isDark ? '#4fc3f7' : '#0277bd';
+      const highColor = '#26a69a';
+      const wireColor = isDark ? '#4a4a68' : '#b0bec5';
+
+      // 4 channels, cycle select lines every 2.5s
+      const sel = Math.floor(time / 2.5) % 4;
+      const s1 = (sel >> 1) & 1;
+      const s0 = sel & 1;
+
+      const cx = width * 0.45;
+      const cy = height * 0.45;
+
+      // Draw 4:1 MUX Trapezoid Symbol
+      const muxW = 90;
+      const muxH = 200;
+      ctx.beginPath();
+      ctx.moveTo(cx - muxW * 0.5, cy - muxH * 0.5);
+      ctx.lineTo(cx + muxW * 0.5, cy - muxH * 0.35);
+      ctx.lineTo(cx + muxW * 0.5, cy + muxH * 0.35);
+      ctx.lineTo(cx - muxW * 0.5, cy + muxH * 0.5);
+      ctx.closePath();
+
+      ctx.fillStyle = isDark ? '#22223a' : '#ffffff';
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2.5;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = '700 15px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('4:1 MUX', cx, cy - 10);
+
+      // Draw 4 Input Channels with live signals
+      const inX = cx - muxW * 0.5 - 120;
+      const colors = ['#4fc3f7', '#26a69a', '#ffb74d', '#ba68c8'];
+      const freqs = [1.0, 2.0, 3.0, 4.0];
+
+      for (let i = 0; i < 4; i++) {
+        const inY = cy - muxH * 0.35 + i * (muxH * 0.7 / 3);
+        const isActive = (i === sel);
+
+        // Input Wire
+        ctx.strokeStyle = isActive ? colors[i] : wireColor;
+        ctx.lineWidth = isActive ? 3 : 1.5;
+        ctx.beginPath();
+        ctx.moveTo(inX, inY);
+        ctx.lineTo(cx - muxW * 0.5, inY);
+        ctx.stroke();
+
+        // Mini animated waveform on input
+        ctx.strokeStyle = colors[i];
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let dx = 0; dx < 60; dx++) {
+          const wx = inX - 70 + dx;
+          const wy = inY + Math.sin((time * 4 * freqs[i]) + dx * 0.2) * 8;
+          if (dx === 0) ctx.moveTo(wx, wy);
+          else ctx.lineTo(wx, wy);
+        }
+        ctx.stroke();
+
+        // Input Port Label
+        ctx.font = '600 12px monospace';
+        ctx.fillStyle = isActive ? colors[i] : mutedColor;
+        ctx.textAlign = 'left';
+        ctx.fillText(`D${i}`, cx - muxW * 0.5 + 8, inY + 4);
+      }
+
+      // Select Lines at Bottom
+      const sY = cy + muxH * 0.42;
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - 15, sY);
+      ctx.lineTo(cx - 15, sY + 35);
+      ctx.moveTo(cx + 15, sY);
+      ctx.lineTo(cx + 15, sY + 35);
+      ctx.stroke();
+
+      ctx.font = '600 12px monospace';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.fillText(`S1=${s1}`, cx - 15, sY + 50);
+      ctx.fillText(`S0=${s0}`, cx + 15, sY + 50);
+
+      // Output Wire and Live Streamed Waveform
+      const outX = cx + muxW * 0.5;
+      ctx.strokeStyle = colors[sel];
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(outX, cy);
+      ctx.lineTo(outX + 160, cy);
+      ctx.stroke();
+
+      ctx.font = '600 13px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'left';
+      ctx.fillText(`Output Y (D${sel})`, outX + 170, cy + 4);
+
+      // Live Output Waveform
+      ctx.strokeStyle = colors[sel];
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let dx = 0; dx < 120; dx++) {
+        const wx = outX + 20 + dx;
+        const wy = cy + Math.sin((time * 4 * freqs[sel]) + dx * 0.2) * 12;
+        if (dx === 0) ctx.moveTo(wx, wy);
+        else ctx.lineTo(wx, wy);
+      }
+      ctx.stroke();
+
+      // Active Channel Indicator Banner
+      const ty = height - 40;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.fillStyle = colors[sel];
+      ctx.textAlign = 'center';
+      ctx.fillText(`Routing Channel D${sel} (S1S0 = ${s1}${s0}) to Output Y`, width * 0.5, ty);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
 </body>
 </html>

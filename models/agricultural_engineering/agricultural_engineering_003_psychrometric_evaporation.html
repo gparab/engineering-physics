@@ -1,75 +1,398 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Psychrometric Evaporation</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f8f9fa;
-            overflow: hidden;
-        }
-        .container {
-            position: relative;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Psychrometric Grain Drying Evaporation</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
-    <div class="container" id="model">
-        <svg width="40" height="40" viewBox="0 0 40 40" overflow="visible">
-            <g class="arrows" stroke="#E74C3C" stroke-width="1">
-                <line x1="8" y1="20" x2="12" y2="20" />
-                <line x1="32" y1="20" x2="28" y2="20" />
-            </g>
-            <circle class="kernel" cx="20" cy="20" r="6" fill="#F5C200" />
-            <circle class="core" cx="20" cy="20" r="3" fill="#007AFF" />
-            <path class="vapor" d="M18,12 Q16,8 20,4" stroke="#888" stroke-width="1" fill="none" opacity="0"/>
-            <path class="vapor2" d="M22,12 Q24,8 20,4" stroke="#888" stroke-width="1" fill="none" opacity="0"/>
-            <g class="fragments" style="visibility:hidden">
-                <circle class="frag" cx="20" cy="20" r="2" fill="#fff" />
-                <circle class="frag" cx="20" cy="20" r="2" fill="#fff" />
-                <circle class="frag" cx="20" cy="20" r="2" fill="#fff" />
-                <circle class="frag" cx="20" cy="20" r="2" fill="#fff" />
-            </g>
-        </svg>
+  <header class="header">
+    <div class="title-container">
+      <h1>Psychrometric Grain Drying Evaporation</h1>
+      <div class="discipline-badge">Agricultural Engineering</div>
     </div>
-    <script>
-        gsap.to('.arrows line', { x: (i) => i === 0 ? 2 : -2, duration: 0.8, yoyo: true, repeat: -1, ease: "sine.inOut" });
-        gsap.to('.core', { r: 1.5, duration: 2, yoyo: true, repeat: -1, ease: "sine.inOut" });
-        
-        gsap.to('.vapor', { y: -5, opacity: 0.6, duration: 1.5, repeat: -1, ease: "power1.out" });
-        gsap.to('.vapor2', { y: -5, opacity: 0.6, duration: 1.5, delay: 0.75, repeat: -1, ease: "power1.out" });
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-        document.getElementById('model').addEventListener('click', () => {
-            gsap.killTweensOf('*');
-            gsap.set('.arrows, .vapor, .vapor2, .core', { display: 'none' });
-            
-            gsap.to('.kernel', { r: 12, fill: "#FFF", duration: 0.3, ease: "power2.in", onComplete: () => {
-                gsap.set('.kernel', { display: 'none' });
-                gsap.set('.fragments', { visibility: 'visible' });
-                gsap.to('.frag', {
-                    x: () => (Math.random() - 0.5) * window.innerWidth,
-                    y: () => (Math.random() - 0.5) * window.innerHeight,
-                    scale: 3,
-                    opacity: 0,
-                    duration: 0.6,
-                    ease: "power2.out"
-                });
-            }});
-        });
-    </script>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+    
+  </main>
+
+  <section class="explanation-section explanation">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Post-harvest grain drying relies on simultaneous sensible heat transfer and latent mass transfer across the crop boundary layer. Heated ambient air lowers the local relative humidity, creating a vapor pressure deficit between the moist grain kernel surface and the drying air stream. Psychrometric state paths along wet-bulb lines dictate the drying rate and moisture equilibrium.
+    </p>
+    <div class="equation-container equation">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        ṁ_v = h_m · A · (ρ_v,s - ρ_v,∞) &emsp;|&emsp; q = ṁ_v · h_fg
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // Helper to read current computed CSS variables for Canvas contexts
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const vaporLines = [];
+    for (let i = 0; i < 20; i++) {
+      vaporLines.push({ angle: (i / 20) * Math.PI * 2, offset: Math.random() * 20 });
+    }
+
+    let time = 0;
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      const blue = getThemeColor('--sim-blue');
+      const text = getThemeColor('--text');
+      const textMuted = getThemeColor('--text-muted');
+      const amber = getThemeColor('--sim-amber');
+      const red = getThemeColor('--sim-red');
+      const teal = getThemeColor('--sim-teal');
+
+      time += 0.03;
+      const kX = width * 0.32;
+      const kY = height * 0.52;
+      const kR = 55;
+
+      // Grain Kernel Body
+      ctx.fillStyle = amber;
+      ctx.beginPath();
+      ctx.ellipse(kX, kY, kR, kR * 1.3, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Inner Moisture Core
+      const moistR = kR * 0.6 * (0.6 + 0.3 * Math.sin(time * 0.5));
+      ctx.fillStyle = blue;
+      ctx.beginPath();
+      ctx.arc(kX, kY, moistR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Outward Evaporating Vapor Waves
+      ctx.strokeStyle = teal;
+      ctx.lineWidth = 1.5;
+      vaporLines.forEach(v => {
+        const rStart = kR * 1.35;
+        const rEnd = rStart + 35 + 10 * Math.sin(time * 3 + v.offset);
+        const x1 = kX + Math.cos(v.angle) * rStart;
+        const y1 = kY + Math.sin(v.angle) * rStart;
+        const x2 = kX + Math.cos(v.angle) * rEnd;
+        const y2 = kY + Math.sin(v.angle) * rEnd;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      });
+
+      // Psychrometric Chart Miniature on Right
+      const chartX = width * 0.62;
+      const chartY = height * 0.72;
+      const chartW = width * 0.28;
+      const chartH = height * 0.42;
+
+      ctx.strokeStyle = textMuted;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(chartX, chartY);
+      ctx.lineTo(chartX + chartW, chartY);
+      ctx.moveTo(chartX, chartY);
+      ctx.lineTo(chartX, chartY - chartH);
+      ctx.stroke();
+
+      // Saturation Curve (100% RH)
+      ctx.strokeStyle = blue;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x <= chartW; x += 4) {
+        const normX = x / chartW;
+        const py = chartY - Math.pow(normX, 2.2) * chartH;
+        if (x === 0) ctx.moveTo(chartX + x, py);
+        else ctx.lineTo(chartX + x, py);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = text;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Drying Air Temp T_db = 45°C | Wet-Bulb T_wb = 24°C', 24, 30);
+      ctx.fillText('Equilibrium Moisture Content EMC = 13.5% (Safe Storage)', 24, 52);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+    
+  </script>
 </body>
 </html>

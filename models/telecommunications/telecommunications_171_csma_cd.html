@@ -1,151 +1,420 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CSMA/CD</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSMA/CD</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #0d0d0d;
-        font-family: 'Courier New', Courier, monospace;
-        overflow: hidden;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
     }
-    #canvas-container {
-        position: relative;
-        width: 400px;
-        height: 300px;
-        cursor: pointer;
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
     }
-    .wire {
-        position: absolute;
-        top: 150px;
-        left: 20px;
-        width: 360px;
-        height: 2px;
-        background-color: #555;
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
     }
-    .node {
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        background-color: #27AE60;
-        border-radius: 4px;
-        top: 110px;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
     }
-    .node::after {
-        content: '';
-        position: absolute;
-        width: 2px;
-        height: 20px;
-        background-color: #555;
-        top: 20px;
-        left: 9px;
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
     }
-    #node1 { left: 60px; }
-    #node2 { left: 190px; }
-    #node3 { left: 320px; }
-    .packet {
-        position: absolute;
-        top: 147px;
-        width: 16px;
-        height: 8px;
-        background-color: #27AE60;
-        border-radius: 2px;
-        opacity: 0;
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
     }
-    .ripple {
-        position: absolute;
-        top: 151px;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        border: 2px solid #e74c3c;
-        transform: translate(-50%, -50%);
-        opacity: 0;
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
     }
-    .timer {
-        position: absolute;
-        width: 16px;
-        height: 16px;
-        border: 2px dashed #27AE60;
-        border-radius: 50%;
-        top: 2px;
-        left: 2px;
-        opacity: 0;
-        box-sizing: border-box;
+
+    .theme-toggle svg {
+      display: block;
     }
-</style>
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    main, .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation, .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2, .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p, .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation, .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
-<div id="canvas-container">
-    <div class="wire"></div>
-    <div class="node" id="node1"><div class="timer"></div></div>
-    <div class="node" id="node2"><div class="timer"></div></div>
-    <div class="node" id="node3"><div class="timer"></div></div>
-</div>
+  <header class="header">
+    <div class="title-container">
+      <h1>CSMA/CD</h1>
+      <div class="discipline-badge">Telecommunications</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script>
-    const container = document.getElementById('canvas-container');
-    const nodes = [
-        { id: 'node1', x: 70 },
-        { id: 'node2', x: 200 },
-        { id: 'node3', x: 330 }
-    ];
-    let idleTL = gsap.timeline({ repeat: -1 });
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-    function createPacket(x) {
-        const p = document.createElement('div');
-        p.className = 'packet';
-        p.style.left = (x - 8) + 'px';
-        container.appendChild(p);
-        return p;
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Carrier Sense Multiple Access with Collision Detection (CSMA/CD) is the contention-based media access control protocol foundational to legacy shared Ethernet (IEEE 802.3). Before transmitting, a station senses the shared medium (Carrier Sense); if idle, transmission begins. If two stations transmit concurrently, their signals collide on the bus (Collision Detection), prompting both to abort immediately, broadcast a 32-bit jamming sequence, and wait an exponentially increasing random backoff delay before reattempting.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        T_{slot} = 2 · τ_{prop} &nbsp;&nbsp;|&nbsp;&nbsp; t_{backoff} = r · T_{slot}, &nbsp; r ∈ [0, 2^k - 1] &nbsp;&nbsp;|&nbsp;&nbsp; L_{min} ≥ 2 · R · τ_{prop}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
     }
-    function createRipple(x) {
-        const r = document.createElement('div');
-        r.className = 'ripple';
-        r.style.left = x + 'px';
-        container.appendChild(r);
-        return r;
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
     }
 
-    const p1 = createPacket(nodes[0].x);
-    const p3 = createPacket(nodes[2].x);
-    const r = createRipple((nodes[0].x + nodes[2].x) / 2);
+    
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
 
-    idleTL.to(p1, { opacity: 1, duration: 0.2 })
-          .to(p1, { x: (nodes[2].x - nodes[0].x)/2 - 8, duration: 1, ease: "none" }, "send")
-          .to(p3, { opacity: 1, duration: 0.2 }, "send-=0.2")
-          .to(p3, { x: -((nodes[2].x - nodes[0].x)/2 - 8), duration: 1, ease: "none" }, "send")
-          .to([p1, p3], { opacity: 0, duration: 0.1 })
-          .to(r, { opacity: 1, width: 200, height: 200, duration: 0.6, ease: "power1.out" }, "collide")
-          .to(r, { opacity: 0, duration: 0.2 }, "collide+=0.4")
-          .set([p1, p3], { x: 0 })
-          .set(r, { width: 0, height: 0 })
-          .to(p3, { left: nodes[1].x - 8, x: 0 }, "+=0.2") 
-          .to(p3, { opacity: 1, duration: 0.2 })
-          .to(p3, { x: 100, duration: 1, ease: "none" })
-          .to(p3, { opacity: 0, duration: 0.2 })
-          .set(p3, { left: nodes[2].x - 8, x: 0 });
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-    let isClicked = false;
-    container.addEventListener('click', () => {
-        if (isClicked) return;
-        isClicked = true;
-        idleTL.kill();
-        
-        gsap.to('.packet, .ripple', { opacity: 0, duration: 0.2 });
-        gsap.to('.timer', { opacity: 1, duration: 0.3 });
-        gsap.to('.timer', { rotation: 720, duration: 2, ease: "power2.inOut" });
-        gsap.to('.node', { y: -20, opacity: 0, duration: 1, delay: 1, ease: "back.in(2)", stagger: 0.1 });
-        gsap.to('.wire', { scaleX: 0, opacity: 0, duration: 1, delay: 1.5, ease: "power2.inOut" });
-    });
-</script>
+    let time = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.02;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
+      const simRed = getThemeColor('--sim-red') || '#ef5350';
+      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
+      const textColor = getThemeColor('--text') || '#e0e0e0';
+      const mutedColor = getThemeColor('--text-muted') || '#9e9eb4';
+      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+
+      const busX = width * 0.12;
+      const busW = width * 0.76;
+      const busY = height * 0.44;
+
+      // 1. Shared Coaxial Bus Medium
+      ctx.strokeStyle = surfaceBorder;
+      ctx.lineWidth = 10;
+      ctx.beginPath(); ctx.moveTo(busX, busY); ctx.lineTo(busX + busW, busY); ctx.stroke();
+
+      ctx.strokeStyle = simBlue;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Bus Terminators (Left & Right)
+      ctx.fillStyle = mutedColor;
+      ctx.fillRect(busX - 8, busY - 14, 8, 28);
+      ctx.fillRect(busX + busW, busY - 14, 8, 28);
+
+      // 2. Stations (Node A on Left, Node B on Right)
+      const nodeAX = busX + busW * 0.2;
+      const nodeBX = busX + busW * 0.8;
+      const nodeY = busY - 80;
+
+      const drawStation = (x, label, isColliding) => {
+        ctx.fillStyle = isColliding ? 'rgba(239, 83, 80, 0.25)' : getThemeColor('--surface') || '#22223a';
+        ctx.fillRect(x - 30, nodeY - 20, 60, 40);
+        ctx.strokeStyle = isColliding ? simRed : simTeal;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - 30, nodeY - 20, 60, 40);
+
+        // Drop cable to bus
+        ctx.strokeStyle = surfaceBorder;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(x, nodeY + 20); ctx.lineTo(x, busY); ctx.stroke();
+
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, x, nodeY + 5);
+      };
+
+      // Collision cycle: 0 to 4 seconds
+      const cycle = (time * 0.8) % 4.0;
+      const isColliding = (cycle > 1.2 && cycle < 2.5);
+
+      drawStation(nodeAX, 'Node A', isColliding);
+      drawStation(nodeBX, 'Node B', isColliding);
+
+      // 3. Transmitted Packets Propagating on Bus
+      const midCollX = (nodeAX + nodeBX) / 2;
+
+      if (cycle < 1.2) {
+        // Packets propagating toward each other
+        const dist = (cycle / 1.2) * (midCollX - nodeAX);
+        ctx.fillStyle = simBlue;
+        ctx.fillRect(nodeAX + dist - 15, busY - 8, 30, 16);
+        ctx.fillStyle = simAmber;
+        ctx.fillRect(nodeBX - dist - 15, busY - 8, 30, 16);
+      } else if (cycle < 2.5) {
+        // Collision Flash & Jam Signal at center
+        ctx.fillStyle = simRed;
+        ctx.beginPath(); ctx.arc(midCollX, busY, 22, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('COLLISION!', midCollX, busY + 4);
+
+        // Jam signal propagating back
+        ctx.strokeStyle = simRed;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(midCollX - (cycle - 1.2) * 80, busY);
+        ctx.lineTo(midCollX + (cycle - 1.2) * 80, busY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else {
+        // Backoff Countdown
+        ctx.fillStyle = simAmber;
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Binary Exponential Backoff Active: Waiting Random Slot Times', width / 2, busY + 55);
+      }
+
+      // Status
+      ctx.textAlign = 'center';
+      ctx.fillStyle = textColor;
+      ctx.font = '13px sans-serif';
+      ctx.fillText('Slot Time T_slot = 2 · τ_prop = 51.2 µs (Round-Trip Propagation)', width / 2, height - 22);
+    }
+    animate();
+
+  </script>
 </body>
 </html>

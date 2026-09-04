@@ -1,112 +1,405 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<style>
-  body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-  .container { position: relative; cursor: pointer; }
-  canvas { display: block; }
-  .label { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Total Internal Reflection (Fiber)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    main, .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation, .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2, .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p, .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation, .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
-<div class="container" id="container">
-  <canvas id="simCanvas" width="400" height="400"></canvas>
-  <div class="label">Total Internal Reflection (Fiber)</div>
-</div>
-<script>
-const canvas = document.getElementById('simCanvas');
-const ctx = canvas.getContext('2d');
-const COLOR = '#2ECC71';
-let state = 'idle';
-let time = 0;
-let bendTime = 0;
+  <header class="header">
+    <div class="title-container">
+      <h1>Total Internal Reflection (Fiber)</h1>
+      <div class="discipline-badge">Telecommunications</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-document.getElementById('container').addEventListener('click', () => {
-  if (state === 'idle') state = 'clicked';
-});
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-function draw() {
-  ctx.clearRect(0, 0, 400, 400);
-  time += 0.1;
-  
-  if (state === 'idle') {
-    ctx.strokeStyle = '#444';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(50, 150); ctx.lineTo(350, 150);
-    ctx.moveTo(50, 250); ctx.lineTo(350, 250);
-    ctx.stroke();
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Optical fiber telecommunication systems transmit high-bandwidth optical signals over planetary distances using total internal reflection (TIR). Because the cylindrical silica core possesses a higher refractive index (n₁) than the surrounding outer cladding glass (n₂ < n₁), light rays launched into the core within the numerical aperture acceptance cone strike the core-cladding boundary at angles exceeding the critical angle θ_c = arcsin(n₂/n₁), undergoing lossless 100% internal reflection.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        θ_c = arcsin(n₂ / n₁) &nbsp;&nbsp;|&nbsp;&nbsp; NA = sin θ_a = √(n₁² - n₂²) &nbsp;&nbsp;|&nbsp;&nbsp; n_{core} > n_{cladding}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
     
-    ctx.strokeStyle = COLOR;
-    ctx.lineWidth = 2;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = COLOR;
-    ctx.beginPath();
-    let x = 50;
-    ctx.moveTo(x, 200);
-    let movingUp = true;
-    while(x < 350) {
-      let nextX = x + 40;
-      let y = movingUp ? 152 : 248;
-      if (nextX > 350) {
-        let ratio = (350 - x)/40;
-        y = movingUp ? 200 - 50*ratio : 200 + 50*ratio;
-        nextX = 350;
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let time = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.02;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
+      const simRed = getThemeColor('--sim-red') || '#ef5350';
+      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
+      const textColor = getThemeColor('--text') || '#e0e0e0';
+      const mutedColor = getThemeColor('--text-muted') || '#9e9eb4';
+      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+
+      const fX = width * 0.1;
+      const fW = width * 0.8;
+      const fH = 140;
+      const cy = height * 0.44;
+
+      // 1. Cladding Layers (Top and Bottom)
+      ctx.fillStyle = 'rgba(79, 195, 247, 0.1)';
+      ctx.fillRect(fX, cy - fH / 2 - 35, fW, 35); // Top Cladding
+      ctx.fillRect(fX, cy + fH / 2, fW, 35);      // Bottom Cladding
+
+      // Core Glass Layer (Center)
+      ctx.fillStyle = 'rgba(38, 166, 154, 0.2)';
+      ctx.fillRect(fX, cy - fH / 2, fW, fH);
+
+      ctx.strokeStyle = surfaceBorder;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(fX, cy - fH / 2, fW, fH);
+
+      // Core / Cladding boundary lines
+      ctx.strokeStyle = simTeal;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(fX, cy - fH / 2); ctx.lineTo(fX + fW, cy - fH / 2);
+      ctx.moveTo(fX, cy + fH / 2); ctx.lineTo(fX + fW, cy + fH / 2);
+      ctx.stroke();
+
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = simBlue;
+      ctx.textAlign = 'left';
+      ctx.fillText('Cladding Glass (n₂ = 1.45)', fX + 15, cy - fH / 2 - 12);
+      ctx.fillStyle = simTeal;
+      ctx.fillText('Silica Core Glass (n₁ = 1.48)', fX + 15, cy - fH / 2 + 22);
+
+      // 2. Zig-Zag Optical Ray Propagation (TIR)
+      const bounceW = 110;
+      const nBounces = Math.floor(fW / bounceW);
+
+      ctx.strokeStyle = simAmber;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(fX, cy);
+
+      for (let i = 0; i <= nBounces; i++) {
+        const bx = fX + i * bounceW;
+        const by = (i % 2 === 1) ? (cy - fH / 2) : (cy + fH / 2);
+        if (i === 0) ctx.moveTo(fX, cy);
+        else ctx.lineTo(bx, by);
       }
-      ctx.lineTo(nextX, y);
-      x = nextX;
-      movingUp = !movingUp;
-    }
-    ctx.stroke();
-    
-    let dotX = 50 + (time * 50) % 300;
-    let segment = Math.floor(dotX / 40);
-    let inSegX = dotX % 40;
-    let dotY = (segment % 2 === 0) ? 200 - inSegX*(50/40) : 150 + inSegX*(50/40);
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(dotX, dotY, 3, 0, Math.PI*2); ctx.fill();
-    ctx.shadowBlur = 0;
-  } else {
-    bendTime += 0.05;
-    let bend = Math.min(bendTime, 1);
-    
-    ctx.strokeStyle = '#444';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(50, 150); ctx.quadraticCurveTo(200, 150 + bend*200, 350, 150 + bend*200);
-    ctx.moveTo(50, 250); ctx.quadraticCurveTo(200, 250 + bend*200, 350, 250 + bend*200);
-    ctx.stroke();
-    
-    if (bend < 0.5) {
-      ctx.strokeStyle = COLOR;
-      ctx.lineWidth = 2;
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = COLOR;
-      ctx.beginPath();
-      ctx.moveTo(50, 200); ctx.lineTo(200, 150 + bend*100);
       ctx.stroke();
-    } else {
-      ctx.strokeStyle = COLOR;
-      ctx.lineWidth = 2;
+
+      // Traveling optical photon pulses along ray
+      const pulseDist = ((time * 120) % (nBounces * bounceW));
+      const segIndex = Math.floor(pulseDist / bounceW);
+      const segFrac = (pulseDist % bounceW) / bounceW;
+      const pY1 = (segIndex % 2 === 1) ? (cy - fH / 2) : (cy + fH / 2);
+      const pY2 = (segIndex % 2 === 1) ? (cy + fH / 2) : (cy - fH / 2);
+      const curX = fX + segIndex * bounceW + segFrac * bounceW;
+      const curY = pY1 + segFrac * (pY2 - pY1);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = simAmber;
       ctx.shadowBlur = 10;
-      ctx.shadowColor = COLOR;
-      ctx.beginPath();
-      ctx.moveTo(50, 200); ctx.lineTo(150, 150 + 0.5*100);
-      let escapeLen = (bend - 0.5) * 400;
-      ctx.lineTo(150 + escapeLen*0.5, 150 + 0.5*100 - escapeLen);
-      ctx.stroke();
-      
-      ctx.fillStyle = COLOR;
-      ctx.globalAlpha = Math.max(0, 1 - (bend - 0.5)*2);
-      ctx.fillRect(0,0,400,400);
-      ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(curX, curY, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // 3. Status and Angle
+      ctx.textAlign = 'center';
+      ctx.fillStyle = textColor;
+      ctx.font = '13px sans-serif';
+      ctx.fillText('Critical Angle: θ_c = arcsin(1.45 / 1.48) = 78.4°  |  Incidence Angle θ_i = 82.0° > θ_c', width / 2, height - 38);
+
+      ctx.fillStyle = simAmber;
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('Total Internal Reflection Achieved: 100% Optical Power Confined Within Core', width / 2, height - 18);
     }
-    ctx.shadowBlur = 0;
-  }
-  requestAnimationFrame(draw);
-}
-draw();
-</script>
+    animate();
+
+  </script>
 </body>
 </html>

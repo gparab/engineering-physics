@@ -1,139 +1,369 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Linear Polarizer</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linear Polarization & Malus's Law</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background-color: #1a1a1a;
-        overflow: hidden;
-        font-family: sans-serif;
-    }
-    #container {
-        position: relative;
-        width: 60px;
-        height: 40px;
-        cursor: pointer;
-    }
-    .grid {
-        position: absolute;
-        top: 0; left: 30px;
-        width: 4px; height: 40px;
-        background: repeating-linear-gradient(0deg, #34495e, #34495e 2px, transparent 2px, transparent 4px);
-        border-left: 1px solid #34495e;
-        border-right: 1px solid #34495e;
-    }
-    .unpolarized {
-        position: absolute;
-        top: 15px; left: 0;
-        width: 25px; height: 10px;
-        display: flex;
-        align-items: center;
-    }
-    .u-wave {
-        position: absolute;
-        width: 25px; height: 2px;
-        background: #fff;
-        opacity: 0.5;
-        animation: waveMove 1s infinite linear;
-    }
-    .u1 { transform: rotate(0deg); }
-    .u2 { transform: rotate(45deg); }
-    .u3 { transform: rotate(90deg); }
-    .u4 { transform: rotate(135deg); }
-    
-    .polarized {
-        position: absolute;
-        top: 19px; left: 35px;
-        width: 25px; height: 2px;
-        background: #fff;
-        opacity: 0.8;
-        box-shadow: 0 0 4px #fff;
-        animation: waveMove 1s infinite linear;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
     }
 
-    @keyframes waveMove {
-        0% { filter: blur(0px); opacity: 0.3; }
-        50% { filter: blur(1px); opacity: 1; }
-        100% { filter: blur(0px); opacity: 0.3; }
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
     }
 
-    /* Click Animation Elements */
-    .analyzer {
-        position: absolute;
-        top: 50%; left: 50%;
-        width: 200px; height: 200px;
-        margin-top: -100px; margin-left: -100px;
-        background: repeating-linear-gradient(0deg, #34495e, #34495e 4px, transparent 4px, transparent 8px);
-        border: 2px solid #34495e;
-        border-radius: 50%;
-        opacity: 0;
-        pointer-events: none;
-        transition: transform 1s ease-in-out, opacity 0.3s;
-        z-index: 10;
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
     }
-    .pitch-black {
-        position: absolute;
-        top: 50%; left: 50%;
-        width: 0; height: 0;
-        background: #000;
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        z-index: 5;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
     }
-</style>
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-
-<div id="container" onclick="triggerAnalyzer()">
-    <div class="unpolarized">
-        <div class="u-wave u1"></div>
-        <div class="u-wave u2"></div>
-        <div class="u-wave u3"></div>
-        <div class="u-wave u4"></div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Linear Polarization & Malus's Law</h1>
+      <div class="discipline-badge">Optical Engineering</div>
     </div>
-    <div class="grid"></div>
-    <div class="polarized"></div>
-</div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<div class="analyzer" id="analyzer"></div>
-<div class="pitch-black" id="blackout"></div>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-<script>
-    function triggerAnalyzer() {
-        const analyzer = document.getElementById('analyzer');
-        const blackout = document.getElementById('blackout');
-        const container = document.getElementById('container');
-        
-        container.style.display = 'none';
-        
-        analyzer.style.opacity = '1';
-        
-        // Rotate analyzer 90 degrees
-        setTimeout(() => {
-            analyzer.style.transform = 'rotate(90deg)';
-            
-            // As it rotates, blackout the screen
-            setTimeout(() => {
-                blackout.style.transition = 'width 1s ease-in, height 1s ease-in';
-                blackout.style.width = '300vw';
-                blackout.style.height = '300vw';
-                
-                setTimeout(() => {
-                    analyzer.style.opacity = '0';
-                }, 800);
-            }, 200);
-        }, 100);
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A linear polarizer selectively transmits electric field components aligned with its transmission axis while absorbing or reflecting orthogonal orientations. When pre-polarized light traverses a second polarizing filter (analyzer) rotated by an angle θ, the transmitted irradiance diminishes according to Malus's law.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        I = I_0 · cos^2(θ_{rel})
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
     }
-</script>
 
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, dpr;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    resize();
+
+    let time = 0;
+
+    function animate() {
+      time += 0.025;
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2 - 20;
+      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const amber = getThemeColor('--sim-amber') || '#ffb74d';
+      const text = getThemeColor('--text') || '#e0e0e0';
+      const border = getThemeColor('--surface-border') || '#33334d';
+
+      // Polarizer 1 (Fixed vertical, 0 deg)
+      const p1X = cx - 70;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(p1X - 25, cy - 60, 50, 120);
+
+      ctx.strokeStyle = blue;
+      ctx.lineWidth = 1.5;
+      for (let x = p1X - 20; x <= p1X + 20; x += 8) {
+        ctx.beginPath();
+        ctx.moveTo(x, cy - 55);
+        ctx.lineTo(x, cy + 55);
+        ctx.stroke();
+      }
+
+      // Polarizer 2 (Analyzer rotating angle θ)
+      const p2X = cx + 70;
+      const theta = time * 0.8;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(p2X - 25, cy - 60, 50, 120);
+
+      ctx.strokeStyle = amber;
+      ctx.lineWidth = 1.5;
+      for (let i = -20; i <= 20; i += 8) {
+        const dx = Math.sin(theta) * 50;
+        const dy = Math.cos(theta) * 50;
+        ctx.beginPath();
+        ctx.moveTo(p2X + i - dx * 0.5, cy - dy * 0.5);
+        ctx.lineTo(p2X + i + dx * 0.5, cy + dy * 0.5);
+        ctx.stroke();
+      }
+
+      // Transmitted beam intensity
+      const transI = Math.cos(theta) ** 2;
+      ctx.fillStyle = `rgba(255, 183, 77, ${transI * 0.8})`;
+      ctx.fillRect(p2X + 30, cy - 15, 60, 30);
+
+      ctx.fillStyle = text;
+      ctx.font = '12px var(--font-mono)';
+      ctx.fillText('Polarizer 1 (Fixed)', p1X - 60, cy - 75);
+      ctx.fillText('Analyzer (Rotating θ)', p2X - 65, cy - 75);
+      ctx.fillText(`Transmitted Intensity: I = I₀ · cos²(${(theta * 180 / Math.PI % 360).toFixed(0)}°) = ${(transI * 100).toFixed(0)}%`, cx - 150, cy + 90);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>

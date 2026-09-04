@@ -1,74 +1,380 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<style>
-  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #fefdfb; overflow: hidden; }
-  .container { position: relative; width: 60px; height: 60px; cursor: pointer; }
-  .wedge { fill: #333; }
-  .shock { stroke: #F39C12; stroke-width: 1.5; opacity: 0.8; stroke-linecap: round; }
-  .grad-layer { fill: url(#tempGrad); opacity: 0.3; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oblique Shock Wave & Mach Cone</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-  <div class="container" id="model">
-    <svg viewBox="0 0 100 100" width="100%" height="100%" id="svg-element">
-      <defs>
-        <linearGradient id="tempGrad" x1="100%" y1="50%" x2="0%" y2="50%">
-          <stop offset="0%" stop-color="#F39C12" />
-          <stop offset="100%" stop-color="#fff" stop-opacity="0" />
-        </linearGradient>
-      </defs>
-      
-      <polygon class="grad-layer" points="80,50 20,20 20,80" id="heat-cone" />
-      
-      <line class="shock" x1="80" y1="50" x2="20" y2="20" id="shock-top" />
-      <line class="shock" x1="80" y1="50" x2="20" y2="80" id="shock-bot" />
-      
-      <polygon class="wedge" points="85,50 70,45 70,55" id="wedge" />
-    </svg>
-  </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script>
-    const container = document.getElementById('model');
-    
-    let idleWobble = gsap.to(["#shock-top", "#shock-bot", "#heat-cone"], {
-      x: -2,
-      duration: 0.1,
-      yoyo: true,
-      repeat: -1,
-      ease: "sine.inOut"
-    });
+  <header class="header">
+    <div class="title-container">
+      <h1>Oblique Shock Wave & Mach Cone</h1>
+      <div class="discipline-badge">Aerospace Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-    container.addEventListener('click', () => {
-      idleWobble.kill();
-      
-      gsap.to("#wedge", {
-        x: -150,
-        duration: 2,
-        ease: "power2.out"
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      When an aircraft or projectile travels through a fluid at supersonic velocity (M > 1), localized acoustic pressure waves cannot propagate upstream against the supersonic flow. These disturbances constructively coalesce into a sharp, conical shock discontinuity termed the Mach cone. Across this oblique shock boundary, the fluid undergoes a sudden non-isentropic compression resulting in discontinuous jumps in pressure, temperature, and entropy.
+    </p>
+    <div class="equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        sin μ = 1 / M ,  tan θ = 2 · cot β · (M₁² · sin²β - 1) / (M₁² · (γ + cos 2β) + 2)
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
       });
-      
-      gsap.to("#shock-top", {
-        attr: { x1: 90, y1: 30, x2: 150, y2: 0 },
-        strokeWidth: 0,
-        opacity: 0,
-        duration: 1.5,
-        ease: "power2.out"
-      });
-      gsap.to("#shock-bot", {
-        attr: { x1: 90, y1: 70, x2: 150, y2: 100 },
-        strokeWidth: 0,
-        opacity: 0,
-        duration: 1.5,
-        ease: "power2.out"
-      });
-      gsap.to("#heat-cone", {
-        attr: { points: "100,50 150,0 150,100" },
-        opacity: 0,
-        duration: 1.5
-      });
-    });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+
+    let projectileX = 100;
+    const mach = 2.2;
+    const mu = Math.asin(1 / mach); // Mach angle in rad
+
+    const wavePulses = [];
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      const cy = height * 0.5;
+
+      // Projectile advance
+      projectileX += 3.8;
+      if (projectileX > width + 60) {
+        projectileX = -40;
+        wavePulses.length = 0;
+      }
+
+      // Generate spherical acoustic wave fronts from projectile
+      if (Math.random() < 0.35 && projectileX > 0 && projectileX < width) {
+        wavePulses.push({ x: projectileX, y: cy, r: 2 });
+      }
+
+      // Draw shock wave cone envelope
+      const coneLength = 320;
+      const topConeY = cy - coneLength * Math.tan(mu);
+      const botConeY = cy + coneLength * Math.tan(mu);
+
+      ctx.beginPath();
+      ctx.moveTo(projectileX, cy);
+      ctx.lineTo(projectileX - coneLength, topConeY);
+      ctx.moveTo(projectileX, cy);
+      ctx.lineTo(projectileX - coneLength, botConeY);
+      ctx.strokeStyle = getThemeColor('--sim-amber');
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Update and draw expanding circular pulses
+      for (let i = wavePulses.length - 1; i >= 0; i--) {
+        const p = wavePulses[i];
+        p.r += 3.8 / mach; // acoustic speed
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.strokeStyle = getThemeColor('--sim-grid');
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        if (p.r > 350) wavePulses.splice(i, 1);
+      }
+
+      // Wedge projectile
+      ctx.beginPath();
+      ctx.moveTo(projectileX, cy);
+      ctx.lineTo(projectileX - 35, cy - 14);
+      ctx.lineTo(projectileX - 30, cy);
+      ctx.lineTo(projectileX - 35, cy + 14);
+      ctx.closePath();
+      ctx.fillStyle = getThemeColor('--sim-blue');
+      ctx.fill();
+      ctx.strokeStyle = getThemeColor('--text');
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Annotation
+      ctx.fillStyle = getThemeColor('--text');
+      ctx.font = "12px var(--font-sans)";
+      ctx.fillText(`Mach Number M = ${mach.toFixed(1)}`, 25, 35);
+      ctx.fillText(`Mach Angle μ = ${(mu * 180 / Math.PI).toFixed(1)}°`, 25, 55);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
   </script>
 </body>
 </html>

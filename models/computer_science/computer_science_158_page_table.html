@@ -1,140 +1,397 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Table</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-            font-family: sans-serif;
-            overflow: hidden;
-        }
-        .container {
-            position: relative;
-            width: 80px;
-            height: 60px;
-            cursor: pointer;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Table</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #26a69a;
+      --sim-amber: #ffb74d;
+      --sim-red: #ef5350;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
 
-        .col {
-            position: absolute;
-            top: 10px;
-            width: 15px;
-            height: 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .virtual { left: 0; }
-        .physical { right: 0; }
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00796b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
 
-        .block {
-            width: 100%;
-            height: 10px;
-            border: 1px solid #9B59B6;
-            box-sizing: border-box;
-            background: white;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        .line {
-            position: absolute;
-            height: 1px;
-            background-color: #9B59B6;
-            transform-origin: left;
-            z-index: -1;
-        }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
 
-        /* Map v1 -> p2 */
-        .l1 { top: 15px; left: 15px; width: 51px; transform: rotate(23deg); animation: pulse 2s infinite; }
-        /* Map v3 -> p1 */
-        .l2 { top: 45px; left: 15px; width: 58px; transform: rotate(-31deg); animation: pulse 2s infinite 1s; }
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; stroke-width: 2px; }
-        }
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
 
-        /* Disk block */
-        .disk-block {
-            position: absolute;
-            width: 15px;
-            height: 10px;
-            background-color: #7f8c8d;
-            bottom: -50px;
-            right: 0;
-            opacity: 0;
-        }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
 
-        .fault-line {
-            position: absolute;
-            top: 30px;
-            left: 15px;
-            width: 50px;
-            height: 2px;
-            background-color: red;
-            opacity: 0;
-        }
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
 
-        /* Click animation */
-        .clicked .fault-line {
-            opacity: 1;
-            animation: flashRed 0.2s 3;
-        }
-        .clicked .disk-block {
-            opacity: 1;
-            animation: haulDisk 1.5s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .clicked .physical .block:nth-child(3) {
-            animation: hideEmpty 0.1s forwards 1.4s;
-        }
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
 
-        @keyframes flashRed {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
 
-        @keyframes haulDisk {
-            0% { bottom: -100px; right: 0; }
-            100% { bottom: 10px; right: 0; background-color: #9B59B6; }
-        }
-        
-        @keyframes hideEmpty {
-            to { opacity: 0; }
-        }
-    </style>
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.2rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="container" id="model">
-        <div class="col virtual">
-            <div class="block" style="background:#9B59B6"></div>
-            <div class="block"></div>
-            <div class="block" style="background:#9B59B6"></div>
-        </div>
-        
-        <div class="line l1"></div>
-        <div class="line l2"></div>
-        <div class="fault-line"></div>
-
-        <div class="col physical">
-            <div class="block" style="background:#9B59B6"></div>
-            <div class="block" style="background:#9B59B6"></div>
-            <div class="block"></div>
-        </div>
-
-        <div class="disk-block"></div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Page Table</h1>
+      <div class="discipline-badge">Computer Science</div>
     </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-    <script>
-        document.getElementById('model').addEventListener('click', function() {
-            this.classList.add('clicked');
-        });
-    </script>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A page table is an operating system kernel data structure that enables virtual memory virtualization by mapping virtual memory addresses into physical RAM page frames. The processor Memory Management Unit (MMU) extracts Virtual Page Numbers (VPN) to traverse multi-tiered page tables, resolving the Physical Frame Number (PFN). Translation Lookaside Buffers (TLBs) act as associative hardware caches for recently resolved addresses, bypassing memory hierarchy walks on cache hits.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        PA = (PFN ≪ OffsetBits) | Offset , AMAT = t_{TLB} + (1 - h_{TLB}) · t_{DRAM}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    let vpn = 0x1A;
+    let pfn = 0x05;
+    let tlbHit = true;
+    let lastTranslate = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#e0e0e0' : '#1a1a1a';
+      const mutedColor = isDark ? '#9e9eb4' : '#616161';
+      const accentColor = isDark ? '#4fc3f7' : '#0277bd';
+      const highColor = '#26a69a';
+      const missColor = '#ffb74d';
+
+      if (time - lastTranslate > 2.0) {
+        lastTranslate = time;
+        vpn = (vpn + 1) % 0x20;
+        pfn = (vpn * 3 + 1) % 0x10;
+        tlbHit = Math.random() < 0.8;
+      }
+
+      const cx = width * 0.5;
+      const cy = height * 0.44;
+
+      // Virtual Address Box
+      const vaW = 160;
+      const vaH = 60;
+      const vaX = cx - 180;
+      const vaY = cy - 60;
+
+      ctx.fillStyle = isDark ? '#22223a' : '#ffffff';
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(vaX - vaW * 0.5, vaY - vaH * 0.5, vaW, vaH);
+      ctx.fillRect(vaX - vaW * 0.5, vaY - vaH * 0.5, vaW, vaH);
+
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = mutedColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('Virtual Address', vaX, vaY - 12);
+      ctx.font = '700 13px monospace';
+      ctx.fillStyle = accentColor;
+      ctx.fillText(`VPN: 0x${vpn.toString(16).toUpperCase()} | Off: 0x4A`, vaX, vaY + 12);
+
+      // TLB Translation Cache Box
+      const tlbW = 140;
+      const tlbH = 70;
+      const tlbX = cx + 20;
+      const tlbY = cy - 60;
+
+      ctx.strokeStyle = tlbHit ? highColor : missColor;
+      ctx.strokeRect(tlbX - tlbW * 0.5, tlbY - tlbH * 0.5, tlbW, tlbH);
+      ctx.fillRect(tlbX - tlbW * 0.5, tlbY - tlbH * 0.5, tlbW, tlbH);
+
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = tlbHit ? highColor : missColor;
+      ctx.fillText(tlbHit ? 'TLB HIT' : 'TLB MISS', tlbX, tlbY - 12);
+      ctx.font = '11px monospace';
+      ctx.fillStyle = textColor;
+      ctx.fillText(tlbHit ? 'Fast Translation' : 'Page Walk Req.', tlbX, tlbY + 12);
+
+      // Physical Address Box
+      const paW = 160;
+      const paH = 60;
+      const paX = cx + 20;
+      const paY = cy + 70;
+
+      ctx.strokeStyle = highColor;
+      ctx.strokeRect(paX - paW * 0.5, paY - paH * 0.5, paW, paH);
+      ctx.fillRect(paX - paW * 0.5, paY - paH * 0.5, paW, paH);
+
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText('Physical Address (RAM)', paX, paY - 12);
+      ctx.font = '700 13px monospace';
+      ctx.fillStyle = highColor;
+      ctx.fillText(`PFN: 0x${pfn.toString(16).toUpperCase()} | Off: 0x4A`, paX, paY + 12);
+
+      // Connecting Arrows
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(vaX + vaW * 0.5, vaY);
+      ctx.lineTo(tlbX - tlbW * 0.5, tlbY);
+      ctx.moveTo(tlbX, tlbY + tlbH * 0.5);
+      ctx.lineTo(paX, paY - paH * 0.5);
+      ctx.stroke();
+    }
+    requestAnimationFrame(animate);
+
+  </script>
 </body>
 </html>

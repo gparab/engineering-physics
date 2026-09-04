@@ -1,156 +1,381 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drill Bit Penetration</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #1a1a1a;
-    overflow: hidden;
-  }
-  
-  .container {
-    position: relative;
-    width: 24px;
-    height: 30px;
-    cursor: pointer;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rotary Drilling Penetration & Rock Failure</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
 
-  .rock {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 10px;
-    background-color: #444;
-    clip-path: polygon(0 40%, 20% 10%, 40% 50%, 60% 0, 80% 40%, 100% 20%, 100% 100%, 0 100%);
-  }
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
 
-  .bit {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 12px;
-    height: 16px;
-    margin-left: -6px;
-    background-color: #B8860B;
-    clip-path: polygon(20% 0%, 80% 0%, 100% 60%, 50% 100%, 0% 60%);
-    transform-origin: center center;
-  }
-  
-  .drill-pipe {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    width: 4px;
-    height: 40px;
-    margin-left: -2px;
-    background-color: #888;
-  }
-  
-  .mud-particle {
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background-color: #555;
-    border-radius: 50%;
-    opacity: 0;
-  }
-  
-  .geyser {
-    position: absolute;
-    bottom: 50%;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    background: #4a3b22;
-    border-radius: 50%;
-    transform: translate(-50%, 50%);
-    opacity: 0;
-    z-index: 20;
-    pointer-events: none;
-  }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
+  <header class="header">
+    <div class="title-container">
+      <h1>Rotary Drilling Penetration & Rock Failure</h1>
+      <div class="discipline-badge">Mining & Petroleum Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<div class="container" id="model">
-  <div class="rock"></div>
-  <div class="bit" id="bit">
-    <div class="drill-pipe"></div>
-  </div>
-</div>
-
-<script>
-  const bit = document.getElementById('bit');
-  const model = document.getElementById('model');
-
-  gsap.to(bit, {
-    rotationY: 360,
-    duration: 0.5,
-    repeat: -1,
-    ease: "linear"
-  });
-  
-  gsap.to(bit, {
-    y: 2,
-    duration: 0.2,
-    yoyo: true,
-    repeat: -1,
-    ease: "sine.inOut"
-  });
-
-  for(let i=0; i<5; i++) {
-    let p = document.createElement('div');
-    p.className = 'mud-particle';
-    model.appendChild(p);
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
     
-    gsap.to(p, {
-      x: "random(-15, 15)",
-      y: "random(-20, -5)",
-      opacity: 1,
-      duration: "random(0.5, 1)",
-      repeat: -1,
-      delay: "random(0, 1)",
-      onRepeat: () => {
-        gsap.set(p, {x: 0, y: 15, opacity: 0});
+  </main>
+
+  <section class="explanation-section explanation">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Rotary drilling advances boreholes through rock formations by applying axial weight on bit (WOB) and rotational torque via roller cones or PDC cutter teeth. The rate of penetration (ROP) is governed by mechanical specific energy and rock compressive strength, operating through gouging and compressive shear chipping. Drilling mud circulates continuously to remove cuttings and stabilize borehole pressure.
+    </p>
+    <div class="equation-container equation">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        ROP = K · [(WOB² · N) / (D² · σ_c²)] &emsp;|&emsp; MSE = (WOB / A_b) + (120π · N · T) / (A_b · ROP)
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // Helper to read current computed CSS variables for Canvas contexts
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const cuttings = [];
+    for (let i = 0; i < 35; i++) {
+      cuttings.push({ x: 0, y: 0, vy: -0.004 - 0.003 * Math.random(), side: Math.random() > 0.5 ? 1 : -1 });
+    }
+
+    let time = 0;
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      const blue = getThemeColor('--sim-blue');
+      const text = getThemeColor('--text');
+      const textMuted = getThemeColor('--text-muted');
+      const amber = getThemeColor('--sim-amber');
+      const border = getThemeColor('--surface-border');
+
+      time += 0.04;
+      const bitX = width / 2;
+      const rockY = height * 0.62;
+
+      // Solid Rock Formation
+      ctx.fillStyle = 'rgba(184, 134, 11, 0.15)';
+      ctx.fillRect(width * 0.1, rockY, width * 0.8, height * 0.35);
+
+      // Rotating Drill String
+      ctx.fillStyle = textMuted;
+      ctx.fillRect(bitX - 18, height * 0.18, 36, rockY - height * 0.18);
+
+      // Tricone / PDC Drill Bit Head
+      ctx.save();
+      ctx.translate(bitX, rockY);
+      const wobble = 3 * Math.sin(time * 4);
+
+      ctx.fillStyle = amber;
+      ctx.beginPath();
+      ctx.moveTo(-35 + wobble, -25);
+      ctx.lineTo(35 + wobble, -25);
+      ctx.lineTo(20 + wobble, 0);
+      ctx.lineTo(-20 + wobble, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // Cutters teeth
+      ctx.fillStyle = border;
+      for (let t = -25; t <= 25; t += 12) {
+        ctx.fillRect(t + wobble - 3, 0, 6, 6);
       }
-    });
-  }
+      ctx.restore();
 
-  model.addEventListener('click', () => {
-    gsap.killTweensOf(bit);
-    gsap.killTweensOf(".mud-particle");
-    
-    gsap.to(bit, {
-      y: -window.innerHeight,
-      rotation: 720,
-      duration: 0.5,
-      ease: "power2.in"
-    });
+      // Rock cuttings circulating upward in annulus
+      ctx.fillStyle = amber;
+      cuttings.forEach(c => {
+        c.y += c.vy;
+        if (c.y < -0.38) c.y = 0;
+        const px = bitX + c.side * (28 + Math.random() * 18);
+        const py = rockY + c.y * height;
+        ctx.beginPath();
+        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
 
-    const geyser = document.createElement('div');
-    geyser.className = 'geyser';
-    document.body.appendChild(geyser);
+      ctx.fillStyle = text;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Rotary Speed N = 120 RPM | Weight On Bit WOB = 180 kN', 24, 30);
+      ctx.fillText('Rate of Penetration ROP = 24.5 m/h | MSE = 320 MPa', 24, 52);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
     
-    gsap.to(geyser, {
-      width: "200vw",
-      height: "200vw",
-      y: "-150vw",
-      opacity: 1,
-      duration: 0.8,
-      ease: "expo.out"
-    });
-  });
-</script>
+  </script>
 </body>
 </html>

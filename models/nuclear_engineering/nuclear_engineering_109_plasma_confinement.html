@@ -1,81 +1,373 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>109. Plasma Confinement</title>
-<style>
-  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; perspective: 1000px; }
-  #container { width: 500px; height: 500px; position: relative; cursor: pointer; transform-style: preserve-3d; transform: rotateX(60deg); }
-  .torus { width: 300px; height: 300px; border: 2px dashed rgba(138, 43, 226, 0.4); border-radius: 50%; position: absolute; top: 100px; left: 100px; box-shadow: inset 0 0 20px rgba(138, 43, 226, 0.2); }
-  
-  .particle { position: absolute; width: 6px; height: 6px; background: #8A2BE2; border-radius: 50%; box-shadow: 0 0 10px #8A2BE2; top: 250px; left: 250px; margin-top: -3px; margin-left: -3px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magnetic Plasma Confinement (Tokamak)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div id="container">
-  <div class="torus"></div>
-</div>
-<script>
-  const container = document.getElementById('container');
-  let clicked = false;
-  const particles = [];
-  const numParticles = 40;
-  
-  for(let i = 0; i < numParticles; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    container.appendChild(p);
-    particles.push({
-      el: p,
-      theta: Math.random() * Math.PI * 2,
-      phi: Math.random() * Math.PI * 2,
-      vTheta: 0.02 + Math.random() * 0.01,
-      vPhi: 0.1 + Math.random() * 0.05
-    });
-  }
+  <header class="header">
+    <div class="title-container">
+      <h1>Magnetic Plasma Confinement (Tokamak)</h1>
+      <div class="discipline-badge">Nuclear Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-  let animationId;
-  function animate() {
-    if(!clicked) {
-      particles.forEach(p => {
-        p.theta += p.vTheta;
-        p.phi += p.vPhi;
-        
-        const R = 150;
-        const r = 30;
-        
-        const x = 250 + (R + r * Math.cos(p.phi)) * Math.cos(p.theta);
-        const y = 250 + (R + r * Math.cos(p.phi)) * Math.sin(p.theta);
-        const z = r * Math.sin(p.phi);
-        
-        p.el.style.transform = `translate3d(${x - 250}px, ${y - 250}px, ${z}px)`;
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Magnetic confinement fusion insulates multi-million-kelvin ionized plasma within a toroidal vacuum vessel using a closed helical magnetic field topology. The combination of external toroidal field coils and an internally driven plasma current creates nested magnetic flux surfaces that suppress cross-field particle and heat diffusion.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        B = B_{toroidal} + B_{poloidal} , β = (2μ_0 · ⟨ p ⟩) / B^2
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
       });
-      animationId = requestAnimationFrame(animate);
     }
-  }
-  animate();
 
-  container.addEventListener('click', () => {
-    if(clicked) return;
-    clicked = true;
-    cancelAnimationFrame(animationId);
-    
-    particles.forEach(p => {
-      p.el.style.transition = 'all ' + (0.5 + Math.random()) + 's cubic-bezier(0.25, 1, 0.5, 1)';
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 400 + Math.random() * 200;
-      p.el.style.transform = `translate3d(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px, ${(Math.random()-0.5)*200}px)`;
-      p.el.style.opacity = '0';
-    });
-    
-    document.querySelector('.torus').style.transition = 'all 1s';
-    document.querySelector('.torus').style.borderColor = 'rgba(255, 0, 0, 0.8)';
-    document.querySelector('.torus').style.boxShadow = 'inset 0 0 50px rgba(255, 0, 0, 0.5)';
-    setTimeout(() => {
-      document.querySelector('.torus').style.opacity = '0';
-      document.querySelector('.torus').style.transform = 'scale(1.5)';
-    }, 100);
-  });
-</script>
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, dpr;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    resize();
+
+    let time = 0;
+    const particles = [];
+    for (let i = 0; i < 60; i++) {
+      particles.push({
+        angle: Math.random() * Math.PI * 2,
+        r: 60 + Math.random() * 25,
+        speed: 0.03 + Math.random() * 0.02
+      });
+    }
+
+    function animate() {
+      time += 0.02;
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2 - 15;
+      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const amber = getThemeColor('--sim-amber') || '#ffb74d';
+      const red = getThemeColor('--sim-red') || '#ef5350';
+      const text = getThemeColor('--text') || '#e0e0e0';
+      const border = getThemeColor('--surface-border') || '#33334d';
+
+      // Torus vessel cross-section
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 75, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Helical magnetic field lines
+      ctx.strokeStyle = 'rgba(79, 195, 247, 0.3)';
+      ctx.lineWidth = 2;
+      for (let r = 55; r <= 95; r += 15) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Confined helical plasma particles
+      particles.forEach(p => {
+        p.angle += p.speed;
+        const px = cx + Math.cos(p.angle) * p.r;
+        const py = cy + Math.sin(p.angle) * p.r;
+
+        ctx.fillStyle = amber;
+        ctx.beginPath();
+        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Central solenoid
+      ctx.fillStyle = '#667788';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = text;
+      ctx.font = '12px var(--font-mono)';
+      ctx.fillText('Central Solenoid', cx - 45, cy + 4);
+      ctx.fillText('Helical Magnetic Field Lines', cx - 85, cy + 120);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>

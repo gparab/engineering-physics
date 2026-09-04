@@ -1,168 +1,402 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eye Diagram</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eye Diagram</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #0d0d0d;
-        overflow: hidden;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
     }
-    #container {
-        position: relative;
-        width: 400px;
-        height: 300px;
-        cursor: pointer;
-        background: #111;
-        border: 2px solid #333;
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
     }
-    canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
     }
-    .grid {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: 
-            linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
-        background-size: 40px 30px;
-        pointer-events: none;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
     }
-</style>
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    main, .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation, .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2, .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p, .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation, .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
-<div id="container">
-    <canvas id="scope"></canvas>
-    <div class="grid"></div>
-</div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Eye Diagram</h1>
+      <div class="discipline-badge">Telecommunications</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script>
-    const canvas = document.getElementById('scope');
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      An eye diagram is an oscilloscope measurement technique that superimposes synchronized repetitive sweeps of a multi-valued digital baseband signal across a two-symbol clock window. The degree of vertical eye opening indicates the noise margin against amplitude errors, while horizontal eye closure reveals timing jitter. Inter-symbol interference (ISI) caused by channel dispersion and bandwidth limitation visibly distorts and collapses the eye opening.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        Eye Height = V_{high, min} - V_{low, max} &nbsp;&nbsp;|&nbsp;&nbsp; Timing Jitter = Δt_{cross} &nbsp;&nbsp;|&nbsp;&nbsp; BER ≈ Q(SNR_{eye})
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    
+    const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 400;
-    canvas.height = 300;
 
-    let noiseLevel = 0.02;
-    let jitterLevel = 0.01;
-    let bandwidth = 1.0;
-    let isClosing = false;
-    let staticLevel = 0;
-
-    const traces = [];
-    const numTraces = 30;
-
-    // Pre-generate some random bit sequences for traces
-    for(let i=0; i<numTraces; i++) {
-        traces.push({
-            prevBit: Math.random() > 0.5 ? 1 : -1,
-            curBit: Math.random() > 0.5 ? 1 : -1,
-            nextBit: Math.random() > 0.5 ? 1 : -1,
-            alpha: Math.random() * 0.5 + 0.1
-        });
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
     }
+    window.addEventListener('resize', resize);
+    resize();
 
-    function draw() {
-        ctx.fillStyle = 'rgba(17, 17, 17, 0.2)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+    let time = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.02;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
+      const simRed = getThemeColor('--sim-red') || '#ef5350';
+      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
+      const textColor = getThemeColor('--text') || '#e0e0e0';
+      const mutedColor = getThemeColor('--text-muted') || '#9e9eb4';
+      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+
+      const gX = width * 0.12;
+      const gY = height * 0.16;
+      const gW = width * 0.76;
+      const gH = height * 0.62;
+
+      ctx.fillStyle = getThemeColor('--surface') || '#22223a';
+      ctx.fillRect(gX, gY, gW, gH);
+      ctx.strokeStyle = surfaceBorder;
+      ctx.strokeRect(gX, gY, gW, gH);
+
+      const midGY = gY + gH / 2;
+
+      // Oscilloscope Graticule Grid
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+      ctx.lineWidth = 1;
+      for (let f = 1; f < 6; f++) {
+        ctx.beginPath();
+        ctx.moveTo(gX, gY + (f / 6) * gH); ctx.lineTo(gX + gW, gY + (f / 6) * gH);
+        ctx.moveTo(gX + (f / 6) * gW, gY); ctx.lineTo(gX + (f / 6) * gW, gY + gH);
+        ctx.stroke();
+      }
+
+      // Draw Folded Overlaid Eye Traces (Simulating all 2-bit transitions: 00, 01, 10, 11)
+      const eyeAmp = gH * 0.35;
+      const numTraces = 24;
+
+      for (let tr = 0; tr < numTraces; tr++) {
+        const jitter = (Math.sin(tr * 4.3 + time * 2) * 4);
+        const bit1 = (tr % 2 === 0) ? 1 : -1;
+        const bit2 = ((tr >> 1) % 2 === 0) ? 1 : -1;
+
+        ctx.strokeStyle = (tr % 2 === 0) ? 'rgba(79, 195, 247, 0.35)' : 'rgba(38, 166, 154, 0.35)';
         ctx.lineWidth = 2;
-        ctx.strokeStyle = `rgba(46, 204, 113, 0.6)`;
-        
-        if (staticLevel > 0) {
-            // Draw static
-            ctx.beginPath();
-            for(let x=0; x<canvas.width; x+=5) {
-                let y = canvas.height/2 + (Math.random()-0.5)*canvas.height*staticLevel;
-                if(x===0) ctx.moveTo(x,y);
-                else ctx.lineTo(x,y);
-            }
-            ctx.stroke();
-            if(isClosing) requestAnimationFrame(draw);
-            return;
+        ctx.beginPath();
+
+        for (let x = 0; x < gW - 20; x += 4) {
+          const u = x / (gW - 20); // 0 to 1 across 2 UI (unit intervals)
+          // Raised cosine transition shape
+          let val = 0;
+          if (u < 0.5) {
+            val = bit1;
+          } else {
+            const trans = 0.5 - 0.5 * Math.cos((u - 0.5) * 2 * Math.PI);
+            val = bit1 + (bit2 - bit1) * trans;
+          }
+          const py = midGY - val * eyeAmp + jitter;
+          if (x === 0) ctx.moveTo(gX + 10 + x, py);
+          else ctx.lineTo(gX + 10 + x, py);
         }
+        ctx.stroke();
+      }
 
-        const tCenter = canvas.width / 2;
-        const UI = canvas.width / 2; // Unit interval width
+      // Center Sampling Instant Line
+      const optSampleX = gX + gW * 0.5;
+      ctx.strokeStyle = simAmber;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(optSampleX, gY + 15); ctx.lineTo(optSampleX, gY + gH - 15);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-        traces.forEach(trace => {
-            ctx.beginPath();
-            let jitter = (Math.random() - 0.5) * UI * jitterLevel;
-            
-            for(let x=0; x<=canvas.width; x+=5) {
-                // Normalized time -1 to 1
-                let t = (x - tCenter + jitter) / UI;
-                
-                // Interpolate between bits using raised cosine-like transition
-                let val = 0;
-                
-                if (t < -0.5) {
-                    val = trace.prevBit;
-                } else if (t > 0.5) {
-                    val = trace.nextBit;
-                } else {
-                    // transition
-                    let bitStart = t < 0 ? trace.prevBit : trace.curBit;
-                    let bitEnd = t < 0 ? trace.curBit : trace.nextBit;
-                    
-                    // low pass filtering (bandwidth)
-                    let smoothT = (t + 0.5) * Math.PI * bandwidth;
-                    let phase = Math.sin(t * Math.PI * bandwidth);
-                    val = trace.curBit * Math.cos(t*Math.PI*bandwidth);
-                    // simplified smooth step
-                    if (t < 0) {
-                        val = trace.prevBit + (trace.curBit - trace.prevBit) * (Math.sin((t+0.5)*Math.PI) * 0.5 + 0.5) * bandwidth;
-                    } else {
-                        val = trace.curBit + (trace.nextBit - trace.curBit) * (Math.sin((t-0.5)*Math.PI) * 0.5 + 0.5) * bandwidth;
-                    }
-                }
-                
-                let y = canvas.height/2 - val * (canvas.height/3);
-                y += (Math.random() - 0.5) * canvas.height * noiseLevel; // Noise
-                
-                if (x === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-        });
+      ctx.fillStyle = simAmber;
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Optimal Sampling Instant (Max Eye Opening)', optSampleX, gY + 22);
 
-        // randomize traces slightly every frame to make it dynamic
-        if(Math.random() > 0.5) {
-            let idx = Math.floor(Math.random() * traces.length);
-            traces[idx].prevBit = traces[idx].curBit;
-            traces[idx].curBit = traces[idx].nextBit;
-            traces[idx].nextBit = Math.random() > 0.5 ? 1 : -1;
-        }
-
-        requestAnimationFrame(draw);
+      // Status
+      ctx.fillStyle = textColor;
+      ctx.font = '13px sans-serif';
+      ctx.fillText('Eye Height (Noise Margin) = 78%   |   Horizontal Jitter = 12% UI (Wide Open Eye)', width / 2, height - 20);
     }
+    animate();
 
-    draw();
-
-    let clicked = false;
-    document.getElementById('container').addEventListener('click', () => {
-        if(clicked) return;
-        clicked = true;
-        isClosing = true;
-        
-        // click: ISI hits; traces blur, eye closes, static
-        gsap.to(window, { bandwidth: 0.1, duration: 1, ease: "power2.in" });
-        gsap.to(window, { jitterLevel: 0.5, noiseLevel: 0.2, duration: 1, ease: "power2.in" });
-        
-        gsap.to(window, { staticLevel: 1, duration: 0.5, delay: 1, ease: "power2.out" });
-    });
-</script>
+  </script>
 </body>
 </html>

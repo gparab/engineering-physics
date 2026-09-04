@@ -1,131 +1,375 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Programming Matrix</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-            font-family: sans-serif;
-            overflow: hidden;
-            perspective: 600px;
-        }
-        .container {
-            display: grid;
-            grid-template-columns: repeat(4, 15px);
-            grid-template-rows: repeat(4, 15px);
-            gap: 2px;
-            cursor: pointer;
-        }
-        
-        .cell {
-            background-color: #ccc;
-            border-radius: 2px;
-            transition: all 0.3s;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Programming Matrix</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #26a69a;
+      --sim-amber: #ffb74d;
+      --sim-red: #ef5350;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
 
-        /* Diagonal waves */
-        @keyframes fillCell {
-            0%, 10% { background-color: #ccc; box-shadow: none; }
-            50% { background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C; }
-            100% { background-color: #E74C3C; box-shadow: none; }
-        }
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00796b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
 
-        .d0 { animation: fillCell 4s infinite 0s; }
-        .d1 { animation: fillCell 4s infinite 0.3s; }
-        .d2 { animation: fillCell 4s infinite 0.6s; }
-        .d3 { animation: fillCell 4s infinite 0.9s; }
-        .d4 { animation: fillCell 4s infinite 1.2s; }
-        .d5 { animation: fillCell 4s infinite 1.5s; }
-        .d6 { animation: fillCell 4s infinite 1.8s; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        /* Path cells: (0,0)->(0,1)->(1,1)->(2,1)->(2,2)->(3,2)->(3,3) */
-        .path { z-index: 2; }
-        .non-path { z-index: 1; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
 
-        /* Click animation */
-        .clicked .cell {
-            animation: none !important;
-            background-color: #ccc;
-        }
-        .clicked .path {
-            background-color: #E74C3C !important;
-            box-shadow: 0 0 10px #E74C3C;
-        }
-        .clicked .non-path {
-            animation: dropAway 1s forwards cubic-bezier(0.5, -0.5, 1, 1);
-        }
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
 
-        /* Sequential drop based on column */
-        .clicked .non-path:nth-child(even) { animation-delay: 0.1s; }
-        .clicked .non-path:nth-child(3n) { animation-delay: 0.2s; }
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
 
-        @keyframes dropAway {
-            to { transform: translateY(100vh) rotateX(90deg); opacity: 0; }
-        }
-        
-        /* Retracing path highlight */
-        .trace {
-            position: absolute;
-            background: rgba(255,255,255,0.8);
-            width: 15px; height: 15px;
-            border-radius: 2px;
-            opacity: 0;
-            pointer-events: none;
-        }
-        .clicked .trace {
-            animation: retrace 1.5s forwards steps(1);
-        }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
 
-        @keyframes retrace {
-            0% { top: 51px; left: 51px; opacity: 1; }
-            14% { top: 51px; left: 34px; }
-            28% { top: 34px; left: 34px; }
-            42% { top: 34px; left: 17px; }
-            57% { top: 17px; left: 17px; }
-            71% { top: 0px; left: 17px; }
-            85% { top: 0px; left: 0px; }
-            100% { top: 0px; left: 0px; opacity: 0; }
-        }
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
 
-    </style>
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.2rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="container" id="model">
-        <div class="trace"></div>
-        <!-- Row 0 -->
-        <div class="cell d0 path"></div>
-        <div class="cell d1 path"></div>
-        <div class="cell d2 non-path"></div>
-        <div class="cell d3 non-path"></div>
-        <!-- Row 1 -->
-        <div class="cell d1 non-path"></div>
-        <div class="cell d2 path"></div>
-        <div class="cell d3 non-path"></div>
-        <div class="cell d4 non-path"></div>
-        <!-- Row 2 -->
-        <div class="cell d2 non-path"></div>
-        <div class="cell d3 path"></div>
-        <div class="cell d4 path"></div>
-        <div class="cell d5 non-path"></div>
-        <!-- Row 3 -->
-        <div class="cell d3 non-path"></div>
-        <div class="cell d4 non-path"></div>
-        <div class="cell d5 path"></div>
-        <div class="cell d6 path"></div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Dynamic Programming Matrix</h1>
+      <div class="discipline-badge">Computer Science</div>
     </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-    <script>
-        document.getElementById('model').addEventListener('click', function() {
-            this.classList.add('clicked');
-        });
-    </script>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Dynamic programming computes optimal solutions to complex combinatorial problems through decomposition into overlapping subproblems with optimal substructure. In the Longest Common Subsequence (LCS) matrix, each table coordinate DP[i][j] caches the maximal length of common subsequences for prefixes of length i and j. Caching intermediate evaluations prevents exponential combinatorial recomputation, bounding overall complexity to polynomial time.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        DP[i][j] = { DP[i-1][j-1] + 1 (if X[i] = Y[j]) | max(DP[i-1][j], DP[i][j-1]) (if X[i] ≠ Y[j]) }
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    const strX = "ALGO";
+    const strY = "LOGO";
+    const rows = strX.length + 1;
+    const cols = strY.length + 1;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#e0e0e0' : '#1a1a1a';
+      const mutedColor = isDark ? '#9e9eb4' : '#616161';
+      const accentColor = isDark ? '#4fc3f7' : '#0277bd';
+      const highColor = '#26a69a';
+
+      const cellW = 38;
+      const cellH = 34;
+      const cx = width * 0.5;
+      const cy = height * 0.44;
+      const startX = cx - (cols * cellW) * 0.5;
+      const startY = cy - (rows * cellH) * 0.5;
+
+      // Compute LCS table
+      const dp = Array.from({ length: rows }, () => new Array(cols).fill(0));
+      for (let i = 1; i < rows; i++) {
+        for (let j = 1; j < cols; j++) {
+          if (strX[i - 1] === strY[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+          else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        }
+      }
+
+      // Draw Column Headers (strY)
+      ctx.font = '700 13px monospace';
+      ctx.fillStyle = accentColor;
+      ctx.textAlign = 'center';
+      for (let j = 1; j < cols; j++) {
+        ctx.fillText(strY[j - 1], startX + j * cellW + cellW * 0.5, startY - 10);
+      }
+
+      // Draw Row Headers (strX)
+      for (let i = 1; i < rows; i++) {
+        ctx.fillText(strX[i - 1], startX - 16, startY + i * cellH + cellH * 0.5 + 4);
+      }
+
+      // Fill DP Grid
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const gx = startX + j * cellW;
+          const gy = startY + i * cellH;
+          const isDiagonalMatch = (i > 0 && j > 0 && strX[i - 1] === strY[j - 1]);
+
+          ctx.fillStyle = isDiagonalMatch ? (isDark ? 'rgba(38, 166, 154, 0.25)' : 'rgba(0, 121, 107, 0.15)') : (isDark ? '#22223a' : '#ffffff');
+          ctx.strokeStyle = isDiagonalMatch ? highColor : (isDark ? '#33334d' : '#e0e0e0');
+          ctx.lineWidth = 1;
+          ctx.strokeRect(gx, gy, cellW, cellH);
+          ctx.fillRect(gx, gy, cellW, cellH);
+
+          ctx.font = '600 12px monospace';
+          ctx.fillStyle = isDiagonalMatch ? highColor : textColor;
+          ctx.fillText(`${dp[i][j]}`, gx + cellW * 0.5, gy + cellH * 0.5 + 4);
+        }
+      }
+
+      const ty = height - 40;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.fillText("Longest Common Subsequence DP Memoization: LCS('ALGO', 'LOGO') = 'LGO' (Length 3)", cx, ty);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
 </body>
 </html>

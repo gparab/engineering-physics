@@ -1,176 +1,395 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phase Diagram (Triple Point)</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #121212;
-            overflow: hidden;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase Diagram (Triple Point)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
 
-        .container {
-            position: relative;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-        }
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
 
-        .axis-y, .axis-x {
-            position: absolute;
-            background-color: #333;
-        }
-        .axis-y { width: 1px; height: 30px; left: 0; bottom: 0; }
-        .axis-x { width: 30px; height: 1px; left: 0; bottom: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        .line {
-            position: absolute;
-            background-color: #BA55D3;
-            transform-origin: bottom left;
-        }
-        .line-s-g { width: 15px; height: 1px; left: 0; bottom: 0; transform: rotate(45deg); }
-        .line-s-l { width: 15px; height: 1px; left: 10px; bottom: 10px; transform: rotate(70deg); }
-        .line-l-g { width: 15px; height: 1px; left: 10px; bottom: 10px; transform: rotate(20deg); }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
 
-        .critical-point {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background-color: #BA55D3;
-            border-radius: 50%;
-            left: 23px;
-            bottom: 15px;
-        }
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
 
-        .state-point {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background-color: #fff;
-            border-radius: 50%;
-            left: 10px;
-            bottom: 10px;
-            transform: translate(-50%, 50%);
-            z-index: 10;
-        }
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
 
-        .bg-color {
-            position: absolute;
-            width: 300vw;
-            height: 300vh;
-            left: -150vw;
-            top: -150vh;
-            background-color: transparent;
-            z-index: -1;
-            pointer-events: none;
-            transition: background-color 0.5s ease;
-        }
-        
-        .supercritical-haze {
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            left: 0;
-            top: 0;
-            background: radial-gradient(circle, rgba(186,85,211,0.8) 0%, rgba(186,85,211,0) 70%);
-            opacity: 0;
-            z-index: 5;
-            pointer-events: none;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="bg-color" id="bg-color"></div>
-    <div class="supercritical-haze" id="haze"></div>
-    
-    <div class="container" id="model-container">
-        <div class="axis-y"></div>
-        <div class="axis-x"></div>
-        <div class="line line-s-g"></div>
-        <div class="line line-s-l"></div>
-        <div class="line line-l-g"></div>
-        <div class="critical-point"></div>
-        <div class="state-point" id="point"></div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Phase Diagram (Triple Point)</h1>
+      <div class="discipline-badge">Chemical Engineering</div>
     </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-    <script>
-        gsap.registerPlugin(MotionPathPlugin);
-        
-        const container = document.getElementById('model-container');
-        const point = document.getElementById('point');
-        const bgColor = document.getElementById('bg-color');
-        const haze = document.getElementById('haze');
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-        // Idle Animation: orbit triple point (10, 20 from bottom is 10,10 from top approx)
-        const idleTL = gsap.timeline({ repeat: -1 });
-        idleTL.to(point, {
-            motionPath: {
-                path: [
-                    {x: 0, y: -8},
-                    {x: 6, y: -4},
-                    {x: 8, y: 4},
-                    {x: 0, y: 8},
-                    {x: -6, y: 4},
-                    {x: -8, y: -4},
-                    {x: 0, y: -8}
-                ],
-                curviness: 1.5
-            },
-            duration: 3,
-            ease: "none",
-            onUpdate: function() {
-                // Approximate regions based on angle to triple point
-                let p = this.progress();
-                if(p < 0.33) bgColor.style.backgroundColor = 'rgba(100, 100, 255, 0.1)'; // Solid
-                else if(p < 0.66) bgColor.style.backgroundColor = 'rgba(255, 100, 100, 0.1)'; // Liquid
-                else bgColor.style.backgroundColor = 'rgba(100, 255, 100, 0.1)'; // Gas
-            }
-        });
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A unary pressure-temperature (P-T) phase diagram maps the thermodynamic state boundaries between solid, liquid, and gas phases. The coexistence curves intersect at the invariant triple point, where Gibbs phase rule dictates zero degrees of freedom (F = C - P + 2 = 1 - 3 + 2 = 0) and all three distinct phases coexist in thermodynamic equilibrium.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        F = C - P + 2 = 1 - 3 + 2 = 0
+      </div>
+    </div>
+  </section>
 
-        // Click Animation
-        container.addEventListener('click', () => {
-            idleTL.kill();
-            
-            const clickTL = gsap.timeline();
-            
-            // Rocket past critical point (which is at roughly x:13, y:-5 relative to triple point start)
-            clickTL.to(point, {
-                x: 15, y: -15, 
-                duration: 0.3,
-                ease: "power2.in"
-            })
-            .to(point, {
-                scale: 50,
-                opacity: 0,
-                duration: 0.5,
-                ease: "power2.out"
-            })
-            .to('.line, .axis-x, .axis-y, .critical-point', {
-                opacity: 0,
-                filter: "blur(5px)",
-                duration: 0.5
-            }, "<")
-            .to(haze, {
-                opacity: 1,
-                scale: 3,
-                duration: 1,
-                ease: "power1.out"
-            }, "<")
-            .to(haze, {
-                opacity: 0,
-                duration: 1,
-                ease: "power2.inOut"
-            }, "+=0.5");
-        });
-    </script>
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, dpr;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    resize();
+
+    let time = 0;
+
+    function animate() {
+      time += 0.02;
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2 - 30;
+      const cy = height / 2 - 20;
+      const gW = 280;
+      const gH = 180;
+
+      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const teal = getThemeColor('--sim-teal') || '#26a69a';
+      const amber = getThemeColor('--sim-amber') || '#ffb74d';
+      const red = getThemeColor('--sim-red') || '#ef5350';
+      const text = getThemeColor('--text') || '#e0e0e0';
+      const border = getThemeColor('--surface-border') || '#33334d';
+
+      // Axes
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - gW / 2, cy + gH / 2);
+      ctx.lineTo(cx + gW / 2, cy + gH / 2);
+      ctx.moveTo(cx - gW / 2, cy + gH / 2);
+      ctx.lineTo(cx - gW / 2, cy - gH / 2);
+      ctx.stroke();
+
+      const tpX = cx - 20;
+      const tpY = cy + 10;
+
+      // Sublimation curve (Solid - Gas)
+      ctx.strokeStyle = blue;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - gW / 2, cy + gH / 2);
+      ctx.quadraticCurveTo(cx - 70, cy + 40, tpX, tpY);
+      ctx.stroke();
+
+      // Fusion / Melting curve (Solid - Liquid)
+      ctx.strokeStyle = teal;
+      ctx.beginPath();
+      ctx.moveTo(tpX, tpY);
+      ctx.lineTo(tpX - 25, cy - gH / 2 + 10);
+      ctx.stroke();
+
+      // Vaporization curve (Liquid - Gas)
+      ctx.strokeStyle = amber;
+      ctx.beginPath();
+      ctx.moveTo(tpX, tpY);
+      ctx.quadraticCurveTo(cx + 60, cy - 10, cx + gW / 2 - 20, cy - gH / 2 + 30);
+      ctx.stroke();
+
+      // Critical point & Triple point
+      ctx.fillStyle = red;
+      ctx.beginPath();
+      ctx.arc(cx + gW / 2 - 20, cy - gH / 2 + 30, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = text;
+      ctx.beginPath();
+      ctx.arc(tpX, tpY, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Orbiting thermodynamic state point
+      const curX = tpX + Math.cos(time) * 25;
+      const curY = tpY + Math.sin(time) * 20;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(curX, curY, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Phase labels
+      ctx.font = '12px var(--font-mono)';
+      ctx.fillStyle = blue;
+      ctx.fillText('SOLID', cx - gW / 2 + 40, cy - 20);
+      ctx.fillStyle = teal;
+      ctx.fillText('LIQUID', cx + 10, cy - 50);
+      ctx.fillStyle = amber;
+      ctx.fillText('GAS', cx + 50, cy + 50);
+      ctx.fillStyle = text;
+      ctx.fillText('Triple Point (T_t, P_t)', tpX + 10, tpY + 5);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>

@@ -1,62 +1,375 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nuclear - Radiation Shielding</title>
-<style>
-  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-  #container { position: relative; width: 40px; height: 30px; cursor: pointer; }
-  .shield { position: absolute; width: 4px; height: 100%; top: 0; border-radius: 1px; }
-  .s-paper { left: 15px; background: #eee; }
-  .s-al { left: 23px; background: #999; }
-  .s-pb { left: 31px; background: #555; width: 8px; }
-  .ray { position: absolute; height: 2px; left: -10px; border-radius: 1px; }
-  .alpha { top: 5px; background: #FF4500; box-shadow: 0 0 3px #FF4500; width: 10px; }
-  .beta { top: 15px; background: #32CD32; box-shadow: 0 0 3px #32CD32; width: 10px; }
-  .gamma { top: 25px; background: #FFFF00; box-shadow: 0 0 3px #FFFF00; width: 10px; }
-  
-  .massive-gamma { position: fixed; top: 50%; left: -100vw; width: 100vw; height: 100vh; background: #FFFF00; opacity: 0; transform: translateY(-50%); pointer-events: none; mix-blend-mode: overlay; z-index: 10; }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gamma Radiation Attenuation & Shielding</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div id="container">
-  <div class="shield s-paper"></div>
-  <div class="shield s-al"></div>
-  <div class="shield s-pb" id="lead"></div>
-  <div class="ray alpha"></div>
-  <div class="ray beta"></div>
-  <div class="ray gamma"></div>
-</div>
-<div class="massive-gamma" id="flash"></div>
-<script>
-  // Idle animation
-  const tl = gsap.timeline({repeat: -1});
-  // Alpha stops at paper
-  tl.fromTo('.alpha', {x: 0, opacity: 1}, {x: 20, duration: 0.5, ease: "power1.in"})
-    .to('.alpha', {opacity: 0, duration: 0.1});
-  // Beta stops at Al
-  tl.fromTo('.beta', {x: 0, opacity: 1}, {x: 28, duration: 0.5, ease: "power1.in"}, "-=0.3")
-    .to('.beta', {opacity: 0, duration: 0.1});
-  // Gamma stops deep in Pb
-  tl.fromTo('.gamma', {x: 0, opacity: 1}, {x: 40, duration: 0.6, ease: "power1.in"}, "-=0.3")
-    .to('.gamma', {opacity: 0, duration: 0.1});
+  <header class="header">
+    <div class="title-container">
+      <h1>Gamma Radiation Attenuation & Shielding</h1>
+      <div class="discipline-badge">Nuclear Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-  document.getElementById('container').addEventListener('click', () => {
-    tl.kill();
-    gsap.to(['.alpha', '.beta', '.gamma'], {opacity: 0, duration: 0.1});
-    
-    // Massive gamma flux
-    gsap.to('#flash', {left: 0, opacity: 0.8, duration: 0.5, ease: "power2.in"});
-    
-    // Shields heat red
-    gsap.to('.shield', {backgroundColor: '#FF0000', boxShadow: '0 0 10px #FF0000', duration: 0.5, delay: 0.4});
-    
-    // Absorbs and dissolves
-    gsap.to('#flash', {opacity: 0, duration: 1, delay: 1});
-    gsap.to('#container', {scale: 1.5, opacity: 0, filter: 'blur(10px)', duration: 1, delay: 1});
-  });
-</script>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Gamma and X-ray radiation beams traversing matter undergo exponential attenuation through photoelectric absorption, Compton scattering, and pair production. The beam intensity decreases with material thickness according to the Beer-Lambert attenuation law, where the Half-Value Layer (HVL) specifies the thickness required to reduce ionizing radiation flux by exactly 50%.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        I = I_0 · B · e^(-μ · x) = I_0 · (1 / 2)^(x / HVL)
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, dpr;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    resize();
+
+    let time = 0;
+    const rays = [];
+    for (let i = 0; i < 25; i++) {
+      rays.push({
+        y: -60 + i * 5.5,
+        x: -180,
+        penetrated: Math.random() > 0.65
+      });
+    }
+
+    function animate() {
+      time += 0.02;
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2 - 20;
+      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const amber = getThemeColor('--sim-amber') || '#ffb74d';
+      const text = getThemeColor('--text') || '#e0e0e0';
+      const border = getThemeColor('--surface-border') || '#33334d';
+
+      // Lead shielding barrier (Pb)
+      const leadX = cx - 20;
+      const leadW = 70;
+      const leadH = 160;
+
+      ctx.fillStyle = 'rgba(100, 110, 130, 0.4)';
+      ctx.fillRect(leadX, cy - leadH / 2, leadW, leadH);
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(leadX, cy - leadH / 2, leadW, leadH);
+
+      // Gamma photon rays propagating
+      rays.forEach(r => {
+        const rayProgress = ((time * 120 + r.y * 3) % 360) - 180;
+        ctx.strokeStyle = amber;
+        ctx.lineWidth = 1.5;
+
+        ctx.beginPath();
+        ctx.moveTo(cx - 160, cy + r.y);
+        if (r.penetrated) {
+          ctx.lineTo(cx + 160, cy + r.y);
+        } else {
+          ctx.lineTo(leadX + 25, cy + r.y);
+        }
+        ctx.stroke();
+
+        // Moving photon wave packet
+        if (rayProgress < (r.penetrated ? 160 : 0)) {
+          ctx.fillStyle = blue;
+          ctx.beginPath();
+          ctx.arc(cx + rayProgress, cy + r.y, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      // Labels
+      ctx.fillStyle = text;
+      ctx.font = '12px var(--font-mono)';
+      ctx.fillText('Incident Beam (I₀)', cx - 170, cy - leadH / 2 - 15);
+      ctx.fillText('Lead Shielding (Lead / Concrete)', leadX - 50, cy + leadH / 2 + 25);
+      ctx.fillText('Attenuated Flux (I < I₀)', cx + 70, cy - leadH / 2 - 15);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>

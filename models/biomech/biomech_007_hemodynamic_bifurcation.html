@@ -1,62 +1,377 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>Hemodynamic Bifurcation</title>
-<style>
-  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
-  #container { cursor: pointer; position: relative; width: 40px; height: 40px; }
-  #vessel { transform-origin: center bottom; }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arterial Hemodynamic Bifurcation Flow</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div id="container">
-  <svg viewBox="0 0 40 40" width="40" height="40" id="vessel">
-    <path d="M15,40 L15,20 L5,0 L15,0 L20,10 L25,0 L35,0 L25,20 L25,40 Z" fill="rgba(208, 2, 27, 0.2)" stroke="#D0021B" stroke-width="1.5" stroke-linejoin="round"/>
-  </svg>
-  <div id="vectors" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:visible;"></div>
-</div>
-<script>
-  let vCont = document.getElementById("vectors");
-  let creating = true;
-  function addVector() {
-    if(!creating) return;
-    let v = document.createElement("div");
-    v.style.cssText = "position:absolute; width:1.5px; height:6px; background:#D0021B; left:19px; top:40px; border-radius:1px;";
-    vCont.appendChild(v);
-    
-    let branchLeft = Math.random() > 0.5;
-    let duration1 = 0.4 + Math.random()*0.2;
-    let duration2 = 0.4 + Math.random()*0.3; // slower in branches
-    
-    gsap.to(v, {
-      top: 15, duration: duration1, ease: "none",
-      onComplete: () => {
-        gsap.to(v, {
-          x: branchLeft ? -10 : 10, y: -20, rotation: branchLeft ? -25 : 25,
-          duration: duration2, ease: "none", onComplete: () => { if(creating) v.remove(); }
-        });
-      }
-    });
-  }
-  setInterval(addVector, 120);
-  gsap.to("#vessel", {scale: 1.05, duration: 0.4, repeat: -1, yoyo: true, ease: "sine.inOut"});
+  <header class="header">
+    <div class="title-container">
+      <h1>Arterial Hemodynamic Bifurcation Flow</h1>
+      <div class="discipline-badge">Biomechanics Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-  document.getElementById("container").addEventListener("click", () => {
-    creating = false;
-    gsap.killTweensOf("#vessel");
-    let vectors = document.querySelectorAll("#vectors div");
-    vectors.forEach(v => {
-      gsap.killTweensOf(v);
-      gsap.to(v, {
-        x: (Math.random()-0.5)*800, y: (Math.random()-0.5)*800,
-        rotation: Math.random()*1080, scale: 3, opacity: 0,
-        duration: 1.5 + Math.random(), ease: "power3.out"
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Pulsatile blood flow through branching arterial bifurcations (such as the carotid artery) exhibits complex laminar velocity fields and spatial wall shear stress (WSS) variations. Near the apex divider, flow accelerates to produce elevated protective wall shear stress. Along the outer sinus bulbs, adverse pressure gradients generate secondary flow separation and low, oscillating wall shear stress prone to atheroma formation.
+    </p>
+    <div class="equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        τ_w = μ · (∂u / ∂y)|_wall ,  α = R · √(ω · ρ / μ) ,  Re = (ρ · V · D) / μ
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
       });
-    });
-    gsap.to("#vessel", {opacity: 0, scale: 2, filter: "blur(10px)", duration: 0.8, ease: "power2.in"});
-  });
-</script>
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+
+    const bloodCells = [];
+    for (let i = 0; i < 90; i++) {
+      bloodCells.push({
+        x: Math.random() * 300,
+        y: (Math.random() - 0.5) * 45,
+        speed: 2 + Math.random() * 2,
+        branch: Math.random() < 0.5 ? 1 : 2
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.42;
+      const cy = height * 0.5;
+
+      // Arterial Bifurcation Geometry (Y-Junction)
+      ctx.beginPath();
+      // Main parent artery (left)
+      ctx.moveTo(40, cy - 35);
+      ctx.lineTo(cx, cy - 35);
+      // Upper daughter branch
+      ctx.lineTo(cx + 180, cy - 90);
+      ctx.lineTo(cx + 195, cy - 55);
+      // Apex flow divider
+      ctx.lineTo(cx + 35, cy);
+      // Lower daughter branch
+      ctx.lineTo(cx + 195, cy + 55);
+      ctx.lineTo(cx + 180, cy + 90);
+      ctx.lineTo(cx, cy + 35);
+      ctx.lineTo(40, cy + 35);
+      ctx.strokeStyle = getThemeColor('--sim-blue');
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Red blood cell particles flowing through junction
+      for (let c of bloodCells) {
+        c.x += c.speed;
+
+        let drawY = cy + c.y;
+        if (c.x > cx) {
+          const t = (c.x - cx) / 180;
+          drawY = c.branch === 1 ? (cy - 35 * (1 - t) - 72 * t + c.y * 0.6) : (cy + 35 * (1 - t) + 72 * t + c.y * 0.6);
+        }
+
+        if (c.x > cx + 180) {
+          c.x = 40;
+          c.y = (Math.random() - 0.5) * 45;
+          c.branch = Math.random() < 0.5 ? 1 : 2;
+        }
+
+        ctx.beginPath();
+        ctx.arc(c.x, drawY, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = getThemeColor('--sim-red');
+        ctx.fill();
+      }
+
+      // Labels
+      ctx.fillStyle = getThemeColor('--text');
+      ctx.font = "11px var(--font-sans)";
+      ctx.fillText("Common Carotid Artery", 50, cy - 45);
+      ctx.fillText("Internal Carotid Branch", cx + 110, cy - 105);
+      ctx.fillText("External Carotid Branch", cx + 110, cy + 115);
+      ctx.fillText("Apex: High Wall Shear Stress (τ_w)", cx - 20, cy + 18);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+  </script>
 </body>
 </html>

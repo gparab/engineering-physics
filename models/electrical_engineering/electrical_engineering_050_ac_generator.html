@@ -1,204 +1,437 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>50. AC Generator</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    background-color: #0d0d0d;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Courier New', Courier, monospace;
-  }
-  .container {
-    position: relative;
-    width: 250px;
-    height: 150px;
-    cursor: pointer;
-    perspective: 500px;
-  }
-  .pole {
-    position: absolute;
-    width: 40px;
-    height: 100px;
-    top: 25px;
-    background: #444;
-    border-radius: 5px;
-    box-shadow: inset 0 0 10px #000;
-  }
-  .pole.north {
-    left: 20px;
-    border-right: 5px solid #c0392b; /* North red */
-  }
-  .pole.south {
-    right: 20px;
-    border-left: 5px solid #2980b9; /* South blue */
-  }
-  .pole-label {
-    color: #aaa;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-    line-height: 100px;
-  }
-  .rotor-container {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    left: 75px;
-    top: 25px;
-    transform-style: preserve-3d;
-  }
-  .wire-loop {
-    position: absolute;
-    width: 80px;
-    height: 60px;
-    left: 10px;
-    top: 20px;
-    border: 4px solid #D35400;
-    border-radius: 4px;
-    box-sizing: border-box;
-    transform-style: preserve-3d;
-  }
-  .shaft {
-    position: absolute;
-    width: 120px;
-    height: 4px;
-    background: #777;
-    top: 48px;
-    left: -10px;
-  }
-  .sine-wave {
-    position: absolute;
-    width: 250px;
-    height: 50px;
-    top: 130px;
-    left: 0;
-    pointer-events: none;
-    opacity: 0.7;
-  }
-  svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-  }
-  .disk-of-light {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    left: 75px;
-    top: 25px;
-    background: radial-gradient(circle, rgba(211,84,0,1) 0%, rgba(211,84,0,0) 70%);
-    border-radius: 50%;
-    opacity: 0;
-    pointer-events: none;
-    mix-blend-mode: screen;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AC Generator (Alternator)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    main, .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg,
+    main canvas,
+    main svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation, .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2, .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p, .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation, .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    
+  </style>
 </head>
 <body>
+  <header class="header">
+    <div class="title-container">
+      <h1>AC Generator (Alternator)</h1>
+      <div class="discipline-badge">Electrical Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<div class="container" id="generator">
-  <div class="pole north"><div class="pole-label">N</div></div>
-  <div class="pole south"><div class="pole-label">S</div></div>
-  
-  <div class="rotor-container" id="rotor">
-    <div class="shaft"></div>
-    <div class="wire-loop"></div>
-  </div>
-  
-  <div class="disk-of-light" id="disk"></div>
-  
-  <div class="sine-wave">
-    <svg viewBox="0 0 250 50">
-      <path id="wavePath" d="M0 25 Q 31 25, 62 25 T 125 25 T 187 25 T 250 25" fill="none" stroke="#D35400" stroke-width="2" stroke-linecap="round" />
-    </svg>
-  </div>
-</div>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script>
-  // Idle Animation
-  let rotationObj = { angle: 0 };
-  
-  const wavePath = document.getElementById('wavePath');
-  
-  function updateWave() {
-    const a = rotationObj.angle * Math.PI / 180;
-    const amp = 20 * Math.sin(a); // Amplitude varies with rotation
-    
-    // Draw a moving sine wave
-    const offset = (rotationObj.angle % 360) / 360 * 125;
-    
-    // Simple representation of the emitted wave
-    const path = `M0 25 Q 31 ${25 - amp}, 62 25 T 125 25 T 187 25 T 250 25`;
-    wavePath.setAttribute('d', path);
-    wavePath.setAttribute('stroke-width', 2 + Math.abs(amp)/10);
-    wavePath.style.opacity = 0.5 + Math.abs(amp)/40;
-  }
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      An alternating current (AC) generator, or alternator, converts mechanical rotational energy into sinusoidal electrical energy via Faraday's law of electromagnetic induction. As an armature coil rotates at constant angular frequency ω within a stationary uniform magnetic field established by stator poles, the effective cross-sectional area intercepting magnetic flux lines varies harmonically as a function of angle θ = ωt. This continuous variation in magnetic flux induces an alternating electromotive force that reverses polarity twice per mechanical revolution.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        e(t) = B · A · ω · sin(ω t) &nbsp;&nbsp;|&nbsp;&nbsp; Φ_B(t) = B · A · cos(ω t) &nbsp;&nbsp;|&nbsp;&nbsp; V_peak = N · B · A · ω
+      </div>
+    </div>
+  </section>
 
-  const idleTween = gsap.to(rotationObj, {
-    angle: 360,
-    duration: 2,
-    repeat: -1,
-    ease: "none",
-    onUpdate: () => {
-      gsap.set("#rotor", { rotationX: rotationObj.angle });
-      updateWave();
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
     }
-  });
 
-  // Click Animation
-  const container = document.getElementById('generator');
-  let clicked = false;
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
 
-  container.addEventListener('click', () => {
-    if (clicked) return;
-    clicked = true;
     
-    idleTween.kill();
-    
-    const clickTl = gsap.timeline();
-    
-    // Spin up to infinite frequency
-    clickTl.to(rotationObj, {
-      angle: rotationObj.angle + 360 * 10,
-      duration: 1.5,
-      ease: "power3.in",
-      onUpdate: () => {
-        gsap.set("#rotor", { rotationX: rotationObj.angle });
-        // Make the wave go crazy
-        const amp = 30 * Math.sin(rotationObj.angle * Math.PI / 180 * 5);
-        wavePath.setAttribute('d', `M0 25 Q 20 ${25 - amp}, 40 25 T 80 25 T 120 25 T 160 25 T 200 25 T 240 25 T 280 25`);
-        wavePath.setAttribute('stroke', '#fff');
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let time = 0;
+    const history = [];
+
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.025;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
+      const simRed = getThemeColor('--sim-red') || '#ef5350';
+      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
+      const textColor = getThemeColor('--text') || '#e0e0e0';
+      const mutedColor = getThemeColor('--text-muted') || '#9e9eb4';
+      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+
+      // 1. Generator Stator & Rotor View (Left side)
+      const genX = width * 0.28;
+      const genY = height * 0.44;
+      const rad = Math.min(width, height) * 0.24;
+
+      // Stator Magnets
+      // North Pole (Red, Left)
+      ctx.fillStyle = simRed;
+      ctx.fillRect(genX - rad - 30, genY - rad * 0.7, 30, rad * 1.4);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('N', genX - rad - 15, genY + 6);
+
+      // South Pole (Blue, Right)
+      ctx.fillStyle = simBlue;
+      ctx.fillRect(genX + rad, genY - rad * 0.7, 30, rad * 1.4);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('S', genX + rad + 15, genY + 6);
+
+      // Uniform Magnetic Field lines (N -> S)
+      ctx.strokeStyle = 'rgba(79, 195, 247, 0.25)';
+      ctx.lineWidth = 1.5;
+      for (let offset = -rad * 0.5; offset <= rad * 0.5; offset += rad * 0.25) {
+        ctx.beginPath();
+        ctx.moveTo(genX - rad, genY + offset);
+        ctx.lineTo(genX + rad, genY + offset);
+        ctx.stroke();
       }
-    })
-    .to("#rotor", {
-      opacity: 0,
-      duration: 0.2
-    }, "-=0.3")
-    .to("#disk", {
-      opacity: 1,
-      scale: 3,
-      duration: 0.5
-    }, "-=0.5")
-    .to(".pole, .sine-wave", {
-      opacity: 0,
-      duration: 0.3
-    }, "-=0.2")
-    .to("#disk", {
-      scale: 0,
-      opacity: 0,
-      duration: 0.4,
-      ease: "back.in(2)"
-    });
-  });
-</script>
+
+      // Rotating Armature Coil
+      const theta = time * 2;
+      const coilLen = rad * 0.8;
+      const x1 = genX - Math.cos(theta) * coilLen;
+      const y1 = genY - Math.sin(theta) * coilLen * 0.5;
+      const x2 = genX + Math.cos(theta) * coilLen;
+      const y2 = genY + Math.sin(theta) * coilLen * 0.5;
+
+      ctx.strokeStyle = simAmber;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      // Coil center hub
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(genX, genY, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Rotation indicator arrow
+      ctx.strokeStyle = simTeal;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(genX, genY, 30, theta - 0.4, theta + 0.4);
+      ctx.stroke();
+
+      ctx.fillStyle = textColor;
+      ctx.font = '12px sans-serif';
+      ctx.fillText('Rotating Armature (ω)', genX, genY + rad * 0.8 + 15);
+
+      // 2. Output AC Voltage Oscilloscope (Right side)
+      const gX = width * 0.58;
+      const gY = height * 0.22;
+      const gW = width * 0.36;
+      const gH = height * 0.52;
+
+      ctx.fillStyle = getThemeColor('--surface') || '#22223a';
+      ctx.fillRect(gX, gY, gW, gH);
+      ctx.strokeStyle = surfaceBorder;
+      ctx.strokeRect(gX, gY, gW, gH);
+
+      const midGY = gY + gH / 2;
+      ctx.strokeStyle = surfaceBorder;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(gX, midGY); ctx.lineTo(gX + gW, midGY);
+      ctx.stroke();
+
+      // Sinusoidal EMF e(t) = sin(theta)
+      const currentEmf = Math.sin(theta);
+      history.push(currentEmf);
+      if (history.length > 120) history.shift();
+
+      ctx.strokeStyle = simAmber;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i < history.length; i++) {
+        const hx = gX + 15 + (i / 120) * (gW - 30);
+        const hy = midGY - history[i] * (gH * 0.38);
+        if (i === 0) ctx.moveTo(hx, hy);
+        else ctx.lineTo(hx, hy);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = simAmber;
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Generated AC Voltage e(t) = V_pk · sin(ωt)', gX + 15, gY + 22);
+
+      // Realtime value badge
+      ctx.fillStyle = textColor;
+      ctx.font = '12px sans-serif';
+      ctx.fillText(`Instantaneous e(t) = ${(currentEmf * 120).toFixed(1)} V`, gX + 15, gY + gH - 15);
+    }
+    animate();
+
+  </script>
 </body>
 </html>

@@ -1,70 +1,397 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plug Flow Reactor</title>
-    <style>
-        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; cursor: pointer; overflow: hidden; }
-        #container { width: 60px; height: 20px; position: relative; }
-        .tube { position: absolute; width: 100%; height: 100%; border: 2px solid #555; border-radius: 10px; box-sizing: border-box; overflow: hidden; display: flex; align-items: center; }
-        .plug { position: absolute; width: 15px; height: 100%; border-radius: 5px; opacity: 0.8; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plug Flow Reactor (PFR)</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-    <div id="container">
-        <div class="tube" id="tube"></div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Plug Flow Reactor (PFR)</h1>
+      <div class="discipline-badge">Chemical Engineering</div>
     </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script>
-        const tube = document.getElementById('tube');
-        const plugs = [];
-        
-        for (let i = 0; i < 5; i++) {
-            let plug = document.createElement('div');
-            plug.className = 'plug';
-            tube.appendChild(plug);
-            plugs.push(plug);
-            
-            gsap.set(plug, { x: -20, backgroundColor: "#FF8C00" });
-            
-            // Loop animation
-            gsap.to(plug, {
-                x: 60,
-                backgroundColor: "#2ECC71", // fading to product
-                duration: 2,
-                repeat: -1,
-                delay: i * 0.4,
-                ease: "none"
-            });
-        }
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-        let clicked = false;
-        document.body.addEventListener('click', () => {
-            if (clicked) return;
-            clicked = true;
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A Plug Flow Reactor (PFR) models steady-state continuous fluid flow through a tubular conduit with negligible axial mixing and complete radial diffusion. As fluid packets traverse along the reactor length, reactants are progressively converted into products at a rate dictated by local concentrations. Consequently, a continuous concentration gradient develops along the axial coordinate, achieving higher conversions per unit volume than a single stirred tank of equivalent volume.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        dF_A / dV = -r_A = -k · C_A
+      </div>
+    </div>
+  </section>
 
-            // Stop normal flow
-            plugs.forEach(p => gsap.killTweensOf(p));
-            
-            // High velocity purge
-            gsap.to(plugs, {
-                x: window.innerWidth + 100,
-                duration: 0.3,
-                ease: "power2.in",
-                stagger: 0.05
-            });
-            
-            gsap.to(tube, {
-                scaleX: 0,
-                transformOrigin: "left center",
-                opacity: 0,
-                duration: 0.5,
-                delay: 0.2,
-                ease: "power2.in"
-            });
-        });
-    </script>
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, dpr;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    resize();
+
+    let time = 0;
+    const slices = 30;
+
+    function animate() {
+      time += 0.02;
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2 - 40;
+      const tubeW = Math.min(width * 0.75, 520);
+      const tubeH = 80;
+      const startX = cx - tubeW / 2;
+
+      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const amber = getThemeColor('--sim-amber') || '#ffb74d';
+      const text = getThemeColor('--text') || '#e0e0e0';
+      const border = getThemeColor('--surface-border') || '#33334d';
+
+      // Tube outline
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(startX, cy - tubeH / 2, tubeW, tubeH);
+
+      // Axial plug slices with concentration gradient
+      const sliceW = tubeW / slices;
+      for (let i = 0; i < slices; i++) {
+        const x = startX + i * sliceW;
+        const frac = i / (slices - 1);
+        const conversion = 1 - Math.exp(-2.2 * frac);
+
+        // Interpolate color from blue to amber
+        ctx.fillStyle = `rgba(${Math.round(79 + conversion * 176)}, ${Math.round(195 - conversion * 12)}, ${Math.round(247 - conversion * 170)}, 0.35)`;
+        ctx.fillRect(x, cy - tubeH / 2 + 2, sliceW + 1, tubeH - 4);
+      }
+
+      // Moving fluid plugs (marker lines)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 1.5;
+      for (let offset = 0; offset < tubeW; offset += 45) {
+        const px = startX + ((offset + time * 60) % tubeW);
+        ctx.beginPath();
+        ctx.moveTo(px, cy - tubeH / 2 + 2);
+        ctx.lineTo(px, cy + tubeH / 2 - 2);
+        ctx.stroke();
+      }
+
+      // Arrows indicating plug flow direction
+      ctx.fillStyle = blue;
+      ctx.beginPath();
+      ctx.moveTo(startX - 25, cy);
+      ctx.lineTo(startX - 5, cy);
+      ctx.stroke();
+
+      // Concentration graph C_A(z) below
+      const graphY = cy + tubeH / 2 + 40;
+      const graphH = 80;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(startX, graphY);
+      ctx.lineTo(startX + tubeW, graphY);
+      ctx.moveTo(startX, graphY);
+      ctx.lineTo(startX, graphY - graphH);
+      ctx.stroke();
+
+      // Exponential decay curve
+      ctx.strokeStyle = blue;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let x = 0; x <= tubeW; x += 4) {
+        const z = x / tubeW;
+        const c = Math.exp(-2.2 * z);
+        const gy = graphY - c * (graphH - 10);
+        if (x === 0) ctx.moveTo(startX + x, gy);
+        else ctx.lineTo(startX + x, gy);
+      }
+      ctx.stroke();
+
+      // Labels
+      ctx.fillStyle = text;
+      ctx.font = '12px var(--font-mono)';
+      ctx.fillText('z = 0 (Feed C_A0)', startX - 10, cy - tubeH / 2 - 10);
+      ctx.fillText('z = L (Effluent C_AL)', startX + tubeW - 80, cy - tubeH / 2 - 10);
+      ctx.fillText('Concentration Profile C_A(z) = C_A0 · exp(-k·z / u)', startX + 40, graphY + 22);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>

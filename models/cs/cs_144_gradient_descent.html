@@ -1,144 +1,384 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gradient Descent</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<style>
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #111;
-    overflow: hidden;
-  }
-  #container {
-    position: relative;
-    width: 80px;
-    height: 50px;
-    cursor: pointer;
-  }
-  svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-  }
-  .bowl {
-    fill: none;
-    stroke: rgba(231, 76, 60, 0.4);
-    stroke-width: 1.5;
-  }
-  .ball {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background-color: #E74C3C;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 4px #E74C3C;
-    left: 10px;
-    top: 10px;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gradient Descent</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #26a69a;
+      --sim-amber: #ffb74d;
+      --sim-red: #ef5350;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00796b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.2rem;
+      letter-spacing: 0.03em;
+      color: var(--accent);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div id="container">
-  <svg viewBox="0 0 80 50">
-    <path class="bowl" d="M 5,10 Q 40,60 75,10" />
-    <path class="bowl" d="M 5,15 Q 40,65 75,15" style="opacity: 0.6;" />
-    <path class="bowl" d="M 5,20 Q 40,70 75,20" style="opacity: 0.3;" />
-  </svg>
-  <div class="ball"></div>
-</div>
-<script>
-  const container = document.getElementById('container');
-  const ball = document.querySelector('.ball');
-  
-  let idleTl = gsap.timeline({ repeat: -1 });
+  <header class="header">
+    <div class="title-container">
+      <h1>Gradient Descent</h1>
+      <div class="discipline-badge">Computer Science</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-  function playIdle() {
-    gsap.set(ball, { left: 5, top: 10 });
-    
-    idleTl.to(ball, {
-      left: 40,
-      top: 35,
-      duration: 1.2,
-      ease: "power2.inOut"
-    });
-    idleTl.to(ball, {
-      left: 60,
-      top: 20,
-      duration: 0.8,
-      ease: "power2.out"
-    });
-    idleTl.to(ball, {
-      left: 40,
-      top: 35,
-      duration: 0.8,
-      ease: "power2.inOut"
-    });
-    idleTl.to(ball, {
-      left: 50,
-      top: 28,
-      duration: 0.6,
-      ease: "power2.out"
-    });
-    idleTl.to(ball, {
-      left: 40,
-      top: 35,
-      duration: 0.6,
-      ease: "power2.inOut"
-    });
-    idleTl.to({}, { duration: 1 });
-  }
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-  playIdle();
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Gradient descent is a first-order iterative optimization algorithm employed to minimize differentiable objective loss functions across computational parameter manifolds. At each iteration, model weights shift in the direction of steepest local descent—proportional to the negative gradient vector of the loss surface evaluated at the current state. The learning rate hyperparameter η governs step magnitude, balancing convergence velocity against numerical oscillation near minima.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        θ_{t+1} = θ_t - η ∇ J(θ_t) , ∇ J(θ) = [ (∂ J) / (∂ θ_1), …, (∂ J) / (∂ θ_n) ]^T
+      </div>
+    </div>
+  </section>
 
-  let clicked = false;
-  container.addEventListener('click', () => {
-    if (clicked) return;
-    clicked = true;
-    idleTl.kill();
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
 
-    const tl = gsap.timeline();
-    
-    // Learning rate too high: ricochet rapidly
-    tl.to(ball, {
-      left: 75,
-      top: 10,
-      duration: 0.2,
-      ease: "none"
-    });
-    tl.to(ball, {
-      left: -10,
-      top: -20,
-      duration: 0.2,
-      ease: "none"
-    });
-    tl.to(ball, {
-      left: 100,
-      top: -60,
-      duration: 0.2,
-      ease: "none"
-    });
-    
-    // Shoot into orbit across the page
-    tl.to(ball, {
-      left: window.innerWidth / 2,
-      top: -window.innerHeight,
-      scale: 3,
-      duration: 1,
-      ease: "power1.in"
-    });
-    
-    tl.to('.bowl', {
-      opacity: 0,
-      duration: 0.5
-    }, 0.5);
-  });
-</script>
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => {});
+    resize();
+
+
+    let time = 0;
+    let thetaX = 2.2;
+    let thetaY = 1.8;
+    const trajectory = [];
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, width, height);
+
+      time += 0.016;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#e0e0e0' : '#1a1a1a';
+      const mutedColor = isDark ? '#9e9eb4' : '#616161';
+      const accentColor = isDark ? '#4fc3f7' : '#0277bd';
+      const highColor = '#26a69a';
+
+      // Descent step
+      const lr = 0.04;
+      const gradX = 2 * thetaX; // Loss J = x^2 + 2*y^2
+      const gradY = 4 * thetaY;
+      thetaX -= lr * gradX;
+      thetaY -= lr * gradY;
+
+      // Reset when close to minimum
+      if (Math.hypot(thetaX, thetaY) < 0.05) {
+        thetaX = (Math.random() - 0.5) * 4;
+        thetaY = (Math.random() - 0.5) * 3;
+        trajectory.length = 0;
+      }
+
+      const cx = width * 0.5;
+      const cy = height * 0.44;
+      const scale = Math.min(80, height * 0.12);
+
+      trajectory.push({ x: thetaX, y: thetaY });
+      if (trajectory.length > 120) trajectory.shift();
+
+      // Draw Elliptical Loss Contours
+      ctx.strokeStyle = isDark ? 'rgba(79, 195, 247, 0.2)' : 'rgba(2, 119, 189, 0.15)';
+      ctx.lineWidth = 1.5;
+      for (let r = 1; r <= 5; r++) {
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, r * scale, r * scale * 0.65, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Draw Minimum Marker
+      ctx.fillStyle = highColor;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw Trajectory
+      ctx.strokeStyle = highColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < trajectory.length; i++) {
+        const px = cx + trajectory[i].x * scale;
+        const py = cy + trajectory[i].y * scale * 0.65;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Current Position Ball
+      const curPx = cx + thetaX * scale;
+      const curPy = cy + thetaY * scale * 0.65;
+      ctx.fillStyle = '#ffb74d';
+      ctx.beginPath();
+      ctx.arc(curPx, curPy, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      const loss = thetaX * thetaX + 2 * thetaY * thetaY;
+      const ty = height - 40;
+      ctx.font = '13px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.fillText(`Loss J(θ) = ${loss.toFixed(3)}  |  Parameters: θ = (${thetaX.toFixed(2)}, ${thetaY.toFixed(2)})  |  η = 0.04`, cx, ty);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
 </body>
 </html>

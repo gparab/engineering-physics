@@ -1,101 +1,400 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<title>Kinetic Extraction</title>
-<style>
-  body { margin: 0; background: #1f2a33; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-  .icon-container { position: relative; width: 50px; height: 50px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-  .turbine-mast { position: absolute; width: 4px; height: 20px; background: #ccc; bottom: 5px; border-radius: 2px; }
-  .turbine-rotor { position: absolute; width: 20px; height: 2px; background: #50E3C2; border-radius: 1px; top: 15px; }
-  .turbine-rotor.vert { transform: rotate(90deg); }
-  .vector { position: absolute; height: 2px; background: rgba(80,227,194,0.5); width: 10px; border-radius: 1px; opacity: 0; }
-  .vector::after { content: ''; position: absolute; right: -2px; top: -2px; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 4px solid rgba(80,227,194,0.5); }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tidal Turbine Kinetic Energy Extraction</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-  <div class="icon-container" id="icon">
-    <div class="turbine-mast"></div>
-    <div class="turbine-rotor" id="rotor1"></div>
-    <div class="turbine-rotor vert" id="rotor2"></div>
-  </div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Tidal Turbine Kinetic Energy Extraction</h1>
+      <div class="discipline-badge">Marine Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
+
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <section class="explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A marine tidal turbine harvests kinetic energy from bidirectional underwater tidal currents using an axial-flow rotor. Applying actuator disk momentum theory, the fluid velocity slows from the upstream current speed (V∞) to an axial speed (V∞(1-a)) at the rotor plane, and further decelerates in the expanding downstream wake. The power conversion efficiency is bounded by the theoretical Lanchester-Betz limit of 59.3% (Cp = 16/27).
+    </p>
+    <div class="equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        P = (1/2) · ρ · A · V³ · C_p ,  C_p = 4 · a · (1 - a)² ≤ 16 / 27 ≈ 0.593
+      </div>
+    </div>
+  </section>
+
   <script>
-    const icon = document.getElementById('icon');
-    let isAnimating = false;
-
-    // Spin rotor
-    const spin = gsap.to(['#rotor1', '#rotor2'], { rotation: "+=360", duration: 2, repeat: -1, ease: "none" });
-    
-    // Idle flow vectors
-    let flowInterval = setInterval(() => {
-      if(isAnimating) return;
-      let v = document.createElement('div');
-      v.className = 'vector';
-      icon.appendChild(v);
-      
-      let startY = Math.random() * 20 + 5;
-      gsap.set(v, { x: -30, y: startY });
-      
-      // fast before disk, slow after
-      let tl = gsap.timeline();
-      tl.to(v, { x: 25, opacity: 1, duration: 1, ease: "none" }) // fast
-        .to(v, { x: 50, opacity: 0, duration: 1.5, ease: "none" }); // slow
-    }, 400);
-
-    icon.addEventListener('click', () => {
-      if (isAnimating) return;
-      isAnimating = true;
-      clearInterval(flowInterval);
-
-      // Turbine locks up
-      spin.pause();
-      
-      // Massive eddies around disk
-      for(let i=0; i<30; i++) {
-        let v = document.createElement('div');
-        v.className = 'vector';
-        v.style.background = '#50E3C2';
-        document.body.appendChild(v);
-        
-        let cx = window.innerWidth / 2;
-        let cy = window.innerHeight / 2;
-        
-        let startY = (Math.random() - 0.5) * 40;
-        gsap.set(v, { x: cx - 200, y: cy + startY, opacity: 1 });
-        
-        // Path around disk
-        gsap.to(v, {
-          duration: 1.5,
-          ease: "power2.inOut",
-          motionPath: {
-            path: [
-              {x: cx - 50, y: cy + startY},
-              {x: cx, y: cy + (startY > 0 ? 150 : -150)}, // divert
-              {x: cx + 100, y: cy + (startY > 0 ? 100 : -100)},
-              {x: cx + 200, y: cy + startY},
-              {x: cx + 400, y: cy + startY}
-            ]
-          },
-          onComplete: () => v.remove()
-        });
-        
-        // Spin the vectors slightly to simulate eddies
-        gsap.to(v, { rotation: (startY > 0 ? 360 : -360), duration: 1.5 });
-      }
-      
-      // Rotors shatter from stress
-      gsap.to(['#rotor1', '#rotor2'], {
-        scale: 0,
-        opacity: 0,
-        rotation: "+=720",
-        duration: 0.5,
-        delay: 0.5
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
       });
-    });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+
+    let rotorAngle = 0;
+    const flowVectors = [];
+    for (let i = 0; i < 75; i++) {
+      flowVectors.push({
+        x: Math.random() * 800,
+        y: 40 + Math.random() * 260,
+        vx: 3.2
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.48;
+      const cy = height * 0.5;
+      const rotorR = 85;
+      rotorAngle += 0.05;
+
+      // Seabed foundation & Mast
+      ctx.fillStyle = getThemeColor('--text-muted');
+      ctx.fillRect(cx - 8, cy, 16, height - cy - 30);
+      ctx.fillRect(cx - 60, height - 35, 120, 15);
+
+      // Nacelle
+      ctx.beginPath();
+      ctx.roundRect(cx - 30, cy - 14, 60, 28, 6);
+      ctx.fillStyle = getThemeColor('--surface');
+      ctx.fill();
+      ctx.strokeStyle = getThemeColor('--text');
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Spinning Turbine Rotor Blades
+      ctx.save();
+      ctx.translate(cx, cy);
+      for (let i = 0; i < 3; i++) {
+        const ang = rotorAngle + (i * Math.PI * 2) / 3;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(rotorR * Math.sin(ang), rotorR * Math.cos(ang));
+        ctx.strokeStyle = getThemeColor('--sim-teal');
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Flow streamlines / velocity vectors
+      for (let v of flowVectors) {
+        // Decelerate flow near and after turbine
+        let currentSpeed = 3.4;
+        if (v.x > cx - 40 && v.x < cx + 180 && Math.abs(v.y - cy) < rotorR + 20) {
+          currentSpeed = 1.8; // Wake velocity deficit
+        }
+
+        v.x += currentSpeed;
+        if (v.x > width) {
+          v.x = 0;
+          v.y = 40 + Math.random() * (height - 80);
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(v.x, v.y);
+        ctx.lineTo(v.x + currentSpeed * 4, v.y);
+        ctx.strokeStyle = currentSpeed < 2.5 ? getThemeColor('--sim-amber') : getThemeColor('--sim-blue');
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      // Streamtube envelope
+      ctx.beginPath();
+      ctx.setLineDash([4, 4]);
+      ctx.moveTo(0, cy - rotorR * 0.7);
+      ctx.lineTo(cx, cy - rotorR);
+      ctx.lineTo(width, cy - rotorR * 1.35);
+      ctx.moveTo(0, cy + rotorR * 0.7);
+      ctx.lineTo(cx, cy + rotorR);
+      ctx.lineTo(width, cy + rotorR * 1.35);
+      ctx.strokeStyle = getThemeColor('--sim-grid');
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Labels
+      ctx.fillStyle = getThemeColor('--text');
+      ctx.font = "11px var(--font-sans)";
+      ctx.fillText("Inflow Current (V∞)", 30, cy - rotorR - 15);
+      ctx.fillText("Actuator Disk (Rotor Plane)", cx - 60, cy - rotorR - 15);
+      ctx.fillText("Decelerated Wake (Betz Limit Cp = 16/27)", cx + 80, cy - rotorR - 15);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
   </script>
-  <!-- Need MotionPathPlugin for the path animation -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
-  <script>gsap.registerPlugin(MotionPathPlugin);</script>
 </body>
 </html>

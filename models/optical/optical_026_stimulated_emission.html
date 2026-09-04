@@ -1,181 +1,378 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stimulated Emission</title>
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background-color: #1a1a1a;
-        overflow: hidden;
-        font-family: sans-serif;
-    }
-    #container {
-        position: relative;
-        width: 30px;
-        height: 30px;
-        cursor: pointer;
-    }
-    /* Atom */
-    .nucleus {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 6px;
-        height: 6px;
-        background: #fff;
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-    }
-    .shell {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 20px;
-        height: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-    }
-    .electron {
-        position: absolute;
-        top: -2px;
-        left: 50%;
-        width: 4px;
-        height: 4px;
-        background: #fff;
-        border-radius: 50%;
-        transform: translate(-50%, 0);
-        transition: top 0.1s ease-in-out;
-    }
-    
-    /* Photons */
-    .photon {
-        position: absolute;
-        width: 8px;
-        height: 2px;
-        background: #e74c3c;
-        border-radius: 1px;
-        box-shadow: 0 0 4px #e74c3c;
-        opacity: 0;
-    }
-    .photon-in {
-        top: 5px;
-        left: -15px;
-        animation: photonIn 2s infinite linear;
-    }
-    .photon-out-1 {
-        top: 5px;
-        left: 15px;
-        animation: photonOut1 2s infinite linear;
-    }
-    .photon-out-2 {
-        top: 9px;
-        left: 15px;
-        animation: photonOut1 2s infinite linear;
-    }
-    
-    @keyframes photonIn {
-        0% { left: -20px; opacity: 0; }
-        10% { opacity: 1; }
-        45% { left: 5px; opacity: 1; }
-        46% { opacity: 0; }
-        100% { opacity: 0; left: 5px; }
-    }
-    @keyframes photonOut1 {
-        0%, 45% { left: 5px; opacity: 0; }
-        46% { opacity: 1; left: 5px; }
-        80% { left: 35px; opacity: 1; }
-        90% { opacity: 0; left: 40px; }
-        100% { opacity: 0; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stimulated Emission & Laser Cavity Amplification</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      --max-width: 960px;
     }
 
-    /* Click Animation Elements */
-    .cascade-container {
-        position: absolute;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        pointer-events: none;
-        overflow: hidden;
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
     }
-    .laser-beam {
-        position: absolute;
-        top: 50%;
-        left: 0;
-        width: 0;
-        height: 8px;
-        background: #e74c3c;
-        box-shadow: 0 0 20px #e74c3c, 0 0 40px #e74c3c, 0 0 80px #e74c3c;
-        transform: translateY(-50%);
-        transition: width 0.1s ease-in;
-        z-index: 10;
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-</style>
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas,
+    .simulation-viewport svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation p,
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-
-<div id="container" onclick="triggerLaser()">
-    <div class="nucleus"></div>
-    <div class="shell">
-        <div class="electron" id="electron"></div>
+  <header class="header">
+    <div class="title-container">
+      <h1>Stimulated Emission & Laser Cavity Amplification</h1>
+      <div class="discipline-badge">Optical Engineering</div>
     </div>
-    <div class="photon photon-in"></div>
-    <div class="photon photon-out-1"></div>
-    <div class="photon photon-out-2"></div>
-</div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<div class="cascade-container" id="cascade">
-    <div class="laser-beam" id="beam"></div>
-</div>
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-<script>
-    const electron = document.getElementById('electron');
-    setInterval(() => {
-        electron.style.top = '7px'; // drop down
-        setTimeout(() => {
-            electron.style.top = '-2px'; // go back up after photon passes
-        }, 1100);
-    }, 2000);
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Stimulated emission occurs when an incident photon perturbs an atom in an excited quantum state, stimulating an electron transition to a lower state with emission of a clone photon possessing identical wavelength, phase, direction, and polarization. In an optical resonator with population inversion, stimulated emission exceeds absorption, yielding coherent laser amplification.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        dN_2 / dt = -B_{21} · ρ(ν) · N_2 , I(z) = I_0 · exp(γ · z)
+      </div>
+    </div>
+  </section>
 
-    function triggerLaser() {
-        const container = document.getElementById('container');
-        const cascade = document.getElementById('cascade');
-        const beam = document.getElementById('beam');
-        
-        container.style.display = 'none';
-        
-        // Spawn cascading photons
-        for (let i = 0; i < 50; i++) {
-            let p = document.createElement('div');
-            p.className = 'photon';
-            p.style.opacity = '1';
-            p.style.left = '50vw';
-            p.style.top = '50vh';
-            // Random offset for cascade effect
-            p.style.transform = `translate(${Math.random()*60-30}px, ${Math.random()*60-30}px)`;
-            p.style.transition = 'all 0.4s ease-in';
-            cascade.appendChild(p);
-            
-            setTimeout(() => {
-                p.style.left = '100vw';
-                p.style.transform = `translate(${Math.random()*200}px, ${Math.random()*100-50}px)`;
-            }, 50);
-        }
-
-        setTimeout(() => {
-            beam.style.width = '100vw';
-            setTimeout(() => {
-                beam.style.opacity = '0';
-                beam.style.transition = 'opacity 0.8s ease';
-            }, 200);
-        }, 400);
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
     }
-</script>
 
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, dpr;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    resize();
+
+    let time = 0;
+
+    function animate() {
+      time += 0.025;
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2 - 20;
+      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
+      const amber = getThemeColor('--sim-amber') || '#ffb74d';
+      const red = getThemeColor('--sim-red') || '#ef5350';
+      const text = getThemeColor('--text') || '#e0e0e0';
+
+      const cycle = time % 3.5;
+
+      // Energy levels E1 and E2
+      ctx.strokeStyle = text;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - 80, cy - 50);
+      ctx.lineTo(cx + 80, cy - 50);
+      ctx.moveTo(cx - 80, cy + 50);
+      ctx.lineTo(cx + 80, cy + 50);
+      ctx.stroke();
+
+      // Electron position
+      const isExcited = cycle < 1.4;
+      ctx.fillStyle = amber;
+      ctx.beginPath();
+      ctx.arc(cx, isExcited ? cy - 50 : cy + 50, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Incident photon wave
+      if (cycle < 1.4) {
+        const px = cx - 160 + (cycle / 1.4) * 160;
+        ctx.strokeStyle = red;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let x = 0; x < 40; x += 2) {
+          const py = cy - 50 + Math.sin(x * 0.4 + time * 12) * 6;
+          if (x === 0) ctx.moveTo(px - 40 + x, py);
+          else ctx.lineTo(px - 40 + x, py);
+        }
+        ctx.stroke();
+      } else {
+        // Two stimulated coherent photons moving right in phase
+        const dist = (cycle - 1.4) / 2.1 * 160;
+        ctx.strokeStyle = red;
+        ctx.lineWidth = 2;
+        for (let offset of [-15, 15]) {
+          ctx.beginPath();
+          for (let x = 0; x < 40; x += 2) {
+            const py = cy + offset + Math.sin(x * 0.4 + time * 12) * 6;
+            if (x === 0) ctx.moveTo(cx + dist - 40 + x, py);
+            else ctx.lineTo(cx + dist - 40 + x, py);
+          }
+          ctx.stroke();
+        }
+      }
+
+      ctx.fillStyle = text;
+      ctx.font = '12px var(--font-mono)';
+      ctx.fillText('Excited State E₂', cx + 90, cy - 46);
+      ctx.fillText('Ground State E₁', cx + 90, cy + 54);
+      ctx.fillText('Incident Photon → Two Coherent Clone Photons', cx - 150, cy + 110);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>

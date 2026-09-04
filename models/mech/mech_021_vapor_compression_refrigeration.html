@@ -1,131 +1,420 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vapor Compression Refrigeration</title>
-<style>
-  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; cursor: pointer; }
-  #container { position: relative; width: 80px; height: 80px; }
-  .pipe { position: absolute; border: 2px solid #555; border-radius: 8px; width: 60px; height: 60px; left: 10px; top: 10px; box-sizing: border-box; }
-  .compressor { position: absolute; left: 30px; bottom: 0; width: 20px; height: 20px; background: #444; border-radius: 50% 50% 10% 10%; z-index: 2; }
-  .valve { position: absolute; left: 35px; top: 5px; width: 10px; height: 10px; background: #777; clip-path: polygon(0 0, 100% 0, 50% 100%); z-index: 2; }
-  .particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; opacity: 0.8; z-index: 1; margin: -3px; }
-  
-  .frost-wave { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle, #00CEC9 0%, transparent 70%); transform: translate(-50%, -50%) scale(0); pointer-events: none; opacity: 0.8; mix-blend-mode: screen; z-index: 10; }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vapor Compression Refrigeration Cycle</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #22223a;
+      --surface-border: #33334d;
+      --text: #e0e0e0;
+      --text-muted: #9e9eb4;
+      --accent: #4fc3f7;
+      --accent-rgb: 79, 195, 247;
+      
+      --sim-blue: #4fc3f7;
+      --sim-teal: #4db6ac;
+      --sim-amber: #ffb74d;
+      --sim-red: #e57373;
+      --sim-green: #81c784;
+      --sim-purple: #ba68c8;
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(255, 255, 255, 0.22);
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+      
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --surface-border: #e0e0e0;
+      --text: #1a1a1a;
+      --text-muted: #616161;
+      --accent: #0277bd;
+      --accent-rgb: 2, 119, 189;
+      
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #f57c00;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 20px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 16px auto;
+      text-align: center;
+      padding: 4px 48px 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      line-height: 1.2;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle svg {
+      display: block;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .simulation-viewport {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 16px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .simulation-viewport canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .explanation-section h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .explanation-text {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+      color: var(--text);
+    }
+
+    .equation-container {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      text-align: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    .equation-label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-math);
+      font-size: 1.25rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div id="container">
-  <div class="pipe"></div>
-  <div class="compressor"></div>
-  <div class="valve"></div>
-</div>
-<script>
-  gsap.registerPlugin(MotionPathPlugin);
-  const container = document.getElementById('container');
-  
-  const path = [
-    {x: 40, y: 70}, // compressor out (hot gas)
-    {x: 70, y: 70}, 
-    {x: 70, y: 10}, // condenser (hot to warm liquid)
-    {x: 40, y: 10}, // valve in
-    {x: 40, y: 10}, // valve out (cold mix)
-    {x: 10, y: 10},
-    {x: 10, y: 70}, // evaporator (cold gas)
-    {x: 40, y: 70}  // compressor in
-  ];
+  <header class="header">
+    <div class="title-container">
+      <h1>Vapor Compression Refrigeration Cycle</h1>
+      <div class="discipline-badge">Mechanical Engineering</div>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-  let particles = [];
-  for(let i=0; i<12; i++){
-    let p = document.createElement('div');
-    p.className = 'particle';
-    container.appendChild(p);
-    particles.push(p);
-    
-    let tl = gsap.timeline({repeat: -1, delay: i * 0.33});
-    
-    // Animate along path and change color
-    tl.to(p, {
-      motionPath: {
-        path: [path[0], path[1], path[2]],
-      },
-      backgroundColor: '#E74C3C', // hot red
-      duration: 1.5,
-      ease: "none"
-    })
-    .to(p, {
-      motionPath: { path: [path[2], path[3]] },
-      backgroundColor: '#E67E22', // warm liquid
-      duration: 0.5,
-      ease: "none"
-    })
-    .to(p, {
-      motionPath: { path: [path[4], path[5], path[6]] },
-      backgroundColor: '#00CEC9', // cold blue
-      duration: 1.5,
-      ease: "none"
-    })
-    .to(p, {
-      motionPath: { path: [path[6], path[7]] },
-      backgroundColor: '#3498DB', // cool gas
-      duration: 0.5,
-      ease: "none"
-    });
-  }
+  <main class="simulation-viewport" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
 
-  let clicked = false;
-  document.body.addEventListener('click', () => {
-    if(clicked) return;
-    clicked = true;
-    
-    // Valve freezes open, frost wave
-    gsap.to('.valve', { backgroundColor: '#00CEC9', scale: 1.5, duration: 0.3 });
-    
-    particles.forEach(p => gsap.killTweensOf(p));
-    
-    // Liquid slugs compressor -> BOOM frost
-    gsap.to('.compressor', { 
-      x: () => (Math.random()-0.5)*10,
-      y: () => (Math.random()-0.5)*10,
-      duration: 0.05,
-      repeat: 20,
-      onComplete: () => {
-        gsap.to('.compressor', { scale: 2, backgroundColor: '#00CEC9', opacity: 0, duration: 0.2 });
-        
-        // Frost wave covers screen
-        let wave = document.createElement('div');
-        wave.className = 'frost-wave';
-        document.body.appendChild(wave);
-        
-        gsap.to(wave, {
-          scale: 300,
-          opacity: 1,
-          duration: 1.5,
-          ease: "power3.out",
-          onComplete: () => {
-            gsap.to(wave, { opacity: 0.9, duration: 1 });
-            document.body.style.background = '#0a1a1a';
-          }
-        });
-        
-        // scatter particles
-        particles.forEach(p => {
-          gsap.to(p, {
-            x: "+=" + (Math.random()-0.5)*500,
-            y: "+=" + (Math.random()-0.5)*500,
-            scale: 3,
-            backgroundColor: '#ffffff',
-            opacity: 0,
-            duration: 1
-          });
-        });
-        gsap.to('.pipe', { opacity: 0, duration: 0.5 });
+  <section class="explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      The vapor compression refrigeration cycle transfers heat from a low-temperature cooled space to a higher-temperature ambient sink. Circulating refrigerant evaporates at low pressure and temperature, absorbing latent heat of vaporization (4→1). An electrically driven compressor raises the vapor to high pressure (1→2), followed by isobaric heat rejection in the condenser (2→3). An expansion valve isenthalpically throttles the fluid back to the evaporator pressure (3→4).
+    </p>
+    <div class="equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        COP = Q_L / W_net = (h₁ - h₄) / (h₂ - h₁) ,  Q_H = Q_L + W_net
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    function getThemeColor(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    }
+
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+
+    let flowTime = 0;
+    const refParticles = [];
+    for (let i = 0; i < 40; i++) {
+      refParticles.push({ t: i / 40 });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.5;
+      const cy = height * 0.5;
+      const w = 260;
+      const h = 150;
+      flowTime += 0.006;
+
+      // Closed Refrigerant Piping Loop
+      ctx.beginPath();
+      ctx.rect(cx - w / 2, cy - h / 2, w, h);
+      ctx.strokeStyle = getThemeColor('--text-muted');
+      ctx.lineWidth = 6;
+      ctx.stroke();
+
+      // Four Main Components:
+      // 1. Compressor (Left vertical line)
+      const compX = cx - w / 2;
+      ctx.fillStyle = getThemeColor('--surface');
+      ctx.beginPath();
+      ctx.moveTo(compX - 22, cy + 25);
+      ctx.lineTo(compX + 22, cy + 25);
+      ctx.lineTo(compX + 14, cy - 25);
+      ctx.lineTo(compX - 14, cy - 25);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = getThemeColor('--sim-amber');
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // 2. Condenser (Top horizontal line, high pressure heat rejection)
+      const condY = cy - h / 2;
+      ctx.strokeStyle = getThemeColor('--sim-red');
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(cx - 60, condY); ctx.lineTo(cx + 60, condY);
+      ctx.stroke();
+
+      // 3. Expansion Valve (Right vertical line, throttling)
+      const valveX = cx + w / 2;
+      ctx.beginPath();
+      ctx.moveTo(valveX - 18, cy - 18);
+      ctx.lineTo(valveX + 18, cy + 18);
+      ctx.lineTo(valveX - 18, cy + 18);
+      ctx.lineTo(valveX + 18, cy - 18);
+      ctx.closePath();
+      ctx.fillStyle = getThemeColor('--surface');
+      ctx.fill();
+      ctx.strokeStyle = getThemeColor('--sim-teal');
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 4. Evaporator (Bottom horizontal line, low pressure heat absorption)
+      const evapY = cy + h / 2;
+      ctx.strokeStyle = getThemeColor('--sim-blue');
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(cx - 60, evapY); ctx.lineTo(cx + 60, evapY);
+      ctx.stroke();
+
+      // Refrigerant flow dots around loop (CW)
+      for (let p of refParticles) {
+        const curT = (p.t + flowTime) % 1.0;
+        let px = 0, py = 0, pColor = getThemeColor('--sim-blue');
+
+        // Perimeter = 2*w + 2*h
+        const perim = 2 * (w + h);
+        const dist = curT * perim;
+
+        if (dist < w) {
+          // Top: Condenser (Hot gas to warm liquid, Red)
+          px = cx - w / 2 + dist; py = cy - h / 2;
+          pColor = getThemeColor('--sim-red');
+        } else if (dist < w + h) {
+          // Right: Throttling valve (Warm liquid to cold liquid/vapor, Teal)
+          px = cx + w / 2; py = cy - h / 2 + (dist - w);
+          pColor = getThemeColor('--sim-teal');
+        } else if (dist < 2 * w + h) {
+          // Bottom: Evaporator (Cold liquid to cold vapor, Blue)
+          px = cx + w / 2 - (dist - (w + h)); py = cy + h / 2;
+          pColor = getThemeColor('--sim-blue');
+        } else {
+          // Left: Compressor (Cold vapor compressed to hot gas, Amber)
+          px = cx - w / 2; py = cy + h / 2 - (dist - (2 * w + h));
+          pColor = getThemeColor('--sim-amber');
+        }
+
+        ctx.beginPath();
+        ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = pColor;
+        ctx.fill();
       }
-    });
-  });
-</script>
+
+      // Labels
+      ctx.fillStyle = getThemeColor('--text');
+      ctx.font = "11px var(--font-sans)";
+      ctx.fillText("Compressor (Work Input W_in)", compX - 140, cy);
+      ctx.fillText("Condenser (Heat Rejection Q_H)", cx - 75, condY - 18);
+      ctx.fillText("Expansion Valve (Joule-Thomson Throttling)", valveX + 25, cy);
+      ctx.fillText("Evaporator (Cooling Capacity Q_L)", cx - 75, evapY + 25);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+  </script>
 </body>
 </html>
