@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seismic Base Isolation</title>
+<style>
+  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; overflow: hidden; }
+  .system { position: relative; width: 200px; height: 300px; cursor: pointer; }
+  .ground { position: absolute; bottom: 0; left: -50px; width: 300px; height: 20px; background-color: #888; }
+  .springs-container { position: absolute; bottom: 20px; left: 0; width: 200px; height: 40px; display: flex; justify-content: space-around; }
+  .spring { width: 10px; height: 40px; border: 2px dashed #FF4500; border-radius: 5px; box-sizing: border-box; }
+  .building { position: absolute; bottom: 60px; left: 20px; width: 160px; height: 180px; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 2px; }
+  .block { background-color: #FF4500; width: 100%; height: 100%; transition: transform 1s cubic-bezier(0.1, -0.6, 0.2, 0); }
+</style>
+</head>
+<body>
+<div class="system" id="system">
+  <div class="ground" id="ground"></div>
+  <div class="springs-container" id="springs">
+    <div class="spring"></div><div class="spring"></div><div class="spring"></div>
+  </div>
+  <div class="building" id="building"></div>
+</div>
+<script>
+  const system = document.getElementById('system');
+  const ground = document.getElementById('ground');
+  const springs = document.getElementById('springs');
+  const building = document.getElementById('building');
+  
+  // Create blocks for the building
+  const blocks = [];
+  for(let i=0; i<16; i++) {
+    let b = document.createElement('div');
+    b.className = 'block';
+    building.appendChild(b);
+    blocks.push(b);
+  }
+
+  let time = 0;
+  let clicked = false;
+  let groundAmp = 10;
+  let buildingAmp = 2;
+
+  function animate() {
+    if(!clicked) {
+      time += 0.5;
+      let gOffset = Math.sin(time) * groundAmp;
+      let bOffset = Math.sin(time * 0.3) * buildingAmp; // Period lengthening
+      
+      ground.style.transform = `translateX(${gOffset}px)`;
+      springs.style.transform = `translateX(${gOffset/2}px) skewX(${(gOffset - bOffset)*1.5}deg)`;
+      building.style.transform = `translateX(${bOffset}px)`;
+      
+      requestAnimationFrame(animate);
+    }
+  }
+  animate();
+
+  system.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    
+    // Springs snap
+    springs.style.display = 'none';
+    
+    // Ground vibration continues and amplifies
+    let t2 = 0;
+    let shakeInt = setInterval(() => {
+      t2 += 1.5;
+      ground.style.transform = `translateX(${Math.sin(t2)*20}px)`;
+      building.style.transform = `translateX(${Math.sin(t2)*20}px) translateY(${Math.sin(t2*2)*5}px)`;
+    }, 20);
+    
+    setTimeout(() => {
+      clearInterval(shakeInt);
+      // Building shatters
+      blocks.forEach(b => {
+        let rx = (Math.random() - 0.5) * 500;
+        let ry = (Math.random() - 0.5) * 500;
+        let rrot = (Math.random() - 0.5) * 720;
+        b.style.transform = `translate(${rx}px, ${ry}px) rotate(${rrot}deg) scale(0)`;
+        b.style.opacity = '0';
+      });
+      building.style.backgroundColor = 'transparent';
+    }, 800);
+  });
+</script>
+</body>
+</html>

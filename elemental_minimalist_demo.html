@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elemental Minimalist Objects</title>
+<style>
+  :root {
+    --bg: #050508;
+    --card: #0a0a0e;
+    --ink: #ffffff;
+    --hint: #555555;
+    --border: rgba(255,255,255,0.05);
+    
+    /* Elemental Colors */
+    --c-fluid: #00e5ff;
+    --c-earth: #6ee7b7;
+    --c-fire: #ff4500;
+    --c-air: #f1f5f9;
+    --c-water: #3b82f6;
+  }
+  body {
+    background-color: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 60px 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 40px;
+  }
+  .header-text { text-align: center; max-width: 600px; margin-bottom: 20px; }
+  h1 { font-weight: 300; letter-spacing: 12px; margin: 0 0 10px 0; text-transform: uppercase; font-size: 20px; color: #eee; }
+  p { color: var(--hint); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; margin: 0; }
+
+  .showcase-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;
+    max-width: 1000px; width: 100%;
+  }
+  /* Center the bottom two cards */
+  .card:nth-child(4) { grid-column: 1 / 3; justify-self: right; width: calc(150% - 15px); }
+  .card:nth-child(5) { grid-column: 2 / 4; justify-self: left; width: calc(150% - 15px); margin-left: calc(50% + 15px);}
+  @media (max-width: 768px) {
+    .showcase-grid { grid-template-columns: 1fr; }
+    .card:nth-child(4), .card:nth-child(5) { grid-column: 1; justify-self: stretch; width: 100%; margin-left: 0; }
+  }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    height: 280px; display: flex; flex-direction: column; position: relative; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  
+  .card-header { padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 10; border-bottom: 1px solid var(--border); }
+  .card-header span.title { font-size: 13px; font-weight: 500; letter-spacing: 4px; text-transform: uppercase; color: #ddd; }
+  .card-header span.sim { font-size: 10px; font-weight: 300; letter-spacing: 3px; color: var(--hint); text-transform: uppercase; }
+  
+  .reset-btn { background: transparent; color: var(--hint); border: 1px solid #333; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+  .reset-btn:hover { color: var(--ink); border-color: var(--ink); }
+
+  .interactive-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+  .hint { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 9px; color: #444; letter-spacing: 3px; text-transform: uppercase; pointer-events: none; }
+
+  /* =======================================================================
+     SVG CORE STYLES
+     ======================================================================= */
+  .orb-container { width: 100px; height: 100px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
+  svg {
+    width: 100%; height: 100%; stroke: var(--ink); stroke-width: 1.5px;
+    stroke-linecap: round; stroke-linejoin: round; fill: none; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* =======================================================================
+     1. FLUID (X)
+     ======================================================================= */
+  .fluid-drop { fill: #000; transition: 0.4s; transform-origin: 30px 45px; animation: fluid-idle 4s ease-in-out infinite; }
+  
+  .orb-container:hover .fluid-drop { stroke: var(--c-fluid); filter: drop-shadow(0 0 10px var(--c-fluid)); transform: scale(1.05, 0.95); }
+  
+  .active-fluid { pointer-events: none; }
+  .active-fluid .fluid-drop { animation: fluid-splash 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+
+  @keyframes fluid-idle { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95, 1.05) translateY(-2px); } }
+  @keyframes fluid-splash {
+    20% { transform: translateY(-10px) scale(0.8, 1.2); }
+    100% { transform: translateY(40px) scale(3, 0.1); opacity: 0; filter: drop-shadow(0 0 20px var(--c-fluid)); }
+  }
+
+  /* =======================================================================
+     2. EARTH (Y)
+     ======================================================================= */
+  .earth-core { animation: earth-idle 6s linear infinite; transform-origin: 30px 30px; }
+  .e-poly { fill: #000; transition: 0.4s; }
+  
+  .orb-container:hover .e-poly { stroke: var(--c-earth); filter: drop-shadow(0 0 5px var(--c-earth)); }
+  
+  .active-earth { pointer-events: none; }
+  .active-earth .e-top { animation: shatter-top 0.8s cubic-bezier(0.9, 0, 0.1, 1) forwards; }
+  .active-earth .e-left { animation: shatter-left 0.8s cubic-bezier(0.9, 0, 0.1, 1) forwards; }
+  .active-earth .e-right { animation: shatter-right 0.8s cubic-bezier(0.9, 0, 0.1, 1) forwards; }
+
+  @keyframes earth-idle { 0% { transform: translateY(0); } 50% { transform: translateY(-4px); } 100% { transform: translateY(0); } }
+  @keyframes shatter-top { 100% { transform: translateY(-50px) rotate(15deg); opacity: 0; } }
+  @keyframes shatter-left { 100% { transform: translate(-40px, 30px) rotate(-20deg); opacity: 0; } }
+  @keyframes shatter-right { 100% { transform: translate(40px, 30px) rotate(20deg); opacity: 0; } }
+
+  /* =======================================================================
+     3. FIRE (Z)
+     ======================================================================= */
+  .fire-spark { fill: #000; animation: fire-idle 2s ease-in-out infinite; transform-origin: 30px 45px; transition: 0.3s; }
+  
+  .orb-container:hover .fire-spark { stroke: var(--c-fire); filter: drop-shadow(0 0 8px var(--c-fire)); animation: fire-flicker 0.2s infinite; }
+  
+  .active-fire { pointer-events: none; }
+  .active-fire .fire-spark { animation: fire-ignite 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+
+  @keyframes fire-idle { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-4px) scale(0.9, 1.1); } }
+  @keyframes fire-flicker { 0%, 100% { transform: skewX(2deg); } 50% { transform: skewX(-2deg); } }
+  @keyframes fire-ignite {
+    20% { transform: scale(1.2, 0.8) translateY(10px); }
+    100% { transform: scale(0.1, 4) translateY(-150px); opacity: 0; filter: drop-shadow(0 20px 20px var(--c-fire)); stroke: var(--c-fire); fill: var(--c-fire);}
+  }
+
+  /* =======================================================================
+     4. AIR (A)
+     ======================================================================= */
+  .air-stream { animation: air-idle 4s ease-in-out infinite; transition: 0.4s; }
+  .a-1 { animation-delay: 0s; } .a-2 { animation-delay: 0.5s; } .a-3 { animation-delay: 1s; }
+  
+  .orb-container:hover .air-stream { stroke: var(--c-air); filter: drop-shadow(0 0 6px var(--c-air)); }
+  .orb-container:hover .a-1 { transform: translateX(5px); }
+  .orb-container:hover .a-3 { transform: translateX(-5px); }
+  
+  .active-air { pointer-events: none; }
+  .active-air .air-stream { animation: air-gust 0.6s cubic-bezier(0.9, 0, 0.1, 1) forwards; }
+  .active-air .a-2 { animation-delay: 0.1s; }
+  .active-air .a-3 { animation-delay: 0.2s; }
+
+  @keyframes air-idle { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+  @keyframes air-gust { 100% { transform: translateX(200px) scaleX(2); opacity: 0; } }
+
+  /* =======================================================================
+     5. WATER (B)
+     ======================================================================= */
+  .water-dot { fill: var(--ink); animation: water-hover 3s ease-in-out infinite; transition: 0.4s; }
+  .water-surface { transition: 0.4s; }
+  .w-left { transform-origin: 10px 40px; }
+  .w-right { transform-origin: 50px 40px; }
+  
+  .orb-container:hover .water-dot { fill: var(--c-water); filter: drop-shadow(0 0 8px var(--c-water)); stroke: none; }
+  .orb-container:hover .water-surface { stroke: var(--c-water); }
+  
+  .active-water { pointer-events: none; }
+  .active-water .water-dot { animation: water-plunge 0.8s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+  .active-water .w-left { animation: surface-ripple-l 0.8s ease-out forwards; }
+  .active-water .w-right { animation: surface-ripple-r 0.8s ease-out forwards; }
+
+  @keyframes water-hover { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  @keyframes water-plunge { 
+    20% { transform: translateY(-10px); opacity: 1; }
+    100% { transform: translateY(80px); opacity: 0; fill: var(--c-water); }
+  }
+  @keyframes surface-ripple-l {
+    20% { transform: rotate(0deg); }
+    40% { transform: rotate(20deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes surface-ripple-r {
+    20% { transform: rotate(0deg); }
+    40% { transform: rotate(-20deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="header-text">
+    <h1>ELEMENTAL SCULPTURES</h1>
+    <p>Abstract geometric representations of the 5 simulations</p>
+  </div>
+
+  <div class="showcase-grid">
+
+    <!-- FLUID -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Tear</span><br>
+          <span class="sim">Fluid Simulation (X)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-fluid')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container" onclick="this.classList.add('active-fluid');">
+          <svg viewBox="0 0 60 60">
+            <path class="fluid-drop" d="M 30 15 C 45 32, 45 45, 30 45 C 15 45, 15 32, 30 15" />
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+    <!-- EARTH -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Monolith</span><br>
+          <span class="sim">Earth Simulation (Y)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-earth')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container" onclick="this.classList.add('active-earth');">
+          <svg viewBox="0 0 60 60">
+            <g class="earth-core">
+              <polygon class="e-poly e-top" points="30,15 44,23 30,31 16,23" />
+              <polygon class="e-poly e-left" points="16,23 30,31 30,48 16,40" />
+              <polygon class="e-poly e-right" points="44,23 30,31 30,48 44,40" />
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+    <!-- FIRE -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Spark</span><br>
+          <span class="sim">Fire Simulation (Z)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-fire')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container" onclick="this.classList.add('active-fire');">
+          <svg viewBox="0 0 60 60">
+            <polygon class="fire-spark" points="30,12 37,30 30,48 23,30" />
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+    <!-- AIR -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Currents</span><br>
+          <span class="sim">Air Simulation (A)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-air')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container" onclick="this.classList.add('active-air');">
+          <svg viewBox="0 0 60 60">
+            <path class="air-stream a-1" d="M 15 20 Q 30 13 45 20" />
+            <path class="air-stream a-2" d="M 10 30 Q 30 30 50 30" />
+            <path class="air-stream a-3" d="M 15 40 Q 30 47 45 40" />
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+    <!-- WATER -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Plunge</span><br>
+          <span class="sim">Water Simulation (B)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-water')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container" onclick="this.classList.add('active-water');">
+          <svg viewBox="0 0 60 60">
+            <circle class="water-dot" cx="30" cy="20" r="4" />
+            <line class="water-surface w-left" x1="10" y1="40" x2="30" y2="40" />
+            <line class="water-surface w-right" x1="30" y1="40" x2="50" y2="40" />
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+  </div>
+
+  <script>
+    function resetOrb(btn, activeClass) {
+      const card = btn.closest('.card');
+      const orb = card.querySelector('.orb-container');
+      orb.classList.remove(activeClass);
+      // Force DOM reflow
+      void orb.offsetWidth;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simply Supported Beam</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+    overflow: hidden;
+    font-family: sans-serif;
+  }
+  .container {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    cursor: pointer;
+  }
+  .beam {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background-color: #D22B2B;
+    transform-origin: center;
+  }
+  .support-left {
+    position: absolute;
+    bottom: 10px;
+    left: 2px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 8px solid #555;
+  }
+  .support-right {
+    position: absolute;
+    bottom: 10px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #555;
+  }
+  .segment {
+    position: absolute;
+    height: 2px;
+    background-color: #D22B2B;
+    display: none;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="container" id="icon">
+    <div class="support-left"></div>
+    <div class="support-right"></div>
+    <svg class="beam-svg" style="position: absolute; top:0; left:0; width:60px; height:30px; pointer-events:none;">
+      <path id="beamPath" d="M 0 11 Q 30 11 60 11" fill="none" stroke="#D22B2B" stroke-width="2"/>
+    </svg>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const path = document.getElementById('beamPath');
+    
+    const idle = gsap.to(path, {
+      attr: { d: "M 0 11 Q 30 18 60 11" },
+      duration: 1,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+
+    icon.addEventListener('click', () => {
+      idle.kill();
+      gsap.to(path, {
+        attr: { d: "M 0 11 L 30 25 L 60 11" },
+        duration: 0.1,
+        onComplete: () => {
+          path.style.display = 'none';
+          document.querySelector('.support-left').style.display = 'none';
+          document.querySelector('.support-right').style.display = 'none';
+          
+          const rect = icon.getBoundingClientRect();
+          for(let i=0; i<10; i++) {
+            let seg = document.createElement('div');
+            seg.className = 'segment';
+            seg.style.width = '6px';
+            seg.style.display = 'block';
+            seg.style.left = (rect.left + i*6) + 'px';
+            seg.style.top = (rect.top + 11 + (i<5 ? i*2 : (9-i)*2)) + 'px';
+            document.body.appendChild(seg);
+            
+            gsap.to(seg, {
+              x: (Math.random() - 0.5) * 400,
+              y: window.innerHeight,
+              rotation: Math.random() * 720 - 360,
+              duration: 1 + Math.random(),
+              ease: "power1.in",
+              onComplete: () => seg.remove()
+            });
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

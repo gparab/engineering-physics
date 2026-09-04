@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+  #container { position: relative; width: 60px; height: 60px; cursor: pointer; }
+  .line { position: absolute; background: #3498DB; }
+  #base-wire { width: 20px; height: 2px; top: 29px; left: 0; }
+  #vertical-bar { width: 2px; height: 30px; top: 15px; left: 20px; }
+  #collector-wire { width: 2px; height: 20px; top: -5px; left: 35px; transform: rotate(-30deg); transform-origin: bottom; }
+  #emitter-wire { width: 2px; height: 20px; bottom: -5px; left: 35px; transform: rotate(30deg); transform-origin: top; }
+  #emitter-arrow { position: absolute; bottom: 8px; left: 38px; width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 6px solid #3498DB; transform: rotate(60deg); }
+  .electron { position: absolute; width: 3px; height: 3px; background: #fff; border-radius: 50%; opacity: 0.8; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="line" id="base-wire"></div>
+  <div class="line" id="vertical-bar"></div>
+  <div class="line" id="collector-wire"></div>
+  <div class="line" id="emitter-wire"></div>
+  <div id="emitter-arrow"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  function createElectron(startX, startY, endX, endY, dur, delay) {
+    let el = document.createElement('div');
+    el.className = 'electron';
+    container.appendChild(el);
+    gsap.set(el, { x: startX, y: startY });
+    return gsap.to(el, { x: endX, y: endY, duration: dur, delay: delay, repeat: -1, ease: 'none' });
+  }
+  
+  // Base trickle
+  createElectron(0, 29, 20, 29, 1, 0);
+  
+  // Collector-emitter waterfall
+  for(let i=0; i<8; i++) {
+    let el = document.createElement('div');
+    el.className = 'electron';
+    container.appendChild(el);
+    gsap.set(el, { x: 45, y: -5 });
+    gsap.to(el, {
+      x: 45,
+      y: 65,
+      duration: 1,
+      repeat: -1,
+      delay: i * (1/8),
+      ease: 'power1.in'
+    });
+  }
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    gsap.killTweensOf('.electron');
+    
+    // Saturation overheating
+    gsap.to('.line, #emitter-arrow', { backgroundColor: '#E74C3C', borderLeftColor: '#E74C3C', duration: 0.5 });
+    gsap.to('.electron', { backgroundColor: '#E74C3C', scale: 2, duration: 0.5 });
+    
+    setTimeout(() => {
+      gsap.to('#container', { scale: 0, opacity: 0, duration: 0.5, ease: 'back.in(2)' });
+      for(let i=0; i<50; i++) {
+        let slag = document.createElement('div');
+        slag.style.position = 'absolute';
+        slag.style.width = '6px';
+        slag.style.height = '6px';
+        slag.style.background = '#E74C3C';
+        slag.style.borderRadius = '50%';
+        slag.style.left = '50%';
+        slag.style.top = '50%';
+        document.body.appendChild(slag);
+        
+        gsap.to(slag, {
+          x: gsap.utils.random(-300, 300),
+          y: gsap.utils.random(-300, 300),
+          scale: gsap.utils.random(0, 3),
+          opacity: 0,
+          duration: gsap.utils.random(1, 2),
+          ease: 'power3.out'
+        });
+      }
+    }, 500);
+  });
+</script>
+</body>
+</html>

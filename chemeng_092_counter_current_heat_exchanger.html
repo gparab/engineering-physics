@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter-Current Heat Exchanger</title>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; cursor: pointer; overflow: hidden; }
+        #container { width: 80px; height: 40px; position: relative; display: flex; flex-direction: column; justify-content: space-between; }
+        .pipe { width: 100%; height: 15px; border: 2px solid #555; border-radius: 4px; box-sizing: border-box; overflow: hidden; position: relative; }
+        .hot-fluid { position: absolute; width: 200%; height: 100%; background: linear-gradient(90deg, #FF4500, #ff8c00, #FF4500); left: 0; }
+        .cold-fluid { position: absolute; width: 200%; height: 100%; background: linear-gradient(90deg, #1E90FF, #00BFFF, #1E90FF); right: 0; }
+        .gradient-overlay { position: absolute; width: 100%; height: 100%; top: 0; left: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,69,0,0.3) 100%); mix-blend-mode: overlay; }
+        .arrow { position: absolute; color: white; font-size: 10px; font-family: sans-serif; top: 1px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="pipe" id="hot-pipe">
+            <div class="hot-fluid" id="hot-flow"></div>
+            <div class="arrow" style="right: 5px;">&rarr;</div>
+        </div>
+        <div class="pipe" id="cold-pipe">
+            <div class="cold-fluid" id="cold-flow"></div>
+            <div class="arrow" style="left: 5px;">&larr;</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const hotFlow = document.getElementById('hot-flow');
+        const coldFlow = document.getElementById('cold-flow');
+        const hotPipe = document.getElementById('hot-pipe');
+        const coldPipe = document.getElementById('cold-pipe');
+        const container = document.getElementById('container');
+
+        // Flow animations
+        gsap.to(hotFlow, { x: "-50%", duration: 2, repeat: -1, ease: "none" });
+        gsap.to(coldFlow, { x: "50%", duration: 2, repeat: -1, ease: "none" });
+
+        // Heat pulse between them
+        let pulseTl = gsap.timeline({ repeat: -1, yoyo: true });
+        pulseTl.to(hotPipe, { boxShadow: "0 5px 15px rgba(255,69,0,0.6)", duration: 1 })
+               .to(coldPipe, { boxShadow: "0 -5px 15px rgba(30,144,255,0.6)", duration: 1 }, "<");
+
+        let clicked = false;
+        document.body.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+
+            pulseTl.kill();
+            
+            // Thermal equilibrium (purple)
+            gsap.to([hotFlow, coldFlow], {
+                background: "linear-gradient(90deg, #8A2BE2, #8A2BE2)",
+                duration: 0.8,
+                ease: "power2.inOut"
+            });
+            
+            gsap.to([hotPipe, coldPipe], {
+                boxShadow: "0 0 0px transparent",
+                borderColor: "#8A2BE2",
+                duration: 0.8
+            });
+            
+            // Fade to zero opacity
+            gsap.to(container, {
+                opacity: 0,
+                scale: 1.2,
+                duration: 1,
+                delay: 1,
+                ease: "power1.inOut"
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thin-Walled Pressure Vessel</title>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f4f4f9;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    #container {
+        position: relative;
+        width: 30px;
+        height: 50px;
+    }
+    canvas {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+</style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="canvas"></canvas>
+    </div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    let clicked = false;
+    let ruptureT = 0;
+    
+    const cx = width / 2;
+    const cy = height / 2;
+    const color = '#2C3E50';
+    
+    let time = 0;
+
+    document.body.addEventListener('click', () => {
+        if (clicked) return;
+        clicked = true;
+    });
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        let bulge = 0;
+        if (!clicked) {
+            time += 0.1;
+            bulge = Math.sin(time) * 1.5;
+        } else {
+            ruptureT += 0.05;
+        }
+
+        let rw = 15;
+        let rh = 40;
+
+        if (!clicked || ruptureT < 1) {
+            ctx.beginPath();
+            // Left edge
+            ctx.moveTo(cx - rw - bulge, cy - rh/2);
+            ctx.quadraticCurveTo(cx - rw - bulge - (clicked?ruptureT*5:0), cy, cx - rw - bulge, cy + rh/2);
+            // Bottom edge
+            ctx.lineTo(cx + rw + bulge, cy + rh/2);
+            // Right edge
+            ctx.quadraticCurveTo(cx + rw + bulge + (clicked?ruptureT*5:0), cy, cx + rw + bulge, cy - rh/2);
+            ctx.closePath();
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Hoop stress arrows
+            if(!clicked) {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx - rw - bulge - 4, cy);
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx + rw + bulge + 4, cy);
+                ctx.strokeStyle = '#E74C3C';
+                ctx.stroke();
+            } else {
+                // draw zipper
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - rh/2);
+                let z = ruptureT * rh; // length of zipper
+                for(let y=0; y<=z; y+=4) {
+                    ctx.lineTo(cx + (y%8===0?2:-2), cy - rh/2 + y);
+                }
+                ctx.strokeStyle = '#E74C3C';
+                ctx.stroke();
+            }
+        } else {
+            // Split halves flying apart
+            let offset = (ruptureT - 1) * 20; // speed
+            
+            // Left half
+            ctx.beginPath();
+            ctx.moveTo(cx - offset, cy - rh/2);
+            for(let y=0; y<=rh; y+=4) {
+                ctx.lineTo(cx - offset + (y%8===0?2:-2), cy - rh/2 + y);
+            }
+            ctx.lineTo(cx - rw - offset, cy + rh/2);
+            ctx.quadraticCurveTo(cx - rw - 5 - offset, cy, cx - rw - offset, cy - rh/2);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+            
+            // Right half
+            ctx.beginPath();
+            ctx.moveTo(cx + offset, cy - rh/2);
+            for(let y=0; y<=rh; y+=4) {
+                ctx.lineTo(cx + offset + (y%8===0?-2:2), cy - rh/2 + y);
+            }
+            ctx.lineTo(cx + rw + offset, cy + rh/2);
+            ctx.quadraticCurveTo(cx + rw + 5 + offset, cy, cx + rw + offset, cy - rh/2);
+            ctx.stroke();
+            
+            // escaping gas
+            ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
+            for(let i=0; i<5; i++) {
+                ctx.beginPath();
+                ctx.arc(cx, cy + (Math.random()-0.5)*rh, Math.random()*10+5, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+    
+    window.addEventListener('resize', () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    });
+
+    animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f9; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  .airfoil { fill: #3498DB; transition: transform 0.5s ease; transform-origin: 30% 50%; }
+  .streamline { stroke: #bdc3c7; stroke-width: 1; fill: none; stroke-dasharray: 20 40; }
+  .top-stream { animation: flowTop 2s linear infinite; }
+  .bot-stream { animation: flowBot 3s linear infinite; }
+  
+  @keyframes flowTop {
+    from { stroke-dashoffset: 60; }
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes flowBot {
+    from { stroke-dashoffset: 60; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  .vortex { opacity: 0; stroke: #3498DB; fill: none; stroke-width: 0.5; }
+</style>
+</head>
+<body>
+  <div class="container" id="model">
+    <svg viewBox="0 0 100 100" width="100%" height="100%" id="svg-element">
+      <path class="streamline top-stream" d="M 0 50 Q 30 20 100 50" id="top-line"/>
+      <path class="streamline bot-stream" d="M 0 50 Q 30 60 100 50" id="bot-line"/>
+      <!-- airfoil teardrop -->
+      <path class="airfoil" d="M 10 50 C 10 35, 40 40, 80 50 C 40 60, 10 65, 10 50 Z" id="foil"/>
+    </svg>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    const container = document.getElementById('model');
+    const foil = document.getElementById('foil');
+    const topStream = document.getElementById('top-line');
+    const botStream = document.getElementById('bot-line');
+
+    container.addEventListener('click', () => {
+      // Angle of attack pitches up
+      gsap.to(foil, { rotation: -45, duration: 0.5, ease: "power2.inOut" });
+      
+      topStream.style.animation = 'none';
+      botStream.style.animation = 'none';
+      
+      gsap.to(topStream, { attr: { d: "M 0 50 Q 30 20 60 0" }, duration: 0.5, strokeDasharray: "none", stroke: "#3498DB" });
+      gsap.to(botStream, { attr: { d: "M 0 50 Q 30 80 50 100" }, duration: 0.5, strokeDasharray: "none", stroke: "#3498DB" });
+      
+      for(let i = 0; i < 5; i++) {
+        let v = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        v.setAttribute("class", "vortex");
+        v.setAttribute("cx", 40 + i*10);
+        v.setAttribute("cy", 30 - i*5);
+        v.setAttribute("r", 5);
+        document.getElementById("svg-element").appendChild(v);
+        
+        gsap.to(v, { opacity: 1, duration: 0.2, delay: 0.5 });
+        gsap.to(v, { x: 200, y: -200, rotation: 360, duration: 1.5, ease: "power1.in", delay: 0.5 + i*0.1 });
+      }
+
+      gsap.to(foil, { 
+        y: window.innerHeight, 
+        x: window.innerWidth / 2, 
+        rotation: 90, 
+        duration: 1.5, 
+        delay: 0.5, 
+        ease: "power2.in" 
+      });
+      gsap.to(container, {
+          opacity: 0,
+          duration: 1,
+          delay: 1.5
+      })
+    });
+  </script>
+</body>
+</html>

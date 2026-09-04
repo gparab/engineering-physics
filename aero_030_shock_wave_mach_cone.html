@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #fefdfb; overflow: hidden; }
+  .container { position: relative; width: 60px; height: 60px; cursor: pointer; }
+  .wedge { fill: #333; }
+  .shock { stroke: #F39C12; stroke-width: 1.5; opacity: 0.8; stroke-linecap: round; }
+  .grad-layer { fill: url(#tempGrad); opacity: 0.3; }
+</style>
+</head>
+<body>
+  <div class="container" id="model">
+    <svg viewBox="0 0 100 100" width="100%" height="100%" id="svg-element">
+      <defs>
+        <linearGradient id="tempGrad" x1="100%" y1="50%" x2="0%" y2="50%">
+          <stop offset="0%" stop-color="#F39C12" />
+          <stop offset="100%" stop-color="#fff" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      
+      <polygon class="grad-layer" points="80,50 20,20 20,80" id="heat-cone" />
+      
+      <line class="shock" x1="80" y1="50" x2="20" y2="20" id="shock-top" />
+      <line class="shock" x1="80" y1="50" x2="20" y2="80" id="shock-bot" />
+      
+      <polygon class="wedge" points="85,50 70,45 70,55" id="wedge" />
+    </svg>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    const container = document.getElementById('model');
+    
+    let idleWobble = gsap.to(["#shock-top", "#shock-bot", "#heat-cone"], {
+      x: -2,
+      duration: 0.1,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+
+    container.addEventListener('click', () => {
+      idleWobble.kill();
+      
+      gsap.to("#wedge", {
+        x: -150,
+        duration: 2,
+        ease: "power2.out"
+      });
+      
+      gsap.to("#shock-top", {
+        attr: { x1: 90, y1: 30, x2: 150, y2: 0 },
+        strokeWidth: 0,
+        opacity: 0,
+        duration: 1.5,
+        ease: "power2.out"
+      });
+      gsap.to("#shock-bot", {
+        attr: { x1: 90, y1: 70, x2: 150, y2: 100 },
+        strokeWidth: 0,
+        opacity: 0,
+        duration: 1.5,
+        ease: "power2.out"
+      });
+      gsap.to("#heat-cone", {
+        attr: { points: "100,50 150,0 150,100" },
+        opacity: 0,
+        duration: 1.5
+      });
+    });
+  </script>
+</body>
+</html>

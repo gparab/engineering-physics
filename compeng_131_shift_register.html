@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>131. Shift Register</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0d0d0d;
+    overflow: hidden;
+  }
+  #container {
+    position: relative;
+    width: 24px;
+    height: 6px;
+    cursor: pointer;
+  }
+  .box {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border: 1px solid rgba(142, 68, 173, 0.5);
+    box-sizing: border-box;
+    top: 1px;
+  }
+  .box0 { left: 0px; }
+  .box1 { left: 6px; }
+  .box2 { left: 12px; }
+  .box3 { left: 18px; }
+  
+  .bit {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #8E44AD;
+    top: 2px;
+    left: -4px;
+    opacity: 0;
+    box-shadow: 0 0 4px #8E44AD;
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <div class="box box0"></div>
+  <div class="box box1"></div>
+  <div class="box box2"></div>
+  <div class="box box3"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  let bit;
+  let tl;
+  
+  function createBit() {
+    if(bit) bit.remove();
+    bit = document.createElement('div');
+    bit.className = 'bit';
+    container.appendChild(bit);
+    
+    tl = gsap.timeline({repeat: -1});
+    tl.to(bit, {opacity: 1, left: 1, duration: 0.1})
+      .to(bit, {left: 7, duration: 0.3, delay: 0.2})
+      .to(bit, {left: 13, duration: 0.3, delay: 0.2})
+      .to(bit, {left: 19, duration: 0.3, delay: 0.2})
+      .to(bit, {opacity: 0, left: 24, duration: 0.1, delay: 0.2});
+  }
+  
+  createBit();
+  
+  container.addEventListener('click', () => {
+    tl.kill();
+    gsap.to(container, {rotation: 20, transformOrigin: "right center", duration: 0.3, ease: "power2.in"});
+    
+    const bits = [];
+    for(let i=0; i<15; i++) {
+      let b = document.createElement('div');
+      b.className = 'bit';
+      b.style.opacity = 1;
+      b.style.left = (Math.random() * 20) + 'px';
+      container.appendChild(b);
+      bits.push(b);
+    }
+    
+    gsap.to(bits, {
+      x: () => window.innerWidth + 100,
+      y: () => (Math.random() - 0.5) * 600,
+      duration: 1.5,
+      delay: 0.3,
+      stagger: 0.05,
+      ease: "power1.in"
+    });
+    
+    gsap.to('.box', {
+      x: window.innerWidth + 100,
+      rotation: () => (Math.random() - 0.5) * 360,
+      duration: 1.5,
+      delay: 0.4,
+      stagger: 0.1,
+      ease: "power2.in",
+      onComplete: () => container.remove()
+    });
+  });
+</script>
+</body>
+</html>

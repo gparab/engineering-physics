@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>140. H-Bridge</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #0d0d0d; overflow: hidden; }
+  #container { position: relative; width: 24px; height: 24px; cursor: pointer; }
+  .wire { position: absolute; background: #333; }
+  .w-left { width: 1px; height: 24px; left: 4px; top: 0; }
+  .w-right { width: 1px; height: 24px; right: 4px; top: 0; }
+  .w-mid { width: 14px; height: 1px; top: 11.5px; left: 5px; }
+  
+  .switch { position: absolute; width: 4px; height: 1px; background: #27AE60; transform-origin: left center; }
+  .s1 { top: 4px; left: 4px; transform: rotate(-45deg); } /* top left */
+  .s2 { top: 4px; right: 1px; transform: rotate(-45deg); transform-origin: right center;} /* top right */
+  .s3 { bottom: 4px; left: 4px; transform: rotate(-45deg); } /* bot left */
+  .s4 { bottom: 4px; right: 1px; transform: rotate(-45deg); transform-origin: right center;} /* bot right */
+  
+  .motor { position: absolute; width: 8px; height: 8px; border: 1px solid #27AE60; border-radius: 50%; top: 7px; left: 8px; box-sizing: border-box; display:flex; justify-content:center; align-items:center; background: #0d0d0d;}
+  .m-inner { width: 4px; height: 1px; background: #27AE60; }
+  
+  .smoke { position: absolute; width: 4px; height: 4px; background: #aaa; border-radius: 50%; opacity: 0; filter: blur(2px); }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="wire w-left"></div>
+  <div class="wire w-right"></div>
+  <div class="wire w-mid"></div>
+  
+  <div class="switch s1" id="s1"></div>
+  <div class="switch s2" id="s2"></div>
+  <div class="switch s3" id="s3"></div>
+  <div class="switch s4" id="s4"></div>
+  
+  <div class="motor" id="motor"><div class="m-inner"></div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  let t = gsap.timeline({repeat: -1});
+  
+  // Forward: S1 and S4 closed
+  t.to(['#s1', '#s4'], {rotation: 90, duration: 0.1})
+   .to('#motor', {rotation: 360, duration: 1, ease: "none"})
+   .to(['#s1', '#s4'], {rotation: -45, duration: 0.1})
+   // Reverse: S2 and S3 closed
+   .to(['#s2', '#s3'], {rotation: 90, duration: 0.1})
+   .to('#motor', {rotation: 0, duration: 1, ease: "none"})
+   .to(['#s2', '#s3'], {rotation: -45, duration: 0.1});
+
+  container.addEventListener('click', () => {
+    t.kill();
+    // Shoot-through: both sides close
+    gsap.to(['#s1', '#s2', '#s3', '#s4'], {
+      rotation: 90,
+      duration: 0.1,
+      onComplete: () => {
+        // Short circuit puff of smoke
+        gsap.to('.wire', {background: '#ff0000', duration: 0.1, yoyo: true, repeat: 3});
+        
+        for(let i=0; i<40; i++) {
+          let sm = document.createElement('div');
+          sm.className = 'smoke';
+          sm.style.left = '10px';
+          sm.style.top = '10px';
+          container.appendChild(sm);
+          
+          gsap.to(sm, {
+            x: (Math.random() - 0.5) * 200,
+            y: (Math.random() - 1) * 200,
+            scale: Math.random() * 10 + 2,
+            opacity: 1,
+            duration: 1 + Math.random(),
+            ease: "power1.out",
+            onComplete: function() {
+              gsap.to(sm, {opacity: 0, duration: 0.5});
+            }
+          });
+        }
+        
+        gsap.to(container.children, {
+          opacity: 0,
+          duration: 0.2,
+          delay: 0.2
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

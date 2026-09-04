@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torsion of Circular Shaft</title>
+<style>
+  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; cursor: pointer; perspective: 400px; }
+  #container { position: relative; width: 100px; height: 40px; transform-style: preserve-3d; }
+  .shaft { position: absolute; left: 0; top: 0; width: 100px; height: 40px; background: linear-gradient(to bottom, #993d00, #D35400, #993d00); border-radius: 4px; transform-style: preserve-3d; overflow: hidden; }
+  .grid { position: absolute; left: -20px; top: 0; width: 140px; height: 40px; background-image: linear-gradient(90deg, transparent 90%, rgba(255,255,255,0.5) 10%), linear-gradient(0deg, transparent 90%, rgba(255,255,255,0.5) 10%); background-size: 10px 10px; transform: skewY(0deg); transform-origin: left center; }
+  .arrow { position: absolute; right: -15px; top: 5px; width: 20px; height: 30px; border: 2px solid #fff; border-radius: 50%; border-left-color: transparent; border-bottom-color: transparent; transform: rotate(45deg); }
+  .arrow::after { content: ''; position: absolute; top: -5px; right: 0; border: 5px solid transparent; border-top-color: #fff; transform: rotate(-45deg); }
+  
+  .left-half, .right-half { position: absolute; top: 0; height: 40px; background: linear-gradient(to bottom, #993d00, #D35400, #993d00); overflow: hidden; opacity: 0; }
+  .left-half { left: 0; width: 50%; border-radius: 4px 0 0 4px; clip-path: polygon(0 0, 100% 0, 80% 50%, 100% 100%, 0 100%); }
+  .right-half { right: 0; width: 50%; border-radius: 0 4px 4px 0; clip-path: polygon(20% 0, 100% 0, 100% 100%, 20% 100%, 0 50%); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="shaft" id="main-shaft">
+    <div class="grid"></div>
+  </div>
+  <div class="arrow"></div>
+  
+  <div class="left-half"></div>
+  <div class="right-half"></div>
+</div>
+<script>
+  const grid = document.querySelector('.grid');
+  const arrow = document.querySelector('.arrow');
+  const shaft = document.getElementById('main-shaft');
+  const leftHalf = document.querySelector('.left-half');
+  const rightHalf = document.querySelector('.right-half');
+
+  // Idle: twist back and forth
+  let twistAnim = gsap.to(grid, {
+    skewY: 15,
+    duration: 1,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+  
+  gsap.to(arrow, {
+    rotationX: 45,
+    duration: 1,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+
+  let clicked = false;
+  document.body.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    gsap.killTweensOf([grid, arrow]);
+    
+    // Ultimate failure: massive twist, necking, snap
+    gsap.to(grid, {
+      skewY: 45,
+      duration: 1.5,
+      ease: "power2.in"
+    });
+    
+    gsap.to(shaft, {
+      scaleY: 0.5,
+      duration: 1.5,
+      ease: "power2.in",
+      onComplete: () => {
+        // Snap!
+        shaft.style.opacity = 0;
+        arrow.style.opacity = 0;
+        leftHalf.style.opacity = 1;
+        rightHalf.style.opacity = 1;
+        
+        // tear apart
+        gsap.to(leftHalf, { x: -100, rotation: -45, y: 50, opacity: 0, duration: 1, ease: "power1.in" });
+        gsap.to(rightHalf, { x: 100, rotation: 45, y: -50, opacity: 0, duration: 1, ease: "power1.in" });
+        
+        // debris
+        for(let i=0; i<8; i++){
+          let deb = document.createElement('div');
+          deb.style.position = 'absolute';
+          deb.style.width = '5px'; deb.style.height = '5px';
+          deb.style.background = '#D35400';
+          deb.style.left = '45px'; deb.style.top = '15px';
+          document.getElementById('container').appendChild(deb);
+          
+          gsap.to(deb, {
+            x: (Math.random()-0.5)*300,
+            y: (Math.random()-0.5)*300,
+            rotation: Math.random()*720,
+            opacity: 0,
+            duration: 1
+          });
+        }
+      }
+    });
+  });
+</script>
+</body>
+</html>

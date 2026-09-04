@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minimalist Easter Eggs Mockup</title>
+<style>
+  :root {
+    --ink: #ededed;
+    --paper: #111;
+  }
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    gap: 30px;
+  }
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  /* Core Orb CSS */
+  .orb {
+    display: block;
+    width: 44px;
+    height: 34px;
+    flex: none;
+    overflow: visible;
+    color: var(--ink);
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                filter 260ms ease,
+                opacity 260ms ease;
+    will-change: transform, filter;
+    cursor: pointer;
+    text-decoration: none;
+    outline: none;
+  }
+  .orb * { transform-box: fill-box; }
+  .orb svg { overflow: visible; }
+
+  /* 1. Fluid */
+  .fluid-orb .fluid-catenary {
+    transform-origin: 22px 17px;
+    animation: fluid-breathe 5.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  }
+  .fluid-orb .fluid-meniscus {
+    transform-origin: 22px 21.5px;
+    animation: fluid-meniscus-pulse 5.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  }
+  .fluid-orb .fluid-centroid {
+    animation: centroid-shimmer 2.6s ease-in-out infinite;
+  }
+  .fluid-orb:hover, .fluid-orb:focus {
+    transform: scale(1.10);
+    filter: drop-shadow(0 0 6px rgba(53, 200, 240, 0.55));
+  }
+  .fluid-orb:hover .fluid-catenary { animation-duration: 2.2s; }
+  @keyframes fluid-breathe {
+    0%, 100% { transform: translateY(0) scale(1, 1); }
+    35%      { transform: translateY(-1.0px) scale(0.96, 1.05); }
+    70%      { transform: translateY(0.8px) scale(1.04, 0.96); }
+  }
+  @keyframes fluid-meniscus-pulse {
+    0%, 100% { opacity: 0.65; transform: scale(1); }
+    50%      { opacity: 0.95; transform: scale(1.12); }
+  }
+
+  /* 2. Earth */
+  .earth-orb .earth-hanging {
+    transform-origin: 22px 12.5px;
+    animation: earth-strata-upper 7.0s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  }
+  .earth-orb .earth-footwall {
+    transform-origin: 22px 23.5px;
+    animation: earth-strata-lower 7.0s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  }
+  .earth-orb:hover, .earth-orb:focus {
+    transform: scale(1.10);
+    filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.45));
+  }
+  .earth-orb:hover .earth-hanging { transform: translate(1.2px, -0.6px); }
+  .earth-orb:hover .earth-footwall { transform: translate(-0.8px, 0.6px); }
+  @keyframes earth-strata-upper {
+    0%, 100% { transform: rotate(0deg) translate(0, 0); }
+    30%      { transform: rotate(2.0deg) translate(0.4px, -0.6px); }
+    70%      { transform: rotate(-2.0deg) translate(-0.4px, 0.3px); }
+  }
+  @keyframes earth-strata-lower {
+    0%, 100% { transform: rotate(0deg) translate(0, 0); }
+    30%      { transform: rotate(-1.5deg) translate(-0.3px, 0.4px); }
+    70%      { transform: rotate(1.5deg) translate(0.3px, -0.3px); }
+  }
+
+  /* 3. Air */
+  .air-orb .air-camber-top {
+    transform-origin: 22px 13.5px;
+    animation: air-chord-1 4.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  }
+  .air-orb .air-camber-mid {
+    transform-origin: 22px 18.0px;
+    animation: air-chord-2 4.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite 0.6s;
+  }
+  .air-orb .air-camber-bot {
+    transform-origin: 22px 22.5px;
+    animation: air-chord-3 4.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite 1.2s;
+  }
+  .air-orb .air-mote {
+    animation: air-mote-flow 2.4s ease-in-out infinite;
+  }
+  .air-orb:hover, .air-orb:focus {
+    transform: scale(1.12) rotate(4deg);
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.55));
+  }
+  @keyframes air-chord-1 {
+    0%, 100% { transform: translateY(0) scaleY(1); }
+    50%      { transform: translateY(-1.2px) scaleY(1.08); }
+  }
+  @keyframes air-chord-2 {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(0.9px); }
+  }
+  @keyframes air-chord-3 {
+    0%, 100% { transform: translateY(0) scaleY(1); }
+    50%      { transform: translateY(-0.8px) scaleY(0.92); }
+  }
+  @keyframes air-mote-flow {
+    0%, 100% { transform: translateX(0); opacity: 0.75; }
+    50%      { transform: translateX(2.5px); opacity: 0.35; }
+  }
+
+  /* 4. Water */
+  .dive-orb .dive-isobath-outer {
+    transform-origin: 22px 17px;
+    animation: dive-rotate-cw 12.8s linear infinite;
+  }
+  .dive-orb .dive-isobath-inner {
+    transform-origin: 22px 17px;
+    animation: dive-rotate-ccw 8.4s linear infinite;
+  }
+  .dive-orb .dive-plumb {
+    animation: dive-plumb-shear 4.2s ease-in-out infinite;
+  }
+  .dive-orb:hover, .dive-orb:focus {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 7px rgba(0, 240, 255, 0.50));
+  }
+  @keyframes dive-rotate-cw { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes dive-rotate-ccw { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+  @keyframes dive-plumb-shear {
+    0%, 100% { opacity: 0.60; transform: translateY(0); }
+    50%      { opacity: 0.90; transform: translateY(1.0px); }
+  }
+
+  /* 5. Fire */
+  .fire-orb .fire-cusp {
+    transform-origin: 22px 28px;
+    animation: fire-flame-sway 4.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  }
+  .fire-orb .fire-centroid {
+    animation: fire-centroid-float 2.1s ease-in-out infinite;
+  }
+  .fire-orb .fire-spark-1 {
+    animation: fire-spark-throb 1.8s ease-in-out infinite;
+  }
+  .fire-orb .fire-spark-2 {
+    animation: fire-spark-throb 2.4s ease-in-out infinite 0.6s;
+  }
+  .fire-orb:hover, .fire-orb:focus {
+    transform: scale(1.14);
+    filter: drop-shadow(0 0 6px rgba(255, 95, 109, 0.55));
+  }
+  @keyframes fire-flame-sway {
+    0%, 100% { transform: rotate(0deg) scale(1, 1); }
+    35%      { transform: rotate(2.5deg) scale(0.98, 1.04); }
+    75%      { transform: rotate(-2.5deg) scale(1.02, 0.96); }
+  }
+  @keyframes fire-centroid-float {
+    0%, 100% { transform: translateY(0); opacity: 0.85; }
+    50%      { transform: translateY(-1.2px); opacity: 1.0; }
+  }
+  @keyframes fire-spark-throb {
+    0%, 100% { opacity: 0.35; transform: scale(0.8); }
+    50%      { opacity: 0.95; transform: scale(1.3); }
+  }
+</style>
+</head>
+<body>
+
+  <h1 class="title">Fluid
+    <a class="orb fluid-orb" href="#">
+      <svg viewBox="0 0 44 34" width="44" height="34" fill="none" aria-hidden="true">
+        <path class="fluid-catenary" d="M 22,6 C 27.5,13.5 31,19 31,23.5 A 9,9 0 0,1 13,23.5 C 13,19 16.5,13.5 22,6 Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="fluid-meniscus" d="M 18,21.5 A 4,4 0 0,0 26,21.5" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" opacity="0.65"/>
+        <circle class="fluid-centroid" cx="22" cy="17" r="0.9" fill="currentColor"/>
+      </svg>
+    </a>
+  </h1>
+
+  <h1 class="title">Earth
+    <a class="orb earth-orb" href="#">
+      <svg viewBox="0 0 44 34" width="44" height="34" fill="none" aria-hidden="true">
+        <path class="earth-hanging" d="M 22,6.5 L 32.5,12.5 L 32.5,16.5 L 22,12.5 L 11.5,16.5 L 11.5,12.5 Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="earth-footwall" d="M 11.5,18.5 L 22,14.5 L 32.5,18.5 L 32.5,26.5 L 22,32.5 L 11.5,26.5 Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+        <path class="earth-cleavage" d="M 22,14.5 V 32.5 M 22,12.5 V 6.5" stroke="currentColor" stroke-width="0.9" stroke-linecap="round"/>
+        <path class="earth-strata" d="M 16.5,22.5 L 22,25.5 L 27.5,22.5" stroke="currentColor" stroke-width="0.7" opacity="0.45"/>
+      </svg>
+    </a>
+  </h1>
+
+  <h1 class="title">Air
+    <a class="orb air-orb" href="#">
+      <svg viewBox="0 0 44 34" width="44" height="34" fill="none" aria-hidden="true">
+        <path class="air-camber-top" d="M 8,13.5 C 16,8.5 28,8.5 36,14.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        <path class="air-camber-mid" d="M 6,18.0 C 16,13.5 28,13.5 38,19.0" stroke="currentColor" stroke-width="1.0" stroke-linecap="round"/>
+        <path class="air-camber-bot" d="M 10,22.5 C 18,19.5 26,19.5 34,23.5" stroke="currentColor" stroke-width="0.8" opacity="0.55" stroke-linecap="round"/>
+        <circle class="air-mote" cx="40" cy="18.5" r="0.6" fill="currentColor" opacity="0.75"/>
+      </svg>
+    </a>
+  </h1>
+
+  <h1 class="title">Water
+    <a class="orb dive-orb" href="#">
+      <svg viewBox="0 0 44 34" width="44" height="34" fill="none" aria-hidden="true">
+        <path class="dive-isobath-outer" d="M 22,5.5 A 12.5,11.5 0 1,1 9.5,17.0" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <path class="dive-isobath-inner" d="M 22,10.5 A 7.5,7.0 0 1,0 29.5,17.5" stroke="currentColor" stroke-width="0.9" opacity="0.75" stroke-linecap="round"/>
+        <circle class="dive-centroid" cx="22" cy="17" r="1.3" fill="currentColor"/>
+        <path class="dive-plumb" d="M 22,4.0 V 15.5 M 23.5,18.5 V 30.0" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" opacity="0.60"/>
+      </svg>
+    </a>
+  </h1>
+
+  <h1 class="title">Fire
+    <a class="orb fire-orb" href="#">
+      <svg viewBox="0 0 44 34" width="44" height="34" fill="none" aria-hidden="true">
+        <path class="fire-cusp" d="M 16,28 C 14,21 18,12 24,6 C 23,13 29,18 27,27 C 25,30 18,31 16,28 Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="fire-kerf" d="M 22,8.5 V 15.5 M 22,22.5 V 28.5" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" opacity="0.50"/>
+        <circle class="fire-centroid" cx="22" cy="19" r="1.2" fill="currentColor"/>
+        <circle class="fire-spark-1" cx="25.5" cy="13.5" r="0.5" fill="currentColor" opacity="0.65"/>
+        <circle class="fire-spark-2" cx="18.5" cy="24.0" r="0.4" fill="currentColor" opacity="0.65"/>
+      </svg>
+    </a>
+  </h1>
+
+</body>
+</html>

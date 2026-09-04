@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .container { position: relative; cursor: pointer; }
+  canvas { display: block; }
+  .label { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <canvas id="simCanvas" width="400" height="400"></canvas>
+  <div class="label">Total Internal Reflection (Fiber)</div>
+</div>
+<script>
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const COLOR = '#2ECC71';
+let state = 'idle';
+let time = 0;
+let bendTime = 0;
+
+document.getElementById('container').addEventListener('click', () => {
+  if (state === 'idle') state = 'clicked';
+});
+
+function draw() {
+  ctx.clearRect(0, 0, 400, 400);
+  time += 0.1;
+  
+  if (state === 'idle') {
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(50, 150); ctx.lineTo(350, 150);
+    ctx.moveTo(50, 250); ctx.lineTo(350, 250);
+    ctx.stroke();
+    
+    ctx.strokeStyle = COLOR;
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = COLOR;
+    ctx.beginPath();
+    let x = 50;
+    ctx.moveTo(x, 200);
+    let movingUp = true;
+    while(x < 350) {
+      let nextX = x + 40;
+      let y = movingUp ? 152 : 248;
+      if (nextX > 350) {
+        let ratio = (350 - x)/40;
+        y = movingUp ? 200 - 50*ratio : 200 + 50*ratio;
+        nextX = 350;
+      }
+      ctx.lineTo(nextX, y);
+      x = nextX;
+      movingUp = !movingUp;
+    }
+    ctx.stroke();
+    
+    let dotX = 50 + (time * 50) % 300;
+    let segment = Math.floor(dotX / 40);
+    let inSegX = dotX % 40;
+    let dotY = (segment % 2 === 0) ? 200 - inSegX*(50/40) : 150 + inSegX*(50/40);
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(dotX, dotY, 3, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+  } else {
+    bendTime += 0.05;
+    let bend = Math.min(bendTime, 1);
+    
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(50, 150); ctx.quadraticCurveTo(200, 150 + bend*200, 350, 150 + bend*200);
+    ctx.moveTo(50, 250); ctx.quadraticCurveTo(200, 250 + bend*200, 350, 250 + bend*200);
+    ctx.stroke();
+    
+    if (bend < 0.5) {
+      ctx.strokeStyle = COLOR;
+      ctx.lineWidth = 2;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = COLOR;
+      ctx.beginPath();
+      ctx.moveTo(50, 200); ctx.lineTo(200, 150 + bend*100);
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = COLOR;
+      ctx.lineWidth = 2;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = COLOR;
+      ctx.beginPath();
+      ctx.moveTo(50, 200); ctx.lineTo(150, 150 + 0.5*100);
+      let escapeLen = (bend - 0.5) * 400;
+      ctx.lineTo(150 + escapeLen*0.5, 150 + 0.5*100 - escapeLen);
+      ctx.stroke();
+      
+      ctx.fillStyle = COLOR;
+      ctx.globalAlpha = Math.max(0, 1 - (bend - 0.5)*2);
+      ctx.fillRect(0,0,400,400);
+      ctx.globalAlpha = 1;
+    }
+    ctx.shadowBlur = 0;
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

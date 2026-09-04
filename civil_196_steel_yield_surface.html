@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steel Yield Surface (Von Mises)</title>
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222; overflow: hidden; perspective: 800px; }
+  .scene { position: relative; width: 300px; height: 300px; transform-style: preserve-3d; transform: rotateX(60deg) rotateZ(45deg); cursor: pointer; }
+  .cylinder { position: absolute; width: 100%; height: 100%; transform-style: preserve-3d; transition: all 1s ease-in-out; }
+  .surface { position: absolute; width: 100px; height: 300px; background-color: rgba(192, 192, 192, 0.3); border: 1px solid #C0C0C0; left: 100px; top: 0; border-radius: 50px; transform: translateZ(0px); transition: all 1s; }
+  .dot { position: absolute; width: 15px; height: 15px; background-color: red; border-radius: 50%; box-shadow: 0 0 10px red; transform: translateZ(50px); transition: background-color 0.5s; }
+</style>
+</head>
+<body>
+<div class="scene" id="scene">
+  <div class="cylinder" id="cylinder">
+    <!-- Simulating 3D cylinder with a flat div for simplicity -->
+    <div class="surface" id="surf"></div>
+  </div>
+  <div class="dot" id="dot"></div>
+</div>
+<script>
+  const scene = document.getElementById('scene');
+  const dot = document.getElementById('dot');
+  const surf = document.getElementById('surf');
+  const cylinder = document.getElementById('cylinder');
+
+  let t = 0;
+  let clicked = false;
+  
+  function animate() {
+    if(!clicked) {
+      t += 0.05;
+      // Dot bounces within boundary
+      let x = 140 + Math.sin(t * 1.5) * 40;
+      let y = 140 + Math.cos(t * 1.2) * 120;
+      let z = 50 + Math.sin(t * 2) * 20;
+      dot.style.left = x + 'px';
+      dot.style.top = y + 'px';
+      dot.style.transform = `translateZ(${z}px)`;
+      requestAnimationFrame(animate);
+    }
+  }
+  animate();
+
+  scene.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    
+    // Dot hits surface
+    dot.style.transition = 'all 0.5s ease-out';
+    dot.style.left = '100px';
+    dot.style.top = '150px';
+    dot.style.transform = 'translateZ(0px)';
+    
+    setTimeout(() => {
+      // Cylinder turns red, deforms to flat disk
+      surf.style.backgroundColor = 'rgba(255, 0, 0, 0.6)';
+      surf.style.borderColor = 'red';
+      surf.style.height = '100px';
+      surf.style.top = '100px';
+      surf.style.borderRadius = '50%';
+      surf.style.transform = 'scale(2)';
+      
+      dot.style.transform = 'scale(3)';
+      dot.style.opacity = '0';
+    }, 500);
+    
+    setTimeout(() => {
+      surf.style.opacity = '0';
+      surf.style.transform = 'scale(4)';
+    }, 1500);
+  });
+</script>
+</body>
+</html>

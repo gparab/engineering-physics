@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEMS Comb Drive</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    font-family: sans-serif;
+    overflow: hidden;
+  }
+  .dummy-content {
+    position: absolute;
+    width: 80%;
+    text-align: center;
+    font-size: 2rem;
+    color: #ccc;
+    z-index: -1;
+    user-select: none;
+  }
+  .container {
+    position: relative;
+    cursor: pointer;
+    width: 60px;
+    height: 40px;
+  }
+  .comb {
+    position: absolute;
+    width: 20px;
+    height: 40px;
+    background: #7f8c8d;
+  }
+  .comb-left { left: 0; }
+  .comb-right { right: 0; }
+  .finger {
+    position: absolute;
+    width: 15px;
+    height: 4px;
+    background: #7f8c8d;
+  }
+  .finger.left { left: 20px; }
+  .finger.right { right: 20px; }
+</style>
+</head>
+<body>
+<div class="dummy-content" id="dummyContent">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
+<div class="container" id="model">
+  <div class="comb comb-left" id="combLeft">
+    <div class="finger left" style="top: 5px;"></div>
+    <div class="finger left" style="top: 15px;"></div>
+    <div class="finger left" style="top: 25px;"></div>
+  </div>
+  <div class="comb comb-right" id="combRight">
+    <div class="finger right" style="top: 10px;"></div>
+    <div class="finger right" style="top: 20px;"></div>
+    <div class="finger right" style="top: 30px;"></div>
+  </div>
+</div>
+<script>
+  const combLeft = document.getElementById('combLeft');
+  const combRight = document.getElementById('combRight');
+  const model = document.getElementById('model');
+
+  // Idle Animation
+  const idleTl = gsap.timeline({repeat: -1, yoyo: true});
+  idleTl.to(combLeft, { x: 5, duration: 1, ease: "sine.inOut" }, 0)
+        .to(combRight, { x: -5, duration: 1, ease: "sine.inOut" }, 0);
+
+  let isAnimating = false;
+  model.addEventListener('click', () => {
+    if (isAnimating) return;
+    isAnimating = true;
+    idleTl.kill();
+    
+    const tl = gsap.timeline();
+    // Resonant oscillation
+    tl.to([combLeft, combRight], {
+      x: (i) => i === 0 ? 10 : -10,
+      duration: 0.05,
+      yoyo: true,
+      repeat: 20,
+      ease: "sine.inOut"
+    });
+    
+    // Expand to push content away
+    tl.to('#model', {
+      scaleX: 30, scaleY: 20,
+      duration: 1.5,
+      ease: "power4.in"
+    }, "+=0.2")
+    .to('#dummyContent', {
+      opacity: 0, scale: 0.5, y: -200, duration: 1
+    }, "-=1.0")
+    .to('#model', { opacity: 0, duration: 0.5 }, "+=0.5");
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smith Chart</title>
+    <style>
+        body { margin: 0; padding: 0; background: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #container { position: relative; width: 300px; height: 300px; cursor: pointer; }
+        canvas { position: absolute; top: 0; left: 0; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="smithCanvas" width="300" height="300"></canvas>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const canvas = document.getElementById('smithCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = 300, height = 300;
+        const cx = width / 2, cy = height / 2;
+        const radius = 130;
+        const color = '#2980B9';
+        
+        let dotAngle = 0;
+        let dotRadius = radius * 0.9;
+        let isDestroyed = false;
+        let particles = [];
+        let time = 0;
+
+        function drawSmithChart() {
+            ctx.strokeStyle = 'rgba(41, 128, 185, 0.4)';
+            ctx.lineWidth = 1;
+            
+            // Outer circle
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Horizontal line
+            ctx.beginPath();
+            ctx.moveTo(cx - radius, cy);
+            ctx.lineTo(cx + radius, cy);
+            ctx.stroke();
+            
+            // Resistance circles
+            for (let r = 1; r <= 3; r++) {
+                let rad = radius / (r + 1);
+                ctx.beginPath();
+                ctx.arc(cx + radius - rad, cy, rad, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Reactance arcs
+            for (let r = 1; r <= 3; r++) {
+                let rad = radius / r;
+                // Top
+                ctx.beginPath();
+                ctx.arc(cx + radius, cy - rad, rad, Math.PI/2, Math.PI, false);
+                ctx.stroke();
+                // Bottom
+                ctx.beginPath();
+                ctx.arc(cx + radius, cy + rad, rad, Math.PI, Math.PI*1.5, false);
+                ctx.stroke();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            if (!isDestroyed) {
+                drawSmithChart();
+                
+                // Spiraling dot
+                dotAngle += 0.05;
+                dotRadius -= (dotRadius > 2) ? 0.2 : 0;
+                
+                let dx = cx + Math.cos(dotAngle) * dotRadius;
+                let dy = cy + Math.sin(dotAngle) * dotRadius;
+                
+                ctx.beginPath();
+                ctx.arc(dx, dy, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#E74C3C'; // Red dot for visibility
+                ctx.fill();
+                
+            } else {
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha -= 0.015;
+                    ctx.globalAlpha = Math.max(0, p.alpha);
+                });
+                ctx.globalAlpha = 1;
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        container.addEventListener('click', () => {
+            if (isDestroyed) return;
+            
+            // Spiral out rapidly
+            gsap.to(window, {
+                duration: 1,
+                onUpdate: function() {
+                    dotRadius += 3;
+                    dotAngle -= 0.15;
+                },
+                onComplete: () => {
+                    isDestroyed = true;
+                    // Blast chart apart
+                    for (let i = 0; i < 200; i++) {
+                        let a = Math.random() * Math.PI * 2;
+                        let r = Math.random() * radius;
+                        particles.push({
+                            x: cx + Math.cos(a) * r, 
+                            y: cy + Math.sin(a) * r,
+                            vx: Math.cos(a) * (Math.random() * 10 + 2),
+                            vy: Math.sin(a) * (Math.random() * 10 + 2),
+                            size: Math.random() * 3 + 1,
+                            color: Math.random() > 0.5 ? color : '#E74C3C',
+                            alpha: 1
+                        });
+                    }
+                    gsap.to(container, { opacity: 0, duration: 1.5, delay: 0.5 });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

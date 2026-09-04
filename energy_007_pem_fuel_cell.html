@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #121212;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+  }
+  .membrane {
+    position: absolute;
+    width: 6px;
+    height: 30px;
+    background: #1E90FF;
+    left: 12px;
+    border-radius: 1px;
+    opacity: 0.7;
+  }
+  .h2 {
+    position: absolute;
+    display: flex;
+    gap: 1px;
+    left: -10px;
+    top: 14px;
+    animation: h2-approach 2s infinite linear;
+  }
+  .atom {
+    width: 3px; height: 3px;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .proton {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: #fff;
+    border-radius: 50%;
+    left: 12px; top: 14px;
+    opacity: 0;
+    animation: proton-cross 2s infinite linear;
+  }
+  .electron {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: #FFD700;
+    border-radius: 50%;
+    left: 12px; top: 14px;
+    opacity: 0;
+    animation: electron-loop 2s infinite linear;
+  }
+  
+  @keyframes h2-approach {
+    0% { transform: translateX(0); opacity: 0; }
+    20% { opacity: 1; }
+    50% { transform: translateX(20px); opacity: 1; }
+    51% { opacity: 0; }
+    100% { opacity: 0; }
+  }
+  @keyframes proton-cross {
+    0%, 50% { opacity: 0; transform: translateX(0); }
+    51% { opacity: 1; }
+    80% { transform: translateX(10px); opacity: 1; }
+    100% { transform: translateX(20px); opacity: 0; }
+  }
+  @keyframes electron-loop {
+    0%, 50% { opacity: 0; transform: translate(0, 0); }
+    51% { opacity: 1; }
+    75% { transform: translate(5px, -15px); opacity: 1; }
+    100% { transform: translate(15px, 0); opacity: 0; }
+  }
+  
+  .water-drop {
+    position: absolute;
+    width: 10px; height: 10px;
+    background: #1E90FF;
+    border-radius: 50% 50% 50% 5px;
+    transform: rotate(45deg);
+    left: 10px; top: 10px;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="membrane" id="membrane"></div>
+  <div class="h2"><div class="atom"></div><div class="atom"></div></div>
+  <div class="proton"></div>
+  <div class="electron"></div>
+  <div class="water-drop" id="water"></div>
+</div>
+<script>
+  document.getElementById('model').onclick = function() {
+    this.style.pointerEvents = 'none';
+    let m = document.getElementById('membrane');
+    let w = document.getElementById('water');
+    
+    document.querySelector('.h2').style.display = 'none';
+    document.querySelector('.proton').style.display = 'none';
+    document.querySelector('.electron').style.display = 'none';
+    
+    m.style.transition = 'all 0.3s';
+    m.style.filter = 'brightness(3)';
+    m.style.transform = 'scale(1.2)';
+    
+    setTimeout(() => {
+      m.style.opacity = '0';
+      w.style.opacity = '1';
+      w.animate([
+        { transform: 'rotate(45deg) translate(0, 0) scale(1)' },
+        { transform: 'rotate(45deg) translate(100px, 100px) scale(0)' }
+      ], { duration: 800, delay: 200, easing: 'ease-in', fill: 'forwards' });
+    }, 300);
+  };
+</script>
+</body>
+</html>

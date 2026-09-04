@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enzyme Kinetics</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #121212;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .enzyme {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 20px;
+            height: 20px;
+            background-color: #8A2BE2;
+            border-radius: 50%;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 70% 100%, 50% 50%, 30% 100%, 0% 100%);
+            transform-origin: center;
+        }
+
+        .substrate {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #00FF00;
+            clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+            left: 15px;
+            top: -10px;
+            opacity: 0;
+        }
+
+        .product {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #FFFF00;
+            border-radius: 50%;
+            left: 15px;
+            top: 15px;
+            opacity: 0;
+        }
+
+        .inhibitor {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #FF0000;
+            clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+            left: -20px;
+            top: 25px;
+            opacity: 0;
+        }
+
+        .amino-acid {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: #8A2BE2;
+            border-radius: 50%;
+            opacity: 0;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model-container">
+        <div class="enzyme" id="enzyme"></div>
+        <div class="substrate" id="substrate"></div>
+        <div class="product" id="p1"></div>
+        <div class="product" id="p2" style="left: 20px;"></div>
+        <div class="inhibitor" id="inhibitor"></div>
+    </div>
+
+    <script>
+        const container = document.getElementById('model-container');
+        const enzyme = document.getElementById('enzyme');
+        const substrate = document.getElementById('substrate');
+        const p1 = document.getElementById('p1');
+        const p2 = document.getElementById('p2');
+        const inhibitor = document.getElementById('inhibitor');
+
+        // Idle Animation
+        const reactionTL = gsap.timeline({ repeat: -1 });
+        reactionTL.set(substrate, { y: 0, opacity: 1 })
+                  .set('.product', { opacity: 0, y: 0, x: 0 })
+                  .to(substrate, { y: 22, duration: 0.5, ease: "power1.in" }) // Bind
+                  .to(enzyme, { 
+                      clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 100% 100%, 50% 50%, 0% 100%, 0% 100%)", 
+                      duration: 0.2, yoyo: true, repeat: 1 
+                  }) // Conformational change
+                  .set(substrate, { opacity: 0 })
+                  .set('.product', { opacity: 1 })
+                  .to(p1, { x: -15, y: 15, opacity: 0, duration: 0.5, ease: "power1.out" }, "+=0.1")
+                  .to(p2, { x: 15, y: 15, opacity: 0, duration: 0.5, ease: "power1.out" }, "<")
+                  .to({}, { duration: 0.5 }); // pause
+
+        // Click Animation
+        container.addEventListener('click', () => {
+            reactionTL.kill();
+            gsap.set([substrate, p1, p2], { opacity: 0 });
+            
+            const clickTL = gsap.timeline();
+            
+            // Inhibitor blocks active site
+            clickTL.to(inhibitor, { opacity: 1, duration: 0 })
+                   .to(inhibitor, { x: 35, y: -15, rotation: 180, duration: 0.5, ease: "power2.inOut" })
+                   
+                   // Shatter into amino acids
+                   .add(() => {
+                       for(let i=0; i<15; i++) {
+                           let aa = document.createElement('div');
+                           aa.className = 'amino-acid';
+                           aa.style.left = '15px';
+                           aa.style.top = '15px';
+                           container.appendChild(aa);
+                           
+                           gsap.to(aa, {
+                               x: (Math.random() - 0.5) * 100,
+                               y: (Math.random() - 0.5) * 100,
+                               opacity: 1,
+                               duration: 0.5 + Math.random() * 0.5,
+                               ease: "power2.out",
+                               onComplete: () => {
+                                   gsap.to(aa, { opacity: 0, duration: 0.3 });
+                               }
+                           });
+                       }
+                   })
+                   .to(enzyme, { opacity: 0, scale: 0, duration: 0.2 }, "<")
+                   .to(inhibitor, { opacity: 0, duration: 0.2 }, "+=0.5")
+                   .to(container, { display: 'none', duration: 0 });
+        });
+    </script>
+</body>
+</html>

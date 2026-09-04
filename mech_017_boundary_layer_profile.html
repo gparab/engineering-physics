@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boundary Layer Profile</title>
+<style>
+  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; color: #fff; font-family: sans-serif; cursor: pointer; }
+  #container { position: relative; width: 60px; height: 60px; }
+  .plate { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #fff; }
+  .vector { position: absolute; left: 10px; height: 1px; background: #8E44AD; transform-origin: left center; }
+  .arrow { position: absolute; right: 0; top: -2px; width: 0; height: 0; border-top: 2.5px solid transparent; border-bottom: 2.5px solid transparent; border-left: 5px solid #8E44AD; }
+  .vortex { position: absolute; border: 1px solid #8E44AD; border-radius: 50%; opacity: 0; pointer-events: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="plate"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const vectors = [];
+  const numVectors = 6;
+  
+  for (let i = 0; i < numVectors; i++) {
+    const v = document.createElement('div');
+    v.className = 'vector';
+    // logarithmic-like spacing and length
+    const y = 5 + (i * 9);
+    const length = 10 + 30 * Math.log10(1 + (i + 1));
+    v.style.bottom = y + 'px';
+    v.style.width = length + 'px';
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    v.appendChild(arrow);
+    container.appendChild(v);
+    vectors.push({el: v, length: length});
+    
+    // Idle animation: flow pulsing
+    gsap.to(v, {
+      x: 5,
+      repeat: -1,
+      yoyo: true,
+      duration: 1 + i*0.2,
+      ease: "sine.inOut"
+    });
+  }
+
+  let clicked = false;
+  document.body.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    // Click: separation and turbulent vortices
+    gsap.killTweensOf(".vector");
+    
+    // Vectors curl and reverse (adverse pressure gradient)
+    vectors.forEach((v, i) => {
+      gsap.to(v.el, {
+        rotation: -45 - i * 15,
+        x: -20,
+        y: 20,
+        scaleX: 0.5,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power2.in"
+      });
+    });
+    
+    gsap.to('.plate', { opacity: 0, duration: 0.5 });
+    
+    // Vortices consume screen
+    for (let i = 0; i < 50; i++) {
+      const vortex = document.createElement('div');
+      vortex.className = 'vortex';
+      document.body.appendChild(vortex);
+      
+      const size = Math.random() * 50 + 10;
+      vortex.style.width = size + 'px';
+      vortex.style.height = size + 'px';
+      vortex.style.left = (window.innerWidth / 2 - size/2) + 'px';
+      vortex.style.top = (window.innerHeight / 2 - size/2) + 'px';
+      
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * window.innerWidth * 0.8;
+      
+      gsap.to(vortex, {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        scale: 10 + Math.random() * 20,
+        rotation: Math.random() * 720 - 360,
+        opacity: 1,
+        duration: 2 + Math.random(),
+        ease: "power2.out",
+        onComplete: () => {
+          gsap.to(vortex, {opacity: 0, duration: 1});
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>

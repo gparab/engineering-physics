@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHA-256 Hashing</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111;
+    overflow: hidden;
+  }
+  #container {
+    position: relative;
+    width: 60px;
+    height: 80px;
+    cursor: pointer;
+  }
+  .funnel {
+    position: absolute;
+    top: 30px;
+    left: 10px;
+    width: 40px;
+    height: 30px;
+    background-color: #D35400;
+    clip-path: polygon(0 0, 100% 0, 70% 100%, 30% 100%);
+  }
+  .input-shape {
+    position: absolute;
+    top: 0;
+    left: 25px;
+    width: 10px;
+    height: 10px;
+    background-color: #3498DB;
+    opacity: 0;
+  }
+  .hash-block {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    width: 20px;
+    height: 4px;
+    display: flex;
+    gap: 1px;
+    opacity: 0;
+  }
+  .bit {
+    flex: 1;
+    background-color: #fff;
+  }
+  .explosion {
+    position: absolute;
+    font-family: monospace;
+    font-size: 10px;
+    color: #fff;
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="funnel"></div>
+  <div class="input-shape" id="inputShape"></div>
+  <div class="hash-block" id="hashBlock">
+    <div class="bit" style="background:#F1C40F"></div>
+    <div class="bit" style="background:#2ECC71"></div>
+    <div class="bit" style="background:#9B59B6"></div>
+    <div class="bit" style="background:#E74C3C"></div>
+  </div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const inputShape = document.getElementById('inputShape');
+  const hashBlock = document.getElementById('hashBlock');
+  
+  const shapes = [
+    { borderRadius: '50%', color: '#3498DB' },
+    { borderRadius: '0%', color: '#2ECC71' },
+    { borderRadius: '50% 50% 0 0', color: '#F1C40F' }
+  ];
+
+  let idleTl = gsap.timeline({ repeat: -1 });
+
+  function playIdle() {
+    shapes.forEach((s, i) => {
+      idleTl.set(inputShape, { borderRadius: s.borderRadius, backgroundColor: s.color, top: 0, opacity: 1 }, i * 1.5);
+      idleTl.to(inputShape, { top: 30, duration: 0.4, ease: "power2.in" }, i * 1.5);
+      idleTl.to(inputShape, { opacity: 0, duration: 0.1 }, i * 1.5 + 0.4);
+      
+      // Funnel shakes (grinding)
+      idleTl.to('.funnel', { x: -2, duration: 0.05, yoyo: true, repeat: 5 }, i * 1.5 + 0.4);
+      
+      // Hash block drops out
+      idleTl.set(hashBlock, { top: 60, opacity: 1 }, i * 1.5 + 0.7);
+      idleTl.to(hashBlock, { top: 90, opacity: 0, duration: 0.6, ease: "power1.in" }, i * 1.5 + 0.7);
+    });
+  }
+
+  playIdle();
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    idleTl.kill();
+    gsap.killTweensOf([inputShape, hashBlock, '.funnel']);
+
+    const tl = gsap.timeline();
+    
+    // Single bit flip simulated by changing one input shape bit
+    tl.set(inputShape, { borderRadius: '0%', backgroundColor: '#fff', top: 30, opacity: 1, scale: 0.5 });
+    
+    // Funnel absorbs it and glows intensely
+    tl.to('.funnel', { backgroundColor: '#fff', boxShadow: '0 0 20px #fff', duration: 0.5 }, 0);
+    tl.to(inputShape, { opacity: 0, duration: 0.2 }, 0);
+
+    // Avalanche effect — single bit flip causes entire output to explode
+    tl.to('.funnel', { opacity: 0, duration: 0.1 }, 0.6);
+    
+    const hexChars = "0123456789ABCDEF";
+    for(let i=0; i<150; i++) {
+      const bit = document.createElement('div');
+      bit.className = 'explosion';
+      bit.innerText = hexChars[Math.floor(Math.random() * 16)];
+      bit.style.left = '30px';
+      bit.style.top = '45px';
+      bit.style.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+      container.appendChild(bit);
+      
+      const angle = Math.random() * Math.PI * 2;
+      const dist = window.innerWidth;
+      
+      tl.to(bit, { opacity: 1, duration: 0.1 }, 0.6);
+      tl.to(bit, {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        rotation: Math.random() * 360,
+        scale: Math.random() * 2 + 1,
+        duration: 1.5 + Math.random(),
+        ease: "expo.out"
+      }, 0.6);
+    }
+  });
+</script>
+</body>
+</html>

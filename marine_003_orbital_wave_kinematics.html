@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Orbital Wave Kinematics</title>
+<style>
+  body { margin: 0; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .icon-container { position: relative; width: 40px; height: 30px; cursor: pointer; overflow: hidden; }
+  .wave-path { position: absolute; top: 5px; left: -40px; width: 120px; height: 10px; stroke: #00BFFF; stroke-width: 1.5; fill: none; }
+  .particle { position: absolute; background: #00BFFF; border-radius: 50%; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="icon-container" id="icon">
+    <svg class="wave-path" id="wave" viewBox="0 0 120 10">
+      <path d="M0,5 Q10,0 20,5 T40,5 T60,5 T80,5 T100,5 T120,5" id="wave-path"/>
+    </svg>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    let isAnimating = false;
+    let particles = [];
+    
+    for(let i=0; i<3; i++) {
+      let p = document.createElement('div');
+      p.className = 'particle';
+      let size = 2 - i*0.5;
+      p.style.width = size + 'px'; p.style.height = size + 'px';
+      p.style.left = '20px'; p.style.top = (10 + i * 5) + 'px';
+      icon.appendChild(p);
+      particles.push({el: p, radiusX: 3 - i, radiusY: 3 - i});
+    }
+
+    let time = 0;
+    let idleAnim = gsap.ticker.add(() => {
+      time += 0.1;
+      const offset = (time * 5) % 40;
+      document.getElementById('wave-path').setAttribute('d', `M${-offset},5 Q${10-offset},0 ${20-offset},5 T${40-offset},5 T${60-offset},5 T${80-offset},5 T${100-offset},5 T${120-offset},5 T${140-offset},5`);
+      particles.forEach(p => {
+        p.el.style.transform = `translate(${Math.cos(time)*p.radiusX}px, ${Math.sin(time)*p.radiusY}px)`;
+      });
+    });
+
+    icon.addEventListener('click', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+      gsap.ticker.remove(idleAnim);
+
+      particles.forEach(p => gsap.to(p, { radiusY: 0.5, radiusX: p.radiusX * 2, duration: 1 }));
+      gsap.to(icon, { overflow: 'visible', duration: 0.1 });
+      gsap.to('#wave-path', { attr: { d: "M0,5 Q5,-10 10,5 T20,5 T40,5 T60,5" }, duration: 1, ease: "power2.in" });
+
+      gsap.to(['#wave', ...particles.map(p=>p.el)], {
+        x: window.innerWidth, y: window.innerHeight / 2, rotation: 45,
+        duration: 1.5, stagger: 0.1, ease: "power3.in", delay: 1
+      });
+    });
+  </script>
+</body>
+</html>

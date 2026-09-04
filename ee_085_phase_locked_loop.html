@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase-Locked Loop</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; background: #0d0d0d; display: flex; justify-content: center; align-items: center; overflow: hidden; font-family: sans-serif; }
+        #container { position: relative; width: 400px; height: 300px; cursor: pointer; }
+        canvas { position: absolute; top: 0; left: 0; }
+        .block { position: absolute; border: 2px solid #D35400; color: #D35400; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; background: #1a0a00; }
+        #pd { top: 80px; left: 100px; width: 60px; height: 60px; border-radius: 50%; }
+        #lpf { top: 90px; left: 220px; width: 60px; height: 40px; }
+        #vco { top: 200px; left: 220px; width: 60px; height: 40px; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="pllCanvas" width="400" height="300"></canvas>
+        <div class="block" id="pd">PD</div>
+        <div class="block" id="lpf">LPF</div>
+        <div class="block" id="vco">VCO</div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const canvas = document.getElementById('pllCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = 400, height = 300;
+        const color = '#D35400';
+        
+        let time = 0;
+        let isDestroyed = false;
+        let vcoFreq = 1;
+        let refPhase = 0;
+        let vcoPhase = Math.PI; // starts out of phase
+        
+        function drawArrow(fromX, fromY, toX, toY) {
+            const headlen = 10;
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
+
+        function drawWave(x, y, w, phase, freq, color) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            for (let i = 0; i < w; i++) {
+                let px = x + i;
+                let py = y + Math.sin(i * 0.1 * freq + phase) * 15;
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            if (!isDestroyed) {
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 2;
+                
+                // Ref to PD
+                drawArrow(20, 110, 100, 110);
+                
+                // PD to LPF
+                drawArrow(160, 110, 220, 110);
+                
+                // LPF to VCO
+                drawArrow(250, 130, 250, 200);
+                
+                // VCO to PD
+                ctx.beginPath();
+                ctx.moveTo(220, 220);
+                ctx.lineTo(130, 220);
+                ctx.lineTo(130, 140);
+                ctx.stroke();
+                
+                // Draw waves
+                time += 0.1;
+                refPhase -= 0.1;
+                
+                if (vcoFreq === 1 && Math.abs(refPhase % (Math.PI*2) - vcoPhase % (Math.PI*2)) > 0.1) {
+                    vcoPhase -= 0.12; // trying to lock
+                } else if (vcoFreq === 1) {
+                    vcoPhase = refPhase; // locked
+                } else {
+                    vcoPhase -= 0.1 * vcoFreq;
+                }
+                
+                // Ref wave
+                drawWave(30, 90, 50, refPhase, 1, '#3498DB');
+                // VCO wave feeding back
+                drawWave(140, 200, 50, vcoPhase, vcoFreq, color);
+                
+                // Signal after PD (mix)
+                let pdMix = (Math.sin(time) + Math.sin(time * vcoFreq)) * 0.5;
+                ctx.fillStyle = color;
+                ctx.globalAlpha = 0.5 + pdMix * 0.5;
+                ctx.fillRect(170, 105, 40, 10);
+                ctx.globalAlpha = 1.0;
+                
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        container.addEventListener('click', () => {
+            if (isDestroyed) return;
+            
+            // Lose lock
+            gsap.to(window, {
+                duration: 2,
+                onUpdate: () => {
+                    vcoFreq += 0.2;
+                },
+                onComplete: () => {
+                    isDestroyed = true;
+                    // Explode
+                    gsap.to('.block', {
+                        x: () => (Math.random() - 0.5) * 500,
+                        y: () => (Math.random() - 0.5) * 500,
+                        rotation: () => Math.random() * 720,
+                        opacity: 0,
+                        duration: 1.5,
+                        ease: 'power3.out'
+                    });
+                    gsap.to(canvas, { opacity: 0, duration: 0.5 });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

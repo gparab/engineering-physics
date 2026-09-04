@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Torsion</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #container { width: 60px; height: 20px; position: relative; cursor: pointer; perspective: 100px; }
+        .strand-container { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; }
+        .rung { position: absolute; width: 2px; height: 12px; background-color: rgba(144, 19, 254, 0.5); top: 4px; left: 0; transform-style: preserve-3d; }
+        .base { position: absolute; width: 4px; height: 4px; border-radius: 50%; background-color: #9013FE; }
+        .base.top { top: -2px; left: -1px; }
+        .base.bottom { bottom: -2px; left: -1px; }
+        
+        .crispr { position: absolute; width: 10px; height: 14px; border: 2px solid #FFF; border-radius: 4px; top: 3px; left: 25px; opacity: 0; transform: scale(2); z-index: 10; border-right: none; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="strand-container" id="strand"></div>
+        <div class="crispr" id="crispr"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const strand = document.getElementById('strand');
+        const container = document.getElementById('container');
+        const rungs = [];
+        
+        const numRungs = 12;
+        const spacing = 5;
+        
+        for(let i=0; i<numRungs; i++) {
+            let r = document.createElement('div');
+            r.className = 'rung';
+            r.style.left = `${i * spacing}px`;
+            
+            let bTop = document.createElement('div'); bTop.className = 'base top';
+            let bBot = document.createElement('div'); bBot.className = 'base bottom';
+            r.appendChild(bTop); r.appendChild(bBot);
+            
+            strand.appendChild(r);
+            rungs.push({ el: r, baseAngle: i * 0.5 });
+        }
+        
+        let time = 0;
+        let clicked = false;
+        
+        gsap.ticker.add(() => {
+            if(clicked) return;
+            time += 0.05;
+            let stretch = Math.sin(time * 0.5) * 0.5 + 1; // 0.5 to 1.5
+            
+            rungs.forEach((rungObj, i) => {
+                let currentAngle = rungObj.baseAngle + time;
+                let rotateX = currentAngle * (180 / Math.PI);
+                rungObj.el.style.transform = `rotateX(${rotateX}deg)`;
+                // stretching
+                rungObj.el.style.left = `${i * spacing * stretch}px`;
+            });
+            strand.style.width = `${numRungs * spacing * stretch}px`;
+            strand.style.left = `${30 - (numRungs * spacing * stretch)/2}px`;
+        });
+
+        container.addEventListener('click', () => {
+            if(clicked) return; clicked = true;
+            
+            // CRISPR appears
+            gsap.to('#crispr', { opacity: 1, scale: 1, duration: 0.2, ease: "back.out(2)", onComplete: () => {
+                // Cut
+                gsap.to('#crispr', { opacity: 0, duration: 0.1, delay: 0.1 });
+                
+                // Untwist
+                rungs.forEach((rungObj, i) => {
+                    gsap.to(rungObj.el, { rotationX: 0, left: i * spacing, duration: 0.2, ease: "power2.out" });
+                });
+                
+                // Snap off screen
+                setTimeout(() => {
+                    rungs.forEach((rungObj, i) => {
+                        let topBase = rungObj.el.querySelector('.top');
+                        let botBase = rungObj.el.querySelector('.bottom');
+                        
+                        // Break rungs
+                        rungObj.el.style.backgroundColor = 'transparent';
+                        
+                        // Shoot left or right depending on which half
+                        let dir = i < numRungs/2 ? -1 : 1;
+                        let dist = 1000 * dir;
+                        
+                        gsap.to(topBase, { x: dist, duration: 0.4 + Math.random()*0.1, ease: "power2.in" });
+                        gsap.to(botBase, { x: dist, duration: 0.4 + Math.random()*0.1, ease: "power2.in" });
+                    });
+                }, 250);
+            }});
+        });
+    </script>
+</body>
+</html>

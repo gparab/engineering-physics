@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Dynamics</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #111;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            cursor: pointer;
+        }
+
+        .path-loop {
+            fill: none;
+            stroke: #8E44AD; /* Systems Purple */
+            stroke-width: 4;
+            opacity: 0.3;
+        }
+
+        .arrow {
+            fill: none;
+            stroke: #8E44AD;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .pulse {
+            fill: #D2B4DE;
+            r: 6;
+        }
+
+        .node {
+            fill: #222;
+            stroke: #8E44AD;
+            stroke-width: 2;
+        }
+
+        .node-text {
+            fill: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="sys-container">
+        <svg width="300" height="200" viewBox="0 0 300 200" id="sys-svg">
+            <!-- Figure-eight path -->
+            <path id="loop-path" d="M 150 100 C 150 20, 50 20, 50 100 C 50 180, 150 180, 150 100 C 150 20, 250 20, 250 100 C 250 180, 150 180, 150 100" class="path-loop" />
+            
+            <g id="arrows-group">
+                <!-- Arrows on left loop -->
+                <path d="M 45 100 L 55 90 M 45 100 L 55 110" class="arrow" style="transform: translate(0, -60px) rotate(-90deg); transform-origin: 50px 100px;"/>
+                <path d="M 45 100 L 55 90 M 45 100 L 55 110" class="arrow" style="transform: translate(0, 60px) rotate(90deg); transform-origin: 50px 100px;"/>
+                
+                <!-- Arrows on right loop -->
+                <path d="M 245 100 L 255 90 M 245 100 L 255 110" class="arrow" style="transform: translate(0, -60px) rotate(90deg); transform-origin: 250px 100px;"/>
+                <path d="M 245 100 L 255 90 M 245 100 L 255 110" class="arrow" style="transform: translate(0, 60px) rotate(-90deg); transform-origin: 250px 100px;"/>
+            </g>
+
+            <!-- Pulses -->
+            <circle cx="0" cy="0" class="pulse" id="pulse1" />
+            <circle cx="0" cy="0" class="pulse" id="pulse2" />
+
+            <!-- Nodes -->
+            <g id="node-plus" transform="translate(50, 100)">
+                <circle cx="0" cy="0" r="15" class="node" />
+                <text x="0" y="0" class="node-text">+</text>
+            </g>
+            
+            <g id="node-minus" transform="translate(250, 100)">
+                <circle cx="0" cy="0" r="15" class="node" />
+                <text x="0" y="0" class="node-text">-</text>
+            </g>
+
+        </svg>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+    <script>
+        gsap.registerPlugin(MotionPathPlugin);
+
+        const container = document.getElementById('sys-container');
+        const nodeMinus = document.getElementById('node-minus');
+        const loopPath = document.getElementById('loop-path');
+        const arrowsGroup = document.getElementById('arrows-group');
+
+        // Initial idle speed
+        let timeScaleObj = { val: 1 };
+
+        const anim1 = gsap.to("#pulse1", {
+            duration: 4,
+            repeat: -1,
+            ease: "none",
+            motionPath: {
+                path: "#loop-path",
+                align: "#loop-path",
+                alignOrigin: [0.5, 0.5],
+                autoRotate: true
+            }
+        });
+
+        const anim2 = gsap.to("#pulse2", {
+            duration: 4,
+            repeat: -1,
+            ease: "none",
+            motionPath: {
+                path: "#loop-path",
+                align: "#loop-path",
+                alignOrigin: [0.5, 0.5],
+                start: 0.5,
+                end: 1.5,
+                autoRotate: true
+            }
+        });
+
+        // Pulsing nodes
+        gsap.to("#node-plus circle", {
+            duration: 1,
+            repeat: -1,
+            scale: 1.2,
+            yoyo: true,
+            ease: "power1.inOut"
+        });
+
+        gsap.to("#node-minus circle", {
+            duration: 1,
+            repeat: -1,
+            scale: 1.1,
+            yoyo: true,
+            ease: "power1.inOut",
+            delay: 0.5
+        });
+
+        // Modulate speed (simulating + accelerating and - governing)
+        gsap.to(timeScaleObj, {
+            val: 1.5,
+            duration: 1,
+            repeat: -1,
+            yoyo: true,
+            ease: "power2.inOut",
+            onUpdate: function() {
+                anim1.timeScale(timeScaleObj.val);
+                anim2.timeScale(timeScaleObj.val);
+            }
+        });
+
+        container.addEventListener('click', () => {
+            // Kill idle animations
+            gsap.killTweensOf(timeScaleObj);
+            
+            const tl = gsap.timeline();
+
+            // Balancing node fails
+            tl.to("#node-minus circle", {
+                duration: 0.2,
+                fill: "#e74c3c", // Turns red
+                scale: 1.5
+            });
+            tl.to("#node-minus", {
+                duration: 0.4,
+                opacity: 0,
+                scale: 0,
+                rotation: 90,
+                ease: "power2.in"
+            });
+
+            // Accelerate uncontrollably
+            tl.to(timeScaleObj, {
+                val: 15,
+                duration: 2,
+                ease: "power4.in",
+                onUpdate: function() {
+                    anim1.timeScale(timeScaleObj.val);
+                    anim2.timeScale(timeScaleObj.val);
+                }
+            }, "-=0.2");
+
+            // Spin the entire container faster and faster
+            tl.to("#sys-svg", {
+                rotation: 720,
+                duration: 2,
+                ease: "power4.in"
+            }, "-=2");
+
+            // Tear apart
+            tl.to([loopPath, "#node-plus"], {
+                duration: 0.5,
+                opacity: 0,
+                scale: 2,
+                ease: "power2.out"
+            });
+
+            const arrows = document.querySelectorAll('.arrow');
+            arrows.forEach((arrow, i) => {
+                tl.to(arrow, {
+                    duration: 1,
+                    x: (Math.random() - 0.5) * 1000,
+                    y: (Math.random() - 0.5) * 1000,
+                    rotation: (Math.random() - 0.5) * 720,
+                    opacity: 0,
+                    ease: "power2.out"
+                }, "-=0.5");
+            });
+            
+            tl.to(["#pulse1", "#pulse2"], {
+                duration: 0.5,
+                opacity: 0
+            }, "-=1");
+        });
+
+    </script>
+</body>
+</html>

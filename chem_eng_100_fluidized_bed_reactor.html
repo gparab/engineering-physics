@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluidized Bed Reactor</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #121212;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 20px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .column {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #555;
+            border-top: none;
+            border-bottom: 2px solid #333; /* porous distributor */
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: #F4A460;
+            border-radius: 50%;
+        }
+
+        .gas-bubble {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            bottom: 0;
+            opacity: 0;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model-container">
+        <div class="column" id="column"></div>
+    </div>
+
+    <script>
+        const container = document.getElementById('model-container');
+        const column = document.getElementById('column');
+        
+        const numParticles = 20;
+        const particles = [];
+        
+        // Create particles
+        for(let i=0; i<numParticles; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = (2 + Math.random() * 12) + 'px';
+            p.style.bottom = (5 + Math.random() * 20) + 'px';
+            column.appendChild(p);
+            particles.push(p);
+        }
+
+        // Idle Animation - bubbling fluidization
+        const particleAnims = [];
+        particles.forEach(p => {
+            let anim = gsap.to(p, {
+                y: () => (Math.random() - 0.5) * 15,
+                x: () => (Math.random() - 0.5) * 5,
+                duration: 0.3 + Math.random() * 0.4,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+            particleAnims.push(anim);
+        });
+        
+        // Gas bubbles
+        function createBubble() {
+            let b = document.createElement('div');
+            b.className = 'gas-bubble';
+            b.style.left = (2 + Math.random() * 12) + 'px';
+            column.appendChild(b);
+            
+            gsap.to(b, {
+                y: -40,
+                opacity: 1,
+                duration: 1 + Math.random(),
+                ease: "power1.in",
+                onComplete: () => {
+                    b.remove();
+                }
+            });
+        }
+        
+        let bubbleInterval = setInterval(createBubble, 300);
+
+        // Click Animation
+        container.addEventListener('click', () => {
+            clearInterval(bubbleInterval);
+            
+            particleAnims.forEach(anim => anim.kill());
+            
+            gsap.killTweensOf('.gas-bubble');
+            gsap.to('.gas-bubble', { opacity: 0, duration: 0.1 });
+            
+            const clickTL = gsap.timeline();
+            
+            // Drop and pack tightly
+            let packY = 0;
+            particles.forEach((p, i) => {
+                let row = Math.floor(i / 4);
+                let col = i % 4;
+                
+                clickTL.to(p, {
+                    bottom: (row * 3 + 2) + 'px',
+                    left: (col * 4 + 2) + 'px',
+                    y: 0,
+                    x: 0,
+                    duration: 0.4,
+                    ease: "bounce.out"
+                }, 0);
+            });
+            
+            clickTL.to(container, {
+                y: 100,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.in"
+            }, "+=0.5");
+        });
+    </script>
+</body>
+</html>

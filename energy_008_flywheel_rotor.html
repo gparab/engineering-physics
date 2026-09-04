@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #121212;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+  }
+  .axle {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: #fff;
+    border-radius: 50%;
+    left: 13px; top: 13px;
+    z-index: 2;
+  }
+  .rotor {
+    position: absolute;
+    width: 26px; height: 26px;
+    border: 4px solid #C0C0C0;
+    border-radius: 50%;
+    box-sizing: border-box;
+    left: 2px; top: 2px;
+    animation: spin 0.5s linear infinite;
+    z-index: 1;
+  }
+  .rotor::before, .rotor::after {
+    content: '';
+    position: absolute;
+    width: 2px; height: 18px;
+    background: rgba(192,192,192,0.5);
+    left: 8px; top: 0;
+  }
+  .rotor::after {
+    transform: rotate(90deg);
+  }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  
+  .fragment {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: #C0C0C0;
+    left: 14px; top: 14px;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="axle"></div>
+  <div class="rotor" id="rotor"></div>
+</div>
+<script>
+  document.getElementById('model').onclick = function() {
+    this.style.pointerEvents = 'none';
+    let r = document.getElementById('rotor');
+    
+    // speed up
+    r.style.animationDuration = '0.05s';
+    
+    setTimeout(() => {
+      r.style.display = 'none';
+      document.querySelector('.axle').style.display = 'none';
+      
+      for(let i=0; i<30; i++) {
+        let f = document.createElement('div');
+        f.className = 'fragment';
+        this.appendChild(f);
+        let angle = Math.random() * Math.PI * 2;
+        let dist = 200 + Math.random() * 100;
+        let tx = Math.cos(angle) * dist;
+        let ty = Math.sin(angle) * dist;
+        
+        f.animate([
+          { transform: 'translate(0,0) scale(1)', opacity: 1 },
+          { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+        ], { duration: 600 + Math.random()*400, easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)', fill: 'forwards' });
+      }
+    }, 500);
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capillary Drip</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model">
+        <svg width="40" height="40" viewBox="0 0 40 40" overflow="visible">
+            <path class="drop" d="M20,10 C20,10 16,14 16,18 C16,20.2 17.8,22 20,22 C22.2,22 24,20.2 24,18 C24,14 20,10 20,10 Z" fill="#007AFF"/>
+            <circle class="ring ring1" cx="20" cy="22" r="4" fill="none" stroke="#007AFF" stroke-width="1" opacity="0" />
+            <circle class="ring ring2" cx="20" cy="22" r="8" fill="none" stroke="#007AFF" stroke-width="0.8" opacity="0" />
+            <circle class="ring ring3" cx="20" cy="22" r="12" fill="none" stroke="#007AFF" stroke-width="0.5" opacity="0" />
+        </svg>
+    </div>
+    <script>
+        const tl = gsap.timeline({ repeat: -1 });
+        tl.to('.drop', { y: 2, scaleY: 0.8, scaleX: 1.1, duration: 1, ease: "sine.inOut", yoyo: true });
+        
+        gsap.to('.ring1', { r: 8, opacity: 0.6, duration: 2, repeat: -1, ease: "power1.out" });
+        gsap.to('.ring1', { opacity: 0, duration: 2, delay: 1, repeat: -1, ease: "power1.out" });
+        gsap.to('.ring2', { r: 12, opacity: 0.4, duration: 2, delay: 0.6, repeat: -1, ease: "power1.out" });
+        gsap.to('.ring2', { opacity: 0, duration: 2, delay: 1.6, repeat: -1, ease: "power1.out" });
+        gsap.to('.ring3', { r: 16, opacity: 0.2, duration: 2, delay: 1.2, repeat: -1, ease: "power1.out" });
+        gsap.to('.ring3', { opacity: 0, duration: 2, delay: 2.2, repeat: -1, ease: "power1.out" });
+
+        document.getElementById('model').addEventListener('click', () => {
+            gsap.killTweensOf('*');
+            gsap.to('.ring', {
+                r: 0, duration: 0.2, onComplete: () => {
+                    gsap.to(['.drop', '.ring'], { 
+                        y: -window.innerHeight, 
+                        scaleY: 20,
+                        opacity: 0,
+                        duration: 0.6, 
+                        stagger: 0.1,
+                        ease: "power4.in" 
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

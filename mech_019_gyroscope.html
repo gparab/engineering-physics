@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gyroscope</title>
+<style>
+  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; cursor: pointer; perspective: 400px; }
+  #container { position: relative; width: 60px; height: 60px; transform-style: preserve-3d; }
+  .gimbal-outer { position: absolute; inset: 0; border: 2px solid #555; border-radius: 50%; transform-style: preserve-3d; }
+  .gimbal-inner { position: absolute; inset: 5px; border: 2px solid #aaa; border-radius: 50%; transform-style: preserve-3d; }
+  .rotor { position: absolute; inset: 10px; background: #F1C40F; border-radius: 50%; transform-style: preserve-3d; }
+  .rotor::after { content: ''; position: absolute; top: 50%; left: -5px; right: -5px; height: 2px; background: #fff; margin-top: -1px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="gimbal-outer" id="outer">
+    <div class="gimbal-inner" id="inner">
+      <div class="rotor" id="rotor"></div>
+    </div>
+  </div>
+</div>
+<script>
+  const outer = document.getElementById('outer');
+  const inner = document.getElementById('inner');
+  const rotor = document.getElementById('rotor');
+  const container = document.getElementById('container');
+
+  // Idle: spin and precess
+  gsap.to(rotor, { rotationX: 360, duration: 0.2, repeat: -1, ease: "none" });
+  gsap.to(inner, { rotationY: 360, duration: 4, repeat: -1, ease: "none" });
+  gsap.to(outer, { rotationZ: 360, duration: 8, repeat: -1, ease: "none" });
+  gsap.to(container, { rotationY: 20, rotationX: 20, duration: 2, yoyo: true, repeat: -1, ease: "sine.inOut" });
+
+  let clicked = false;
+  document.body.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    // Click: Gimbal lock
+    gsap.killTweensOf([inner, outer, container]);
+    
+    // align rings
+    gsap.to([inner, outer], {
+      rotationY: 0,
+      rotationZ: 0,
+      rotationX: 0,
+      duration: 0.3,
+      onComplete: () => {
+        // Tumble violently off-screen
+        gsap.to(container, {
+          rotationX: 1080,
+          rotationY: 720,
+          rotationZ: 1440,
+          x: window.innerWidth,
+          y: -window.innerHeight,
+          scale: 3,
+          duration: 1.5,
+          ease: "power2.in"
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

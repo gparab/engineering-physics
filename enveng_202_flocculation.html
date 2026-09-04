@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flocculation</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+    }
+    #paddle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 40px;
+        height: 4px;
+        background-color: #666;
+        transform-origin: center;
+        margin-top: -2px;
+        margin-left: -20px;
+        border-radius: 2px;
+    }
+    .particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background-color: #8FBC8F;
+        border-radius: 50%;
+    }
+    #massive-particle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 4px;
+        height: 4px;
+        background-color: #8FBC8F;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="paddle"></div>
+        <div id="massive-particle"></div>
+    </div>
+<script>
+    const container = document.getElementById('container');
+    const paddle = document.getElementById('paddle');
+    const particles = [];
+    
+    // Turn paddle
+    gsap.to(paddle, {
+        rotation: 360,
+        duration: 4,
+        ease: "none",
+        repeat: -1
+    });
+
+    for(let i=0; i<30; i++) {
+        let p = document.createElement('div');
+        p.className = 'particle';
+        
+        let angle = Math.random() * Math.PI * 2;
+        let radius = 10 + Math.random() * 15;
+        
+        let x = 30 + Math.cos(angle) * radius - 1.5;
+        let y = 30 + Math.sin(angle) * radius - 1.5;
+        
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        
+        container.appendChild(p);
+        particles.push(p);
+
+        // Idle: bump and move with paddle
+        gsap.to(p, {
+            rotation: 360,
+            transformOrigin: `${-Math.cos(angle)*radius}px ${-Math.sin(angle)*radius}px`,
+            duration: 4 + (Math.random() - 0.5),
+            ease: "none",
+            repeat: -1
+        });
+        
+        gsap.to(p, {
+            x: () => (Math.random() - 0.5) * 5,
+            y: () => (Math.random() - 0.5) * 5,
+            duration: 0.5 + Math.random(),
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+        });
+    }
+
+    let clicked = false;
+    container.addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+
+        gsap.killTweensOf('.particle');
+        gsap.killTweensOf(paddle);
+
+        const tl = gsap.timeline();
+        
+        // Flocs coalesce to center
+        tl.to('.particle', {
+            left: '30px',
+            top: '30px',
+            duration: 0.5,
+            ease: "power2.in"
+        });
+        
+        tl.to('.particle', {
+            opacity: 0,
+            duration: 0.1
+        });
+
+        tl.to('#massive-particle', {
+            opacity: 1,
+            width: 30,
+            height: 30,
+            duration: 0.2
+        }, "-=0.1");
+
+        // Crash through screen bottom
+        tl.to('#massive-particle', {
+            y: window.innerHeight,
+            scale: 2,
+            duration: 1,
+            ease: "power3.in"
+        });
+
+        tl.to(paddle, {
+            opacity: 0,
+            duration: 0.3
+        }, "-=1");
+    });
+</script>
+</body>
+</html>

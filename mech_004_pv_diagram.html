@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PV Diagram</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #1a1a1a; overflow: hidden; }
+  .container { position: relative; width: 30px; height: 30px; cursor: pointer; }
+  .axes { position: absolute; left: 2px; bottom: 2px; width: 26px; height: 26px; border-left: 1px solid #555; border-bottom: 1px solid #555; }
+  .path { position: absolute; left: 2px; bottom: 2px; width: 26px; height: 26px; }
+  .fill { fill: rgba(230, 126, 34, 0.2); stroke: #E67E22; stroke-width: 1; stroke-linejoin: round; }
+  .dot { position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%; box-shadow: 0 0 4px #E67E22; transform: translate(-2px, -2px); }
+  .flash { position: fixed; top: 50%; left: 50%; width: 0; height: 0; background: #E67E22; border-radius: 50%; transform: translate(-50%, -50%); z-index: -1; }
+</style>
+</head>
+<body>
+<div class="flash" id="flash"></div>
+<div class="container" id="pv">
+  <div class="axes"></div>
+  <svg class="path" viewBox="0 0 26 26">
+    <path id="cycle" class="fill" d="M 6 4 Q 14 4 20 12 L 20 20 Q 12 20 6 12 Z" />
+  </svg>
+  <div class="dot" id="dot"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+<script>
+  gsap.registerPlugin(MotionPathPlugin);
+  const container = document.getElementById('pv');
+  const idle = gsap.to("#dot", {
+    duration: 3,
+    repeat: -1,
+    ease: "linear",
+    motionPath: { path: "#cycle", align: "#cycle", alignOrigin: [0.5, 0.5] }
+  });
+  container.addEventListener('click', () => {
+    idle.kill();
+    gsap.to("#dot", { opacity: 0, duration: 0.1 });
+    gsap.to("#cycle", { fill: "rgba(230, 126, 34, 1)", strokeWidth: 0, duration: 0.3 });
+    const size = Math.max(window.innerWidth, window.innerHeight) * 2.5;
+    gsap.to("#flash", {
+      width: size, height: size, duration: 1, ease: "power2.inOut",
+      onComplete: () => {
+        gsap.to("#flash", { opacity: 0, duration: 0.5 });
+        container.remove();
+      }
+    });
+  });
+</script>
+</body>
+</html>

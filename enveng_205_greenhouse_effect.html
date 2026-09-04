@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greenhouse Effect (Radiative Forcing)</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+    }
+    #surface {
+        position: absolute;
+        bottom: 10px;
+        left: 5px;
+        width: 50px;
+        height: 6px;
+        background-color: #8B4513;
+        border-radius: 2px;
+    }
+    #atmosphere {
+        position: absolute;
+        top: 15px;
+        left: 5px;
+        width: 50px;
+        height: 4px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        transition: all 1s;
+    }
+    .arrow {
+        position: absolute;
+        width: 2px;
+        height: 10px;
+        background-color: #FFD700; /* Shortwave */
+    }
+    .longwave {
+        background-color: #FF6347; /* Longwave */
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="atmosphere"></div>
+        <div id="surface"></div>
+    </div>
+<script>
+    const container = document.getElementById('container');
+    const atmosphere = document.getElementById('atmosphere');
+    const surface = document.getElementById('surface');
+    let clicked = false;
+
+    function createCycle() {
+        if(clicked) return;
+        
+        let inArrow = document.createElement('div');
+        inArrow.className = 'arrow';
+        inArrow.style.left = '15px';
+        inArrow.style.top = '0px';
+        container.appendChild(inArrow);
+
+        // Shortwave in
+        gsap.to(inArrow, {
+            y: 40,
+            duration: 0.8,
+            ease: "none",
+            onComplete: () => {
+                if(clicked) return;
+                inArrow.remove();
+                
+                // Longwave out and trapped
+                let outArrow = document.createElement('div');
+                outArrow.className = 'arrow longwave';
+                outArrow.style.left = '25px';
+                outArrow.style.top = '40px';
+                container.appendChild(outArrow);
+                
+                gsap.to(outArrow, {
+                    y: 19,
+                    duration: 0.6,
+                    ease: "none",
+                    onComplete: () => {
+                        if(clicked) return;
+                        // Bounce back down
+                        gsap.to(outArrow, {
+                            y: 40,
+                            x: 10,
+                            duration: 0.6,
+                            ease: "none",
+                            onComplete: () => {
+                                outArrow.remove();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    let interval = setInterval(createCycle, 1500);
+    createCycle();
+
+    container.addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        clearInterval(interval);
+        gsap.killTweensOf('.arrow');
+        document.querySelectorAll('.arrow').forEach(a => a.remove());
+
+        const tl = gsap.timeline();
+        
+        // Layer thickens, glows red
+        tl.to(atmosphere, {
+            height: 20,
+            y: -8,
+            backgroundColor: 'rgba(255, 99, 71, 0.8)',
+            boxShadow: '0 0 20px #FF6347',
+            duration: 1
+        });
+
+        // Surface vaporizes
+        tl.to(surface, {
+            backgroundColor: '#FF4500',
+            duration: 0.5
+        }, "-=0.5");
+        
+        tl.to(surface, {
+            scaleX: 2,
+            scaleY: 0,
+            opacity: 0,
+            duration: 0.5
+        });
+
+        // Icon burns away
+        tl.to(atmosphere, {
+            scale: 5,
+            opacity: 0,
+            duration: 1,
+            ease: "power2.in"
+        });
+    });
+</script>
+</body>
+</html>

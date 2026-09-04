@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Archimedes Buoyancy</title>
+<style>
+  body { margin: 0; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .icon-container { position: relative; width: 30px; height: 30px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  .water-line { position: absolute; width: 40px; height: 1px; background: rgba(0, 51, 102, 0.3); top: 16px; z-index: 1; }
+  .hull-group { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; z-index: 2; }
+  .hull { position: absolute; top: 10px; width: 16px; height: 10px; background: #003366; border-radius: 2px 2px 8px 8px; display: flex; justify-content: center; }
+  .arrow-down { position: absolute; width: 1px; height: 8px; background: #003366; top: -10px; }
+  .arrow-down::after { content: ''; position: absolute; bottom: -3px; left: -1.5px; border-left: 2px solid transparent; border-right: 2px solid transparent; border-top: 3px solid #003366; }
+  .arrow-up1, .arrow-up2 { position: absolute; width: 1px; height: 6px; background: rgba(0, 51, 102, 0.7); bottom: -8px; }
+  .arrow-up1 { left: 4px; } .arrow-up2 { right: 4px; }
+  .arrow-up1::before, .arrow-up2::before { content: ''; position: absolute; top: -3px; left: -1.5px; border-left: 2px solid transparent; border-right: 2px solid transparent; border-bottom: 3px solid rgba(0, 51, 102, 0.7); }
+  .particle { position: absolute; width: 2px; height: 2px; background: #003366; border-radius: 50%; opacity: 0; z-index: 3; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="icon-container" id="icon">
+    <div class="water-line"></div>
+    <div class="hull-group" id="hull-group">
+      <div class="hull">
+        <div class="arrow-down"></div>
+        <div class="arrow-up1"></div>
+        <div class="arrow-up2"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const hullGroup = document.getElementById('hull-group');
+    const icon = document.getElementById('icon');
+    let isAnimating = false;
+
+    const idle = gsap.to(hullGroup, { y: 2, duration: 1.2, yoyo: true, repeat: -1, ease: "sine.inOut" });
+
+    icon.addEventListener('click', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+      idle.kill();
+      
+      const rect = icon.getBoundingClientRect();
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top + rect.height/2;
+
+      gsap.to('.hull, .arrow-down', { backgroundColor: '#001122', duration: 0.2 });
+      gsap.to(hullGroup, { y: window.innerHeight, duration: 0.8, ease: "power3.in", delay: 0.2 });
+
+      setTimeout(() => {
+        for (let i = 0; i < 60; i++) {
+          let p = document.createElement('div');
+          p.className = 'particle';
+          document.body.appendChild(p);
+          gsap.set(p, { x: cx, y: cy + 10 });
+          
+          let angle = (Math.random() * Math.PI) - Math.PI;
+          let force = Math.random() * 600 + 200;
+          
+          gsap.to(p, {
+            x: `+=${Math.cos(angle) * force}`,
+            y: `+=${Math.sin(angle) * force - 200}`,
+            opacity: 1,
+            duration: 0.4,
+            ease: "power2.out",
+            onComplete: () => {
+              gsap.to(p, { y: window.innerHeight, opacity: 0, duration: Math.random() * 1 + 0.5, ease: "power1.in" });
+            }
+          });
+        }
+      }, 200);
+    });
+  </script>
+</body>
+</html>

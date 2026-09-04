@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .container { position: relative; width: 24px; height: 60px; cursor: pointer; }
+  .casing { position: absolute; width: 24px; height: 50px; border: 2px solid #555; background: #222; box-sizing: border-box; overflow: hidden; border-radius: 3px; }
+  .grain { position: absolute; width: 8px; height: 50px; background: #C0392B; left: 6px; top: 0; box-shadow: 0 0 15px #C0392B; }
+  .exhaust { position: absolute; width: 16px; height: 25px; background: rgba(192, 57, 43, 0.9); left: 4px; top: 50px; border-radius: 0 0 50% 50%; filter: blur(3px); transform-origin: top center; }
+  .shrapnel { position: absolute; width: 6px; height: 12px; background: #666; opacity: 0; border-radius: 2px; }
+  .flash { position: absolute; width: 0; height: 0; background: #FFF; border-radius: 50%; top: 25px; left: 12px; transform: translate(-50%, -50%); opacity: 0; box-shadow: 0 0 80px #FFF, 0 0 150px #C0392B; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="casing" id="casing">
+    <div class="grain" id="grain"></div>
+  </div>
+  <div class="exhaust" id="exhaust"></div>
+  <div class="flash" id="flash"></div>
+</div>
+<script>
+  const model = document.getElementById('model');
+  const exhaust = document.getElementById('exhaust');
+  const grain = document.getElementById('grain');
+  const flash = document.getElementById('flash');
+  
+  gsap.to(exhaust, { scaleY: 1.4, opacity: 0.8, duration: 0.05, repeat: -1, yoyo: true, ease: 'rough' });
+  gsap.to(grain, { width: 10, left: 5, duration: 0.3, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf([exhaust, grain]);
+    
+    gsap.to(grain, { width: 24, left: 0, background: '#fff', duration: 0.2, ease: 'power2.in' });
+    gsap.to(exhaust, { scaleY: 4, scaleX: 3, duration: 0.2, ease: 'power2.in' });
+    
+    setTimeout(() => {
+      document.getElementById('casing').style.display = 'none';
+      exhaust.style.display = 'none';
+      
+      gsap.to(flash, {
+        width: Math.max(window.innerWidth, window.innerHeight) * 2.5,
+        height: Math.max(window.innerWidth, window.innerHeight) * 2.5,
+        opacity: 1,
+        duration: 0.15,
+        onComplete: () => {
+          gsap.to(flash, { opacity: 0, duration: 1.5 });
+        }
+      });
+      
+      for(let i=0; i<60; i++) {
+        let s = document.createElement('div');
+        s.className = 'shrapnel';
+        s.style.left = (window.innerWidth/2) + 'px';
+        s.style.top = (window.innerHeight/2) + 'px';
+        document.body.appendChild(s);
+        
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 600 + Math.random() * 800;
+        gsap.to(s, {
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius,
+          rotation: Math.random() * 1080,
+          opacity: 1,
+          duration: 0.6 + Math.random(),
+          ease: 'power3.out'
+        });
+      }
+    }, 250);
+  });
+</script>
+</body>
+</html>

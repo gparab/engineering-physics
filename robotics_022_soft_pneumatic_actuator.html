@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soft Pneumatic Actuator</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #0f1c0f;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .container {
+    width: 60px;
+    height: 60px;
+    position: relative;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .actuator { fill: #98FB98; stroke: #228B22; stroke-width: 1.5; stroke-linejoin: round; }
+  .puff { fill: #fff; opacity: 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="icon">
+  <svg viewBox="0 0 60 60">
+    <path id="finger" class="actuator" d="M 20 50 C 20 40, 20 20, 20 10 C 20 5, 30 5, 30 10 C 30 20, 30 40, 30 50 Z" />
+    
+    <!-- Rib lines -->
+    <g id="ribs" stroke="#228B22" stroke-width="1.5">
+      <line class="rib" x1="20" y1="40" x2="30" y2="40" />
+      <line class="rib" x1="20" y1="30" x2="30" y2="30" />
+      <line class="rib" x1="20" y1="20" x2="30" y2="20" />
+    </g>
+
+    <!-- Puff particles -->
+    <circle class="puff" cx="25" cy="25" r="10" />
+    <circle class="puff" cx="15" cy="15" r="6" />
+    <circle class="puff" cx="35" cy="35" r="8" />
+    <circle class="puff" cx="15" cy="35" r="5" />
+    <circle class="puff" cx="35" cy="15" r="7" />
+  </svg>
+</div>
+
+<script>
+  // Idle Animation: Rhythmically inflates (curling inward) and deflates (straightening).
+  const tl = gsap.timeline({ repeat: -1, yoyo: true });
+  
+  tl.to("#finger", {
+    attr: { d: "M 20 50 C 10 40, 5 25, 10 15 C 12 10, 22 15, 20 20 C 15 30, 25 40, 30 50 Z" },
+    duration: 1.5,
+    ease: "sine.inOut"
+  }, 0)
+  .to(".rib", {
+    rotation: -30,
+    transformOrigin: "left center",
+    x: -5,
+    duration: 1.5,
+    ease: "sine.inOut"
+  }, 0);
+
+  // Click Disappearance Motion: Over-pressurizes like a balloon and loudly pops, leaving nothing but a puff of air.
+  document.body.addEventListener('click', () => {
+    tl.kill();
+    
+    const clickTl = gsap.timeline();
+    
+    // Over-pressurize
+    clickTl.to("#finger", {
+      attr: { d: "M 15 50 C 0 40, -10 20, 5 5 C 20 -10, 45 -5, 45 15 C 45 35, 35 45, 35 50 Z" },
+      fill: "#bfffcb",
+      duration: 0.6,
+      ease: "power2.in"
+    }, 0)
+    .to(".rib", {
+      opacity: 0,
+      duration: 0.3
+    }, 0)
+    // Pop
+    .to("#finger", {
+      scale: 2,
+      opacity: 0,
+      transformOrigin: "center",
+      duration: 0.1
+    }, 0.6)
+    // Puff of air
+    .to(".puff", {
+      opacity: 0.8,
+      scale: 3,
+      transformOrigin: "center",
+      duration: 0.1
+    }, 0.6)
+    .to(".puff", {
+      opacity: 0,
+      scale: 5,
+      duration: 0.5,
+      ease: "power2.out"
+    }, 0.7)
+    .to("body", {
+      backgroundColor: "#fff",
+      duration: 0.05,
+      yoyo: true,
+      repeat: 1
+    }, 0.6);
+  }, { once: true });
+</script>
+</body>
+</html>

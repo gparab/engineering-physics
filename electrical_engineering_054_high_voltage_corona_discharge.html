@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>54. High Voltage Corona Discharge</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #050505;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .needle {
+    position: absolute;
+    bottom: 0;
+    width: 0; 
+    height: 0; 
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 80px solid #555;
+    transform-origin: bottom center;
+  }
+  .needle::after {
+    content: '';
+    position: absolute;
+    top: 80px;
+    left: -15px;
+    width: 30px;
+    height: 40px;
+    background: #333;
+    border-radius: 4px;
+  }
+  
+  .corona-glow {
+    position: absolute;
+    top: 15px;
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, #8E44AD 0%, transparent 70%);
+    border-radius: 50%;
+    opacity: 0.8;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    filter: blur(2px);
+  }
+  
+  .tendril {
+    position: absolute;
+    width: 2px;
+    background: #9b59b6;
+    transform-origin: bottom center;
+    opacity: 0;
+    box-shadow: 0 0 5px #8E44AD;
+  }
+
+  .lightning {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200vw;
+    height: 200vh;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(circle, rgba(142,68,173,0.3) 0%, transparent 100%);
+    mix-blend-mode: screen;
+  }
+  
+  svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    overflow: visible;
+  }
+  
+  .arc {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 4;
+    filter: drop-shadow(0 0 10px #8E44AD) drop-shadow(0 0 20px #8E44AD);
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="corona">
+  <div class="needle" id="needle"></div>
+  <div class="corona-glow" id="glow"></div>
+  <!-- Fractal tendrils -->
+  <div id="tendrils"></div>
+</div>
+
+<div class="lightning"></div>
+<svg>
+  <path class="arc" id="arcPath" />
+</svg>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const glow = document.getElementById('glow');
+  const tendrilsContainer = document.getElementById('tendrils');
+  
+  // Idle Animation: flicker
+  gsap.to(glow, {
+    scale: 1.5,
+    opacity: 0.4,
+    duration: 0.1 + Math.random() * 0.2,
+    repeat: -1,
+    yoyo: true,
+    ease: "rough({ template: none.out, strength: 1, points: 20, taper: none, randomize: true, clamp: false })"
+  });
+
+  // Create tendrils
+  for(let i=0; i<8; i++) {
+    const tendril = document.createElement('div');
+    tendril.className = 'tendril';
+    tendrilsContainer.appendChild(tendril);
+    
+    gsap.set(tendril, {
+      x: 0,
+      y: 0,
+      height: 10 + Math.random() * 20,
+      rotation: -60 + Math.random() * 120,
+      top: 30,
+      left: 99
+    });
+    
+    gsap.to(tendril, {
+      opacity: 0.8,
+      height: 15 + Math.random() * 25,
+      duration: 0.05 + Math.random() * 0.1,
+      repeat: -1,
+      yoyo: true,
+      ease: "power1.inOut",
+      delay: Math.random()
+    });
+  }
+
+  // Click Animation
+  const container = document.getElementById('corona');
+  let clicked = false;
+  
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    gsap.killTweensOf(glow);
+    gsap.killTweensOf(".tendril");
+    
+    const tl = gsap.timeline();
+    
+    // Generate rough jagged path for lightning to screen edge
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    
+    let path = `M ${vw/2} ${vh/2 + 20} `;
+    let currentX = vw/2;
+    let currentY = vh/2 + 20;
+    
+    // Target edge (randomly pick top, left, or right)
+    const edge = Math.floor(Math.random() * 3);
+    let targetX, targetY;
+    if (edge === 0) { targetX = vw/2 + (Math.random()*200 - 100); targetY = 0; }
+    else if (edge === 1) { targetX = 0; targetY = vh/2 - 100; }
+    else { targetX = vw; targetY = vh/2 - 100; }
+    
+    const steps = 10;
+    for(let i = 1; i <= steps; i++) {
+      currentX += (targetX - currentX) / (steps - i + 1) + (Math.random() * 100 - 50);
+      currentY += (targetY - currentY) / (steps - i + 1) + (Math.random() * 100 - 50);
+      path += `L ${currentX} ${currentY} `;
+    }
+    
+    document.getElementById('arcPath').setAttribute('d', path);
+    
+    // Lightning Strike
+    tl.to(glow, {
+      scale: 0,
+      opacity: 0,
+      duration: 0.1
+    })
+    .to(".tendril", {
+      opacity: 0,
+      duration: 0.1
+    }, 0)
+    .to(".arc", {
+      opacity: 1,
+      duration: 0.05
+    }, 0.1)
+    .to(".lightning", {
+      opacity: 1,
+      duration: 0.05
+    }, 0.1)
+    .to("#needle", {
+      opacity: 0,
+      duration: 0.1
+    }, 0.1)
+    // Flash fade
+    .to(".arc, .lightning", {
+      opacity: 0,
+      duration: 0.5,
+      ease: "power2.out"
+    });
+  });
+</script>
+</body>
+</html>

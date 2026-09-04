@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+  #container { position: relative; width: 60px; height: 60px; cursor: pointer; }
+  .box { position: absolute; left: 15px; top: 10px; width: 30px; height: 40px; border: 2px solid #34495E; box-sizing: border-box; }
+  .lead { position: absolute; height: 2px; background: #34495E; }
+  #d-lead { width: 15px; top: 20px; left: 0; }
+  #clk-lead { width: 15px; top: 40px; left: 0; }
+  #q-lead { width: 15px; top: 20px; left: 45px; }
+  .label { position: absolute; font-size: 10px; font-weight: bold; color: #34495E; font-family: monospace; }
+  #d-label { left: 18px; top: 15px; }
+  #q-label { left: 34px; top: 15px; }
+  #clk-tri { position: absolute; left: 15px; top: 35px; width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 6px solid #34495E; }
+  #q-val { position: absolute; left: 50px; top: 8px; color: #fff; font-size: 10px; font-family: monospace; }
+  .pulse { position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="box" id="box"></div>
+  <div class="lead" id="d-lead"></div>
+  <div class="lead" id="clk-lead"></div>
+  <div class="lead" id="q-lead"></div>
+  <div class="label" id="d-label">D</div>
+  <div class="label" id="q-label">Q</div>
+  <div id="clk-tri"></div>
+  <div id="q-val">0</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  let qVal = document.getElementById('q-val');
+  let state = 0;
+  
+  let clkPulse = document.createElement('div'); clkPulse.className = 'pulse'; clkPulse.style.top = '38px'; container.appendChild(clkPulse);
+  let dPulse = document.createElement('div'); dPulse.className = 'pulse'; dPulse.style.top = '18px'; container.appendChild(dPulse);
+  
+  let tl = gsap.timeline({ repeat: -1 });
+  tl.fromTo(dPulse, { x: 0, opacity: 1 }, { x: 15, duration: 0.5, ease: 'none' })
+    .to(dPulse, { opacity: 0, duration: 0.1 })
+    .fromTo(clkPulse, { x: 0, opacity: 1 }, { x: 15, duration: 0.5, ease: 'none' })
+    .to(clkPulse, { opacity: 0, duration: 0.1, onComplete: () => {
+      state = 1 - state;
+      qVal.innerText = state;
+      gsap.fromTo('#q-label, #q-lead, #q-val', { opacity: 0.5, scale: 1.2 }, { opacity: 1, scale: 1, duration: 0.2 });
+    } });
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    tl.kill();
+    gsap.to('.pulse', { opacity: 0 });
+    
+    // Metastability
+    let metaInterval = setInterval(() => {
+      qVal.innerText = Math.random() > 0.5 ? '1' : '0';
+      qVal.style.color = Math.random() > 0.5 ? '#E74C3C' : '#F1C40F';
+    }, 50);
+    
+    gsap.to('#container', {
+      x: 'random(-5, 5)',
+      y: 'random(-5, 5)',
+      rotation: 'random(-10, 10)',
+      duration: 0.05,
+      repeat: 30,
+      yoyo: true,
+      onComplete: () => {
+        clearInterval(metaInterval);
+        gsap.to('#container', {
+          scale: 3,
+          opacity: 0,
+          filter: 'blur(10px)',
+          duration: 0.5
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

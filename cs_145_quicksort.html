@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quicksort</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111;
+    overflow: hidden;
+  }
+  #container {
+    position: relative;
+    width: 80px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  .bar {
+    width: 6px;
+    background-color: rgba(241, 196, 15, 0.4);
+    border-radius: 2px 2px 0 0;
+    position: absolute;
+    bottom: 0;
+  }
+  .pivot {
+    background-color: #F1C40F;
+    box-shadow: 0 0 5px #F1C40F;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <!-- Bars will be generated -->
+</div>
+<script>
+  const container = document.getElementById('container');
+  const values = [25, 10, 35, 15, 30, 5, 40, 20]; // 8 bars
+  const bars = [];
+  const spacing = 10; // width 6 + gap 4
+
+  values.forEach((v, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.height = `${v}px`;
+    bar.style.left = `${i * spacing}px`;
+    container.appendChild(bar);
+    bars.push({ el: bar, val: v, currentPos: i });
+  });
+
+  let idleTl = gsap.timeline({ repeat: -1 });
+
+  function playIdle() {
+    // Highlight pivot (last element: 20)
+    idleTl.to(bars[7].el, { backgroundColor: '#F1C40F', duration: 0.2 });
+    
+    // Swap 25 (idx 0) and 15 (idx 3)
+    idleTl.to(bars[0].el, { left: 3 * spacing, duration: 0.4, ease: "back.inOut" }, 0.5);
+    idleTl.to(bars[3].el, { left: 0 * spacing, duration: 0.4, ease: "back.inOut" }, 0.5);
+    
+    // Swap 35 (idx 2) and 5 (idx 5)
+    idleTl.to(bars[2].el, { left: 5 * spacing, duration: 0.4, ease: "back.inOut" }, 1.2);
+    idleTl.to(bars[5].el, { left: 2 * spacing, duration: 0.4, ease: "back.inOut" }, 1.2);
+    
+    // Swap pivot 20 (idx 7) into correct position (idx 3)
+    // Shift others right
+    idleTl.to(bars[7].el, { left: 3 * spacing, duration: 0.4, ease: "back.inOut" }, 2.0);
+    idleTl.to(bars[0].el, { left: 4 * spacing, duration: 0.4 }, 2.0); // was at 3
+    idleTl.to(bars[4].el, { left: 5 * spacing, duration: 0.4 }, 2.0); // 30
+    idleTl.to(bars[2].el, { left: 6 * spacing, duration: 0.4 }, 2.0); // was at 5 (35)
+    idleTl.to(bars[6].el, { left: 7 * spacing, duration: 0.4 }, 2.0); // 40
+
+    // Reset
+    idleTl.to(bars.map(b => b.el), { opacity: 0, duration: 0.2 }, 3.5);
+    idleTl.set(bars[0].el, { left: 0 * spacing });
+    idleTl.set(bars[1].el, { left: 1 * spacing });
+    idleTl.set(bars[2].el, { left: 2 * spacing });
+    idleTl.set(bars[3].el, { left: 3 * spacing });
+    idleTl.set(bars[4].el, { left: 4 * spacing });
+    idleTl.set(bars[5].el, { left: 5 * spacing });
+    idleTl.set(bars[6].el, { left: 6 * spacing });
+    idleTl.set(bars[7].el, { left: 7 * spacing, backgroundColor: 'rgba(241, 196, 15, 0.4)' });
+    idleTl.to(bars.map(b => b.el), { opacity: 1, duration: 0.2 }, 3.8);
+  }
+
+  playIdle();
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    idleTl.kill();
+
+    const tl = gsap.timeline();
+    
+    // Array divides recursively (bars spread out horizontally)
+    bars.forEach((b, i) => {
+      const currentX = parseFloat(b.el.style.left);
+      const spread = (currentX - 35) * 10; // expand outward
+      
+      tl.to(b.el, {
+        left: 35 + spread,
+        backgroundColor: '#F1C40F',
+        boxShadow: '0 0 8px #F1C40F',
+        duration: 0.6,
+        ease: "power2.out"
+      }, 0);
+      
+      // Drop like rain off-screen
+      tl.to(b.el, {
+        y: window.innerHeight,
+        rotation: Math.random() * 360,
+        duration: 1.5,
+        ease: "power1.in"
+      }, 0.6 + Math.random() * 0.4);
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nyquist-Shannon Sampling</title>
+<style>
+  body { margin: 0; padding: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 40px; cursor: pointer; }
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+  .wave { stroke: #333; stroke-width: 1; fill: none; }
+  .stem-line { stroke: #E84393; stroke-width: 1; stroke-dasharray: 1 1; }
+  .stem-dot { fill: #E84393; }
+  .alias-wave { stroke: #E84393; stroke-width: 1.5; fill: none; opacity: 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 40 40">
+    <path class="wave" d="M 0 20 Q 10 5, 20 20 T 40 20" />
+    <g id="stems"></g>
+    <path class="alias-wave" id="alias" d="M 0 20 Q 20 5, 40 20" />
+  </svg>
+</div>
+
+<script>
+  const stemsGroup = document.getElementById('stems');
+  const numStems = 8;
+  const stems = [];
+  
+  for(let i=0; i<=numStems; i++) {
+    let x = (i/numStems)*40;
+    let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("x2", x);
+    line.setAttribute("y1", 20);
+    line.setAttribute("y2", 20);
+    line.classList.add("stem-line");
+    
+    let dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", x);
+    dot.setAttribute("cy", 20);
+    dot.setAttribute("r", 1.5);
+    dot.classList.add("stem-dot");
+    
+    g.appendChild(line);
+    g.appendChild(dot);
+    stemsGroup.appendChild(g);
+    stems.push({x: x, g: g, line: line, dot: dot});
+  }
+
+  let time = 0;
+  let running = true;
+  let freq = 1;
+
+  function update() {
+    if(!running) return;
+    time += 0.05;
+    stems.forEach(stem => {
+      let y = 20 + Math.sin(stem.x * 0.314 * freq + time) * 12;
+      stem.dot.setAttribute("cy", y);
+      stem.line.setAttribute("y2", y);
+    });
+    requestAnimationFrame(update);
+  }
+  update();
+
+  document.getElementById('model').addEventListener('click', () => {
+    running = false;
+    const alias = document.getElementById('alias');
+    gsap.to(alias, {opacity: 1, duration: 0.5});
+    
+    // Animate stems spiraling away
+    stems.forEach((stem, i) => {
+      gsap.to(stem.g, {
+        x: Math.cos(i) * 300,
+        y: Math.sin(i) * 300,
+        rotation: 720,
+        opacity: 0,
+        duration: 2,
+        ease: "power2.in",
+        delay: 0.5 + i*0.1
+      });
+    });
+    gsap.to(alias, { scale: 3, opacity: 0, duration: 1.5, delay: 1, ease: "power2.in" });
+    gsap.to('.wave', {opacity: 0, duration: 0.5});
+  });
+</script>
+</body>
+</html>

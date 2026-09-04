@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+  #container { position: relative; width: 60px; height: 50px; cursor: pointer; }
+  .terminal { position: absolute; background: #2ECC71; }
+  #gate-wire { width: 15px; height: 2px; top: 24px; left: 0; }
+  #gate-plate { width: 2px; height: 20px; top: 15px; left: 15px; }
+  #channel-plate1 { width: 2px; height: 8px; top: 12px; left: 22px; }
+  #channel-plate2 { width: 2px; height: 8px; top: 21px; left: 22px; }
+  #channel-plate3 { width: 2px; height: 8px; top: 30px; left: 22px; }
+  #source-wire { width: 15px; height: 2px; top: 15px; left: 22px; }
+  #drain-wire { width: 15px; height: 2px; top: 33px; left: 22px; }
+  #body-wire { width: 15px; height: 2px; top: 24px; left: 22px; }
+  .channel-charge { position: absolute; width: 4px; height: 4px; background: rgba(46, 204, 113, 0.8); border-radius: 50%; left: 18px; opacity: 0; }
+  .spark { position: absolute; width: 20px; height: 2px; background: #fff; transform-origin: left; opacity: 0; z-index: 10; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="terminal" id="gate-wire"></div>
+  <div class="terminal" id="gate-plate"></div>
+  <div class="terminal" id="channel-plate1"></div>
+  <div class="terminal" id="channel-plate2"></div>
+  <div class="terminal" id="channel-plate3"></div>
+  <div class="terminal" id="source-wire"></div>
+  <div class="terminal" id="drain-wire"></div>
+  <div class="terminal" id="body-wire"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  const charges = [];
+  for(let i=0; i<3; i++) {
+    let c = document.createElement('div');
+    c.className = 'channel-charge';
+    c.style.top = (14 + i*9) + 'px';
+    container.appendChild(c);
+    charges.push(c);
+    gsap.to(c, {
+      opacity: 1,
+      scale: 1.2,
+      duration: 1,
+      yoyo: true,
+      repeat: -1,
+      delay: i*0.2,
+      ease: 'sine.inOut'
+    });
+  }
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    
+    // Gate oxide breakdown spark
+    let spark = document.createElement('div');
+    spark.className = 'spark';
+    spark.style.left = '16px';
+    spark.style.top = '24px';
+    container.appendChild(spark);
+    
+    gsap.to(spark, { opacity: 1, rotation: 'random(-20, 20)', duration: 0.1, yoyo: true, repeat: 3 });
+    
+    gsap.to('.terminal, .channel-charge', {
+      x: 'random(-500, 500)',
+      y: 'random(-500, 500)',
+      rotation: 'random(-720, 720)',
+      opacity: 0,
+      duration: 1,
+      delay: 0.3,
+      ease: 'power3.out'
+    });
+  });
+</script>
+</body>
+</html>

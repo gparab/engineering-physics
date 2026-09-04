@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soil Liquefaction</title>
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #eee; overflow: hidden; }
+  .container { position: relative; width: 200px; height: 250px; cursor: pointer; border: 2px solid #555; border-top: none; background-color: #e0d8b0; overflow: hidden; }
+  .water { position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background-color: rgba(65, 105, 225, 0.5); transition: height 0.5s; z-index: 1; }
+  .particle { position: absolute; width: 30px; height: 30px; background-color: #BDB76B; border-radius: 50%; border: 1px solid #8B864E; box-sizing: border-box; z-index: 2; transition: top 1s cubic-bezier(0.5, 0, 1, 0.5); }
+  .geyser { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); width: 20px; height: 0; background-color: rgba(65, 105, 225, 0.8); border-radius: 10px; z-index: 3; transition: height 0.5s ease-out, bottom 0.5s ease-out; }
+  .sand-boil { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); width: 0; height: 10px; background-color: #BDB76B; border-radius: 50%; z-index: 4; transition: width 0.5s ease-out 0.3s, height 0.5s ease-out 0.3s; }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <div class="water" id="water"></div>
+  <div class="geyser" id="geyser"></div>
+  <div class="sand-boil" id="sandboil"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const water = document.getElementById('water');
+  const geyser = document.getElementById('geyser');
+  const sandboil = document.getElementById('sandboil');
+  const particles = [];
+  
+  // Create particles
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      let p = document.createElement('div');
+      p.className = 'particle';
+      // initial positions
+      let x = c * 35 + 10;
+      let y = r * 35 + 70;
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      container.appendChild(p);
+      particles.push({el: p, x: x, y: y, row: r, col: c});
+    }
+  }
+
+  let t = 0;
+  let clicked = false;
+  let shakeInt = setInterval(() => {
+    t += 0.5;
+    // Particles shake, water expands slightly
+    let wHeight = 50 + Math.sin(t * 2) * 5;
+    water.style.height = wHeight + '%';
+    
+    particles.forEach(p => {
+      let ox = Math.sin(t * 3 + p.row) * 2;
+      let oy = Math.cos(t * 4 + p.col) * 2;
+      p.el.style.transform = `translate(${ox}px, ${oy}px)`;
+    });
+  }, 50);
+
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    clearInterval(shakeInt);
+    
+    // Water height fills up
+    water.style.height = '100%';
+    
+    // Particles sink to bottom
+    particles.forEach(p => {
+      p.el.style.transform = 'translate(0, 0)';
+      p.el.style.top = (p.row * 30 + 100) + 'px'; // compress
+    });
+    
+    // Geyser shoots out
+    setTimeout(() => {
+      geyser.style.bottom = '100%'; // shoots up
+      geyser.style.height = '150px';
+      sandboil.style.width = '80px';
+      sandboil.style.height = '30px';
+    }, 500);
+    
+    // Geyser falls back
+    setTimeout(() => {
+      geyser.style.height = '0';
+      geyser.style.bottom = '250px';
+    }, 1200);
+  });
+</script>
+</body>
+</html>

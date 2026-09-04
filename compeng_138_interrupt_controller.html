@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>138. Interrupt Controller</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #0d0d0d; overflow: hidden; }
+  #container { position: relative; width: 20px; height: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+  .level { background: rgba(230, 126, 34, 0.3); border: 1px solid #E67E22; margin-top: 1px; }
+  #top { width: 6px; height: 4px; display:flex; justify-content:center; align-items:center; }
+  #mid { width: 12px; height: 4px; }
+  #bot { width: 20px; height: 4px; }
+  .exclam { font-size: 6px; color: #fff; font-family: sans-serif; font-weight: bold; opacity: 0; line-height: 4px;}
+  #nmi { position: absolute; width: 2px; height: 100vh; background: #fff; top: -100vh; opacity: 0; box-shadow: 0 0 10px #fff; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="nmi"></div>
+  <div id="top" class="level"><div class="exclam">!</div></div>
+  <div id="mid" class="level"></div>
+  <div id="bot" class="level"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  let t = gsap.timeline({repeat: -1});
+  t.to('#bot', {background: '#E67E22', duration: 0.3})
+   .to('#bot', {background: 'rgba(230, 126, 34, 0.3)', duration: 0.3})
+   .to('#mid', {background: '#E67E22', duration: 0.3})
+   .to('#mid', {background: 'rgba(230, 126, 34, 0.3)', duration: 0.3})
+   .to('.exclam', {opacity: 1, duration: 0.1})
+   .to('#top', {background: '#E67E22', duration: 0.2})
+   .to('#top', {background: 'rgba(230, 126, 34, 0.3)', duration: 0.2})
+   .to('.exclam', {opacity: 0, duration: 0.1});
+
+  container.addEventListener('click', () => {
+    t.kill();
+    // NMI spike
+    gsap.to('#nmi', {
+      top: 0,
+      opacity: 1,
+      duration: 0.1,
+      ease: "power4.in",
+      onComplete: () => {
+        gsap.to('.level', {
+          scale: 0,
+          rotation: () => (Math.random() - 0.5) * 720,
+          x: () => (Math.random() - 0.5) * 500,
+          y: () => (Math.random() - 0.5) * 500,
+          duration: 1,
+          ease: "expo.out"
+        });
+        gsap.to('#nmi', {
+          width: window.innerWidth,
+          x: -window.innerWidth/2,
+          opacity: 0,
+          duration: 0.5,
+          delay: 0.1,
+          ease: "power2.out"
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

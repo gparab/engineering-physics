@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #121212;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 30px;
+    height: 24px;
+    cursor: pointer;
+  }
+  .lattice {
+    position: absolute;
+    width: 8px;
+    height: 24px;
+    border: 1px solid #32CD32;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, #32CD32 3px, #32CD32 4px);
+    transition: all 0.4s cubic-bezier(0.1, 0.8, 0.2, 1);
+  }
+  .lattice-left { left: 0; }
+  .lattice-right { right: 0; }
+  
+  .ion {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #32CD32;
+    border-radius: 50%;
+    left: 3px;
+    animation: migrate 2s infinite alternate ease-in-out;
+  }
+  @keyframes migrate {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(20px); }
+  }
+  .flash {
+    position: absolute;
+    left: 15px; top: 12px;
+    width: 0; height: 0;
+    background: #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 20px 10px #32CD32;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="lattice lattice-left"></div>
+  <div class="lattice lattice-right"></div>
+  <div class="ion" style="top: 2px; animation-delay: 0s;"></div>
+  <div class="ion" style="top: 10px; animation-delay: 0.3s;"></div>
+  <div class="ion" style="top: 18px; animation-delay: 0.6s;"></div>
+</div>
+<script>
+  document.getElementById('model').onclick = function() {
+    this.style.pointerEvents = 'none';
+    let ions = document.querySelectorAll('.ion');
+    ions.forEach(i => { i.style.animation = 'none'; i.style.display = 'none'; });
+    
+    let l = document.querySelector('.lattice-left');
+    let r = document.querySelector('.lattice-right');
+    
+    l.style.transform = 'translateX(11px)';
+    r.style.transform = 'translateX(-11px)';
+    
+    setTimeout(() => {
+      let f = document.createElement('div');
+      f.className = 'flash';
+      this.appendChild(f);
+      f.animate([
+        { width: '0px', height: '0px', opacity: 1 },
+        { width: '100px', height: '100px', opacity: 1, offset: 0.2 },
+        { width: '0px', height: '0px', opacity: 0 }
+      ], { duration: 600, easing: 'ease-out' });
+      
+      l.style.opacity = '0';
+      r.style.opacity = '0';
+      
+      setTimeout(() => {
+        let dot = document.createElement('div');
+        dot.style.cssText = 'position:absolute; width:2px; height:2px; background:#fff; left:14px; top:11px; border-radius:50%;';
+        this.appendChild(dot);
+        dot.animate([{opacity: 1}, {opacity: 0}], {duration: 1000, delay: 500, fill: 'forwards'});
+      }, 100);
+    }, 400);
+  };
+</script>
+</body>
+</html>

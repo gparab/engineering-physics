@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Metacentric Torque</title>
+<style>
+  body { margin: 0; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .icon-container { position: relative; width: 30px; height: 30px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  .water { position: absolute; width: 40px; height: 1px; background: rgba(245, 166, 35, 0.4); top: 18px; z-index: 1; }
+  .ship { position: absolute; top: 10px; width: 20px; height: 12px; background: #F5A623; border-radius: 2px 2px 10px 10px; transform-origin: center bottom; }
+  .cg { position: absolute; width: 4px; height: 4px; background: #fff; border: 1px solid #c0392b; border-radius: 50%; top: 2px; left: 8px; display: flex; justify-content: center; align-items: center; }
+  .cg::after { content: 'G'; font-size: 3px; color: #c0392b; font-family: sans-serif; font-weight: bold; }
+  .cb { position: absolute; width: 4px; height: 4px; background: #fff; border: 1px solid #2980b9; border-radius: 50%; top: 8px; left: 8px; display: flex; justify-content: center; align-items: center; }
+  .cb::after { content: 'B'; font-size: 3px; color: #2980b9; font-family: sans-serif; font-weight: bold; }
+  .righting-lever { position: absolute; height: 1px; background: #333; top: 9px; left: 8px; width: 0; opacity: 0; transform-origin: left; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="icon-container" id="icon">
+    <div class="water"></div>
+    <div class="ship" id="ship">
+      <div class="cg" id="cg"></div>
+      <div class="cb" id="cb"></div>
+      <div class="righting-lever" id="lever"></div>
+    </div>
+  </div>
+  <script>
+    const ship = document.getElementById('ship');
+    const icon = document.getElementById('icon');
+    const cg = document.getElementById('cg');
+    const cb = document.getElementById('cb');
+    const lever = document.getElementById('lever');
+    let isAnimating = false;
+
+    const idleShip = gsap.to(ship, { rotation: 10, duration: 2, yoyo: true, repeat: -1, ease: "sine.inOut" });
+    const idleCb = gsap.to(cb, { x: 3, duration: 2, yoyo: true, repeat: -1, ease: "sine.inOut" });
+    const idleLever = gsap.to(lever, { width: 3, opacity: 1, duration: 2, yoyo: true, repeat: -1, ease: "sine.inOut" });
+
+    icon.addEventListener('click', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+      idleShip.kill(); idleCb.kill(); idleLever.kill();
+
+      gsap.to(cg, { top: -15, duration: 0.5, ease: "power2.out" });
+      gsap.to(lever, { opacity: 0, duration: 0.2 });
+
+      gsap.to(ship, { 
+        rotation: "+=220", 
+        y: window.innerHeight, 
+        x: window.innerWidth / 2, 
+        duration: 1.5, 
+        ease: "power3.in",
+        delay: 0.6 
+      });
+      gsap.to(cg, { scale: 2, duration: 0.5 });
+    });
+  </script>
+</body>
+</html>

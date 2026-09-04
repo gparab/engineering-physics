@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Joint Kinematics Pendulum</title>
+<style>
+  body {
+    margin: 0; padding: 0; height: 100vh;
+    display: flex; justify-content: center; align-items: center;
+    background-color: #111; overflow: hidden;
+  }
+  #container { cursor: pointer; position: relative; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <svg id="joint" viewBox="-20 -20 40 60" width="40" height="60" style="overflow:visible;">
+    <g id="leg">
+      <line x1="0" y1="-15" x2="0" y2="0" stroke="#FF5733" stroke-width="2" stroke-linecap="round"/>
+      <g id="calf">
+        <line x1="0" y1="0" x2="0" y2="20" stroke="#FF5733" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="0" cy="0" r="2.5" fill="#111" stroke="#FF5733" stroke-width="1" id="pin"/>
+      </g>
+      <circle cx="0" cy="-15" r="2" fill="#FF5733"/>
+    </g>
+  </svg>
+</div>
+<script>
+  gsap.set("#leg", { transformOrigin: "0px -15px" });
+  gsap.set("#calf", { transformOrigin: "0px 0px" });
+  
+  const idle = gsap.timeline({repeat: -1, yoyo: true});
+  idle.fromTo("#leg", {rotation: -15}, {rotation: 20, duration: 0.8, ease: "sine.inOut"});
+  const idle2 = gsap.timeline({repeat: -1, yoyo: true});
+  idle2.fromTo("#calf", {rotation: 10}, {rotation: 60, duration: 0.8, ease: "sine.inOut", delay: 0.2});
+
+  document.getElementById("container").addEventListener("click", () => {
+    idle.kill(); idle2.kill();
+    gsap.to("#pin", { opacity: 0, duration: 0.2 });
+    gsap.to("#calf", { y: window.innerHeight, x: 200, rotation: 720, duration: 2, ease: "power2.in" });
+    gsap.to("#leg", { y: window.innerHeight, x: -150, rotation: -400, duration: 2, ease: "power2.in", delay: 0.1 });
+  });
+</script>
+</body>
+</html>

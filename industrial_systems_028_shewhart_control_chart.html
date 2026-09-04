@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>28. Shewhart Control Chart</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: monospace;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="info">SHEWHART CONTROL CHART // 028</div>
+    <canvas id="chart"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('chart');
+        const ctx = canvas.getContext('2d');
+        const width = 600;
+        const height = 300;
+        canvas.width = width;
+        canvas.height = height;
+
+        const mainColor = '#20B2AA';
+        const uclY = 50;
+        const meanY = 150;
+        const lclY = 250;
+        
+        let points = [];
+        let time = 0;
+        let crashed = false;
+        
+        let chartObj = { yOffset: 0, xOffset: 0, rotation: 0 };
+
+        function addPoint() {
+            if (crashed) return;
+            const x = time * 30;
+            // Random point between LCL and UCL, tending towards mean
+            const rand = (Math.random() + Math.random() + Math.random()) / 3;
+            const y = meanY + (rand - 0.5) * 160; 
+            
+            points.push({x, y});
+            time++;
+            
+            if (time > 20) {
+                points.shift();
+                points.forEach(p => p.x -= 30);
+                time--;
+            }
+            
+            setTimeout(addPoint, 500);
+        }
+
+        addPoint();
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            ctx.save();
+            ctx.translate(width/2, height/2);
+            ctx.rotate(chartObj.rotation);
+            ctx.translate(-width/2 + chartObj.xOffset, -height/2 + chartObj.yOffset);
+            
+            // Draw limits
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            ctx.beginPath();
+            ctx.moveTo(0, uclY); ctx.lineTo(width, uclY); // UCL
+            ctx.moveTo(0, lclY); ctx.lineTo(width, lclY); // LCL
+            ctx.stroke();
+            
+            // Draw mean
+            ctx.strokeStyle = '#666';
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(0, meanY); ctx.lineTo(width, meanY);
+            ctx.stroke();
+
+            // Draw data
+            ctx.strokeStyle = mainColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for(let i=0; i<points.length; i++) {
+                if(i===0) ctx.moveTo(points[i].x, points[i].y);
+                else ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.stroke();
+            
+            ctx.fillStyle = mainColor;
+            for(let i=0; i<points.length; i++) {
+                ctx.beginPath();
+                ctx.arc(points[i].x, points[i].y, 4, 0, Math.PI*2);
+                ctx.fill();
+            }
+            
+            ctx.restore();
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        window.addEventListener('click', () => {
+            if(crashed) return;
+            crashed = true;
+            
+            let count = 0;
+            const trendInterval = setInterval(() => {
+                count++;
+                const x = time * 30;
+                points.forEach(p => p.x -= 30);
+                // Trend upwards wildly above UCL
+                const y = uclY - count * 30; 
+                points.push({x: 600, y});
+                
+                if (count >= 7) {
+                    clearInterval(trendInterval);
+                    // Snap and pull off-screen
+                    gsap.to(chartObj, {
+                        yOffset: -1000,
+                        xOffset: 500,
+                        rotation: Math.PI / 4,
+                        duration: 1,
+                        ease: "power2.in"
+                    });
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

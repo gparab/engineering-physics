@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 30px; cursor: pointer; }
+  .capsule { position: absolute; width: 16px; height: 20px; background: #555; border-radius: 20px 20px 4px 4px; left: 12px; top: 5px; transform: rotate(90deg); }
+  .shield { position: absolute; width: 22px; height: 6px; background: #E67E22; border-radius: 50%; left: 19px; top: 12px; box-shadow: 0 0 8px #E67E22; transform: rotate(90deg); }
+  .shock { position: absolute; width: 30px; height: 30px; border-right: 2px solid rgba(230, 126, 34, 0.8); border-radius: 50%; left: 8px; top: 0px; filter: drop-shadow(0 0 3px #E67E22); }
+  .dust { position: absolute; width: 4px; height: 4px; background: #E67E22; border-radius: 50%; opacity: 0; box-shadow: 0 0 6px #E67E22; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="shock" id="shock"></div>
+  <div class="capsule" id="capsule"></div>
+  <div class="shield" id="shield"></div>
+</div>
+<script>
+  const model = document.getElementById('model');
+  const shield = document.getElementById('shield');
+  const shock = document.getElementById('shock');
+  
+  gsap.to(shield, { scaleX: 1.15, scaleY: 1.25, duration: 0.1, repeat: -1, yoyo: true, ease: 'rough' });
+  gsap.to(shock, { left: 10, opacity: 0.6, duration: 0.05, repeat: -1, yoyo: true });
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf([shield, shock]);
+    
+    gsap.to(shield, { opacity: 0, duration: 0.2 });
+    gsap.to(shock, { opacity: 0, duration: 0.2 });
+    
+    gsap.to(model, {x: -30, duration: 0.3, ease: 'power1.inOut'});
+    setTimeout(() => {
+      document.getElementById('capsule').style.display = 'none';
+      for(let i=0; i<100; i++) {
+        let dust = document.createElement('div');
+        dust.className = 'dust';
+        dust.style.left = (window.innerWidth/2 - 30) + 'px';
+        dust.style.top = (window.innerHeight/2) + 'px';
+        document.body.appendChild(dust);
+        
+        gsap.to(dust, {
+          x: -(100 + Math.random()*1200),
+          y: (Math.random() - 0.5) * 600,
+          opacity: 1,
+          duration: 0.5 + Math.random() * 2,
+          ease: 'power3.out',
+          onComplete: () => {
+            gsap.to(dust, {opacity: 0, duration: 0.5});
+          }
+        });
+      }
+    }, 200);
+  });
+</script>
+</body>
+</html>

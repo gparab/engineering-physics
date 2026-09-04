@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSA Encryption</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111;
+    overflow: hidden;
+  }
+  #container {
+    position: relative;
+    width: 100px;
+    height: 60px;
+    cursor: pointer;
+  }
+  .key {
+    position: absolute;
+    top: 25px;
+    width: 25px;
+    height: 10px;
+    background-color: #34495E;
+    border-radius: 5px 0 0 5px;
+  }
+  .key::after {
+    content: '';
+    position: absolute;
+    right: 2px;
+    bottom: -6px;
+    width: 4px;
+    height: 6px;
+    background-color: #34495E;
+    box-shadow: -6px 0 0 #34495E;
+  }
+  .key::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 2px;
+    width: 6px;
+    height: 6px;
+    background-color: #111;
+    border-radius: 50%;
+  }
+  .pub-key {
+    left: 10px;
+    background-color: #2980B9;
+  }
+  .pub-key::after { background-color: #2980B9; box-shadow: -6px 0 0 #2980B9; }
+  
+  .priv-key {
+    right: 10px;
+    transform: scaleX(-1);
+    background-color: #8E44AD;
+  }
+  .priv-key::after { background-color: #8E44AD; box-shadow: -6px 0 0 #8E44AD; }
+
+  .msg {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 12px;
+    height: 8px;
+    background-color: #fff;
+    opacity: 0;
+  }
+  .msg::after {
+    content: '01';
+    font-family: monospace;
+    font-size: 6px;
+    color: #000;
+    position: absolute;
+    top: 1px;
+    left: 2px;
+  }
+  .prime-frag {
+    position: absolute;
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="msg" id="msg"></div>
+  <div class="key pub-key"></div>
+  <div class="key priv-key"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const msg = document.getElementById('msg');
+  const pubKey = document.querySelector('.pub-key');
+  const privKey = document.querySelector('.priv-key');
+  
+  let idleTl = gsap.timeline({ repeat: -1 });
+
+  function playIdle() {
+    gsap.set(msg, { left: -20, opacity: 1, backgroundColor: '#fff' });
+    
+    // Msg enters public key, becomes encrypted (static)
+    idleTl.to(msg, { left: 15, duration: 0.5, ease: "power1.in" });
+    idleTl.to(msg, { backgroundColor: '#34495E', color: '#fff', scale: 0.8, duration: 0.2 });
+    
+    // Moves to private key
+    idleTl.to(msg, { left: 65, duration: 0.8, ease: "none" });
+    
+    // Decrypts
+    idleTl.to(msg, { backgroundColor: '#fff', color: '#000', scale: 1, duration: 0.2 });
+    idleTl.to(msg, { left: 100, opacity: 0, duration: 0.5, ease: "power1.out" });
+    
+    idleTl.to({}, { duration: 0.5 });
+  }
+
+  playIdle();
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    idleTl.kill();
+    gsap.killTweensOf(msg);
+    gsap.set(msg, { opacity: 0 });
+
+    const tl = gsap.timeline();
+    
+    // Keys attempt prime factorization (they interlock and shake violently)
+    tl.to(pubKey, { left: 35, duration: 0.3, ease: "back.in(1)" }, 0);
+    tl.to(privKey, { right: 35, duration: 0.3, ease: "back.in(1)" }, 0);
+    
+    tl.to(pubKey, { x: "+=3", y: "-=2", rotation: "+=5", yoyo: true, repeat: 15, duration: 0.05 }, 0.3);
+    tl.to(privKey, { x: "-=3", y: "+=2", rotation: "-=5", yoyo: true, repeat: 15, duration: 0.05 }, 0.3);
+    
+    // Keys glow red/white
+    tl.to([pubKey, privKey], { backgroundColor: '#E74C3C', duration: 0.5 }, 0.3);
+
+    // Shatter into prime fragments
+    tl.to([pubKey, privKey], { opacity: 0, duration: 0.1 }, 1.1);
+
+    const primes = ['2', '3', '5', '7', '11', '13', '17', '19', '23', '29', '31', '37'];
+    
+    for(let i=0; i<40; i++) {
+      const frag = document.createElement('div');
+      frag.className = 'prime-frag';
+      frag.innerText = primes[Math.floor(Math.random() * primes.length)];
+      frag.style.left = '45px';
+      frag.style.top = '25px';
+      container.appendChild(frag);
+      
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 500 + Math.random() * 500;
+      
+      tl.to(frag, {
+        opacity: 1,
+        duration: 0.1
+      }, 1.1);
+      
+      tl.to(frag, {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        rotation: Math.random() * 720 - 360,
+        scale: Math.random() * 2 + 1,
+        opacity: 0,
+        duration: 1 + Math.random() * 1.5,
+        ease: "expo.out"
+      }, 1.1);
+    }
+  });
+</script>
+</body>
+</html>

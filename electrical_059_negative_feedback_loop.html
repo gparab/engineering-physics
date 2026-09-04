@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Negative Feedback Loop</title>
+<style>
+  body { margin: 0; padding: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 40px; cursor: pointer; }
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+  .path-line { stroke: #5d81a3; stroke-width: 1.5; fill: none; }
+  .block { fill: none; stroke: #5d81a3; stroke-width: 1.5; }
+  .sum-node { fill: none; stroke: #5d81a3; stroke-width: 1.5; }
+  .signal { fill: #2C3E50; }
+  .sign { fill: #5d81a3; font-size: 6px; font-family: monospace; font-weight: bold; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 40 40">
+    <circle class="sum-node" cx="10" cy="15" r="3" />
+    <text class="sign" x="8" y="24" id="fb-sign">-</text>
+    
+    <rect class="block fwd" x="18" y="10" width="10" height="10" />
+    <rect class="block fb" x="18" y="25" width="10" height="8" />
+    
+    <path class="path-line" d="M 2 15 L 7 15" />
+    <path class="path-line" d="M 13 15 L 18 15" />
+    <path class="path-line" d="M 28 15 L 38 15" />
+    <path class="path-line" d="M 33 15 V 29 L 28 29" />
+    <path class="path-line" d="M 18 29 L 10 29 V 18" />
+    
+    <circle class="signal s1" cx="2" cy="15" r="1.5" />
+    <circle class="signal s2" cx="33" cy="15" r="1.5" />
+  </svg>
+</div>
+
+<script>
+  const s1 = document.querySelector('.s1');
+  const s2 = document.querySelector('.s2');
+  
+  let tl = gsap.timeline({repeat: -1});
+  tl.to(s1, {attr: {cx: 10}, duration: 0.4, ease: "none"})
+    .to(s1, {attr: {cx: 18}, duration: 0.3, ease: "none"})
+    .to(s1, {attr: {cx: 38}, duration: 0.5, ease: "none"});
+    
+  let tl2 = gsap.timeline({repeat: -1});
+  tl2.set(s2, {attr: {cx: 33, cy: 15}})
+     .to(s2, {attr: {cy: 29}, duration: 0.3, ease: "none"})
+     .to(s2, {attr: {cx: 18}, duration: 0.4, ease: "none"})
+     .to(s2, {attr: {cx: 10}, duration: 0.2, ease: "none"})
+     .to(s2, {attr: {cy: 18}, duration: 0.3, ease: "none"});
+
+  document.getElementById('model').addEventListener('click', () => {
+    document.getElementById('fb-sign').textContent = "+";
+    document.getElementById('fb-sign').style.fill = "#E74C3C";
+    document.querySelectorAll('.block, .sum-node, .path-line').forEach(el => {
+      el.style.stroke = "#E74C3C";
+    });
+    
+    gsap.killTweensOf([s1, s2]);
+    
+    // Scale up blocks exponentially
+    gsap.to('.fwd', { scale: 50, transformOrigin: "center", opacity: 0, duration: 1, ease: "power4.in" });
+    gsap.to('.fb', { scale: 50, transformOrigin: "center", opacity: 0, duration: 1, delay: 0.2, ease: "power4.in" });
+    
+    // Shake container
+    gsap.to('#model', {
+      x: () => (Math.random()-0.5)*20,
+      y: () => (Math.random()-0.5)*20,
+      duration: 0.05,
+      repeat: 20
+    });
+    
+    gsap.to('svg', { opacity: 0, duration: 0.2, delay: 1 });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smith Chart</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #0d0d0d;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        cursor: pointer;
+    }
+    svg {
+        width: 100%;
+        height: 100%;
+    }
+    .grid {
+        fill: none;
+        stroke: rgba(142, 68, 173, 0.4);
+        stroke-width: 1;
+    }
+    .main-circle {
+        fill: none;
+        stroke: #8E44AD;
+        stroke-width: 2;
+    }
+    .trace {
+        fill: none;
+        stroke: #f1c40f;
+        stroke-width: 3;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+    }
+    .point {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #f1c40f;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 10px #f1c40f;
+    }
+    .explosion {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0px;
+        height: 0px;
+        background: #e74c3c;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        box-shadow: 0 0 40px #e74c3c;
+    }
+    .wave {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 20px;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+    }
+</style>
+</head>
+<body>
+<div id="container">
+    <svg viewBox="0 0 400 400">
+        <!-- Main circle r=180 -->
+        <circle cx="200" cy="200" r="180" class="main-circle" />
+        <!-- Resistance circles -->
+        <circle cx="260" cy="200" r="120" class="grid" />
+        <circle cx="290" cy="200" r="90" class="grid" />
+        <circle cx="320" cy="200" r="60" class="grid" />
+        <!-- Reactance arcs -->
+        <path d="M 20 200 A 180 180 0 0 1 380 200" class="grid" />
+        <path d="M 200 20 A 180 180 0 0 1 380 200" class="grid" />
+        <path d="M 200 380 A 180 180 0 0 0 380 200" class="grid" />
+        
+        <path d="M 380 200 Q 250 150 200 200" id="trace-path" class="trace" />
+    </svg>
+    <div class="point" id="point" style="left: 380px; top: 200px;"></div>
+    <div class="explosion" id="explosion"></div>
+    <div class="wave" id="wave">
+        <svg viewBox="0 0 400 20" preserveAspectRatio="none">
+            <path d="M0,10 Q50,0 100,10 T200,10 T300,10 T400,10" fill="none" stroke="#e74c3c" stroke-width="4"/>
+        </svg>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+<script>
+    gsap.registerPlugin(MotionPathPlugin);
+
+    // Idle: point traces arc toward 50ohm center (200, 200)
+    let idleTL = gsap.timeline({ repeat: -1 });
+    
+    idleTL.to('#trace-path', {
+        strokeDashoffset: 0,
+        duration: 2,
+        ease: "power2.inOut"
+    }, 0);
+    
+    idleTL.to('#point', {
+        motionPath: {
+            path: "#trace-path",
+            align: "#trace-path",
+            alignOrigin: [0.5, 0.5]
+        },
+        duration: 2,
+        ease: "power2.inOut"
+    }, 0);
+    
+    idleTL.to('#trace-path', { opacity: 0, duration: 0.5 }, 2);
+    idleTL.to('#point', { opacity: 0, duration: 0.5 }, 2);
+    idleTL.set('#trace-path', { strokeDashoffset: 1000, opacity: 1 }, 2.5);
+    idleTL.set('#point', { opacity: 1 }, 2.5);
+
+    let clicked = false;
+    document.getElementById('container').addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        idleTL.kill();
+        
+        // click: mismatch; point flies to edge
+        gsap.to('#point', {
+            left: 20,
+            top: 200,
+            duration: 0.3,
+            ease: "power3.in"
+        });
+        
+        // standing wave blows up source
+        gsap.to('#wave', {
+            opacity: 1,
+            scaleY: 10,
+            duration: 0.4,
+            delay: 0.3,
+            yoyo: true,
+            repeat: 3
+        });
+        
+        gsap.to('#explosion', {
+            width: 400,
+            height: 400,
+            opacity: 1,
+            duration: 0.5,
+            delay: 1,
+            ease: "power2.out"
+        });
+        
+        gsap.to(['svg:not(#wave svg)', '#point'], {
+            opacity: 0,
+            duration: 0.2,
+            delay: 1.1
+        });
+        
+        gsap.to('#explosion', {
+            opacity: 0,
+            duration: 1,
+            delay: 1.5
+        });
+    });
+</script>
+</body>
+</html>

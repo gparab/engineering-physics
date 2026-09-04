@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harmonic Drive Gear</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #0b151f;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .container {
+    width: 60px;
+    height: 60px;
+    position: relative;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .circular-spline { fill: none; stroke: #2a5a82; stroke-width: 3; }
+  .flexspline { fill: none; stroke: #4682B4; stroke-width: 1.5; stroke-dasharray: 2 1; }
+  .wave-generator { fill: #1c3652; stroke: #4682B4; stroke-width: 1; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="icon">
+  <svg viewBox="0 0 60 60">
+    <!-- Circular Spline (Outer) -->
+    <circle class="circular-spline" cx="30" cy="30" r="22" />
+    
+    <g id="flexspline-group" transform-origin="30 30">
+      <!-- Flexspline (Inner, slightly deformed to ellipse) -->
+      <ellipse class="flexspline" cx="30" cy="30" rx="21" ry="19" id="flexspline" />
+    </g>
+    
+    <g id="wavegen-group" transform-origin="30 30">
+      <!-- Wave Generator (Core) -->
+      <ellipse class="wave-generator" cx="30" cy="30" rx="19" ry="17" />
+      <circle cx="30" cy="30" r="2" fill="#4682B4" />
+    </g>
+  </svg>
+</div>
+
+<script>
+  // Idle Animation: Wave generator rotates fast, flexspline rotates very slowly
+  const waveGen = gsap.to("#wavegen-group", {
+    rotation: 360,
+    duration: 1.5,
+    ease: "linear",
+    repeat: -1
+  });
+  
+  // Flexspline deformed shape rotates with wavegen to show wave
+  const flexShape = gsap.to("#flexspline-group", {
+    rotation: 360,
+    duration: 1.5,
+    ease: "linear",
+    repeat: -1
+  });
+
+  // Flexspline material itself rotates slowly backwards
+  const flexStroke = gsap.to("#flexspline", {
+    strokeDashoffset: -20,
+    duration: 5,
+    ease: "linear",
+    repeat: -1
+  });
+
+  // Click Disappearance Motion: Flexspline snaps from metal fatigue and unspools like a loose ribbon
+  document.body.addEventListener('click', () => {
+    waveGen.kill();
+    flexShape.kill();
+    flexStroke.kill();
+    
+    const clickTl = gsap.timeline();
+    
+    // Snap and Unspool
+    clickTl.to("#wavegen-group", {
+      scale: 0,
+      opacity: 0,
+      duration: 0.3,
+      ease: "power2.in"
+    }, 0)
+    .to(".circular-spline", {
+      strokeWidth: 0,
+      opacity: 0,
+      duration: 0.3
+    }, 0)
+    // Unspool animation by converting ellipse to broken path (morph SVG simulation via scaling/translating)
+    .to("#flexspline", {
+      strokeDasharray: "100 200",
+      strokeWidth: 0.5,
+      duration: 0.2
+    }, 0.2)
+    .to("#flexspline-group", {
+      x: 300,
+      y: -200,
+      scaleX: 10,
+      scaleY: 0.1,
+      rotation: 45,
+      opacity: 0,
+      duration: 0.8,
+      ease: "power2.out"
+    }, 0.3)
+    .to("body", {
+      backgroundColor: "#1c3652",
+      duration: 0.1,
+      yoyo: true,
+      repeat: 1
+    }, 0.3);
+  }, { once: true });
+</script>
+</body>
+</html>

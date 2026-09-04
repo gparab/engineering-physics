@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reverse Osmosis (Desalination)</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 80px;
+        height: 40px;
+        cursor: pointer;
+        border: 2px solid #555;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+    #membrane {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 2px;
+        height: 100%;
+        background-image: linear-gradient(to bottom, #00FFFF 50%, transparent 50%);
+        background-size: 2px 8px;
+        transform: translateX(-50%);
+    }
+    #piston {
+        position: absolute;
+        top: 0;
+        left: -10px;
+        width: 10px;
+        height: 100%;
+        background-color: #888;
+    }
+    .water {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background-color: #00FFFF;
+        border-radius: 50%;
+    }
+    .salt {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background-color: #fff;
+        border-radius: 1px;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="piston"></div>
+        <div id="membrane"></div>
+    </div>
+<script>
+    const container = document.getElementById('container');
+    const piston = document.getElementById('piston');
+    const membrane = document.getElementById('membrane');
+    let clicked = false;
+
+    // Piston pushes slowly
+    let pistonTween = gsap.to(piston, {
+        x: 30,
+        duration: 2,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1
+    });
+
+    function spawnParticles() {
+        if(clicked) return;
+        // spawn water
+        let w = document.createElement('div');
+        w.className = 'water';
+        w.style.left = '20px';
+        w.style.top = (Math.random() * 34 + 3) + 'px';
+        container.appendChild(w);
+
+        gsap.to(w, {
+            x: 60,
+            duration: 1 + Math.random(),
+            ease: "none",
+            onComplete: () => { if(!clicked) w.remove(); }
+        });
+
+        // spawn salt
+        let s = document.createElement('div');
+        s.className = 'salt';
+        s.style.left = '20px';
+        s.style.top = (Math.random() * 32 + 4) + 'px';
+        container.appendChild(s);
+
+        gsap.to(s, {
+            x: 20, // moves to membrane
+            duration: 0.5,
+            ease: "none",
+            onComplete: () => {
+                if(!clicked) {
+                    // bounce back
+                    gsap.to(s, {
+                        x: -10,
+                        y: (Math.random()-0.5)*10,
+                        duration: 0.5,
+                        onComplete: () => s.remove()
+                    });
+                }
+            }
+        });
+    }
+
+    let interval = setInterval(spawnParticles, 200);
+
+    container.addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        clearInterval(interval);
+        pistonTween.kill();
+
+        const tl = gsap.timeline();
+        
+        // Pressure exceeds burst strength
+        tl.to(piston, {
+            x: 38,
+            duration: 0.5,
+            ease: "power2.in"
+        });
+
+        // Membrane ruptures
+        tl.to(membrane, {
+            opacity: 0,
+            scaleY: 2,
+            duration: 0.2
+        }, "-=0.1");
+
+        // Salt mixes across screen
+        let allSalt = document.querySelectorAll('.salt');
+        tl.to(allSalt, {
+            x: () => 60 + Math.random()*20,
+            y: () => (Math.random()-0.5)*20,
+            duration: 0.5,
+            ease: "power1.out"
+        }, "-=0.1");
+
+        // Explosion effect
+        tl.to(container, {
+            scale: 3,
+            opacity: 0,
+            duration: 0.8,
+            ease: "power2.in"
+        });
+    });
+</script>
+</body>
+</html>

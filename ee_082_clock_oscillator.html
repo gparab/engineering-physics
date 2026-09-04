@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microcontroller Clock Oscillator</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; background: #0d0d0d; display: flex; justify-content: center; align-items: center; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
+        #container { position: relative; width: 300px; height: 200px; cursor: pointer; display: flex; align-items: center; justify-content: center;}
+        
+        .ic {
+            width: 100px; height: 100px; background: #2C3E50; border-radius: 8px; position: relative; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; box-shadow: inset 0 0 10px #000; z-index: 2;
+        }
+        
+        .pins {
+            position: absolute; top: -10px; bottom: -10px; left: 10px; right: 10px; display: flex; justify-content: space-between; flex-direction: column; z-index: 1;
+        }
+        
+        .pin-row { display: flex; justify-content: space-between; width: 100%; height: 10px; }
+        .pin { width: 8px; height: 10px; background: #888; }
+        
+        .crystal {
+            width: 40px; height: 20px; background: #silver; border: 2px solid #777; border-radius: 10px; position: absolute; left: 20px; top: 90px; z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #333; background-color: #bdc3c7;
+        }
+        
+        .wire {
+            position: absolute; width: 60px; height: 2px; background: #555; left: 60px; top: 100px; z-index: 1;
+        }
+        
+        .pulse {
+            position: absolute; width: 10px; height: 10px; background: #3498DB; border-radius: 50%; left: 0; top: -4px; opacity: 0; box-shadow: 0 0 5px #3498DB;
+        }
+
+        .wdt {
+            position: absolute; color: #E74C3C; font-weight: bold; font-size: 18px; top: 20px; opacity: 0; z-index: 10; pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="wdt" id="wdtText">WDT RESET</div>
+        <div class="crystal" id="xtal">XTAL</div>
+        <div class="wire">
+            <div class="pulse" id="pulseLine"></div>
+        </div>
+        <div class="ic" id="mcu">
+            <div class="pins" style="top: -10px; bottom: auto;">
+                <div class="pin-row">
+                    <div class="pin"></div><div class="pin"></div><div class="pin"></div><div class="pin"></div>
+                </div>
+            </div>
+            MCU
+            <div class="pins" style="bottom: -10px; top: auto;">
+                <div class="pin-row">
+                    <div class="pin"></div><div class="pin"></div><div class="pin"></div><div class="pin"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const xtal = document.getElementById('xtal');
+        const pulse = document.getElementById('pulseLine');
+        const mcu = document.getElementById('mcu');
+        const wdt = document.getElementById('wdtText');
+        
+        let isDestroyed = false;
+
+        // Vibrate crystal
+        gsap.to(xtal, { y: "-=2", duration: 0.05, yoyo: true, repeat: -1, ease: "none" });
+
+        function sendPulse() {
+            if (isDestroyed) return;
+            
+            // Heartbeat
+            gsap.to(mcu, { scale: 1.05, duration: 0.1, yoyo: true, repeat: 1, ease: "power1.inOut" });
+
+            // Pulse along wire
+            gsap.fromTo(pulse, 
+                { x: 0, opacity: 1 }, 
+                { x: 60, opacity: 0, duration: 0.5, ease: "none", onComplete: () => {
+                    setTimeout(sendPulse, 500);
+                }}
+            );
+        }
+        sendPulse();
+
+        container.addEventListener('click', () => {
+            if (isDestroyed) return;
+            isDestroyed = false; // allow to stop loops
+            
+            gsap.killTweensOf(xtal);
+            gsap.killTweensOf(pulse);
+            
+            // Show WDT RESET
+            gsap.to(wdt, { opacity: 1, y: -20, duration: 0.5 });
+            
+            // System resets, IC shrinks
+            gsap.to([mcu, xtal, '.wire', '.pins'], {
+                scale: 0,
+                rotation: 360,
+                opacity: 0,
+                duration: 1.5,
+                delay: 0.5,
+                ease: "power3.in",
+                onComplete: () => {
+                    gsap.to(container, { opacity: 0, duration: 0.5 });
+                    isDestroyed = true;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arithmetic Logic Unit (ALU)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    width: 250px;
+    height: 250px;
+    cursor: pointer;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  .alu-body {
+    fill: none;
+    stroke: #F1C40F;
+    stroke-width: 3;
+    stroke-linejoin: round;
+  }
+  .data-dot {
+    fill: #F1C40F;
+    opacity: 0;
+  }
+  .result-dot {
+    fill: #F1C40F;
+    opacity: 0;
+    filter: drop-shadow(0 0 5px #F1C40F);
+  }
+  .dust {
+    fill: #F1C40F;
+    font-family: monospace;
+    font-size: 8px;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 100 100" id="svg-element">
+    <g id="alu-group">
+      <!-- V shape for ALU -->
+      <path class="alu-body" d="M30,30 L45,30 L50,40 L55,30 L70,30 L60,60 L40,60 Z" id="alu-v" />
+    </g>
+    
+    <circle class="data-dot" cx="35" cy="20" r="3" id="in1" />
+    <circle class="data-dot" cx="65" cy="20" r="3" id="in2" />
+    <circle class="result-dot" cx="50" cy="70" r="4" id="out" />
+    
+    <g id="dust-particles"></g>
+  </svg>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const tl = gsap.timeline({ repeat: -1 });
+  
+  // Idle: ingest operands
+  tl.to(["#in1", "#in2"], { y: 15, opacity: 1, duration: 0.3, ease: "power1.in" })
+    .to(["#in1", "#in2"], { opacity: 0, duration: 0.1 })
+    .to("#alu-group", { scale: 1.05, transformOrigin: "50% 50%", yoyo: true, repeat: 1, duration: 0.1 })
+    .to("#out", { opacity: 1, y: 15, duration: 0.4, ease: "power1.out" })
+    .to("#out", { opacity: 0, duration: 0.1 });
+    
+  // Dust setup
+  const dustGrp = document.getElementById('dust-particles');
+  for(let i=0; i<30; i++) {
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('class', 'dust');
+    text.textContent = Math.random() > 0.5 ? '1' : '0';
+    text.setAttribute('x', 50);
+    text.setAttribute('y', 50);
+    dustGrp.appendChild(text);
+  }
+
+  const model = document.getElementById('model');
+  model.addEventListener('click', () => {
+    tl.kill();
+    gsap.killTweensOf("*");
+    
+    const clickTl = gsap.timeline();
+    // V folds like scissors
+    clickTl.to("#alu-v", {
+      attr: { d: "M45,30 L50,30 L50,40 L50,30 L55,30 L52,60 L48,60 Z" }, // Scissored closed
+      duration: 0.3,
+      ease: "back.in(2)"
+    });
+    
+    // Slice data into binary dust
+    const dusts = document.querySelectorAll('.dust');
+    dusts.forEach(d => {
+      clickTl.to(d, {
+        opacity: 1,
+        x: 50 + (Math.random() - 0.5) * 80,
+        y: 50 + (Math.random() - 0.5) * 80,
+        rotation: Math.random() * 360,
+        transformOrigin: "50% 50%",
+        duration: 0.8 + Math.random() * 0.5,
+        ease: "power2.out",
+        opacity: 0
+      }, 0.2);
+    });
+    
+    clickTl.to("#alu-group", { opacity: 0, duration: 0.3 }, 0.5);
+  });
+</script>
+</body>
+</html>

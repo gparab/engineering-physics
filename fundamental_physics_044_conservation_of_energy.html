@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conservation of Energy</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; color: #fff; font-family: monospace; }
+        .container { position: relative; width: 400px; height: 300px; display: flex; align-items: flex-end; justify-content: center; cursor: pointer; }
+        
+        .well { position: absolute; bottom: 50px; width: 300px; height: 150px; border-bottom: 4px solid #555; border-left: 4px solid #555; border-right: 4px solid #555; border-radius: 0 0 150px 150px; }
+        
+        .pendulum-container { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 0; height: 250px; }
+        .pivot { position: absolute; top: 0; left: -3px; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+        .pendulum { position: absolute; top: 0; left: 0; width: 2px; height: 200px; background: #777; transform-origin: top center; animation: swing 2s ease-in-out infinite alternate; }
+        .bob { position: absolute; bottom: 0; left: -10px; width: 20px; height: 20px; background: #3CB371; border-radius: 50%; box-shadow: 0 0 10px #3CB371; }
+        
+        @keyframes swing {
+            0% { transform: rotate(45deg); }
+            100% { transform: rotate(-45deg); }
+        }
+
+        .charts { position: absolute; top: 20px; right: -50px; display: flex; gap: 10px; height: 100px; align-items: flex-end; border-bottom: 1px solid #555; padding-bottom: 5px; }
+        .chart-col { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .bar-container { width: 20px; height: 80px; background: #222; position: relative; }
+        
+        .bar { position: absolute; bottom: 0; width: 100%; transition: height 0.1s linear; }
+        .ke { background: #3498DB; }
+        .pe { background: #E74C3C; }
+        
+        /* Click State */
+        .friction .pendulum { animation: stop-swing 0.5s ease-out forwards; }
+        
+        @keyframes stop-swing {
+            to { transform: rotate(0deg); }
+        }
+
+        .friction .bob { background: red; box-shadow: 0 0 20px 10px rgba(255,0,0,0.8); transition: all 0.5s; }
+        .friction .bar.ke { height: 0 !important; }
+        .friction .bar.pe { height: 0 !important; }
+    </style>
+</head>
+<body>
+    <div class="container" id="sys">
+        <div class="well"></div>
+        <div class="pendulum-container">
+            <div class="pivot"></div>
+            <div class="pendulum" id="pendulum">
+                <div class="bob"></div>
+            </div>
+        </div>
+        <div class="charts">
+            <div class="chart-col">
+                <div class="bar-container"><div class="bar ke" id="ke-bar"></div></div>
+                <span>KE</span>
+            </div>
+            <div class="chart-col">
+                <div class="bar-container"><div class="bar pe" id="pe-bar"></div></div>
+                <span>PE</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const pendulum = document.getElementById('pendulum');
+        const keBar = document.getElementById('ke-bar');
+        const peBar = document.getElementById('pe-bar');
+        const sys = document.getElementById('sys');
+        
+        let clicked = false;
+        
+        function updateCharts() {
+            if (clicked) return;
+            // Get rotation angle
+            const st = window.getComputedStyle(pendulum);
+            const tr = st.getPropertyValue("transform");
+            let angle = 0;
+            if(tr !== 'none') {
+                const values = tr.split('(')[1].split(')')[0].split(',');
+                const a = values[0];
+                const b = values[1];
+                angle = Math.atan2(b, a);
+            }
+            // Angle range roughly -0.78 to 0.78 radians (45 deg)
+            const maxAngle = Math.PI / 4;
+            const norm = Math.abs(angle) / maxAngle; // 0 to 1
+            // PE is max at max angle (norm=1)
+            // KE is max at bottom (norm=0)
+            const pe = norm * 100;
+            const ke = (1 - norm) * 100;
+            
+            peBar.style.height = `${pe}%`;
+            keBar.style.height = `${ke}%`;
+            
+            requestAnimationFrame(updateCharts);
+        }
+        
+        requestAnimationFrame(updateCharts);
+
+        sys.addEventListener('click', () => {
+            if(clicked) return;
+            clicked = true;
+            // force current transform to css to animate from there
+            const st = window.getComputedStyle(pendulum);
+            pendulum.style.transform = st.transform;
+            sys.classList.add('friction');
+            
+            // convert energy to heat (background flash)
+            setTimeout(() => {
+                document.body.style.transition = 'background 0.5s';
+                document.body.style.background = '#400';
+            }, 300);
+        });
+    </script>
+</body>
+</html>

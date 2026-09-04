@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Body Diagram</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #1a1a1a; overflow: hidden; font-family: sans-serif; }
+  .container { position: relative; width: 24px; height: 24px; cursor: pointer; }
+  .box { position: absolute; width: 8px; height: 8px; background-color: #E74C3C; top: 8px; left: 8px; }
+  .arrow { position: absolute; background-color: #E74C3C; }
+  .arrow::after { content: ''; position: absolute; border: 3px solid transparent; }
+  .arrow-up { width: 2px; height: 10px; left: 11px; bottom: 16px; transform-origin: bottom center; }
+  .arrow-up::after { border-bottom-color: #E74C3C; top: -6px; left: -2px; border-width: 0 3px 6px 3px; }
+  .arrow-left { height: 2px; width: 10px; right: 16px; top: 11px; transform-origin: right center; }
+  .arrow-left::after { border-right-color: #E74C3C; left: -6px; top: -2px; border-width: 3px 6px 3px 0; }
+  .arrow-right { height: 2px; width: 10px; left: 16px; top: 11px; transform-origin: left center; }
+  .arrow-right::after { border-left-color: #E74C3C; right: -6px; top: -2px; border-width: 3px 0 3px 6px; }
+</style>
+</head>
+<body>
+<div class="container" id="fbd">
+  <div class="arrow arrow-up"></div>
+  <div class="arrow arrow-left"></div>
+  <div class="arrow arrow-right"></div>
+  <div class="box"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('fbd');
+  const up = document.querySelector('.arrow-up');
+  const left = document.querySelector('.arrow-left');
+  const right = document.querySelector('.arrow-right');
+  const box = document.querySelector('.box');
+  const tl = gsap.timeline({ repeat: -1, yoyo: true });
+  tl.to([up, left, right], { scaleY: 1.5, scaleX: 1.5, duration: 1.5, ease: "sine.inOut" });
+  container.addEventListener('click', () => {
+    tl.kill();
+    gsap.to(box, { scale: 0, opacity: 0, duration: 0.2 });
+    gsap.to(up, { y: -window.innerHeight, scaleY: 3, duration: 1, ease: "power2.in" });
+    gsap.to(left, { x: -window.innerWidth, scaleX: 3, duration: 1, ease: "power2.in" });
+    gsap.to(right, { x: window.innerWidth, scaleX: 3, duration: 1, ease: "power2.in", onComplete: () => container.remove() });
+  });
+</script>
+</body>
+</html>

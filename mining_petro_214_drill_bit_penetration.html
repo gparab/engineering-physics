@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drill Bit Penetration</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #1a1a1a;
+    overflow: hidden;
+  }
+  
+  .container {
+    position: relative;
+    width: 24px;
+    height: 30px;
+    cursor: pointer;
+  }
+
+  .rock {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background-color: #444;
+    clip-path: polygon(0 40%, 20% 10%, 40% 50%, 60% 0, 80% 40%, 100% 20%, 100% 100%, 0 100%);
+  }
+
+  .bit {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 12px;
+    height: 16px;
+    margin-left: -6px;
+    background-color: #B8860B;
+    clip-path: polygon(20% 0%, 80% 0%, 100% 60%, 50% 100%, 0% 60%);
+    transform-origin: center center;
+  }
+  
+  .drill-pipe {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 4px;
+    height: 40px;
+    margin-left: -2px;
+    background-color: #888;
+  }
+  
+  .mud-particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background-color: #555;
+    border-radius: 50%;
+    opacity: 0;
+  }
+  
+  .geyser {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    background: #4a3b22;
+    border-radius: 50%;
+    transform: translate(-50%, 50%);
+    opacity: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="model">
+  <div class="rock"></div>
+  <div class="bit" id="bit">
+    <div class="drill-pipe"></div>
+  </div>
+</div>
+
+<script>
+  const bit = document.getElementById('bit');
+  const model = document.getElementById('model');
+
+  gsap.to(bit, {
+    rotationY: 360,
+    duration: 0.5,
+    repeat: -1,
+    ease: "linear"
+  });
+  
+  gsap.to(bit, {
+    y: 2,
+    duration: 0.2,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+
+  for(let i=0; i<5; i++) {
+    let p = document.createElement('div');
+    p.className = 'mud-particle';
+    model.appendChild(p);
+    
+    gsap.to(p, {
+      x: "random(-15, 15)",
+      y: "random(-20, -5)",
+      opacity: 1,
+      duration: "random(0.5, 1)",
+      repeat: -1,
+      delay: "random(0, 1)",
+      onRepeat: () => {
+        gsap.set(p, {x: 0, y: 15, opacity: 0});
+      }
+    });
+  }
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf(bit);
+    gsap.killTweensOf(".mud-particle");
+    
+    gsap.to(bit, {
+      y: -window.innerHeight,
+      rotation: 720,
+      duration: 0.5,
+      ease: "power2.in"
+    });
+
+    const geyser = document.createElement('div');
+    geyser.className = 'geyser';
+    document.body.appendChild(geyser);
+    
+    gsap.to(geyser, {
+      width: "200vw",
+      height: "200vw",
+      y: "-150vw",
+      opacity: 1,
+      duration: 0.8,
+      ease: "expo.out"
+    });
+  });
+</script>
+</body>
+</html>

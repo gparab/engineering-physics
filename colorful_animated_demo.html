@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colorful Animated Minimalism</title>
+<style>
+  :root {
+    --bg: #08080c;
+    --card: #111116;
+    --ink: #ffffff;
+    --hint: #555555;
+    --border: rgba(255,255,255,0.05);
+  }
+  body {
+    background-color: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 60px 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 40px;
+  }
+  .header-text { text-align: center; max-width: 600px; margin-bottom: 20px; }
+  h1 { font-weight: 300; letter-spacing: 6px; margin: 0 0 10px 0; text-transform: uppercase; font-size: 20px; color: #fff; }
+  p { color: var(--hint); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin: 0; line-height: 1.5; }
+
+  .showcase-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;
+    max-width: 1000px; width: 100%;
+  }
+  /* Center the bottom two cards */
+  .card:nth-child(4) { grid-column: 1 / 3; justify-self: right; width: calc(150% - 15px); }
+  .card:nth-child(5) { grid-column: 2 / 4; justify-self: left; width: calc(150% - 15px); margin-left: calc(50% + 15px);}
+  @media (max-width: 768px) {
+    .showcase-grid { grid-template-columns: 1fr; }
+    .card:nth-child(4), .card:nth-child(5) { grid-column: 1; justify-self: stretch; width: 100%; margin-left: 0; }
+  }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    height: 280px; display: flex; flex-direction: column; position: relative; overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    transition: 0.3s;
+  }
+  .card:hover { border-color: rgba(255,255,255,0.1); background: #15151c; }
+  
+  .card-header { padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 10; border-bottom: 1px solid var(--border); }
+  .card-header span.title { font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #fff; }
+  
+  .reset-btn { background: rgba(255,255,255,0.05); color: #aaa; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+  .reset-btn:hover { background: rgba(255,255,255,0.1); color: var(--ink); }
+
+  .interactive-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
+  .hint { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 9px; color: #555; letter-spacing: 3px; text-transform: uppercase; pointer-events: none; }
+
+  /* =======================================================================
+     1. FLUID (Morphing Gradient Blob)
+     ======================================================================= */
+  .fluid-blob {
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    box-shadow: 0 0 30px rgba(0, 242, 254, 0.4);
+    animation: morph-blob 4s ease-in-out infinite;
+    transition: 0.4s;
+  }
+  .interactive-area:hover .fluid-blob { transform: scale(1.1); box-shadow: 0 0 40px rgba(0, 242, 254, 0.6); }
+  
+  .active-fluid .fluid-blob { animation: splash-blob 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+  @keyframes morph-blob {
+    0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+    34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+    67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
+    100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  }
+  @keyframes splash-blob {
+    50% { transform: scale(1.6) rotate(90deg); filter: hue-rotate(90deg) saturate(2); border-radius: 10px; opacity: 1; }
+    100% { transform: scale(0) rotate(180deg); filter: hue-rotate(180deg); opacity: 0; }
+  }
+
+  /* =======================================================================
+     2. AIR (3D Spinning Color Rings)
+     ======================================================================= */
+  .air-wrapper { position: relative; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; }
+  .air-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 3px solid; mix-blend-mode: screen; filter: drop-shadow(0 0 8px currentColor); }
+  .ar-1 { border-color: #38bdf8; animation: spin1 3s linear infinite; }
+  .ar-2 { border-color: #818cf8; animation: spin2 4s linear infinite; }
+  .ar-3 { border-color: #c084fc; animation: spin3 5s linear infinite; }
+  
+  .interactive-area:hover .air-wrapper { transform: scale(1.1); }
+  
+  .active-air { pointer-events: none; }
+  .active-air .air-wrapper { animation: air-gust 0.8s ease-out forwards; }
+
+  @keyframes spin1 { 100% { transform: rotateX(70deg) rotateZ(360deg); } }
+  @keyframes spin2 { 100% { transform: rotateY(70deg) rotateX(360deg); } }
+  @keyframes spin3 { 100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } }
+  @keyframes air-gust {
+    50% { transform: scale(2) translateY(-20px); }
+    100% { transform: scale(0) translateY(-60px); opacity: 0; }
+  }
+
+  /* =======================================================================
+     3. FIRE (Overlapping Blended Diamonds)
+     ======================================================================= */
+  .fire-wrapper { position: relative; width: 50px; height: 60px; }
+  .fire-diamond { position: absolute; width: 30px; height: 30px; border-radius: 8px; mix-blend-mode: screen; transform: rotate(45deg); filter: blur(1px) drop-shadow(0 0 10px currentColor); }
+  .fd-1 { background: #fbbf24; animation: flicker1 1.5s ease-in-out infinite; bottom: 5px; left: 10px; z-index: 3;}
+  .fd-2 { background: #f97316; animation: flicker2 1.2s ease-in-out infinite; bottom: 15px; left: 0px; z-index: 2;}
+  .fd-3 { background: #e11d48; animation: flicker3 1.7s ease-in-out infinite; bottom: 15px; right: 0px; z-index: 1;}
+
+  .interactive-area:hover .fire-diamond { filter: blur(0px) drop-shadow(0 0 15px currentColor); }
+  
+  .active-fire { pointer-events: none; }
+  .active-fire .fire-diamond { animation: fire-burst 0.6s ease-out forwards; }
+
+  @keyframes flicker1 { 50% { transform: rotate(45deg) translateY(-8px) scale(1.1); } }
+  @keyframes flicker2 { 50% { transform: rotate(45deg) translateY(-5px) scale(0.9); } }
+  @keyframes flicker3 { 50% { transform: rotate(45deg) translateY(-10px) scale(1.2); } }
+  @keyframes fire-burst {
+    100% { transform: rotate(225deg) translateY(-80px) scale(0); opacity: 0; }
+  }
+
+  /* =======================================================================
+     4. SPACE (Glowing Void & Orbiter)
+     ======================================================================= */
+  .space-wrapper { position: relative; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+  .space-void { width: 35px; height: 35px; background: #000; border-radius: 50%; box-shadow: 0 0 20px 5px #c026d3, 0 0 40px #4338ca; animation: pulse-void 4s ease-in-out infinite; z-index: 2; }
+  .space-orbit { position: absolute; width: 100%; height: 100%; animation: orbit-spin 3s linear infinite; z-index: 3; }
+  .space-dot { position: absolute; top: 0; left: 50%; width: 10px; height: 10px; background: #fff; border-radius: 50%; transform: translateX(-50%); box-shadow: 0 0 10px #fff; }
+  
+  .interactive-area:hover .space-void { transform: scale(1.1); box-shadow: 0 0 30px 10px #e879f9, 0 0 50px #818cf8; }
+
+  .active-space { pointer-events: none; }
+  .active-space .space-dot { animation: suck-dot 0.8s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+  .active-space .space-void { animation: supernova 0.8s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+
+  @keyframes pulse-void { 50% { box-shadow: 0 0 25px 8px #c026d3, 0 0 50px #4338ca; } }
+  @keyframes orbit-spin { 100% { transform: rotate(360deg); } }
+  @keyframes suck-dot {
+    30% { top: 35px; transform: translateX(-50%) scale(0); opacity: 0; }
+    80% { top: 35px; transform: translateX(-50%) scale(0); opacity: 0; }
+    100% { top: -20px; transform: translateX(-50%) scale(2); opacity: 1; }
+  }
+  @keyframes supernova {
+    40% { box-shadow: 0 0 50px 20px #fff, 0 0 100px #fff; background: #fff; transform: scale(1.5); }
+    100% { box-shadow: 0 0 0px 0px #c026d3; transform: scale(0); opacity: 0; }
+  }
+
+  /* =======================================================================
+     5. EARTH (Tectonics & Geometric Bloom)
+     ======================================================================= */
+  .earth-wrapper { position: relative; width: 70px; height: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
+  .e-layer { height: 12px; border-radius: 6px; z-index: 2; }
+  .el-1 { width: 50px; background: #34d399; animation: slide1 4s ease-in-out infinite; box-shadow: 0 5px 15px rgba(52, 211, 153, 0.3); }
+  .el-2 { width: 70px; background: #10b981; animation: slide2 5s ease-in-out infinite; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3); }
+  .el-3 { width: 40px; background: #059669; animation: slide3 3.5s ease-in-out infinite; box-shadow: 0 5px 15px rgba(5, 150, 105, 0.3); }
+  
+  .e-bloom { position: absolute; width: 24px; height: 24px; background: #a7f3d0; border-radius: 4px; transform: rotate(45deg) scale(0); z-index: 1; top: 15px; box-shadow: 0 0 20px #a7f3d0; }
+
+  .interactive-area:hover .e-layer { filter: brightness(1.2); }
+
+  .active-earth { pointer-events: none; }
+  .active-earth .el-1 { animation: e-split1 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  .active-earth .el-2 { animation: e-split2 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  .active-earth .el-3 { animation: e-split3 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  .active-earth .e-bloom { animation: earth-grow 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+  @keyframes slide1 { 50% { transform: translateX(5px); } }
+  @keyframes slide2 { 50% { transform: translateX(-8px); } }
+  @keyframes slide3 { 50% { transform: translateX(6px); } }
+  
+  @keyframes e-split1 { 100% { transform: translateX(40px) translateY(10px) scaleX(0.2); opacity: 0; } }
+  @keyframes e-split2 { 100% { transform: translateX(-40px) scaleX(0.2); opacity: 0; } }
+  @keyframes e-split3 { 100% { transform: translateX(30px) translateY(-10px) scaleX(0.2); opacity: 0; } }
+  
+  @keyframes earth-grow {
+    40% { transform: rotate(45deg) scale(1) translateY(-25px); opacity: 1; }
+    100% { transform: rotate(225deg) scale(2) translateY(-60px); opacity: 0; }
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="header-text">
+    <h1>COLORFUL MINIMALISM</h1>
+    <p>Fluid, Air, Fire, Space, and Earth via vibrant geometric motion.</p>
+  </div>
+
+  <div class="showcase-grid">
+
+    <!-- FLUID -->
+    <div class="card">
+      <div class="card-header"><span class="title">Fluid</span><button class="reset-btn" onclick="resetItem(this, 'active-fluid')">Reset</button></div>
+      <div class="interactive-area" onclick="this.classList.add('active-fluid');">
+        <div class="fluid-blob"></div>
+        <div class="hint">Click</div>
+      </div>
+    </div>
+
+    <!-- AIR -->
+    <div class="card">
+      <div class="card-header"><span class="title">Air</span><button class="reset-btn" onclick="resetItem(this, 'active-air')">Reset</button></div>
+      <div class="interactive-area" onclick="this.classList.add('active-air');">
+        <div class="air-wrapper">
+          <div class="air-ring ar-1"></div>
+          <div class="air-ring ar-2"></div>
+          <div class="air-ring ar-3"></div>
+        </div>
+        <div class="hint">Click</div>
+      </div>
+    </div>
+
+    <!-- FIRE -->
+    <div class="card">
+      <div class="card-header"><span class="title">Fire</span><button class="reset-btn" onclick="resetItem(this, 'active-fire')">Reset</button></div>
+      <div class="interactive-area" onclick="this.classList.add('active-fire');">
+        <div class="fire-wrapper">
+          <div class="fire-diamond fd-1"></div>
+          <div class="fire-diamond fd-2"></div>
+          <div class="fire-diamond fd-3"></div>
+        </div>
+        <div class="hint">Click</div>
+      </div>
+    </div>
+
+    <!-- SPACE -->
+    <div class="card">
+      <div class="card-header"><span class="title">Space</span><button class="reset-btn" onclick="resetItem(this, 'active-space')">Reset</button></div>
+      <div class="interactive-area" onclick="this.classList.add('active-space');">
+        <div class="space-wrapper">
+          <div class="space-void"></div>
+          <div class="space-orbit"><div class="space-dot"></div></div>
+        </div>
+        <div class="hint">Click</div>
+      </div>
+    </div>
+
+    <!-- EARTH -->
+    <div class="card">
+      <div class="card-header"><span class="title">Earth</span><button class="reset-btn" onclick="resetItem(this, 'active-earth')">Reset</button></div>
+      <div class="interactive-area" onclick="this.classList.add('active-earth');">
+        <div class="earth-wrapper">
+          <div class="e-bloom"></div>
+          <div class="e-layer el-1"></div>
+          <div class="e-layer el-2"></div>
+          <div class="e-layer el-3"></div>
+        </div>
+        <div class="hint">Click</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function resetItem(btn, activeClass) {
+      const card = btn.closest('.card');
+      const area = card.querySelector('.interactive-area');
+      area.classList.remove(activeClass);
+      // Force DOM reflow
+      void area.offsetWidth;
+    }
+  </script>
+</body>
+</html>

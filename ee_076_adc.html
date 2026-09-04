@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADC (Analog-to-Digital)</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #0d0d0d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #container {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            cursor: pointer;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .binary {
+            position: absolute;
+            color: #16A085;
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="adcCanvas" width="300" height="200"></canvas>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const canvas = document.getElementById('adcCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const color = '#16A085';
+        
+        let time = 0;
+        let isDestroyed = false;
+        let particles = [];
+        
+        function spawnBinary() {
+            if (isDestroyed) return;
+            const bin = document.createElement('div');
+            bin.className = 'binary';
+            bin.innerText = Math.random() > 0.5 ? '1' : '0';
+            bin.style.left = (width - 40) + 'px';
+            bin.style.top = (height / 2 + (Math.random() * 80 - 40)) + 'px';
+            container.appendChild(bin);
+            
+            gsap.to(bin, {
+                x: 40 + Math.random() * 40,
+                y: -20 + Math.random() * 40,
+                opacity: 1,
+                duration: 1,
+                ease: 'power1.out',
+                onComplete: () => {
+                    gsap.to(bin, {
+                        opacity: 0,
+                        duration: 0.5,
+                        onComplete: () => bin.remove()
+                    });
+                }
+            });
+            
+            setTimeout(spawnBinary, 250);
+        }
+        
+        spawnBinary();
+        
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            if (!isDestroyed) {
+                // Smooth wave
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 2;
+                for (let x = 0; x < width; x++) {
+                    const y = height / 2 + Math.sin(x * 0.05 + time) * 40;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                
+                // Staircase steps
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                const stepSize = 15;
+                for (let x = 0; x < width; x += stepSize) {
+                    const y = height / 2 + Math.sin(x * 0.05 + time) * 40;
+                    const qY = Math.round(y / 15) * 15;
+                    if (x === 0) {
+                        ctx.moveTo(x, qY);
+                        ctx.lineTo(x + stepSize, qY);
+                    } else {
+                        ctx.lineTo(x, qY);
+                        ctx.lineTo(x + stepSize, qY);
+                    }
+                }
+                ctx.stroke();
+                
+                time -= 0.05;
+            } else {
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha -= 0.02;
+                    ctx.globalAlpha = Math.max(0, p.alpha);
+                });
+                ctx.globalAlpha = 1;
+            }
+            
+            requestAnimationFrame(draw);
+        }
+        
+        draw();
+        
+        container.addEventListener('click', () => {
+            if (isDestroyed) return;
+            isDestroyed = true;
+            
+            const binaries = document.querySelectorAll('.binary');
+            binaries.forEach(b => b.remove());
+            
+            for (let x = 0; x < width; x += 5) {
+                for (let y = 0; y < height; y += 5) {
+                    if (Math.random() > 0.8) {
+                        particles.push({
+                            x: x,
+                            y: y,
+                            vx: (Math.random() - 0.5) * 15,
+                            vy: (Math.random() - 0.5) * 15,
+                            size: Math.random() * 3 + 1,
+                            color: Math.random() > 0.5 ? color : '#fff',
+                            alpha: 1
+                        });
+                    }
+                }
+            }
+            
+            gsap.to(container, {
+                opacity: 0,
+                duration: 2,
+                delay: 1,
+                ease: 'power2.in'
+            });
+        });
+    </script>
+</body>
+</html>

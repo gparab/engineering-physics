@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuclear - Radiation Shielding</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 40px; height: 30px; cursor: pointer; }
+  .shield { position: absolute; width: 4px; height: 100%; top: 0; border-radius: 1px; }
+  .s-paper { left: 15px; background: #eee; }
+  .s-al { left: 23px; background: #999; }
+  .s-pb { left: 31px; background: #555; width: 8px; }
+  .ray { position: absolute; height: 2px; left: -10px; border-radius: 1px; }
+  .alpha { top: 5px; background: #FF4500; box-shadow: 0 0 3px #FF4500; width: 10px; }
+  .beta { top: 15px; background: #32CD32; box-shadow: 0 0 3px #32CD32; width: 10px; }
+  .gamma { top: 25px; background: #FFFF00; box-shadow: 0 0 3px #FFFF00; width: 10px; }
+  
+  .massive-gamma { position: fixed; top: 50%; left: -100vw; width: 100vw; height: 100vh; background: #FFFF00; opacity: 0; transform: translateY(-50%); pointer-events: none; mix-blend-mode: overlay; z-index: 10; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="shield s-paper"></div>
+  <div class="shield s-al"></div>
+  <div class="shield s-pb" id="lead"></div>
+  <div class="ray alpha"></div>
+  <div class="ray beta"></div>
+  <div class="ray gamma"></div>
+</div>
+<div class="massive-gamma" id="flash"></div>
+<script>
+  // Idle animation
+  const tl = gsap.timeline({repeat: -1});
+  // Alpha stops at paper
+  tl.fromTo('.alpha', {x: 0, opacity: 1}, {x: 20, duration: 0.5, ease: "power1.in"})
+    .to('.alpha', {opacity: 0, duration: 0.1});
+  // Beta stops at Al
+  tl.fromTo('.beta', {x: 0, opacity: 1}, {x: 28, duration: 0.5, ease: "power1.in"}, "-=0.3")
+    .to('.beta', {opacity: 0, duration: 0.1});
+  // Gamma stops deep in Pb
+  tl.fromTo('.gamma', {x: 0, opacity: 1}, {x: 40, duration: 0.6, ease: "power1.in"}, "-=0.3")
+    .to('.gamma', {opacity: 0, duration: 0.1});
+
+  document.getElementById('container').addEventListener('click', () => {
+    tl.kill();
+    gsap.to(['.alpha', '.beta', '.gamma'], {opacity: 0, duration: 0.1});
+    
+    // Massive gamma flux
+    gsap.to('#flash', {left: 0, opacity: 0.8, duration: 0.5, ease: "power2.in"});
+    
+    // Shields heat red
+    gsap.to('.shield', {backgroundColor: '#FF0000', boxShadow: '0 0 10px #FF0000', duration: 0.5, delay: 0.4});
+    
+    // Absorbs and dissolves
+    gsap.to('#flash', {opacity: 0, duration: 1, delay: 1});
+    gsap.to('#container', {scale: 1.5, opacity: 0, filter: 'blur(10px)', duration: 1, delay: 1});
+  });
+</script>
+</body>
+</html>

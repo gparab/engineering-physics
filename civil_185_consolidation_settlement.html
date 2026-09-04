@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consolidation Settlement</title>
+<style>
+  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #fff; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 40px; cursor: pointer; }
+  .soil { position: absolute; bottom: 0; left: 0; width: 40px; height: 30px; background: rgba(139,69,19,0.2); border: 1px solid #8B4513; display: flex; flex-wrap: wrap; align-content: flex-start; overflow: hidden; transform-origin: bottom; }
+  .grain { width: 4px; height: 4px; background: #8B4513; border-radius: 50%; margin: 2px; }
+  .water { position: absolute; width: 4px; height: 4px; background: #00BFFF; border-radius: 50%; }
+  .weight { position: absolute; top: -5px; left: 5px; width: 30px; height: 10px; background: #555; }
+  .pressure-line { position: absolute; width: 1px; height: 5px; background: #555; top: 5px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="container" id="icon">
+    <div class="weight" id="weight">
+      <div class="pressure-line" style="left: 10px;"></div>
+      <div class="pressure-line" style="left: 20px;"></div>
+    </div>
+    <div class="soil" id="soil">
+      <div class="grain"></div><div class="grain"></div><div class="grain"></div><div class="grain"></div>
+      <div class="grain"></div><div class="grain"></div><div class="grain"></div><div class="grain"></div>
+    </div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const soil = document.getElementById('soil');
+    const weight = document.getElementById('weight');
+    
+    // Create water droplets
+    for(let i=0; i<3; i++) {
+      let w = document.createElement('div');
+      w.className = 'water w-drop';
+      w.style.left = (10 + i*10) + 'px';
+      w.style.bottom = '15px';
+      soil.appendChild(w);
+    }
+
+    const idle = gsap.timeline({ repeat: -1, yoyo: true })
+      .to(soil, { height: 26, duration: 2, ease: "sine.inOut" })
+      .to(weight, { top: -1, duration: 2, ease: "sine.inOut" }, 0)
+      .to('.w-drop', { bottom: 28, opacity: 0, duration: 2, stagger: 0.2 }, 0);
+
+    icon.addEventListener('click', () => {
+      idle.kill();
+      // Drop weight, blast water sideways, collapse soil
+      gsap.to(weight, { top: 25, duration: 0.2, ease: "power4.in" });
+      gsap.to(soil, { height: 2, duration: 0.2, ease: "power4.in" });
+      
+      const rect = icon.getBoundingClientRect();
+      for(let i=0; i<20; i++) {
+        let p = document.createElement('div');
+        p.className = 'water';
+        p.style.left = (rect.left + 20) + 'px';
+        p.style.top = (rect.top + 35) + 'px';
+        document.body.appendChild(p);
+        
+        let dir = Math.random() > 0.5 ? 1 : -1;
+        gsap.to(p, {
+          x: dir * (100 + Math.random()*300),
+          y: -Math.random()*50,
+          opacity: 0,
+          duration: 0.5 + Math.random()*0.5,
+          ease: "power2.out"
+        });
+      }
+    });
+  </script>
+</body>
+</html>

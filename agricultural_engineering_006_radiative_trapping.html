@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radiative Trapping</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model">
+        <svg width="40" height="40" viewBox="0 0 40 40" overflow="visible">
+            <path class="dome" d="M10,28 L10,20 Q20,10 30,20 L30,28 Z" fill="rgba(184, 233, 134, 0.2)" stroke="#B8E986" stroke-width="1.5"/>
+            <line x1="8" y1="28" x2="32" y2="28" stroke="#444" stroke-width="1"/>
+            
+            <path class="short" d="M12,4 L16,10 L14,14 L18,20" fill="none" stroke="#F1C40F" stroke-width="1" />
+            
+            <path class="long l1" d="M22,26 Q24,22 20,18" fill="none" stroke="#E74C3C" stroke-width="1" opacity="0"/>
+            <path class="long l2" d="M20,18 Q16,16 26,14" fill="none" stroke="#E74C3C" stroke-width="1" opacity="0"/>
+            
+            <g class="glass" opacity="0">
+                <polygon points="10,20 15,15 12,25" fill="#B8E986"/>
+                <polygon points="20,10 25,15 18,18" fill="#B8E986"/>
+                <polygon points="30,20 25,25 28,15" fill="#B8E986"/>
+            </g>
+        </svg>
+    </div>
+    <script>
+        const tl = gsap.timeline({ repeat: -1 });
+        tl.fromTo('.short', { strokeDasharray: "20, 20", strokeDashoffset: 40 }, { strokeDashoffset: 0, duration: 1, ease: "none" })
+          .to('.short', { opacity: 0, duration: 0.2 })
+          .to('.l1', { opacity: 1, strokeDasharray: "10, 10", strokeDashoffset: -20, duration: 1, ease: "sine.inOut" })
+          .to('.l2', { opacity: 1, strokeDasharray: "10, 10", strokeDashoffset: -20, duration: 1, ease: "sine.inOut" }, "-=0.5")
+          .to(['.l1', '.l2'], { opacity: 0, duration: 0.5 });
+
+        document.getElementById('model').addEventListener('click', () => {
+            gsap.killTweensOf('*');
+            gsap.to('.dome', { fill: "rgba(231, 76, 60, 0.8)", duration: 0.4, ease: "power1.in", onComplete: () => {
+                gsap.set('.dome', { display: 'none' });
+                gsap.set('.glass', { opacity: 1 });
+                gsap.to('.glass polygon', {
+                    x: () => (Math.random() - 0.5) * window.innerWidth,
+                    y: () => (Math.random() - 0.5) * window.innerHeight,
+                    rotation: () => Math.random() * 720,
+                    scale: 3,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "power3.out"
+                });
+                gsap.to('body', { backgroundColor: "#FFECEC", duration: 0.2, yoyo: true, repeat: 1 });
+            }});
+        });
+    </script>
+</body>
+</html>

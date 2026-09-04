@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSMA/CD</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #0d0d0d;
+        font-family: 'Courier New', Courier, monospace;
+        overflow: hidden;
+    }
+    #canvas-container {
+        position: relative;
+        width: 400px;
+        height: 300px;
+        cursor: pointer;
+    }
+    .wire {
+        position: absolute;
+        top: 150px;
+        left: 20px;
+        width: 360px;
+        height: 2px;
+        background-color: #555;
+    }
+    .node {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: #27AE60;
+        border-radius: 4px;
+        top: 110px;
+    }
+    .node::after {
+        content: '';
+        position: absolute;
+        width: 2px;
+        height: 20px;
+        background-color: #555;
+        top: 20px;
+        left: 9px;
+    }
+    #node1 { left: 60px; }
+    #node2 { left: 190px; }
+    #node3 { left: 320px; }
+    .packet {
+        position: absolute;
+        top: 147px;
+        width: 16px;
+        height: 8px;
+        background-color: #27AE60;
+        border-radius: 2px;
+        opacity: 0;
+    }
+    .ripple {
+        position: absolute;
+        top: 151px;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        border: 2px solid #e74c3c;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+    }
+    .timer {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border: 2px dashed #27AE60;
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        opacity: 0;
+        box-sizing: border-box;
+    }
+</style>
+</head>
+<body>
+<div id="canvas-container">
+    <div class="wire"></div>
+    <div class="node" id="node1"><div class="timer"></div></div>
+    <div class="node" id="node2"><div class="timer"></div></div>
+    <div class="node" id="node3"><div class="timer"></div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    const container = document.getElementById('canvas-container');
+    const nodes = [
+        { id: 'node1', x: 70 },
+        { id: 'node2', x: 200 },
+        { id: 'node3', x: 330 }
+    ];
+    let idleTL = gsap.timeline({ repeat: -1 });
+
+    function createPacket(x) {
+        const p = document.createElement('div');
+        p.className = 'packet';
+        p.style.left = (x - 8) + 'px';
+        container.appendChild(p);
+        return p;
+    }
+    function createRipple(x) {
+        const r = document.createElement('div');
+        r.className = 'ripple';
+        r.style.left = x + 'px';
+        container.appendChild(r);
+        return r;
+    }
+
+    const p1 = createPacket(nodes[0].x);
+    const p3 = createPacket(nodes[2].x);
+    const r = createRipple((nodes[0].x + nodes[2].x) / 2);
+
+    idleTL.to(p1, { opacity: 1, duration: 0.2 })
+          .to(p1, { x: (nodes[2].x - nodes[0].x)/2 - 8, duration: 1, ease: "none" }, "send")
+          .to(p3, { opacity: 1, duration: 0.2 }, "send-=0.2")
+          .to(p3, { x: -((nodes[2].x - nodes[0].x)/2 - 8), duration: 1, ease: "none" }, "send")
+          .to([p1, p3], { opacity: 0, duration: 0.1 })
+          .to(r, { opacity: 1, width: 200, height: 200, duration: 0.6, ease: "power1.out" }, "collide")
+          .to(r, { opacity: 0, duration: 0.2 }, "collide+=0.4")
+          .set([p1, p3], { x: 0 })
+          .set(r, { width: 0, height: 0 })
+          .to(p3, { left: nodes[1].x - 8, x: 0 }, "+=0.2") 
+          .to(p3, { opacity: 1, duration: 0.2 })
+          .to(p3, { x: 100, duration: 1, ease: "none" })
+          .to(p3, { opacity: 0, duration: 0.2 })
+          .set(p3, { left: nodes[2].x - 8, x: 0 });
+
+    let isClicked = false;
+    container.addEventListener('click', () => {
+        if (isClicked) return;
+        isClicked = true;
+        idleTL.kill();
+        
+        gsap.to('.packet, .ripple', { opacity: 0, duration: 0.2 });
+        gsap.to('.timer', { opacity: 1, duration: 0.3 });
+        gsap.to('.timer', { rotation: 720, duration: 2, ease: "power2.inOut" });
+        gsap.to('.node', { y: -20, opacity: 0, duration: 1, delay: 1, ease: "back.in(2)", stagger: 0.1 });
+        gsap.to('.wire', { scaleX: 0, opacity: 0, duration: 1, delay: 1.5, ease: "power2.inOut" });
+    });
+</script>
+</body>
+</html>

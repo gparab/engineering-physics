@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step-Index Optical Fiber</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #1a1a1a;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    #container {
+        position: relative;
+        width: 60px;
+        height: 20px;
+        cursor: pointer;
+    }
+    .cladding {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: #333;
+        border-radius: 2px;
+    }
+    .core {
+        position: absolute;
+        top: 4px; left: 0;
+        width: 100%; height: 12px;
+        background: #555;
+    }
+    
+    .ray {
+        position: absolute;
+        left: 0;
+        width: 2px; height: 2px;
+        background: #1abc9c;
+        box-shadow: 0 0 4px #1abc9c;
+        border-radius: 50%;
+    }
+    .ray1 { top: 10px; animation: zig1 1.5s infinite linear; }
+    .ray2 { top: 10px; animation: zig2 2s infinite linear; }
+
+    @keyframes zig1 {
+        0% { left: 0; top: 10px; }
+        25% { left: 15px; top: 5px; }
+        50% { left: 30px; top: 15px; }
+        75% { left: 45px; top: 5px; }
+        100% { left: 60px; top: 10px; }
+    }
+    @keyframes zig2 {
+        0% { left: 0; top: 10px; }
+        16.6% { left: 10px; top: 5px; }
+        33.3% { left: 20px; top: 15px; }
+        50% { left: 30px; top: 5px; }
+        66.6% { left: 40px; top: 15px; }
+        83.3% { left: 50px; top: 5px; }
+        100% { left: 60px; top: 10px; }
+    }
+
+    .graded-core {
+        position: absolute;
+        top: 4px; left: 0;
+        width: 100%; height: 12px;
+        background: linear-gradient(to bottom, #333 0%, #777 50%, #333 100%);
+        opacity: 0;
+        transition: opacity 0.5s;
+    }
+
+    /* Click Animation Elements */
+    svg {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        pointer-events: none;
+        z-index: 10;
+        display: none;
+    }
+    .sine-path {
+        fill: none;
+        stroke: #1abc9c;
+        stroke-width: 4;
+        filter: drop-shadow(0 0 10px #1abc9c);
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+    }
+</style>
+</head>
+<body>
+
+<div id="container" onclick="triggerFiber()">
+    <div class="cladding"></div>
+    <div class="core" id="core"></div>
+    <div class="graded-core" id="gradedCore"></div>
+    <div class="ray ray1" id="r1"></div>
+    <div class="ray ray2" id="r2"></div>
+</div>
+
+<svg id="svgOverlay">
+    <path class="sine-path" id="sinePath1" d="M 0 500 Q 250 200, 500 500 T 1000 500 T 1500 500 T 2000 500" />
+    <path class="sine-path" id="sinePath2" d="M 0 500 Q 250 800, 500 500 T 1000 500 T 1500 500 T 2000 500" />
+</svg>
+
+<script>
+    function triggerFiber() {
+        const core = document.getElementById('core');
+        const gradedCore = document.getElementById('gradedCore');
+        const r1 = document.getElementById('r1');
+        const r2 = document.getElementById('r2');
+        const container = document.getElementById('container');
+        const svgOverlay = document.getElementById('svgOverlay');
+        const path1 = document.getElementById('sinePath1');
+        const path2 = document.getElementById('sinePath2');
+        
+        // Shift to Graded-Index
+        gradedCore.style.opacity = '1';
+        r1.style.animation = 'none';
+        r2.style.animation = 'none';
+        r1.style.display = 'none';
+        r2.style.display = 'none';
+        
+        setTimeout(() => {
+            container.style.display = 'none';
+            svgOverlay.style.display = 'block';
+            
+            // Adjust path Y based on screen size
+            const midY = window.innerHeight / 2;
+            path1.setAttribute('d', `M 0 ${midY} Q 250 ${midY-300}, 500 ${midY} T 1000 ${midY} T 1500 ${midY} T 2500 ${midY}`);
+            path2.setAttribute('d', `M 0 ${midY} Q 250 ${midY+300}, 500 ${midY} T 1000 ${midY} T 1500 ${midY} T 2500 ${midY}`);
+            
+            path1.animate([
+                { strokeDashoffset: 2000 },
+                { strokeDashoffset: 0 }
+            ], {
+                duration: 800,
+                easing: 'ease-in-out',
+                fill: 'forwards'
+            });
+            
+            path2.animate([
+                { strokeDashoffset: 2000 },
+                { strokeDashoffset: 0 }
+            ], {
+                duration: 800,
+                easing: 'ease-in-out',
+                fill: 'forwards'
+            });
+            
+            setTimeout(() => {
+                path1.style.opacity = 0;
+                path2.style.opacity = 0;
+                path1.style.transition = 'opacity 0.2s';
+                path2.style.transition = 'opacity 0.2s';
+            }, 800);
+            
+        }, 500);
+    }
+</script>
+
+</body>
+</html>

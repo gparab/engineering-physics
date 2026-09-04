@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impedance Control</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a0826;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .container {
+    width: 40px;
+    height: 40px;
+    position: relative;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .surface { stroke: #555; stroke-width: 2; stroke-linecap: round; }
+  .spring { stroke: #9932CC; stroke-width: 1.5; fill: none; stroke-linejoin: round; }
+  .effector { fill: #ccc; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="icon">
+  <svg viewBox="0 0 40 40">
+    <!-- Surface -->
+    <line class="surface" x1="5" y1="35" x2="35" y2="35" />
+    
+    <!-- Spring (Virtual) -->
+    <path id="spring" class="spring" d="M 20 35 L 16 31 L 24 27 L 16 23 L 24 19 L 20 15" />
+    
+    <!-- Effector -->
+    <g id="effector">
+      <rect x="16" y="5" width="8" height="10" rx="1" class="effector" />
+      <line x1="20" y1="0" x2="20" y2="5" stroke="#ccc" stroke-width="2" />
+    </g>
+    
+    <!-- Shatter pieces -->
+    <g id="shatter-pieces" style="display:none;">
+      <polygon points="16,5 24,5 20,10" fill="#ccc" class="piece" />
+      <polygon points="16,15 24,15 20,10" fill="#ccc" class="piece" />
+      <polygon points="16,5 16,15 20,10" fill="#ccc" class="piece" />
+      <polygon points="24,5 24,15 20,10" fill="#ccc" class="piece" />
+    </g>
+  </svg>
+</div>
+
+<script>
+  // Idle Animation: End-effector gently pushes into the spring, which resists and bounces it back smoothly.
+  const tl = gsap.timeline({ repeat: -1, yoyo: true });
+  
+  tl.to("#effector", { y: 6, duration: 1, ease: "sine.inOut" }, 0)
+  .to("#spring", {
+    attr: { d: "M 20 35 L 17 32.5 L 23 30 L 17 27.5 L 23 25 L 20 21" },
+    duration: 1,
+    ease: "sine.inOut"
+  }, 0);
+
+  // Click Disappearance Motion: Spring becomes infinitely stiff; end-effector hits it, shatters, and flies off-screen.
+  document.body.addEventListener('click', () => {
+    tl.kill();
+    
+    const clickTl = gsap.timeline();
+    
+    // Wind up
+    clickTl.to("#effector", { y: -10, duration: 0.3, ease: "power2.out" }, 0)
+    .to("#spring", {
+      attr: { d: "M 20 35 L 20 31 L 20 27 L 20 23 L 20 19 L 20 15" },
+      strokeWidth: 3,
+      stroke: "#fff",
+      duration: 0.3
+    }, 0)
+    // Strike
+    .to("#effector", { y: 10, duration: 0.1, ease: "power4.in" })
+    .call(() => {
+      document.getElementById('effector').style.display = 'none';
+      document.getElementById('shatter-pieces').style.display = 'block';
+    })
+    // Shatter
+    .to(".piece", {
+      x: () => (Math.random() - 0.5) * 100,
+      y: () => (Math.random() - 0.5) * 100 - 50,
+      rotation: () => (Math.random() - 0.5) * 720,
+      scale: () => Math.random() + 0.5,
+      opacity: 0,
+      duration: 0.6,
+      ease: "power2.out"
+    })
+    .to("body", {
+      backgroundColor: "#2a0a3a",
+      duration: 0.1,
+      yoyo: true,
+      repeat: 1
+    }, "-=0.5")
+    .to("#spring", {
+      opacity: 0,
+      duration: 0.2
+    }, "-=0.4")
+    .to(".surface", {
+      opacity: 0,
+      duration: 0.2
+    }, "-=0.4");
+  }, { once: true });
+</script>
+</body>
+</html>

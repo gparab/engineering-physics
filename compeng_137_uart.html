@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>137. UART</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #0d0d0d; overflow: hidden; }
+  #container { position: relative; width: 32px; height: 16px; cursor: pointer; display: flex; align-items: center; }
+  .funnel { width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+  .f1 { border-left: 10px solid #8E44AD; }
+  .f2 { border-right: 10px solid #8E44AD; }
+  .wire { width: 12px; height: 1px; background: rgba(142, 68, 173, 0.4); }
+  .bit { position: absolute; width: 2px; height: 2px; background: #8E44AD; opacity: 0; }
+  .noise { position: absolute; width: 2px; height: 2px; background: #fff; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="funnel f1"></div>
+  <div class="wire"></div>
+  <div class="funnel f2"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  let t = gsap.timeline({repeat: -1});
+  
+  function createBits() {
+    for(let i=0; i<4; i++) {
+      let b = document.createElement('div');
+      b.className = 'bit';
+      container.appendChild(b);
+      gsap.set(b, {x: -2, y: i*4 + 2});
+      t.to(b, {opacity: 1, duration: 0.1}, 0)
+       .to(b, {x: 8, y: 8, duration: 0.3}, 0.1)
+       .to(b, {x: 20 + i*2, duration: 0.5}, 0.4)
+       .to(b, {opacity: 0, duration: 0.1}, 0.9);
+    }
+  }
+  createBits();
+
+  container.addEventListener('click', () => {
+    t.kill();
+    gsap.killTweensOf('.bit');
+    
+    // bits lose sync, jitter
+    gsap.to('.bit', {
+      x: () => "+=" + (Math.random()*10 - 5),
+      y: () => "+=" + (Math.random()*10 - 5),
+      duration: 0.2,
+      yoyo: true,
+      repeat: 3,
+      onComplete: () => {
+        // Explode into noise
+        for(let i=0; i<30; i++) {
+          let n = document.createElement('div');
+          n.className = 'noise';
+          n.style.left = '16px';
+          n.style.top = '8px';
+          container.appendChild(n);
+          gsap.to(n, {
+            x: (Math.random() - 0.5) * window.innerWidth,
+            y: (Math.random() - 0.5) * window.innerHeight,
+            opacity: Math.random(),
+            duration: 1 + Math.random(),
+            ease: "power2.out"
+          });
+        }
+        gsap.to(['.funnel', '.wire', '.bit'], {
+          opacity: 0,
+          scale: 0,
+          rotation: 360,
+          duration: 0.5,
+          ease: "back.in"
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

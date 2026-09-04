@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newton's Inertia & Action-Reaction</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+        .container { position: relative; width: 100px; height: 120px; cursor: pointer; border-top: 4px solid #555; display: flex; justify-content: center; }
+        .pendulum { position: relative; width: 16px; height: 100%; transform-origin: top center; }
+        .string { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1px; height: 80px; background-color: #777; }
+        .sphere { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #fff, #C0C0C0, #666); box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
+        .pendulum.first { animation: swing-left 1s cubic-bezier(0.5, 0, 0.5, 1) infinite alternate; }
+        .pendulum.last { animation: swing-right 1s cubic-bezier(0.5, 0, 0.5, 1) infinite alternate-reverse; }
+        @keyframes swing-left { 0% { transform: rotate(35deg); } 50%, 100% { transform: rotate(0deg); } }
+        @keyframes swing-right { 0% { transform: rotate(-35deg); } 50%, 100% { transform: rotate(0deg); } }
+        .stone .sphere { background: radial-gradient(circle at 30% 30%, #888, #555, #222); box-shadow: none; filter: grayscale(100%); }
+        .stone .pendulum { animation: none !important; transform: rotate(0deg) !important; transition: transform 0.1s ease-in; }
+        .frozen { animation: shake 0.2s ease-in-out; }
+        @keyframes shake { 0% { transform: translateY(0); } 20% { transform: translateY(2px); } 40% { transform: translateY(-1px); } 60% { transform: translateY(1px); } 80% { transform: translateY(-2px); } 100% { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="container" id="cradle">
+        <div class="pendulum first"><div class="string"></div><div class="sphere"></div></div>
+        <div class="pendulum"><div class="string"></div><div class="sphere"></div></div>
+        <div class="pendulum"><div class="string"></div><div class="sphere"></div></div>
+        <div class="pendulum"><div class="string"></div><div class="sphere"></div></div>
+        <div class="pendulum last"><div class="string"></div><div class="sphere"></div></div>
+    </div>
+    <script>
+        const cradle = document.getElementById('cradle');
+        let clicked = false;
+        cradle.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+            cradle.classList.add('stone', 'frozen');
+            document.querySelectorAll('.pendulum').forEach(p => { p.style.animation = 'none'; p.style.transform = 'rotate(0deg)'; });
+        });
+    </script>
+</body>
+</html>

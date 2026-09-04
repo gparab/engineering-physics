@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abstract Syntax Tree</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+        }
+        .node {
+            position: absolute;
+            background-color: #E67E22;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        .n-assign { top: 0; left: 24px; }
+        .n-x { top: 24px; left: 0; }
+        .n-add { top: 24px; left: 48px; }
+        .n-a { top: 48px; left: 32px; }
+        .n-b { top: 48px; left: 64px; }
+
+        .line {
+            position: absolute;
+            background-color: #E67E22;
+            height: 2px;
+            transform-origin: left top;
+            z-index: -1;
+        }
+        /* Connect assign to x */
+        .l1 { top: 6px; left: 30px; width: 34px; transform: rotate(135deg); }
+        /* Connect assign to add */
+        .l2 { top: 6px; left: 30px; width: 34px; transform: rotate(45deg); }
+        /* Connect add to a */
+        .l3 { top: 30px; left: 54px; width: 26px; transform: rotate(135deg); }
+        /* Connect add to b */
+        .l4 { top: 30px; left: 54px; width: 26px; transform: rotate(45deg); }
+
+        @keyframes evaluate {
+            0% { box-shadow: 0 0 0px #E67E22; transform: scale(1); }
+            50% { box-shadow: 0 0 10px #E67E22; transform: scale(1.2); }
+            100% { box-shadow: 0 0 0px #E67E22; transform: scale(1); }
+        }
+
+        .n-assign { animation: evaluate 2s infinite 1.5s; }
+        .n-add { animation: evaluate 2s infinite 0.5s; }
+
+        .text-str {
+            position: absolute;
+            color: #E67E22;
+            font-size: 14px;
+            font-weight: bold;
+            opacity: 0;
+        }
+        
+        .clicked .node { display: none; }
+        .clicked .line { display: none; }
+
+        .clicked .t-x { top: 0; left: 0; opacity: 1; animation: fallText 1s forwards cubic-bezier(0.5, 0, 1, 0.5); }
+        .clicked .t-eq { top: 0; left: 15px; opacity: 1; animation: fallText 1s forwards cubic-bezier(0.5, 0, 1, 0.5) 0.1s; }
+        .clicked .t-a { top: 0; left: 30px; opacity: 1; animation: fallText 1s forwards cubic-bezier(0.5, 0, 1, 0.5) 0.2s; }
+        .clicked .t-plus { top: 0; left: 45px; opacity: 1; animation: fallText 1s forwards cubic-bezier(0.5, 0, 1, 0.5) 0.3s; }
+        .clicked .t-b { top: 0; left: 60px; opacity: 1; animation: fallText 1s forwards cubic-bezier(0.5, 0, 1, 0.5) 0.4s; }
+
+        @keyframes fallText {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="model">
+        <div class="line l1"></div>
+        <div class="line l2"></div>
+        <div class="line l3"></div>
+        <div class="line l4"></div>
+        
+        <div class="node n-assign">=</div>
+        <div class="node n-x">x</div>
+        <div class="node n-add">+</div>
+        <div class="node n-a">a</div>
+        <div class="node n-b">b</div>
+
+        <div class="text-str t-x">x</div>
+        <div class="text-str t-eq">=</div>
+        <div class="text-str t-a">a</div>
+        <div class="text-str t-plus">+</div>
+        <div class="text-str t-b">b</div>
+    </div>
+
+    <script>
+        document.getElementById('model').addEventListener('click', function() {
+            this.classList.add('clicked');
+        });
+    </script>
+</body>
+</html>

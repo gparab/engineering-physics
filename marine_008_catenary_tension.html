@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Catenary Tension</title>
+<style>
+  body { margin: 0; background: #e0f2f1; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .icon-container { position: relative; width: 60px; height: 40px; cursor: pointer; display: flex; align-items: flex-end; }
+  .seabed { position: absolute; width: 100%; height: 2px; background: #8B572A; bottom: 0; }
+  .platform { position: absolute; width: 16px; height: 8px; background: #333; top: 0; right: 10px; border-radius: 2px; }
+  .chain { position: absolute; fill: none; stroke: #8B572A; stroke-width: 2; stroke-dasharray: 2,1; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="icon-container" id="icon">
+    <div class="seabed"></div>
+    <div class="platform" id="platform"></div>
+    <svg width="60" height="40" style="position:absolute; top:0; left:0; pointer-events:none;">
+      <path id="chain-path" class="chain" d="M10,40 Q20,38 30,30 T42,8" />
+    </svg>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const platform = document.getElementById('platform');
+    const chainPath = document.getElementById('chain-path');
+    let isAnimating = false;
+
+    // Idle: platform drifts, chain catenary adjusts
+    let time = 0;
+    let idleAnim = gsap.ticker.add(() => {
+      time += 0.05;
+      let driftX = Math.sin(time) * 3;
+      let driftY = Math.cos(time * 0.8) * 1.5;
+      
+      gsap.set(platform, { x: driftX, y: driftY });
+      
+      // Catenary path adjustment
+      let px = 42 + driftX;
+      let py = 8 + driftY;
+      
+      // Bottom touch point moves slightly
+      let bx = 10 + Math.sin(time) * 1;
+      
+      chainPath.setAttribute('d', `M${bx},40 Q${20 + driftX/2},${38 - driftY/2} ${30 + driftX/2},${30 + driftY/2} T${px},${py}`);
+    });
+
+    icon.addEventListener('click', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+      gsap.ticker.remove(idleAnim);
+
+      // Extreme heave motion (platform yanks up/right)
+      gsap.to(platform, { x: 20, y: -20, duration: 0.3, ease: "power2.in" });
+      
+      // Line snaps tight
+      gsap.to(chainPath, {
+        attr: { d: "M15,40 L62,-12" }, // straight line
+        duration: 0.3,
+        ease: "power2.in",
+        onComplete: () => {
+          // Snap!
+          gsap.to(platform, { x: 30, y: -25, rotation: 15, duration: 0.5, ease: "power2.out" }); // recoils slightly
+          
+          // Chain whips back and plummets
+          gsap.to(chainPath, {
+            attr: { d: "M10,40 Q5,30 0,35" },
+            strokeDasharray: "none",
+            duration: 0.4,
+            ease: "power2.out",
+            onComplete: () => {
+              gsap.to(chainPath, {
+                y: window.innerHeight,
+                duration: 1,
+                ease: "power3.in"
+              });
+            }
+          });
+          
+          // Flash effect at fairlead
+          let flash = document.createElement('div');
+          flash.style.position = 'absolute';
+          flash.style.width = '10px';
+          flash.style.height = '10px';
+          flash.style.background = '#FFD700';
+          flash.style.borderRadius = '50%';
+          flash.style.left = '42px';
+          flash.style.top = '8px';
+          icon.appendChild(flash);
+          gsap.to(flash, { scale: 3, opacity: 0, duration: 0.2 });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

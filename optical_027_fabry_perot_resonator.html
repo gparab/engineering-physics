@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fabry-Perot Resonator</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #1a1a1a;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    #container {
+        position: relative;
+        width: 40px;
+        height: 30px;
+        cursor: pointer;
+    }
+    .mirror {
+        position: absolute;
+        top: 0;
+        width: 4px;
+        height: 30px;
+        background: #ccc;
+        border-radius: 1px;
+        transition: transform 0.2s ease;
+    }
+    .mirror.left { left: 5px; }
+    .mirror.right { right: 5px; }
+    
+    .wave {
+        position: absolute;
+        top: 13px;
+        left: 9px;
+        width: 22px;
+        height: 4px;
+        background: repeating-linear-gradient(90deg, 
+            transparent, 
+            transparent 2px, 
+            #2ecc71 4px, 
+            transparent 6px
+        );
+        opacity: 0.8;
+        box-shadow: 0 0 6px #2ecc71;
+        animation: pulse 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.4; filter: brightness(0.8); }
+        100% { opacity: 1; filter: brightness(1.5); }
+    }
+
+    /* Click Animation Elements */
+    .airy-ring {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        border: 2px solid #2ecc71;
+        border-radius: 50%;
+        opacity: 0;
+        box-shadow: 0 0 10px #2ecc71, inset 0 0 10px #2ecc71;
+        pointer-events: none;
+    }
+
+    .escape-container {
+        position: absolute;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        pointer-events: none;
+        overflow: hidden;
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+<div id="container" onclick="triggerResonator()">
+    <div class="mirror left" id="m-left"></div>
+    <div class="wave" id="wave"></div>
+    <div class="mirror right" id="m-right"></div>
+</div>
+
+<div class="escape-container" id="escape"></div>
+
+<script>
+    function triggerResonator() {
+        const left = document.getElementById('m-left');
+        const right = document.getElementById('m-right');
+        const wave = document.getElementById('wave');
+        const container = document.getElementById('container');
+        const escape = document.getElementById('escape');
+        
+        // Shift mirrors
+        left.style.transform = 'translateX(-2px)';
+        right.style.transform = 'translateX(2px)';
+        wave.style.opacity = '0'; // Resonance destroyed
+        wave.style.transition = 'opacity 0.1s';
+
+        setTimeout(() => {
+            container.style.display = 'none';
+            escape.style.display = 'block';
+            
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    let ring = document.createElement('div');
+                    ring.className = 'airy-ring';
+                    escape.appendChild(ring);
+                    
+                    // Animate ring expansion
+                    ring.animate([
+                        { width: '10px', height: '10px', opacity: 1, borderWidth: '10px' },
+                        { width: '200vw', height: '200vw', opacity: 0, borderWidth: '1px' }
+                    ], {
+                        duration: 1500,
+                        easing: 'ease-out',
+                        fill: 'forwards'
+                    });
+                }, i * 150);
+            }
+        }, 200);
+    }
+</script>
+
+</body>
+</html>

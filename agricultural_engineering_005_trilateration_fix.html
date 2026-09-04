@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilateration Fix</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model">
+        <svg width="40" height="40" viewBox="0 0 40 40" overflow="visible">
+            <circle class="sphere s1" cx="20" cy="12" r="10" fill="none" stroke="#9B9B9B" stroke-width="1" />
+            <circle class="sphere s2" cx="14" cy="22" r="10" fill="none" stroke="#9B9B9B" stroke-width="1" />
+            <circle class="sphere s3" cx="26" cy="22" r="10" fill="none" stroke="#9B9B9B" stroke-width="1" />
+            <circle class="point" cx="20" cy="18.5" r="1.5" fill="#E74C3C" />
+        </svg>
+    </div>
+    <script>
+        gsap.to('.sphere', { r: 11, strokeWidth: 0.5, opacity: 0.5, duration: 1.5, yoyo: true, repeat: -1, ease: "sine.inOut" });
+        gsap.to('.point', { opacity: 0.2, duration: 0.5, yoyo: true, repeat: -1, ease: "steps(1)" });
+
+        document.getElementById('model').addEventListener('click', () => {
+            gsap.killTweensOf('*');
+            gsap.to('.s1', { x: 0, y: -window.innerHeight, duration: 1, ease: "power2.in" });
+            gsap.to('.s2', { x: -window.innerWidth, y: window.innerHeight, duration: 1, ease: "power2.in" });
+            gsap.to('.s3', { x: window.innerWidth, y: window.innerHeight, duration: 1, ease: "power2.in" });
+            
+            gsap.to('.point', {
+                y: window.innerHeight,
+                scale: 0.5,
+                opacity: 0,
+                duration: 1.2,
+                ease: "power3.in"
+            });
+        });
+    </script>
+</body>
+</html>

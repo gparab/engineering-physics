@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kirchhoff's Current Law</title>
+<style>
+  body { margin: 0; padding: 0; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 40px; height: 40px; cursor: pointer; }
+  .center-node { position: absolute; width: 6px; height: 6px; background-color: #3498DB; border-radius: 50%; top: 17px; left: 17px; z-index: 10; }
+  .line { position: absolute; background-color: #3498DB; opacity: 0.3; }
+  .line-v { width: 1px; height: 40px; left: 19.5px; top: 0; }
+  .line-h { width: 40px; height: 1px; top: 19.5px; left: 0; }
+  .dot { position: absolute; width: 4px; height: 4px; background-color: #3498DB; border-radius: 50%; top: 18px; left: 18px; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="line line-v"></div>
+  <div class="line line-h"></div>
+  <div class="center-node" id="node"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  let dotsIn = [], dotsOut = [];
+
+  for (let i = 0; i < 2; i++) {
+    // Inward from top
+    let d1 = document.createElement('div'); d1.className = 'dot'; container.appendChild(d1); dotsIn.push(d1);
+    gsap.fromTo(d1, { y: -20 }, { y: 0, duration: 1.5, repeat: -1, ease: "none", delay: i*0.75 });
+    
+    // Inward from left
+    let d2 = document.createElement('div'); d2.className = 'dot'; container.appendChild(d2); dotsIn.push(d2);
+    gsap.fromTo(d2, { x: -20 }, { x: 0, duration: 1.5, repeat: -1, ease: "none", delay: i*0.75 });
+    
+    // Outward to bottom
+    let d3 = document.createElement('div'); d3.className = 'dot'; container.appendChild(d3); dotsOut.push(d3);
+    gsap.fromTo(d3, { y: 0 }, { y: 20, duration: 1.5, repeat: -1, ease: "none", delay: i*0.75 });
+    
+    // Outward to right
+    let d4 = document.createElement('div'); d4.className = 'dot'; container.appendChild(d4); dotsOut.push(d4);
+    gsap.fromTo(d4, { x: 0 }, { x: 20, duration: 1.5, repeat: -1, ease: "none", delay: i*0.75 });
+  }
+
+  container.addEventListener('click', () => {
+    gsap.killTweensOf('.dot');
+    
+    // All spheres converge on node
+    gsap.to('.dot', { x: 0, y: 0, duration: 0.3, ease: "back.in(2)", onComplete: () => {
+      // Flash node
+      gsap.to('#node', { scale: 2.5, backgroundColor: '#ffffff', duration: 0.1, yoyo: true, repeat: 1 });
+      
+      // Explode symmetrically
+      document.querySelectorAll('.line').forEach(l => l.style.display = 'none');
+      
+      const allDots = [...dotsIn, ...dotsOut];
+      allDots.forEach((dot, index) => {
+        let angle = (index / allDots.length) * Math.PI * 2;
+        let dist = 150 + Math.random() * 50;
+        gsap.to(dot, {
+          x: Math.cos(angle) * dist,
+          y: Math.sin(angle) * dist,
+          opacity: 0,
+          scale: 1.5,
+          duration: 0.8 + Math.random() * 0.4,
+          ease: "power2.out",
+          onComplete: () => dot.remove()
+        });
+      });
+      gsap.to('#node', { scale: 0, duration: 0.5, delay: 0.2, ease: "power2.in" });
+    }});
+  });
+</script>
+</body>
+</html>

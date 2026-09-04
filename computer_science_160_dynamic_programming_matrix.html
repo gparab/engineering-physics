@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Programming Matrix</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-family: sans-serif;
+            overflow: hidden;
+            perspective: 600px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(4, 15px);
+            grid-template-rows: repeat(4, 15px);
+            gap: 2px;
+            cursor: pointer;
+        }
+        
+        .cell {
+            background-color: #ccc;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        /* Diagonal waves */
+        @keyframes fillCell {
+            0%, 10% { background-color: #ccc; box-shadow: none; }
+            50% { background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C; }
+            100% { background-color: #E74C3C; box-shadow: none; }
+        }
+
+        .d0 { animation: fillCell 4s infinite 0s; }
+        .d1 { animation: fillCell 4s infinite 0.3s; }
+        .d2 { animation: fillCell 4s infinite 0.6s; }
+        .d3 { animation: fillCell 4s infinite 0.9s; }
+        .d4 { animation: fillCell 4s infinite 1.2s; }
+        .d5 { animation: fillCell 4s infinite 1.5s; }
+        .d6 { animation: fillCell 4s infinite 1.8s; }
+
+        /* Path cells: (0,0)->(0,1)->(1,1)->(2,1)->(2,2)->(3,2)->(3,3) */
+        .path { z-index: 2; }
+        .non-path { z-index: 1; }
+
+        /* Click animation */
+        .clicked .cell {
+            animation: none !important;
+            background-color: #ccc;
+        }
+        .clicked .path {
+            background-color: #E74C3C !important;
+            box-shadow: 0 0 10px #E74C3C;
+        }
+        .clicked .non-path {
+            animation: dropAway 1s forwards cubic-bezier(0.5, -0.5, 1, 1);
+        }
+
+        /* Sequential drop based on column */
+        .clicked .non-path:nth-child(even) { animation-delay: 0.1s; }
+        .clicked .non-path:nth-child(3n) { animation-delay: 0.2s; }
+
+        @keyframes dropAway {
+            to { transform: translateY(100vh) rotateX(90deg); opacity: 0; }
+        }
+        
+        /* Retracing path highlight */
+        .trace {
+            position: absolute;
+            background: rgba(255,255,255,0.8);
+            width: 15px; height: 15px;
+            border-radius: 2px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .clicked .trace {
+            animation: retrace 1.5s forwards steps(1);
+        }
+
+        @keyframes retrace {
+            0% { top: 51px; left: 51px; opacity: 1; }
+            14% { top: 51px; left: 34px; }
+            28% { top: 34px; left: 34px; }
+            42% { top: 34px; left: 17px; }
+            57% { top: 17px; left: 17px; }
+            71% { top: 0px; left: 17px; }
+            85% { top: 0px; left: 0px; }
+            100% { top: 0px; left: 0px; opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container" id="model">
+        <div class="trace"></div>
+        <!-- Row 0 -->
+        <div class="cell d0 path"></div>
+        <div class="cell d1 path"></div>
+        <div class="cell d2 non-path"></div>
+        <div class="cell d3 non-path"></div>
+        <!-- Row 1 -->
+        <div class="cell d1 non-path"></div>
+        <div class="cell d2 path"></div>
+        <div class="cell d3 non-path"></div>
+        <div class="cell d4 non-path"></div>
+        <!-- Row 2 -->
+        <div class="cell d2 non-path"></div>
+        <div class="cell d3 path"></div>
+        <div class="cell d4 path"></div>
+        <div class="cell d5 non-path"></div>
+        <!-- Row 3 -->
+        <div class="cell d3 non-path"></div>
+        <div class="cell d4 non-path"></div>
+        <div class="cell d5 path"></div>
+        <div class="cell d6 path"></div>
+    </div>
+
+    <script>
+        document.getElementById('model').addEventListener('click', function() {
+            this.classList.add('clicked');
+        });
+    </script>
+</body>
+</html>

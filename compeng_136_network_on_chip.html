@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>136. Network on Chip (NoC)</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #0d0d0d; overflow: hidden; }
+  #container { position: relative; width: 26px; height: 26px; cursor: pointer; }
+  .core { position: absolute; width: 6px; height: 6px; background: #C0392B; border-radius: 1px; }
+  .link-h { position: absolute; height: 2px; background: rgba(192, 57, 43, 0.4); width: 4px; }
+  .link-v { position: absolute; width: 2px; background: rgba(192, 57, 43, 0.4); height: 4px; }
+  .flit { position: absolute; width: 2px; height: 2px; background: #fff; box-shadow: 0 0 3px #fff;}
+</style>
+</head>
+<body>
+<div id="container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  // 3x3 grid
+  for(let i=0; i<3; i++) {
+    for(let j=0; j<3; j++) {
+      let core = document.createElement('div');
+      core.className = 'core';
+      core.style.top = (i * 10) + 'px';
+      core.style.left = (j * 10) + 'px';
+      container.appendChild(core);
+      
+      if(j < 2) {
+        let lh = document.createElement('div');
+        lh.className = 'link-h link';
+        lh.style.top = (i * 10 + 2) + 'px';
+        lh.style.left = (j * 10 + 6) + 'px';
+        container.appendChild(lh);
+      }
+      if(i < 2) {
+        let lv = document.createElement('div');
+        lv.className = 'link-v link';
+        lv.style.top = (i * 10 + 6) + 'px';
+        lv.style.left = (j * 10 + 2) + 'px';
+        container.appendChild(lv);
+      }
+    }
+  }
+  
+  let flit = document.createElement('div');
+  flit.className = 'flit';
+  container.appendChild(flit);
+  
+  let tl = gsap.timeline({repeat: -1});
+  gsap.set(flit, {x: 2, y: 2});
+  tl.to(flit, {x: 12, duration: 0.3})
+    .to(flit, {y: 12, duration: 0.3})
+    .to(flit, {x: 22, duration: 0.3})
+    .to(flit, {y: 22, duration: 0.3})
+    .to(flit, {opacity: 0, duration: 0.1})
+    .set(flit, {x: 2, y: 2})
+    .to(flit, {opacity: 1, duration: 0.1});
+
+  container.addEventListener('click', () => {
+    tl.kill();
+    flit.remove();
+    
+    gsap.to('.core', {
+      x: (i) => ((i%3) - 1) * 300,
+      y: (i) => (Math.floor(i/3) - 1) * 300,
+      duration: 1,
+      ease: "power2.in"
+    });
+    
+    gsap.to('.link', {
+      scaleX: 50,
+      scaleY: 50,
+      opacity: 0,
+      duration: 1,
+      ease: "power2.in",
+      onComplete: () => container.remove()
+    });
+  });
+</script>
+</body>
+</html>

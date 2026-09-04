@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gauss's Law for Magnetism</title>
+<style>
+  body { margin: 0; padding: 0; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 60px; height: 40px; cursor: pointer; }
+  svg { width: 100%; height: 100%; overflow: visible; position: absolute; top: 0; left: 0; }
+  .magnet-half { width: 12px; height: 8px; position: absolute; top: 16px; }
+  .north { background-color: #e74c3c; left: 18px; border-radius: 2px 0 0 2px; }
+  .south { background-color: #2980b9; left: 30px; border-radius: 0 2px 2px 0; }
+  
+  /* New halves initially hidden */
+  .north-new-s { background-color: #2980b9; left: 24px; border-radius: 0 2px 2px 0; display: none; width: 6px; height: 8px; top: 16px; position: absolute; }
+  .south-new-n { background-color: #e74c3c; left: 30px; border-radius: 2px 0 0 2px; display: none; width: 6px; height: 8px; top: 16px; position: absolute; }
+
+  .field-line { fill: none; stroke: #2ECC71; stroke-width: 1; stroke-dasharray: 4 4; opacity: 0.6; }
+</style>
+</head>
+<body>
+<div id="container">
+  <svg viewBox="0 0 60 40" id="lines-svg">
+    <!-- Top loop -->
+    <path class="field-line top-loop" d="M 24,16 C 14,0 46,0 36,16" />
+    <!-- Bottom loop -->
+    <path class="field-line bottom-loop" d="M 24,24 C 14,40 46,40 36,24" />
+  </svg>
+  
+  <div class="magnet-half north" id="n1"></div>
+  <div class="magnet-half south" id="s1"></div>
+  
+  <div class="north-new-s" id="ns_new"></div>
+  <div class="south-new-n" id="sn_new"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  // Animate field lines (dash offset to simulate movement N -> S)
+  gsap.to('.top-loop', { strokeDashoffset: -24, duration: 1.5, repeat: -1, ease: "none" });
+  gsap.to('.bottom-loop', { strokeDashoffset: 24, duration: 1.5, repeat: -1, ease: "none" });
+
+  container.addEventListener('click', () => {
+    // Magnet snaps in half; two smaller loop systems form, shrink, fade (no monopoles)
+    
+    // Stop old lines and fade out
+    gsap.to('.field-line', { opacity: 0, duration: 0.2 });
+    
+    // Adjust shapes to make them look like 2 small magnets
+    document.getElementById('n1').style.width = '6px';
+    document.getElementById('s1').style.width = '6px';
+    document.getElementById('s1').style.left = '36px';
+    
+    document.getElementById('ns_new').style.display = 'block';
+    document.getElementById('sn_new').style.display = 'block';
+    
+    // Animate the two magnets separating
+    gsap.to(['#n1', '#ns_new'], { x: -10, duration: 0.4, ease: "back.out(1.5)" });
+    gsap.to(['#s1', '#sn_new'], { x: 10, duration: 0.4, ease: "back.out(1.5)" });
+    
+    // They form smaller loop systems, shrink and fade
+    gsap.to(['#n1', '#ns_new', '#s1', '#sn_new'], {
+      scale: 0,
+      opacity: 0,
+      duration: 0.8,
+      delay: 0.6,
+      ease: "power2.in"
+    });
+  });
+</script>
+</body>
+</html>

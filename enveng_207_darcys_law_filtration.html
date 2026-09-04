@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darcy's Law Filtration</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 30px;
+        height: 60px;
+        cursor: pointer;
+        border: 2px solid #555;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        background-color: #222;
+    }
+    #sand {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        background-color: #F4A460;
+        background-image: radial-gradient(#d48440 10%, transparent 20%);
+        background-size: 4px 4px;
+    }
+    .dirt {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background-color: #4a3018;
+        border-radius: 50%;
+    }
+    .water-drop {
+        position: absolute;
+        width: 2px;
+        height: 4px;
+        background-color: #00BFFF;
+        opacity: 0.6;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="sand"></div>
+    </div>
+<script>
+    const container = document.getElementById('container');
+    const sand = document.getElementById('sand');
+    let clicked = false;
+
+    // Add initial dirt layer
+    for(let i=0; i<8; i++) {
+        let d = document.createElement('div');
+        d.className = 'dirt';
+        d.style.left = (Math.random() * 24) + 'px';
+        d.style.top = '18px';
+        container.appendChild(d);
+    }
+
+    function createDrop() {
+        if(clicked) return;
+        let w = document.createElement('div');
+        w.className = 'water-drop';
+        w.style.left = (Math.random() * 26 + 2) + 'px';
+        w.style.top = '0px';
+        container.appendChild(w);
+
+        // Water flows through pores
+        gsap.to(w, {
+            y: 60,
+            duration: 2,
+            ease: "none",
+            onComplete: () => {
+                if(!clicked) w.remove();
+            }
+        });
+    }
+
+    let interval = setInterval(createDrop, 300);
+
+    container.addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        clearInterval(interval);
+        
+        const tl = gsap.timeline();
+        
+        // Filter clogs; water builds up slightly
+        let clogWater = document.createElement('div');
+        clogWater.style.position = 'absolute';
+        clogWater.style.top = '15px';
+        clogWater.style.left = '0';
+        clogWater.style.width = '100%';
+        clogWater.style.height = '0px';
+        clogWater.style.backgroundColor = 'rgba(0, 191, 255, 0.5)';
+        container.appendChild(clogWater);
+        
+        tl.to(clogWater, {
+            height: 10,
+            top: 5,
+            duration: 0.5
+        });
+
+        // Backwash blasts sand out the top
+        tl.to(clogWater, {
+            height: 0,
+            top: 0,
+            duration: 0.2
+        }, "+=0.2");
+        
+        tl.to('#sand, .dirt, .water-drop', {
+            y: -100,
+            opacity: 0,
+            stagger: 0.02,
+            duration: 0.8,
+            ease: "power2.out"
+        });
+        
+        tl.to(container, {
+            borderColor: 'transparent',
+            duration: 0.2
+        }, "-=0.4");
+    });
+</script>
+</body>
+</html>

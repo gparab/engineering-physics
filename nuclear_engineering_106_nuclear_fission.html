@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>106. Nuclear Fission</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+  #container { position: relative; width: 300px; height: 300px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+  .nucleus { width: 60px; height: 60px; background-color: #FF00FF; border-radius: 50%; position: absolute; box-shadow: 0 0 20px #FF00FF; animation: wobble 2s infinite ease-in-out alternate; }
+  @keyframes wobble {
+    0% { transform: scale(1, 1) rotate(0deg); border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; }
+    33% { transform: scale(1.15, 0.85) rotate(15deg); border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%; }
+    66% { transform: scale(0.85, 1.15) rotate(-15deg); border-radius: 40% 60% 50% 50% / 60% 40% 60% 40%; }
+    100% { transform: scale(1.1, 0.9) rotate(5deg); border-radius: 50% 50% 60% 40% / 50% 50% 40% 60%; }
+  }
+  .neutron-in { width: 10px; height: 10px; background: white; border-radius: 50%; position: absolute; left: 0px; top: 145px; opacity: 0; box-shadow: 0 0 10px white; }
+  .fragment { width: 40px; height: 40px; background-color: #FF00FF; border-radius: 50%; position: absolute; opacity: 0; box-shadow: 0 0 15px #FF00FF; }
+  .neutron-out { width: 8px; height: 8px; background: white; border-radius: 50%; position: absolute; opacity: 0; box-shadow: 0 0 8px white; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="nucleus" id="nucleus"></div>
+  <div class="neutron-in" id="neutronIn"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const nucleus = document.getElementById('nucleus');
+  const neutronIn = document.getElementById('neutronIn');
+  let clicked = false;
+
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    neutronIn.style.transition = 'all 1s ease-in';
+    neutronIn.style.opacity = '1';
+    neutronIn.style.transform = 'translateX(120px)';
+
+    setTimeout(() => {
+      neutronIn.style.opacity = '0';
+      nucleus.style.animation = 'none';
+      nucleus.style.opacity = '0';
+      
+      const f1 = document.createElement('div'); f1.className = 'fragment';
+      const f2 = document.createElement('div'); f2.className = 'fragment';
+      container.appendChild(f1); container.appendChild(f2);
+      
+      const n1 = document.createElement('div'); n1.className = 'neutron-out';
+      const n2 = document.createElement('div'); n2.className = 'neutron-out';
+      const n3 = document.createElement('div'); n3.className = 'neutron-out';
+      container.appendChild(n1); container.appendChild(n2); container.appendChild(n3);
+
+      setTimeout(() => {
+        f1.style.opacity = '1'; f2.style.opacity = '1';
+        f1.style.transition = 'all 1s cubic-bezier(0.1, 0.8, 0.2, 1)';
+        f2.style.transition = 'all 1s cubic-bezier(0.1, 0.8, 0.2, 1)';
+        f1.style.transform = 'translate(-40vw, -30vh) scale(0.6)';
+        f2.style.transform = 'translate(40vw, 30vh) scale(0.6)';
+        
+        [n1, n2, n3].forEach((n, i) => {
+          n.style.opacity = '1';
+          n.style.transition = 'all 0.8s ease-out';
+          const angle = (Math.random() * 120 - 60) * Math.PI / 180;
+          const dist = window.innerWidth;
+          n.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+        });
+      }, 20);
+    }, 1000);
+  });
+</script>
+</body>
+</html>

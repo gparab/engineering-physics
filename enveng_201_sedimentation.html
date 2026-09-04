@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sedimentation (Stokes' Law)</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    #container {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+    }
+    #beaker {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 30px;
+        height: 40px;
+        border: 2px solid #ccc;
+        border-top: none;
+        border-radius: 0 0 5px 5px;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+    #water {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 30px;
+        background-color: rgba(72, 209, 204, 0.2);
+    }
+    .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background-color: #48D1CC;
+        border-radius: 50%;
+    }
+    .sludge {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 0;
+        background-color: #48D1CC;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="beaker">
+            <div id="water"></div>
+            <div class="sludge"></div>
+        </div>
+    </div>
+<script>
+    const beaker = document.getElementById('beaker');
+    const container = document.getElementById('container');
+    const water = document.getElementById('water');
+    const sludge = document.querySelector('.sludge');
+    const particles = [];
+    
+    // Create particles
+    for (let i = 0; i < 15; i++) {
+        let p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = (Math.random() * 22) + 'px'; // 0 to 22 (inside beaker, width=26 inner)
+        p.style.top = (Math.random() * 20 - 20) + 'px';
+        beaker.appendChild(p);
+        particles.push(p);
+        
+        animateParticle(p);
+    }
+
+    function animateParticle(p) {
+        gsap.to(p, {
+            y: 40,
+            duration: 2 + Math.random() * 2,
+            ease: "linear",
+            repeat: -1,
+            onRepeat: () => {
+                gsap.set(p, {y: -5, x: Math.random() * 22});
+            }
+        });
+    }
+
+    let clicked = false;
+    container.addEventListener('click', () => {
+        if (clicked) return;
+        clicked = true;
+
+        // Kill all ongoing tweens
+        gsap.killTweensOf('.particle');
+
+        const tl = gsap.timeline();
+
+        // Dots plunge
+        tl.to('.particle', {
+            y: 35,
+            duration: 0.5,
+            ease: "power2.in"
+        });
+
+        // Form sludge and fade dots
+        tl.to('.sludge', {
+            height: 10,
+            duration: 0.3
+        }, "-=0.2");
+        tl.to('.particle', {
+            opacity: 0,
+            duration: 0.1
+        }, "-=0.3");
+
+        // Clear water evaporates upward
+        tl.to(water, {
+            y: -100,
+            opacity: 0,
+            duration: 1,
+            ease: "power1.inOut"
+        });
+
+        // Beaker fades out
+        tl.to(beaker, {
+            opacity: 0,
+            scale: 1.5,
+            duration: 0.5
+        });
+
+    });
+</script>
+</body>
+</html>

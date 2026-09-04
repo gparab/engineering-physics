@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom Filter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 80px;
+            height: 60px;
+            cursor: pointer;
+        }
+        
+        .array {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            display: flex;
+            gap: 2px;
+        }
+
+        .bit {
+            width: 6px;
+            height: 6px;
+            border: 1px solid #3498DB;
+            box-sizing: border-box;
+            transition: background-color 0.2s;
+        }
+
+        .data {
+            position: absolute;
+            top: 5px;
+            left: 35px;
+            width: 10px;
+            height: 10px;
+            background-color: #333;
+            border-radius: 50%;
+            animation: float 2s infinite alternate;
+        }
+
+        .hash-line {
+            position: absolute;
+            background-color: #3498DB;
+            width: 1px;
+            opacity: 0;
+            transform-origin: top;
+            z-index: -1;
+        }
+
+        .h1 { top: 10px; left: 40px; height: 35px; transform: rotate(30deg); animation: hashFlash 3s infinite 0.5s; }
+        .h2 { top: 10px; left: 40px; height: 35px; transform: rotate(0deg); animation: hashFlash 3s infinite 0.7s; }
+        .h3 { top: 10px; left: 40px; height: 35px; transform: rotate(-40deg); animation: hashFlash 3s infinite 0.9s; }
+
+        @keyframes float {
+            from { transform: translateY(0); }
+            to { transform: translateY(5px); }
+        }
+
+        @keyframes hashFlash {
+            0%, 10% { opacity: 0; }
+            20%, 80% { opacity: 0.5; }
+            90%, 100% { opacity: 0; }
+        }
+
+        @keyframes bitLight1 { 0%, 15% { background: transparent; } 20%, 90% { background: #3498DB; } 95%, 100% { background: transparent; } }
+        @keyframes bitLight2 { 0%, 17% { background: transparent; } 22%, 90% { background: #3498DB; } 95%, 100% { background: transparent; } }
+        @keyframes bitLight3 { 0%, 19% { background: transparent; } 24%, 90% { background: #3498DB; } 95%, 100% { background: transparent; } }
+
+        .b2 { animation: bitLight3 3s infinite 0.9s; }
+        .b5 { animation: bitLight2 3s infinite 0.7s; }
+        .b8 { animation: bitLight1 3s infinite 0.5s; }
+
+        /* Click: Saturation and shatter */
+        .clicked .bit {
+            animation: saturate 0.5s forwards, shatter 1s forwards 0.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+        .clicked .hash-line, .clicked .data {
+            display: none;
+        }
+
+        @keyframes saturate {
+            to { background: #3498DB; border-color: white; box-shadow: 0 0 5px #3498DB; }
+        }
+
+        @keyframes shatter {
+            to { transform: translate(var(--tx), var(--ty)) rotate(var(--r)); opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container" id="model">
+        <div class="data"></div>
+        <div class="hash-line h1"></div>
+        <div class="hash-line h2"></div>
+        <div class="hash-line h3"></div>
+        
+        <div class="array">
+            <div class="bit b1" style="--tx: -50px; --ty: 50px; --r: 45deg;"></div>
+            <div class="bit b2" style="--tx: -30px; --ty: -40px; --r: 90deg;"></div>
+            <div class="bit b3" style="--tx: -10px; --ty: 60px; --r: 120deg;"></div>
+            <div class="bit b4" style="--tx: 0px; --ty: -50px; --r: -30deg;"></div>
+            <div class="bit b5" style="--tx: 20px; --ty: 40px; --r: 60deg;"></div>
+            <div class="bit b6" style="--tx: 40px; --ty: -30px; --r: -90deg;"></div>
+            <div class="bit b7" style="--tx: 60px; --ty: 50px; --r: 15deg;"></div>
+            <div class="bit b8" style="--tx: 80px; --ty: -20px; --r: 180deg;"></div>
+            <div class="bit b9" style="--tx: 50px; --ty: 60px; --r: 45deg;"></div>
+            <div class="bit b10" style="--tx: 90px; --ty: -50px; --r: -120deg;"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('model').addEventListener('click', function() {
+            this.classList.add('clicked');
+        });
+    </script>
+</body>
+</html>

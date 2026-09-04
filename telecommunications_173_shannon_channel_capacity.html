@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shannon Channel Capacity</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #0d0d0d;
+        font-family: 'Courier New', Courier, monospace;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 300px;
+        height: 400px;
+        cursor: pointer;
+    }
+    .equation {
+        position: absolute;
+        top: 20px;
+        width: 100%;
+        text-align: center;
+        color: #7F8C8D;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    .pipe-container {
+        position: absolute;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 250px;
+        border: 2px solid #555;
+        border-top: none;
+        border-bottom: none;
+        overflow: hidden;
+    }
+    .mud-left, .mud-right {
+        position: absolute;
+        width: 30px;
+        height: 100%;
+        background-color: #4a4a4a; /* noise mud */
+        top: 0;
+    }
+    .mud-left { left: 0; }
+    .mud-right { right: 0; }
+    
+    .data-stream {
+        position: absolute;
+        top: -250px;
+        left: 30px;
+        width: 40px;
+        height: 500px;
+        background: linear-gradient(to bottom, transparent, #7F8C8D, transparent);
+    }
+    
+    .choke {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #e74c3c;
+        font-size: 24px;
+        opacity: 0;
+    }
+</style>
+</head>
+<body>
+<div id="container">
+    <div class="equation" id="eq">C = B log₂(1 + S/N)</div>
+    <div class="pipe-container" id="pipe">
+        <div class="mud-left" id="ml"></div>
+        <div class="mud-right" id="mr"></div>
+        <div class="data-stream" id="data"></div>
+    </div>
+    <div class="choke" id="choke">CAPACITY ZERO</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    // Idle: equation pulsates, noise mud fluctuates slightly
+    const idleEq = gsap.to('#eq', { scale: 1.05, opacity: 0.8, duration: 1, yoyo: true, repeat: -1, ease: "sine.inOut" });
+    const idleStream = gsap.to('#data', { y: 250, duration: 1, repeat: -1, ease: "none" });
+    const idleMud1 = gsap.to('#ml', { width: "35px", duration: 1.5, yoyo: true, repeat: -1, ease: "sine.inOut" });
+    const idleMud2 = gsap.to('#mr', { width: "35px", duration: 1.2, yoyo: true, repeat: -1, ease: "sine.inOut" });
+
+    let clicked = false;
+    document.getElementById('container').addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        
+        idleEq.kill();
+        idleMud1.kill();
+        idleMud2.kill();
+        
+        gsap.to('#eq', { color: '#e74c3c', scale: 0.8, duration: 1 });
+        
+        // noise overwhelms
+        gsap.to(['#ml', '#mr'], { width: "50px", duration: 1, ease: "power2.in" });
+        gsap.to('#data', { width: "0px", left: "50px", duration: 1, ease: "power2.in", onComplete: () => {
+            idleStream.kill();
+            gsap.to('#choke', { opacity: 1, scale: 1.5, duration: 0.5, ease: "back.out(2)" });
+            gsap.to('#pipe', { scaleY: 0, opacity: 0, duration: 1, delay: 0.5 });
+        }});
+    });
+</script>
+</body>
+</html>

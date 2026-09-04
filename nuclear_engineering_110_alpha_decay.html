@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>110. Alpha Decay</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { width: 400px; height: 400px; position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  
+  .potential-well { position: absolute; width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle, rgba(255,69,0,0.5), transparent); }
+  
+  .nucleus { position: absolute; width: 80px; height: 80px; background-color: #FF4500; border-radius: 50%; box-shadow: 0 0 20px #FF4500; display: flex; justify-content: center; align-items: center; }
+  
+  .alpha { position: absolute; width: 20px; height: 20px; background-color: white; border-radius: 50%; box-shadow: 0 0 10px white; animation: tunnel 0.5s infinite alternate ease-in-out; }
+  
+  @keyframes tunnel {
+    0% { transform: translateX(-25px); }
+    100% { transform: translateX(25px); }
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="potential-well"></div>
+  <div class="nucleus" id="nucleus">
+    <div class="alpha" id="alpha"></div>
+  </div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const nucleus = document.getElementById('nucleus');
+  const alpha = document.getElementById('alpha');
+  let clicked = false;
+
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+
+    alpha.style.animation = 'none';
+    
+    // Get current transform for smooth transition
+    const transform = window.getComputedStyle(alpha).getPropertyValue('transform');
+    alpha.style.transform = transform;
+    
+    setTimeout(() => {
+      alpha.style.transition = 'all 1s cubic-bezier(0.1, 0.8, 0.2, 1)';
+      alpha.style.transform = 'translate(600px, 0px)';
+      
+      nucleus.style.transition = 'all 1s cubic-bezier(0.1, 0.8, 0.2, 1)';
+      nucleus.style.transform = 'translate(-50px, 0px)';
+    }, 50);
+  });
+</script>
+</body>
+</html>

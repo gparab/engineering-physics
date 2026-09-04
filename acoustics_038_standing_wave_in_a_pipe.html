@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Standing Wave in a Pipe</title>
+<style>
+    body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #faf8fc;
+        overflow: hidden;
+    }
+    #pipe-container {
+        position: relative;
+        width: 30px;
+        height: 20px;
+        cursor: pointer;
+    }
+    .pipe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 30px;
+        height: 20px;
+        border: 2px solid #8e44ad;
+        border-right: none;
+        box-sizing: border-box;
+    }
+    svg {
+        position: absolute;
+        top: 2px;
+        left: 0;
+        width: 30px;
+        height: 16px;
+    }
+    .wave {
+        fill: rgba(142, 68, 173, 0.3);
+    }
+    
+    .spectrogram {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: none;
+        background: linear-gradient(90deg, transparent, rgba(142,68,173,0.8) 5%, transparent 10%),
+                    linear-gradient(90deg, transparent 20%, rgba(155,89,182,0.8) 25%, transparent 30%),
+                    linear-gradient(90deg, transparent 50%, rgba(142,68,173,0.8) 55%, transparent 60%);
+        background-size: 200px 100%;
+        opacity: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="spectrogram" id="spectrogram"></div>
+
+<div id="pipe-container">
+    <div class="pipe" id="pipe"></div>
+    <svg viewBox="0 0 30 16" preserveAspectRatio="none">
+        <path class="wave" id="wavePath" d="M0,8 Q15,8 30,8 Q15,8 0,8 Z"></path>
+    </svg>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    const wavePath = document.getElementById('wavePath');
+    const container = document.getElementById('pipe-container');
+    const pipe = document.getElementById('pipe');
+
+    let isIdle = true;
+    let amplitude = 7;
+    let time = 0;
+
+    function drawWave() {
+        if (!isIdle) return;
+        time += 0.15;
+        
+        const curAmp = Math.sin(time) * amplitude;
+        
+        // M 30,8 (open end) -> Q 15,y 0,y (closed end)
+        const d = `M 30,8 Q 15,${8 - curAmp} 0,${8 - curAmp} L 0,${8 + curAmp} Q 15,${8 + curAmp} 30,8 Z`;
+        wavePath.setAttribute('d', d);
+        
+        requestAnimationFrame(drawWave);
+    }
+    drawWave();
+
+    let clicked = false;
+    container.addEventListener('click', () => {
+        if (clicked) return;
+        clicked = true;
+        isIdle = false;
+
+        // Transition to higher harmonic and vibrate fast
+        let simTime = 0;
+        gsap.to({v:0}, {
+            v: 1,
+            duration: 1,
+            ease: "power2.in",
+            onUpdate: function() {
+                simTime += 0.5 + this.targets()[0].v * 1.5;
+                const currentAmp = Math.sin(simTime) * 8;
+                const d = `M 30,8 Q 22.5,${8 - currentAmp} 15,8 T 0,${8 + currentAmp} L 0,${8 - currentAmp} Q 7.5,${8 + currentAmp} 15,8 T 30,8 Z`;
+                wavePath.setAttribute('d', d);
+            },
+            onComplete: burst
+        });
+        
+        gsap.to(pipe, {
+            borderWidth: 4,
+            borderColor: '#9b59b6',
+            duration: 1
+        });
+    });
+
+    function burst() {
+        container.style.display = 'none';
+        
+        // Show spectrogram
+        const spec = document.getElementById('spectrogram');
+        spec.style.display = 'block';
+        
+        gsap.to(spec, {
+            opacity: 1,
+            duration: 0.2
+        });
+        
+        gsap.to(spec, {
+            backgroundPosition: "200vw 0",
+            duration: 3,
+            ease: "power1.out",
+            opacity: 0
+        });
+    }
+</script>
+</body>
+</html>

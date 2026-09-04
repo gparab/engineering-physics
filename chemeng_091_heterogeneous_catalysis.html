@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heterogeneous Catalysis</title>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; cursor: pointer; overflow: hidden; }
+        #container { width: 60px; height: 50px; position: relative; }
+        .lattice { position: absolute; bottom: 0; width: 100%; height: 15px; display: flex; justify-content: space-between; }
+        .atom { width: 12px; height: 12px; background-color: #FFD700; border-radius: 50%; box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5); }
+        .molecule { position: absolute; width: 16px; height: 8px; display: flex; justify-content: space-between; }
+        .sub-atom { width: 8px; height: 8px; background-color: #00BFFF; border-radius: 50%; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Lattice -->
+        <div class="lattice">
+            <div class="atom"></div><div class="atom"></div><div class="atom"></div><div class="atom"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const molecules = [];
+        
+        // Active sites x-coordinates: roughly 6, 22, 38, 54
+        const sites = [2, 17, 32, 47];
+
+        for (let i = 0; i < 3; i++) {
+            let mol = document.createElement('div');
+            mol.className = 'molecule';
+            let a1 = document.createElement('div'); a1.className = 'sub-atom';
+            let a2 = document.createElement('div'); a2.className = 'sub-atom';
+            mol.appendChild(a1); mol.appendChild(a2);
+            container.appendChild(mol);
+            molecules.push({ el: mol, a1, a2 });
+
+            animateMolecule(mol, a1, a2, i);
+        }
+
+        function animateMolecule(mol, a1, a2, i) {
+            let tl = gsap.timeline({ repeat: -1, delay: i * 1.5 });
+            
+            // start high
+            tl.set(mol, { x: sites[i], y: -20, opacity: 0 })
+              // drift down (adsorb)
+              .to(mol, { y: 28, opacity: 1, duration: 1, ease: "power1.inOut" })
+              // break apart (surface reaction)
+              .to(a1, { x: -4, duration: 0.5 }, "+=0.2")
+              .to(a2, { x: 4, duration: 0.5 }, "<")
+              // desorb
+              .to([a1, a2], { y: -40, opacity: 0, duration: 1, ease: "power1.in" }, "+=0.2");
+        }
+
+        let clicked = false;
+        document.body.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+
+            molecules.forEach(m => {
+                gsap.killTweensOf(m.el);
+                gsap.killTweensOf(m.a1);
+                gsap.killTweensOf(m.a2);
+                
+                gsap.set([m.a1, m.a2], { opacity: 1 });
+                gsap.to([m.a1, m.a2], {
+                    y: -window.innerHeight,
+                    x: (Math.random() - 0.5) * 200,
+                    duration: 0.8,
+                    ease: "power2.in"
+                });
+            });
+            
+            // Lattice flashes and dims
+            gsap.to('.atom', { backgroundColor: "#fff", duration: 0.1, yoyo: true, repeat: 1 });
+            gsap.to('.atom', { opacity: 0.2, duration: 1, delay: 0.2 });
+        });
+    </script>
+</body>
+</html>

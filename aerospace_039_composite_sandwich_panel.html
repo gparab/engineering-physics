@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #eef2f5; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .container { position: relative; width: 70px; height: 24px; cursor: pointer; }
+  .sheet { position: absolute; width: 70px; height: 3px; background: #2C3E50; }
+  .top-sheet { top: 0; }
+  .bottom-sheet { bottom: 0; }
+  .core { position: absolute; width: 70px; height: 18px; top: 3px; display: flex; justify-content: space-around; overflow: hidden; }
+  .hex { width: 8px; height: 18px; border-left: 1.5px solid #7F8C8D; border-right: 1.5px solid #7F8C8D; transform: skewX(25deg); }
+  .hex:nth-child(even) { transform: skewX(-25deg); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="sheet top-sheet" id="top-sheet"></div>
+  <div class="core" id="core">
+    <div class="hex"></div><div class="hex"></div><div class="hex"></div>
+    <div class="hex"></div><div class="hex"></div><div class="hex"></div>
+  </div>
+  <div class="sheet bottom-sheet" id="bottom-sheet"></div>
+</div>
+<script>
+  const model = document.getElementById('model');
+  const topSheet = document.getElementById('top-sheet');
+  const bottomSheet = document.getElementById('bottom-sheet');
+  const core = document.getElementById('core');
+  
+  gsap.to(model, { rotation: 6, duration: 1.2, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to(topSheet, { scaleX: 0.92, duration: 1.2, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to(bottomSheet, { scaleX: 1.08, duration: 1.2, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf(model);
+    gsap.killTweensOf(topSheet);
+    gsap.killTweensOf(bottomSheet);
+    
+    gsap.to(core, { opacity: 0, scaleY: 0.2, duration: 0.2 });
+    
+    gsap.to(topSheet, {
+      y: -window.innerHeight,
+      rotation: 120,
+      duration: 0.7,
+      ease: 'power3.in'
+    });
+    gsap.to(bottomSheet, {
+      y: window.innerHeight,
+      rotation: -120,
+      duration: 0.7,
+      ease: 'power3.in'
+    });
+    
+    const hexes = document.querySelectorAll('.hex');
+    hexes.forEach(h => {
+      document.body.appendChild(h);
+      h.style.position = 'absolute';
+      h.style.left = '50%';
+      h.style.top = '50%';
+      gsap.to(h, {
+        x: (Math.random() - 0.5) * window.innerWidth * 1.5,
+        y: (Math.random() - 0.5) * window.innerHeight * 1.5,
+        rotation: Math.random() * 720,
+        opacity: 0,
+        duration: 1 + Math.random(),
+        ease: 'power2.out'
+      });
+    });
+  });
+</script>
+</body>
+</html>

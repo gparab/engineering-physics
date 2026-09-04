@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photosynthetic Excitation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model">
+        <svg width="40" height="40" viewBox="0 0 40 40" overflow="visible">
+            <path d="M22,20 Q28,20 30,26" stroke="#555" stroke-width="1" fill="none" stroke-dasharray="2,2"/>
+            <ellipse class="disc" cx="16" cy="20" rx="6" ry="3" fill="#27AE60" />
+            <ellipse class="disc-top" cx="16" cy="18" rx="6" ry="3" fill="#2ECC71" />
+            <path class="photon" d="M4,4 Q8,8 14,16" stroke="#F1C40F" stroke-width="1" fill="none" opacity="0" />
+            <circle class="electron" cx="16" cy="18" r="1.5" fill="#3498DB" opacity="0" />
+            <circle class="flash" cx="16" cy="18" r="0" fill="#FFF" opacity="0" />
+        </svg>
+    </div>
+    <script>
+        const tl = gsap.timeline({ repeat: -1 });
+        tl.fromTo('.photon', { strokeDasharray: "0, 50", strokeDashoffset: 0, opacity: 1 }, { strokeDasharray: "50, 0", duration: 0.5, ease: "power1.in" })
+          .to('.photon', { opacity: 0, duration: 0.1 })
+          .to(['.disc', '.disc-top'], { scale: 1.1, transformOrigin: "center", duration: 0.2, yoyo: true, repeat: 1 })
+          .fromTo('.electron', { x: 0, y: 0, opacity: 1 }, { x: 14, y: 8, opacity: 0, duration: 1, ease: "power1.out" }, "-=0.2");
+
+        document.getElementById('model').addEventListener('click', () => {
+            gsap.killTweensOf('*');
+            gsap.set('.photon', { opacity: 1, strokeDasharray: "none", strokeWidth: 4, stroke: "#FFF" });
+            gsap.to('.photon', { scale: 2, opacity: 0, duration: 0.2 });
+            
+            gsap.to('.flash', {
+                r: window.innerWidth,
+                opacity: 1,
+                fill: "#F1C40F",
+                duration: 0.4,
+                ease: "power2.in",
+                onComplete: () => {
+                    gsap.to('.container', { opacity: 0, duration: 0.2 });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

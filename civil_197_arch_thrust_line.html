@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arch Thrust Line</title>
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #fdfdfd; overflow: hidden; }
+  .scene { position: relative; width: 400px; height: 300px; cursor: pointer; }
+  .arch-container { position: absolute; bottom: 50px; left: 50px; width: 300px; height: 150px; }
+  
+  .block { position: absolute; background-color: #A0522D; border: 1px solid #703210; box-sizing: border-box; transform-origin: bottom center; transition: all 1s ease-in; }
+  
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+  .thrust-line { fill: none; stroke: #ffeb3b; stroke-width: 3; stroke-dasharray: 5 5; transition: d 0.2s; }
+  
+  .hinge { position: absolute; width: 8px; height: 8px; background-color: red; border-radius: 50%; opacity: 0; transition: opacity 0.3s; z-index: 10; }
+</style>
+</head>
+<body>
+<div class="scene" id="scene">
+  <div class="arch-container" id="arch">
+    <!-- SVG for Thrust Line -->
+    <svg viewBox="0 0 300 150">
+      <path class="thrust-line" id="thrust" d="M 0 150 Q 150 0, 300 150" />
+    </svg>
+  </div>
+</div>
+<script>
+  const scene = document.getElementById('scene');
+  const arch = document.getElementById('arch');
+  const thrust = document.getElementById('thrust');
+  const blocks = [];
+  
+  // Create arch blocks
+  const numBlocks = 11;
+  const radiusX = 150;
+  const radiusY = 150;
+  
+  for(let i=0; i<numBlocks; i++) {
+    let angle = Math.PI - (Math.PI / (numBlocks - 1)) * i;
+    let b = document.createElement('div');
+    b.className = 'block';
+    b.style.width = '30px';
+    b.style.height = '40px';
+    
+    // Position
+    let cx = 150 + Math.cos(angle) * radiusX;
+    let cy = 150 - Math.sin(angle) * radiusY;
+    
+    b.style.left = (cx - 15) + 'px';
+    b.style.top = (cy - 20) + 'px';
+    b.style.transform = `rotate(${90 - (angle * 180 / Math.PI)}deg)`;
+    
+    arch.appendChild(b);
+    blocks.push({el: b, cx: cx, cy: cy, angle: angle});
+  }
+
+  // Add hinges at critical points
+  const h1 = document.createElement('div'); h1.className = 'hinge';
+  h1.style.left = '30px'; h1.style.top = '80px'; arch.appendChild(h1);
+  const h2 = document.createElement('div'); h2.className = 'hinge';
+  h2.style.left = '150px'; h2.style.top = '10px'; arch.appendChild(h2);
+  const h3 = document.createElement('div'); h3.className = 'hinge';
+  h3.style.left = '270px'; h3.style.top = '80px'; arch.appendChild(h3);
+
+  let t = 0;
+  let clicked = false;
+  
+  let idleAnim = setInterval(() => {
+    t += 0.2;
+    // Thrust line dances
+    let dev1 = Math.sin(t) * 15;
+    let dev2 = Math.cos(t * 1.5) * 15;
+    thrust.setAttribute('d', `M 15 150 Q ${150 + dev1} ${-20 + dev2}, 285 150`);
+  }, 100);
+
+  scene.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    clearInterval(idleAnim);
+    
+    // Thrust line exits middle third
+    thrust.style.transition = 'd 0.5s ease-out';
+    thrust.setAttribute('d', `M 15 150 Q 80 -80, 285 150`);
+    
+    setTimeout(() => {
+      // Hinges appear
+      h1.style.opacity = '1';
+      h2.style.opacity = '1';
+      h3.style.opacity = '1';
+      thrust.style.opacity = '0';
+    }, 500);
+    
+    setTimeout(() => {
+      // Arch collapses
+      blocks.forEach((b, i) => {
+        let fallY = 150 - b.cy + 50;
+        let rot = (Math.random() - 0.5) * 180;
+        b.el.style.transform = `translateY(${fallY}px) rotate(${rot}deg)`;
+        b.el.style.opacity = '0';
+      });
+      h1.style.opacity = '0';
+      h2.style.opacity = '0';
+      h3.style.opacity = '0';
+    }, 1200);
+  });
+</script>
+</body>
+</html>

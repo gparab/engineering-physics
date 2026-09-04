@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #fdfdfd; overflow: hidden; }
+  .container { position: relative; width: 60px; height: 60px; cursor: pointer; }
+  .path { stroke: #e0e0e0; stroke-width: 0.5; fill: none; stroke-dasharray: 2 2; }
+  .mass { fill: #333; }
+  .sat { fill: #9B59B6; }
+  .thrust { stroke: #E74C3C; stroke-width: 1; opacity: 0; }
+</style>
+</head>
+<body>
+  <div class="container" id="model">
+    <svg viewBox="0 0 100 100" width="100%" height="100%" id="svg-element">
+      <ellipse class="path" cx="50" cy="50" rx="40" ry="20" id="orbitPath" />
+      <circle class="mass" cx="30" cy="50" r="4" id="centerMass" />
+      
+      <circle class="sat" cx="90" cy="50" r="2" id="satellite" />
+      <line class="thrust" x1="90" y1="50" x2="95" y2="50" id="thrust-line"/>
+    </svg>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+  <script>
+    gsap.registerPlugin(MotionPathPlugin);
+    
+    const satellite = document.getElementById('satellite');
+    const container = document.getElementById('model');
+    const thrustLine = document.getElementById('thrust-line');
+    const path = document.getElementById('orbitPath');
+    
+    let orbitTween = gsap.to(satellite, {
+      duration: 3,
+      repeat: -1,
+      ease: "none",
+      motionPath: {
+        path: "#orbitPath",
+        align: "#orbitPath",
+        alignOrigin: [0.5, 0.5],
+        start: 0,
+        end: 1
+      }
+    });
+
+    container.addEventListener('click', () => {
+      let progress = orbitTween.progress();
+      orbitTween.kill();
+      
+      gsap.to(satellite, {
+        duration: 0.5,
+        x: 0, y: 0,
+        motionPath: { path: "#orbitPath", align: "#orbitPath", alignOrigin: [0.5, 0.5], start: progress, end: 0 }
+      }).then(() => {
+        gsap.set(thrustLine, { x: 0, opacity: 1 });
+        gsap.to(thrustLine, { x: -10, opacity: 0, duration: 0.5, ease: "power1.out" });
+        
+        let crashTl = gsap.timeline();
+        crashTl.to(path, { attr: { rx: 20 }, duration: 1, ease: "power2.in" }, 0)
+               .to(satellite, { 
+                 motionPath: { 
+                   path: [{x: 90, y: 50}, {x: 60, y: 30}, {x: 30, y: 50}], 
+                   alignOrigin: [0.5, 0.5] 
+                 },
+                 duration: 1,
+                 ease: "power3.in"
+               }, 0)
+               .to("#centerMass", { scale: 3, duration: 0.2, yoyo: true, repeat: 1, transformOrigin: "50% 50%" })
+               .to("#svg-element", { opacity: 0, scale: 5, duration: 0.5, ease: "power2.out" });
+      });
+    });
+  </script>
+</body>
+</html>

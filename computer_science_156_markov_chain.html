@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markov Chain</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+        }
+
+        .bubble {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #F39C12;
+            border-radius: 50%;
+            background: white;
+            box-sizing: border-box;
+            transition: all 0.5s ease;
+        }
+        .b1 { top: 10px; left: 33px; }
+        .b2 { top: 50px; left: 10px; }
+        .b3 { top: 50px; left: 56px; }
+
+        .arrow {
+            position: absolute;
+            background-color: #F39C12;
+            transform-origin: top left;
+            z-index: -1;
+            transition: all 0.5s ease;
+        }
+        
+        .a12 { top: 20px; left: 35px; width: 2px; height: 35px; transform: rotate(35deg); }
+        .a23 { top: 55px; left: 22px; width: 3px; height: 35px; transform: rotate(-90deg); }
+        .a31 { top: 52px; left: 60px; width: 1px; height: 35px; transform: rotate(-145deg); }
+
+        .token {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #F39C12;
+            border-radius: 50%;
+            top: 13px;
+            left: 36px;
+            animation: markovJump 4s infinite;
+        }
+
+        @keyframes markovJump {
+            0%, 20% { top: 13px; left: 36px; } /* b1 */
+            25%, 55% { top: 53px; left: 13px; } /* b2 */
+            60%, 80% { top: 53px; left: 59px; } /* b3 */
+            85%, 100% { top: 13px; left: 36px; } /* b1 */
+        }
+
+        .black-hole {
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            width: 10px;
+            height: 10px;
+            background-color: black;
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .clicked .token {
+            animation: suckToken 0.5s forwards !important;
+        }
+        .clicked .black-hole {
+            opacity: 1;
+            transform: scale(1);
+            animation: growHole 2s forwards;
+        }
+        .clicked .bubble, .clicked .arrow {
+            animation: suckGraph 1s forwards 0.3s;
+        }
+
+        @keyframes suckToken {
+            to { top: 36px; left: 36px; transform: scale(0); opacity: 0; }
+        }
+        @keyframes growHole {
+            0% { transform: scale(1); }
+            50% { transform: scale(5); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        @keyframes suckGraph {
+            to { top: 40px; left: 40px; transform: scale(0) rotate(180deg); opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container" id="model">
+        <div class="arrow a12"></div>
+        <div class="arrow a23"></div>
+        <div class="arrow a31"></div>
+        <div class="bubble b1"></div>
+        <div class="bubble b2"></div>
+        <div class="bubble b3"></div>
+        <div class="token"></div>
+        <div class="black-hole"></div>
+    </div>
+
+    <script>
+        document.getElementById('model').addEventListener('click', function() {
+            this.classList.add('clicked');
+        });
+    </script>
+</body>
+</html>

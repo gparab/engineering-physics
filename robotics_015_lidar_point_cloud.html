@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIDAR Point Cloud</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .container {
+    width: 40px;
+    height: 40px;
+    position: relative;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .point {
+    fill: #FF1493;
+    opacity: 0.2;
+    transition: opacity 0.1s;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <svg viewBox="0 0 40 40" id="icon">
+    <!-- Emitter -->
+    <circle id="emitter" cx="20" cy="20" r="2" fill="#FF1493" />
+    <path id="beam" d="M 20 20 L 35 5 L 35 15 Z" fill="#FF1493" opacity="0.1" />
+    <!-- Points will be generated here -->
+    <g id="points"></g>
+  </svg>
+</div>
+
+<script>
+  // Generate points in a corner shape
+  const pointsGroup = document.getElementById('points');
+  const points = [];
+  
+  for(let i=0; i<30; i++) {
+    const angle = (Math.PI / 2) * (i / 30) - (Math.PI / 4); // Spread over 90 deg corner
+    const dist = 15 + Math.random() * 2;
+    const x = 20 + Math.cos(angle) * dist;
+    const y = 20 + Math.sin(angle) * dist;
+    
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    p.setAttribute("cx", x);
+    p.setAttribute("cy", y);
+    p.setAttribute("r", "0.6");
+    p.setAttribute("class", "point");
+    p.setAttribute("data-angle", angle);
+    pointsGroup.appendChild(p);
+    points.push(p);
+  }
+
+  // Idle Animation: Emitter continuously sweeps, lighting up a corner of dots upon contact
+  const beam = document.getElementById('beam');
+  let sweepAngle = -Math.PI / 4;
+  let dir = 1;
+  
+  gsap.ticker.add((time) => {
+    sweepAngle += 0.05 * dir;
+    if (sweepAngle > Math.PI / 4) dir = -1;
+    if (sweepAngle < -Math.PI / 4) dir = 1;
+    
+    // Rotate beam
+    const deg = sweepAngle * 180 / Math.PI;
+    gsap.set(beam, { rotation: deg, transformOrigin: "20px 20px" });
+    
+    // Light up points near beam
+    points.forEach(p => {
+      const pAngle = parseFloat(p.getAttribute('data-angle'));
+      if (Math.abs(pAngle - sweepAngle) < 0.1) {
+        p.style.opacity = "1";
+      } else {
+        p.style.opacity = Math.max(0.2, parseFloat(p.style.opacity || 0.2) - 0.05);
+      }
+    });
+  });
+
+  // Click Disappearance Motion: The central emitter fires one 360-degree blinding pulse, vaporizing all the points and itself.
+  document.body.addEventListener('click', () => {
+    gsap.ticker.remove();
+    
+    const clickTl = gsap.timeline();
+    
+    // Pulse charge up
+    clickTl.to("#emitter", {
+      r: 4,
+      fill: "#fff",
+      duration: 0.3,
+      ease: "power2.in"
+    })
+    // 360 blast
+    .to("#beam", {
+      opacity: 0,
+      duration: 0.1
+    }, 0)
+    .to("#emitter", {
+      scale: 150,
+      transformOrigin: "center",
+      opacity: 0,
+      duration: 0.5,
+      ease: "power1.out"
+    }, 0.3)
+    .to(".point", {
+      x: (i, el) => (parseFloat(el.getAttribute("cx")) - 20) * 10,
+      y: (i, el) => (parseFloat(el.getAttribute("cy")) - 20) * 10,
+      opacity: 0,
+      scale: 0,
+      duration: 0.4,
+      stagger: 0.005,
+      ease: "expo.out"
+    }, 0.3)
+    .to("body", {
+      backgroundColor: "#33041d",
+      duration: 0.2,
+      yoyo: true,
+      repeat: 1
+    }, 0.3);
+  }, { once: true });
+</script>
+</body>
+</html>

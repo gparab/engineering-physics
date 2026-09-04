@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>113. Neutron Moderation</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { width: 100vw; height: 100vh; position: relative; cursor: pointer; }
+  
+  .lattice-node { position: absolute; width: 30px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 50%; transform: translate(-50%, -50%); box-shadow: inset 0 0 10px rgba(255,255,255,0.2); }
+  .u235 { background: #880088; box-shadow: 0 0 15px #FF00FF; }
+  
+  .neutron { position: absolute; width: 12px; height: 12px; background: #1E90FF; border-radius: 50%; box-shadow: 0 0 15px #1E90FF; transform: translate(-50%, -50%); transition: all 0.2s linear; }
+  
+  #flash { position: absolute; top:0; left:0; width:100vw; height:100vh; background: white; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+</style>
+</head>
+<body>
+<div id="container"></div>
+<div id="flash"></div>
+<script>
+  const container = document.getElementById('container');
+  const flash = document.getElementById('flash');
+  let clicked = false;
+  
+  const nodes = [];
+  const cols = 8;
+  const rows = 8;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  
+  let u235Node = null;
+
+  for(let i=0; i<rows; i++) {
+    for(let j=0; j<cols; j++) {
+      const node = document.createElement('div');
+      node.className = 'lattice-node';
+      const x = (w / cols) * j + (w / cols)/2;
+      const y = (h / rows) * i + (h / rows)/2;
+      node.style.left = x + 'px';
+      node.style.top = y + 'px';
+      
+      if(i === 6 && j === 6) {
+        node.classList.add('u235');
+        u235Node = {x, y};
+      }
+      
+      container.appendChild(node);
+      nodes.push({x, y});
+    }
+  }
+  
+  const neutron = document.createElement('div');
+  neutron.className = 'neutron';
+  let nx = w/8, ny = h/8;
+  neutron.style.left = nx + 'px';
+  neutron.style.top = ny + 'px';
+  container.appendChild(neutron);
+  
+  let energy = 100;
+  
+  function step() {
+    if(clicked) return;
+    
+    // Pick random node to bounce to
+    const target = nodes[Math.floor(Math.random() * (nodes.length-1))]; // Avoid U235
+    
+    neutron.style.transition = `all ${1000 / energy}s linear`;
+    neutron.style.left = target.x + 'px';
+    neutron.style.top = target.y + 'px';
+    
+    energy -= 5;
+    if(energy < 20) energy = 20;
+    
+    setTimeout(step, (1000 / energy) * 1000);
+  }
+  
+  setTimeout(step, 100);
+
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    
+    // Turns red, heads to U235
+    neutron.style.transition = 'all 1s ease-in-out';
+    neutron.style.background = '#FF0000';
+    neutron.style.boxShadow = '0 0 15px #FF0000';
+    neutron.style.left = u235Node.x + 'px';
+    neutron.style.top = u235Node.y + 'px';
+    
+    setTimeout(() => {
+      neutron.style.opacity = '0';
+      flash.style.opacity = '1';
+      setTimeout(() => {
+        flash.style.opacity = '0';
+      }, 500);
+    }, 1000);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anechoic Wedge (Absorption)</title>
+<style>
+    body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #ecf0f1;
+        transition: background-color 1s;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+    }
+    .wedge-container {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 20px;
+        height: 40px;
+        display: flex;
+        flex-direction: column;
+    }
+    .wedge {
+        width: 0;
+        height: 0;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        border-right: 20px solid #2c3e50;
+    }
+    .sound-wave {
+        position: absolute;
+        left: 0;
+        top: 18px;
+        width: 4px;
+        height: 4px;
+        background-color: #7f8c8d;
+        border-radius: 50%;
+        opacity: 0;
+    }
+    
+    .massive-wedges {
+        position: absolute;
+        top: 0;
+        right: -100vw;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        pointer-events: none;
+    }
+    .huge-wedge {
+        flex: 1;
+        width: 0;
+        height: 0;
+        border-top: 10vh solid transparent;
+        border-bottom: 10vh solid transparent;
+        border-right: 150vw solid #2c3e50;
+        transform: scaleX(0);
+        transform-origin: right center;
+    }
+</style>
+</head>
+<body>
+
+<div class="massive-wedges" id="massiveWedges">
+    <div class="huge-wedge"></div>
+    <div class="huge-wedge"></div>
+    <div class="huge-wedge"></div>
+    <div class="huge-wedge"></div>
+    <div class="huge-wedge"></div>
+</div>
+
+<div id="container">
+    <div class="wedge-container">
+        <div class="wedge"></div>
+        <div class="wedge"></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    const container = document.getElementById('container');
+    let isIdle = true;
+
+    function sendSound() {
+        if (!isIdle) return;
+        
+        const wave = document.createElement('div');
+        wave.classList.add('sound-wave');
+        // Randomize y slightly to hit different wedges
+        wave.style.top = (Math.random() > 0.5 ? 8 : 28) + 'px';
+        container.appendChild(wave);
+
+        // Path into the wedge crevice
+        gsap.to(wave, {
+            left: 20,
+            opacity: 1,
+            duration: 0.5,
+            ease: "none",
+            onComplete: () => {
+                // Bounce deeper and fade
+                gsap.to(wave, {
+                    left: 25,
+                    y: "+=3",
+                    opacity: 0.5,
+                    duration: 0.2,
+                    ease: "none",
+                    onComplete: () => {
+                        gsap.to(wave, {
+                            left: 28,
+                            y: "-=2",
+                            opacity: 0,
+                            duration: 0.2,
+                            ease: "none",
+                            onComplete: () => wave.remove()
+                        });
+                    }
+                });
+            }
+        });
+        
+        setTimeout(sendSound, 1200);
+    }
+    sendSound();
+
+    let clicked = false;
+    container.addEventListener('click', () => {
+        if (clicked) return;
+        clicked = true;
+        isIdle = false;
+
+        container.style.display = 'none';
+
+        const mw = document.getElementById('massiveWedges');
+        mw.style.right = '0';
+        
+        const wedges = document.querySelectorAll('.huge-wedge');
+        
+        // Wedges extend across screen
+        gsap.to(wedges, {
+            scaleX: 1,
+            duration: 1.5,
+            stagger: 0.1,
+            ease: "power3.inOut",
+            onComplete: () => {
+                // Background turns black
+                document.body.style.backgroundColor = '#000';
+                
+                // Everything fades to void
+                gsap.to(mw, {
+                    opacity: 0,
+                    duration: 2,
+                    ease: "power1.inOut"
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

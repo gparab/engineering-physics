@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #121212;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+  .layer {
+    position: absolute;
+    width: 24px;
+    height: 4px;
+    background: #FFD700;
+    border-radius: 1px;
+    transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .layer-top { top: 4px; opacity: 0.8; }
+  .layer-mid { top: 10px; opacity: 0.5; }
+  .layer-bot { top: 16px; opacity: 0.8; }
+  .electron {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #fff;
+    border-radius: 50%;
+    left: 10px;
+    bottom: 4px;
+    animation: jump 2s infinite ease-in-out;
+  }
+  .hole {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    left: 10px;
+    bottom: 4px;
+    opacity: 0;
+    animation: hole-fade 2s infinite ease-in-out;
+  }
+  .sunburst {
+    position: absolute;
+    top: -8px;
+    left: -4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px dashed #FFD700;
+    animation: spin 4s linear infinite;
+  }
+  @keyframes jump {
+    0%, 10% { transform: translateY(0); opacity: 1; }
+    40%, 60% { transform: translateY(-12px); opacity: 1; }
+    90%, 100% { transform: translateY(-12px); opacity: 0; }
+  }
+  @keyframes hole-fade {
+    0%, 10% { opacity: 0; }
+    15%, 80% { opacity: 1; }
+    90%, 100% { opacity: 0; }
+  }
+  @keyframes spin {
+    100% { transform: rotate(360deg); }
+  }
+  .photon {
+    position: absolute;
+    width: 2px;
+    height: 10px;
+    background: #fff;
+    top: 12px; left: 11px;
+    opacity: 0;
+  }
+  .explode .layer-top { transform: translateY(-100px) rotate(-15deg); opacity: 0; filter: brightness(2); }
+  .explode .layer-mid { transform: translateX(100px) rotate(45deg); opacity: 0; filter: brightness(2); }
+  .explode .layer-bot { transform: translateY(100px) rotate(15deg); opacity: 0; filter: brightness(2); }
+  .explode .electron, .explode .hole, .explode .sunburst { display: none; }
+  
+  .whiteout {
+    position: absolute;
+    width: 100%; height: 100%;
+    background: #fff;
+    border-radius: 50%;
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .explode .whiteout {
+    animation: flash 1s forwards;
+  }
+  @keyframes flash {
+    0% { transform: scale(0); opacity: 1; }
+    50% { transform: scale(50); opacity: 1; }
+    100% { transform: scale(100); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="sunburst"></div>
+  <div class="layer layer-top"></div>
+  <div class="layer layer-mid"></div>
+  <div class="layer layer-bot"></div>
+  <div class="hole"></div>
+  <div class="electron"></div>
+  <div class="whiteout"></div>
+</div>
+<script>
+  document.getElementById('model').onclick = function() {
+    this.classList.add('explode');
+    for(let i=0; i<12; i++) {
+      let photon = document.createElement('div');
+      photon.className = 'photon';
+      photon.style.transform = `rotate(${i*30}deg) translateY(-20px)`;
+      this.appendChild(photon);
+      photon.animate([
+        { transform: `rotate(${i*30}deg) translateY(-10px)`, opacity: 1, filter: 'drop-shadow(0 0 5px #FFD700)' },
+        { transform: `rotate(${i*30}deg) translateY(-300px)`, opacity: 0, filter: 'drop-shadow(0 0 10px #FFD700)' }
+      ], { duration: 800, easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)' });
+    }
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chalk Trace & Burn Demo</title>
+<style>
+  :root {
+    --ink: #ededed;
+    --paper: #111;
+  }
+  body {
+    background-color: transparent;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+  .card {
+    background: var(--paper);
+    padding: 30px 50px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+    width: 380px;
+    height: 220px;
+  }
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    z-index: 10;
+  }
+
+  /* Chalk Container */
+  .chalk-container {
+    position: relative; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: flex-start;
+    padding-left: 20px;
+  }
+  
+  /* Formula Formatting */
+  .formula-reveal {
+    position: absolute; left: 25px; top: 50%; transform: translateY(-50%);
+    color: #3b82f6; 
+    font-family: "Times New Roman", Times, serif; font-style: italic; font-size: 26px; font-weight: 500;
+    white-space: nowrap; overflow: hidden; width: 0;
+    text-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Movement Wrappers */
+  #chalk-wrapper {
+    position: absolute; left: 0px; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 44px;
+    z-index: 5;
+  }
+  
+  .orb {
+    display: block; width: 100%; height: 100%;
+    cursor: pointer; text-decoration: none; outline: none;
+    transform-origin: 16px 32px;
+  }
+  .orb svg { overflow: visible; width: 100%; height: 100%; }
+
+  /* Idle Animations */
+  #chalk-body { transform-origin: 16px 32px; animation: chalk-float 4s ease-in-out infinite; opacity: 1;}
+  .chalk-dust { opacity: 0; }
+  
+  #chalk-wrapper:hover #chalk-body { animation: chalk-shake 0.3s infinite; }
+  #chalk-wrapper:hover .chalk-dust.d1 { animation: dust-fall 1s infinite; }
+  #chalk-wrapper:hover .chalk-dust.d2 { animation: dust-fall 1s infinite 0.3s; }
+  #chalk-wrapper:hover .chalk-dust.d3 { animation: dust-fall 1s infinite 0.6s; }
+
+  @keyframes chalk-float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(4deg); } }
+  @keyframes chalk-shake { 0%, 100% { transform: rotate(0deg) translate(0); } 50% { transform: rotate(-5deg) translate(-2px, 2px); } }
+  @keyframes dust-fall { 0% { opacity: 0.8; transform: translateY(0); } 100% { opacity: 0; transform: translateY(20px); } }
+
+  /* Dynamic Script Animations */
+  @keyframes slide-right {
+    from { transform: translateY(-50%) translateX(0); }
+    to { transform: translateY(-50%) translateX(270px); }
+  }
+  @keyframes drop-down {
+    from { transform: translateY(-50%) translateX(270px) rotate(0); }
+    to { transform: translateY(160px) translateX(270px) rotate(-135deg); }
+  }
+  @keyframes scribble-trace {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(3px, -12px) rotate(-15deg); }
+    50% { transform: translate(-2px, 8px) rotate(10deg); }
+    75% { transform: translate(5px, 15px) rotate(20deg); }
+  }
+
+  /* Fire Transition */
+  .fire-container {
+    position: absolute; bottom: -20px; left: 0; width: 100%; height: 80px;
+    opacity: 0; pointer-events: none; z-index: 10;
+    transition: opacity 0.5s ease;
+  }
+  .fire-container.ignite { opacity: 1; }
+  
+  .flame {
+    width: 25px; height: 25px;
+    background: #ff5e00;
+    border-radius: 50% 0 50% 50%;
+    transform: rotate(-45deg);
+    position: absolute;
+    bottom: 20px;
+    mix-blend-mode: screen;
+    filter: blur(2px) drop-shadow(0 0 10px #ff3300);
+    opacity: 0;
+  }
+  .fire-container.ignite .flame { animation: burn 0.6s ease-in infinite alternate; }
+  
+  .fire-container .flame:nth-child(1) { left: 260px; background: #ff9900; animation-delay: 0.1s; width: 40px; height: 40px; }
+  .fire-container .flame:nth-child(2) { left: 280px; background: #ff3300; animation-delay: 0.3s; width: 35px; height: 35px;}
+  .fire-container .flame:nth-child(3) { left: 245px; background: #ffcc00; animation-delay: 0.2s; width: 25px; height: 25px;}
+  
+  @keyframes burn {
+    0% { transform: rotate(-45deg) scale(0.8) translateY(0); opacity: 0.8; }
+    100% { transform: rotate(-45deg) scale(1.3) translateY(-25px); opacity: 0; }
+  }
+  
+  /* Ash particle */
+  .ash {
+    position: absolute; width: 3px; height: 3px; background: #555; border-radius: 50%; opacity: 0;
+  }
+  .fire-container.ignite .ash { animation: float-ash 2s ease-out forwards; }
+  .fire-container .ash:nth-child(4) { left: 270px; bottom: 30px; animation-delay: 0.1s; }
+  .fire-container .ash:nth-child(5) { left: 290px; bottom: 20px; animation-delay: 0.3s; }
+  .fire-container .ash:nth-child(6) { left: 250px; bottom: 40px; animation-delay: 0.5s; }
+
+  @keyframes float-ash {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 0; transform: translate(calc(-20px + 40px * var(--dir)), -80px) scale(0); }
+  }
+
+  .hint {
+    position: absolute; bottom: 20px; right: 20px; font-size: 13px; color: #888;
+    text-transform: uppercase; letter-spacing: 1px; z-index: 10; pointer-events: none;
+  }
+  .reset-btn {
+    position: absolute; top: 15px; right: 15px; background: #333; color: #fff;
+    border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; z-index: 10;
+  }
+  .reset-btn:hover { background: #555; }
+</style>
+</head>
+<body>
+
+  <div class="card" id="chalk-card">
+    <button class="reset-btn" onclick="resetChalk()">Reset</button>
+    <h1 class="title">Writing</h1>
+    
+    <div class="chalk-container">
+      <div class="formula-reveal" id="formula">∑(3Δt, 30λ, ∫ds, r_s) = t_0</div>
+      
+      <div id="chalk-wrapper" onclick="triggerChalk();">
+        <a class="orb" id="chalk-orb" href="#" title="Write Formula" onclick="return false;">
+          <svg viewBox="0 0 44 44">
+            <g id="chalk-body">
+              <polygon points="28,8 34,10 22,36 16,34" fill="#eee" />
+              <polygon points="16,34 22,36 18,39" fill="#ccc" />
+              <circle class="chalk-dust d1" cx="16" cy="40" r="1.5" fill="#fff"/>
+              <circle class="chalk-dust d2" cx="22" cy="42" r="1" fill="#fff"/>
+              <circle class="chalk-dust d3" cx="12" cy="38" r="1.5" fill="#fff"/>
+            </g>
+          </svg>
+        </a>
+      </div>
+    </div>
+    
+    <div class="fire-container" id="fire-container">
+      <div class="flame"></div>
+      <div class="flame"></div>
+      <div class="flame"></div>
+      <div class="ash" style="--dir: 1"></div>
+      <div class="ash" style="--dir: -1"></div>
+      <div class="ash" style="--dir: 0.5"></div>
+    </div>
+
+    <div class="hint">Click to write</div>
+  </div>
+
+  <script>
+    let isWriting = false;
+
+    function triggerChalk() {
+      if (isWriting) return;
+      isWriting = true;
+
+      const wrapper = document.getElementById('chalk-wrapper');
+      const body = document.getElementById('chalk-body');
+      const formula = document.getElementById('formula');
+      const fire = document.getElementById('fire-container');
+      
+      // 1. Start writing and tracing
+      formula.style.transition = 'width 2.5s linear';
+      formula.style.width = '275px';
+      
+      // Wrapper slides right while the body scrubs up/down mimicking strokes
+      wrapper.style.animation = 'slide-right 2.5s linear forwards';
+      body.style.animation = 'scribble-trace 0.15s ease-in-out infinite';
+      
+      // 2. Stop tracing, begin free-fall
+      setTimeout(() => {
+         body.style.animation = 'none'; 
+         wrapper.style.animation = 'drop-down 0.7s cubic-bezier(0.5, 0, 1, 1) forwards';
+         wrapper.style.transform = 'translateY(-50%) translateX(270px)'; // lock end position
+      }, 2500);
+      
+      // 3. Ignite when it hits the bottom
+      setTimeout(() => {
+         fire.classList.add('ignite');
+         body.style.transition = 'opacity 0.2s';
+         body.style.opacity = '0'; // Chalk is consumed by flames
+      }, 3100);
+    }
+
+    function resetChalk() {
+      isWriting = false;
+      const wrapper = document.getElementById('chalk-wrapper');
+      const body = document.getElementById('chalk-body');
+      const formula = document.getElementById('formula');
+      const fire = document.getElementById('fire-container');
+      
+      wrapper.style.animation = 'none';
+      wrapper.style.transform = 'translateY(-50%) translateX(0px)';
+      
+      body.style.animation = 'chalk-float 4s ease-in-out infinite';
+      body.style.opacity = '1';
+      body.style.transition = 'none';
+      
+      formula.style.transition = 'none';
+      formula.style.width = '0px';
+      
+      fire.classList.remove('ignite');
+    }
+  </script>
+</body>
+</html>

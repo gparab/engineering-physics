@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noise Barrier Attenuation</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 100px;
+        height: 60px;
+        cursor: pointer;
+    }
+    #speaker {
+        position: absolute;
+        top: 25px;
+        left: 5px;
+        width: 10px;
+        height: 10px;
+        background-color: #ccc;
+        clip-path: polygon(0 20%, 50% 20%, 100% 0, 100% 100%, 50% 80%, 0 80%);
+    }
+    #barrier {
+        position: absolute;
+        bottom: 5px;
+        left: 50px;
+        width: 4px;
+        height: 35px;
+        background-color: #BA55D3;
+        border-radius: 2px;
+    }
+    .wave {
+        position: absolute;
+        top: 30px;
+        left: 15px;
+        width: 2px;
+        height: 2px;
+        border-right: 2px solid #BA55D3;
+        border-radius: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="speaker"></div>
+        <div id="barrier"></div>
+    </div>
+<script>
+    const container = document.getElementById('container');
+    const barrier = document.getElementById('barrier');
+    let clicked = false;
+
+    function emitWave() {
+        if(clicked) return;
+        let wave = document.createElement('div');
+        wave.className = 'wave';
+        container.appendChild(wave);
+
+        // Pre-barrier full amplitude
+        gsap.to(wave, {
+            width: 35,
+            height: 35,
+            opacity: 1,
+            duration: 1,
+            ease: "none"
+        });
+
+        // Post-barrier reduced amplitude
+        gsap.to(wave, {
+            width: 80,
+            height: 80,
+            opacity: 0.2,
+            duration: 1,
+            delay: 1,
+            ease: "none",
+            onComplete: () => {
+                if(!clicked) wave.remove();
+            }
+        });
+    }
+
+    let interval = setInterval(emitWave, 600);
+    emitWave();
+
+    container.addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        clearInterval(interval);
+        gsap.killTweensOf('.wave');
+        document.querySelectorAll('.wave').forEach(w => w.remove());
+
+        const tl = gsap.timeline();
+        
+        // Barrier removed
+        tl.to(barrier, {
+            y: 50,
+            opacity: 0,
+            duration: 0.3
+        });
+
+        // Massive wave
+        let massiveWave = document.createElement('div');
+        massiveWave.className = 'wave';
+        massiveWave.style.borderRightWidth = '5px';
+        container.appendChild(massiveWave);
+
+        tl.to(massiveWave, {
+            width: window.innerWidth * 1.5,
+            height: window.innerWidth * 1.5,
+            opacity: 1,
+            duration: 1.5,
+            ease: "power2.out"
+        }, "+=0.1");
+
+        // Shake interface elements (the body)
+        tl.to(document.body, {
+            x: 10,
+            duration: 0.05,
+            yoyo: true,
+            repeat: 10,
+            ease: "sine.inOut"
+        }, "-=1.4");
+
+        // Vanish
+        tl.to(massiveWave, {
+            opacity: 0,
+            duration: 0.5
+        });
+        tl.to('#speaker', {
+            opacity: 0,
+            duration: 0.5
+        }, "-=0.5");
+    });
+</script>
+</body>
+</html>

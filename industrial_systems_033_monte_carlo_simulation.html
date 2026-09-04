@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>33. Monte Carlo Simulation</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: -apple-system, sans-serif;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="info">MONTE CARLO SIMULATION // 033</div>
+    <canvas id="sim"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        const numBins = 60;
+        const binWidth = width / numBins;
+        let bins = new Array(numBins).fill(0);
+        
+        let dots = [];
+        let crashed = false;
+
+        // Box-Muller transform for normal distribution
+        function randomGaussian() {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+
+        function spawnDot() {
+            let x;
+            if(!crashed) {
+                // Gaussian centered at width/2, std dev width/8
+                x = (width / 2) + randomGaussian() * (width / 8);
+                // Clamp
+                if(x < 0) x = 0;
+                if(x > width - 1) x = width - 1;
+            } else {
+                x = width / 2; // Impossible straight vertical line
+            }
+            
+            const targetBin = Math.floor(x / binWidth);
+            bins[targetBin]++;
+            
+            const targetY = height - (bins[targetBin] * 2) - 20;
+
+            dots.push({
+                x: x,
+                y: -10,
+                targetY: targetY,
+                vx: 0,
+                vy: 5 + Math.random() * 5,
+                settled: false
+            });
+        }
+
+        function update() {
+            // Background
+            ctx.fillStyle = '#0d0f12';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw Bell Curve outline faintly
+            if(!crashed) {
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(0, 191, 255, 0.2)";
+                ctx.lineWidth = 2;
+                for(let i=0; i<width; i+=5) {
+                    const normX = (i - width/2) / (width/8);
+                    const y = height - (100 * Math.exp(-0.5 * normX * normX)) - 20;
+                    if(i===0) ctx.moveTo(i, y);
+                    else ctx.lineTo(i, y);
+                }
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = 'rgba(0, 191, 255, 0.6)';
+
+            for(let i=0; i<dots.length; i++) {
+                let d = dots[i];
+                if(crashed) {
+                    // Move to center horizontally if crashed
+                    d.x += (width/2 - d.x) * 0.1;
+                    d.settled = false; // fall through the floor!
+                }
+                
+                if(!d.settled) {
+                    d.y += d.vy;
+                    if(!crashed && d.y >= d.targetY) {
+                        d.y = d.targetY;
+                        d.settled = true;
+                    }
+                }
+
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, 1.5, 0, Math.PI*2);
+                ctx.fill();
+            }
+            
+            if(dots.length > 5000 && !crashed) {
+                // keep array size manageable
+                dots = dots.filter(d => !d.settled || Math.random() > 0.01);
+                // recalculate bins is tricky, just let it render what's there
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        // Spawn loop
+        setInterval(() => {
+            for(let i=0; i<(crashed ? 10 : 5); i++) {
+                spawnDot();
+            }
+        }, 16);
+
+        update();
+
+        window.addEventListener('click', () => {
+            if(crashed) return;
+            crashed = true;
+            // The existing dots will now animate to the center line and fall off screen in `update`
+        });
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // reset bins? For visual sake we just keep going.
+        });
+    </script>
+</body>
+</html>

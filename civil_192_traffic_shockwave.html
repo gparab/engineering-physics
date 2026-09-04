@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traffic Shockwave</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #fafafa;
+    overflow: hidden;
+  }
+  .road {
+    position: relative;
+    width: 600px;
+    height: 100px;
+    cursor: pointer;
+  }
+  .car {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #DC143C;
+    border-radius: 50%;
+    top: 44px;
+    transform: translateX(-50%);
+  }
+  .red-x {
+    position: absolute;
+    right: 50px;
+    top: 30px;
+    font-size: 40px;
+    color: red;
+    font-family: sans-serif;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+</style>
+</head>
+<body>
+<div class="road" id="road">
+  <div class="red-x" id="redX">X</div>
+</div>
+<script>
+  const road = document.getElementById('road');
+  const redX = document.getElementById('redX');
+  const numCars = 30;
+  const cars = [];
+  const roadLength = 500;
+  
+  for (let i = 0; i < numCars; i++) {
+    const car = document.createElement('div');
+    car.className = 'car';
+    road.appendChild(car);
+    cars.push({
+      el: car,
+      x: i * (roadLength / numCars),
+      v: 2
+    });
+  }
+
+  let shockwavePos = roadLength;
+  let clicked = false;
+  
+  function update() {
+    if (!clicked) {
+      shockwavePos -= 0.5; // Shockwave moves backward
+      if (shockwavePos < 0) shockwavePos = roadLength;
+      
+      cars.forEach((car, i) => {
+        // Find distance to car ahead
+        let aheadIndex = (i + 1) % numCars;
+        let dist = cars[aheadIndex].x - car.x;
+        if (dist < 0) dist += roadLength;
+        
+        // Speed drop near shockwave or close to car ahead
+        let inCluster = Math.abs(car.x - shockwavePos) < 50;
+        let targetV = inCluster ? 0.5 : 2;
+        if (dist < 20) targetV = Math.min(targetV, 0.2); // avoid collision
+        
+        car.v += (targetV - car.v) * 0.1;
+        car.x += car.v;
+        if (car.x > roadLength) car.x = 0;
+        
+        car.el.style.left = `${car.x}px`;
+      });
+      requestAnimationFrame(update);
+    }
+  }
+  update();
+
+  road.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    redX.style.opacity = '1';
+    
+    // Cars pile into a dense square
+    cars.forEach((car, i) => {
+      car.el.style.transition = `all ${1 + i * 0.05}s ease-in`;
+      
+      const cols = 5;
+      const r = Math.floor(i / cols);
+      const c = i % cols;
+      
+      car.el.style.left = `${450 - c * 15}px`;
+      car.el.style.top = `${30 + r * 15}px`;
+      car.el.style.borderRadius = '2px';
+    });
+    
+    setTimeout(() => {
+      cars.forEach(car => {
+        car.el.style.opacity = '0';
+      });
+      redX.style.opacity = '0';
+    }, 2500);
+  });
+</script>
+</body>
+</html>

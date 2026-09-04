@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venturi Tube</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #1a1a1a; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 20px; cursor: pointer; }
+  .particle { position: absolute; width: 3px; height: 3px; background: #1ABC9C; border-radius: 50%; opacity: 0.8; }
+</style>
+</head>
+<body>
+<div class="container" id="venturi">
+  <svg width="40" height="20" style="position:absolute; left:0; top:0; pointer-events:none;">
+    <path class="tube" d="M 0 2 L 12 2 L 18 7 L 22 7 L 28 2 L 40 2" stroke="#1ABC9C" stroke-width="1" fill="none" opacity="0.5"/>
+    <path class="tube" d="M 0 18 L 12 18 L 18 13 L 22 13 L 28 18 L 40 18" stroke="#1ABC9C" stroke-width="1" fill="none" opacity="0.5"/>
+  </svg>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('venturi');
+  let particles = [];
+  let animating = true;
+  
+  function spawnParticle() {
+    if(!animating) return;
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const startY = 4 + Math.random() * 12;
+    p.style.left = '-5px';
+    p.style.top = startY + 'px';
+    container.appendChild(p);
+    
+    const tl = gsap.timeline({ onComplete: () => { if(p.parentNode) p.remove(); } });
+    const midY = 10;
+    const destY = midY + (startY - midY) * 0.4;
+    
+    tl.to(p, { x: 15, duration: 0.6, ease: "none" })
+      .to(p, { x: 25, y: destY, scaleX: 3, duration: 0.2, ease: "none" })
+      .to(p, { x: 45, y: startY, scaleX: 1, duration: 0.6, ease: "none" });
+      
+    particles.push(p);
+  }
+  const spawnInterval = setInterval(spawnParticle, 100);
+  
+  container.addEventListener('click', () => {
+    animating = false;
+    clearInterval(spawnInterval);
+    gsap.killTweensOf(particles);
+    gsap.to(".tube", { strokeWidth: 4, stroke: "#fff", opacity: 0, duration: 0.2 });
+    
+    particles.forEach(p => {
+      const rect = p.getBoundingClientRect();
+      const cx = window.innerWidth/2;
+      const cy = window.innerHeight/2;
+      const angle = Math.atan2(rect.top - cy, rect.left - cx) + (Math.random()-0.5);
+      const dist = Math.max(window.innerWidth, window.innerHeight);
+      
+      gsap.to(p, {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        scale: 2 + Math.random()*2,
+        opacity: 0,
+        duration: 1 + Math.random()*0.5,
+        ease: "power3.out"
+      });
+    });
+    setTimeout(() => container.remove(), 1500);
+  });
+</script>
+</body>
+</html>

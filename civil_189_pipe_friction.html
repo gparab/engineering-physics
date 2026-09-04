@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipe Friction (Darcy-Weisbach)</title>
+<style>
+  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222; overflow: hidden; }
+  .container { position: relative; width: 60px; height: 30px; cursor: pointer; border-top: 2px solid #555; border-bottom: 2px solid #555; overflow: hidden; }
+  .arrow { position: absolute; height: 2px; background: #00CED1; border-radius: 1px; }
+  .arrow::after { content: ''; position: absolute; right: -2px; top: -2px; border-left: 4px solid #00CED1; border-top: 3px solid transparent; border-bottom: 3px solid transparent; }
+  .a1 { top: 4px; left: 0; width: 10px; }
+  .a2 { top: 10px; left: 0; width: 20px; }
+  .a3 { top: 16px; left: 0; width: 30px; }
+  .a4 { top: 22px; left: 0; width: 10px; }
+  .eddy { position: absolute; width: 10px; height: 10px; border: 1px dashed #00CED1; border-radius: 50%; display: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="container" id="icon">
+    <div class="arrow a1"></div>
+    <div class="arrow a2"></div>
+    <div class="arrow a3"></div>
+    <div class="arrow a4"></div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    
+    // Idle: arrows flow, edges slow, center fast
+    const tl1 = gsap.to('.a1', { x: 50, duration: 2, repeat: -1, ease: "linear" });
+    const tl2 = gsap.to('.a2', { x: 50, duration: 1.2, repeat: -1, ease: "linear" });
+    const tl3 = gsap.to('.a3', { x: 50, duration: 0.8, repeat: -1, ease: "linear" });
+    const tl4 = gsap.to('.a4', { x: 50, duration: 2, repeat: -1, ease: "linear" });
+
+    icon.addEventListener('click', () => {
+      tl1.kill(); tl2.kill(); tl3.kill(); tl4.kill();
+      
+      // Stop arrows
+      gsap.to('.arrow', { x: "+=5", duration: 0.5, ease: "power2.out" });
+      
+      // Create eddies
+      for(let i=0; i<8; i++) {
+        let e = document.createElement('div');
+        e.className = 'eddy';
+        e.style.display = 'block';
+        e.style.left = (10 + Math.random()*30) + 'px';
+        e.style.top = (5 + Math.random()*15) + 'px';
+        icon.appendChild(e);
+        gsap.to(e, { rotation: 360, scale: 2, opacity: 0, duration: 1, ease: "power1.inOut" });
+      }
+      
+      gsap.to('.arrow', { opacity: 0, duration: 0.5, delay: 0.5 });
+      // Scale pipe to nothing
+      gsap.to(icon, { scaleY: 0, scaleX: 0, opacity: 0, duration: 1, delay: 0.8, ease: "power2.in" });
+    });
+  </script>
+</body>
+</html>

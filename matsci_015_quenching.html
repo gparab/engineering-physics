@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+  .container { position: relative; width: 60px; height: 60px; cursor: pointer; perspective: 400px;}
+  
+  .lattice { position: absolute; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateX(-20deg) rotateY(45deg); transition: transform 0.1s;}
+  
+  .cube-face { position: absolute; width: 40px; height: 40px; border: 2px solid #c0392b; box-shadow: 0 0 10px #c0392b, inset 0 0 10px #c0392b; top: 10px; left: 10px; background: rgba(192, 57, 43, 0.2);}
+  .front  { transform: translateZ(20px); }
+  .back   { transform: rotateY(180deg) translateZ(20px); }
+  .right  { transform: rotateY(90deg) translateZ(20px); }
+  .left   { transform: rotateY(-90deg) translateZ(20px); }
+  .top    { transform: rotateX(90deg) translateZ(20px); }
+  .bottom { transform: rotateX(-90deg) translateZ(20px); }
+  
+  .atom { position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; box-shadow: 0 0 5px #fff; top: 50%; left: 50%; transform: translate(-50%, -50%);}
+  .corner { position: absolute; width: 4px; height: 4px; background: #ffaaaa; border-radius: 50%; }
+  .bubble { position: absolute; background: rgba(255,255,255,0.5); border-radius: 50%; bottom: -20px; opacity: 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="container">
+    <div class="lattice" id="lattice">
+        <div class="cube-face front"><div class="atom"></div></div>
+        <div class="cube-face back"><div class="atom"></div></div>
+        <div class="cube-face right"><div class="atom"></div></div>
+        <div class="cube-face left"><div class="atom"></div></div>
+        <div class="cube-face top"><div class="atom"></div></div>
+        <div class="cube-face bottom"><div class="atom"></div></div>
+    </div>
+</div>
+<script>
+  const front = document.querySelector('.front');
+  const positions = [[-2, -2], [38, -2], [-2, 38], [38, 38]];
+  positions.forEach(p => {
+      let c = document.createElement('div');
+      c.className = 'corner';
+      c.style.left = p[0] + 'px';
+      c.style.top = p[1] + 'px';
+      front.appendChild(c);
+  });
+
+  let idle = gsap.to('#lattice', {
+      x: "random(-2, 2)",
+      y: "random(-2, 2)",
+      duration: 0.05,
+      repeat: -1,
+      yoyo: true
+  });
+  
+  let clicked = false;
+  document.getElementById('container').addEventListener('click', () => {
+      if(clicked) return;
+      clicked = true;
+      idle.kill();
+      gsap.set('#lattice', {x: 0, y: 0});
+      
+      for(let i=0; i<15; i++) {
+          let b = document.createElement('div');
+          b.className = 'bubble';
+          let size = Math.random()*10 + 5;
+          b.style.width = size + 'px';
+          b.style.height = size + 'px';
+          b.style.left = (Math.random()*60) + 'px';
+          document.getElementById('container').appendChild(b);
+          gsap.to(b, {
+              y: -100 - Math.random()*50,
+              opacity: 1,
+              duration: 1 + Math.random(),
+              ease: "power1.in",
+              onComplete: () => b.remove()
+          });
+      }
+      
+      let tl = gsap.timeline();
+      tl.to('.cube-face', {
+          borderColor: '#95a5a6', 
+          backgroundColor: 'rgba(149, 165, 166, 0.4)',
+          boxShadow: 'none',
+          duration: 0.1,
+          delay: 0.3
+      }, 0)
+      .to('.atom, .corner', {backgroundColor: '#fff', boxShadow: 'none', duration: 0.1}, 0.3)
+      .to('#lattice', {
+          scaleY: 1.8,
+          scaleX: 0.7,
+          scaleZ: 0.7,
+          rotationZ: 15,
+          duration: 0.1,
+          ease: "power4.out"
+      }, 0.3)
+      .to('#lattice', {opacity: 0, scale: 0, duration: 0.5, delay: 0.5});
+      
+      try {
+          let ctx = new (window.AudioContext || window.webkitAudioContext)();
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(2000, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(8000, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.5, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+      } catch(e) {}
+  });
+</script>
+</body>
+</html>

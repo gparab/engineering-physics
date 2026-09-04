@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>111. Beta Decay</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { width: 400px; height: 400px; position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  
+  .nucleon { position: absolute; width: 60px; height: 60px; border-radius: 50%; transition: background-color 0.2s, box-shadow 0.2s; display: flex; justify-content: center; align-items: center; }
+  
+  .w-boson { position: absolute; width: 10px; height: 10px; background: white; border-radius: 50%; opacity: 0; }
+
+  .electron, .antineutrino { position: absolute; width: 8px; height: 8px; border-radius: 50%; opacity: 0; }
+  .electron { background: #00FFFF; box-shadow: 0 0 10px #00FFFF; }
+  .antineutrino { background: #FF00FF; box-shadow: 0 0 10px #FF00FF; width: 6px; height: 6px; }
+
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="nucleon" id="nucleon"></div>
+  <div class="w-boson" id="wboson"></div>
+  <div class="electron" id="electron"></div>
+  <div class="antineutrino" id="antineutrino"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const nucleon = document.getElementById('nucleon');
+  const wboson = document.getElementById('wboson');
+  const electron = document.getElementById('electron');
+  const antineutrino = document.getElementById('antineutrino');
+  let clicked = false;
+  
+  const neutronColor = '#888888';
+  const protonColor = '#32CD32';
+
+  let isNeutron = true;
+  let interval = setInterval(() => {
+    isNeutron = !isNeutron;
+    nucleon.style.backgroundColor = isNeutron ? neutronColor : protonColor;
+    nucleon.style.boxShadow = `0 0 20px ${isNeutron ? neutronColor : protonColor}`;
+    
+    wboson.style.opacity = '1';
+    wboson.style.transform = `translate(${Math.random()*40-20}px, ${Math.random()*40-20}px)`;
+    setTimeout(() => wboson.style.opacity = '0', 100);
+  }, 300);
+
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    clearInterval(interval);
+    
+    // Commit to proton
+    nucleon.style.backgroundColor = protonColor;
+    nucleon.style.boxShadow = `0 0 30px ${protonColor}`;
+    wboson.style.opacity = '0';
+    
+    electron.style.opacity = '1';
+    antineutrino.style.opacity = '1';
+    
+    setTimeout(() => {
+      electron.style.transition = 'all 1s cubic-bezier(0.1, 0.8, 0.2, 1)';
+      antineutrino.style.transition = 'all 1s cubic-bezier(0.1, 0.8, 0.2, 1)';
+      
+      electron.style.transform = 'translate(-400px, 200px)';
+      antineutrino.style.transform = 'translate(400px, -200px)';
+    }, 50);
+  });
+</script>
+</body>
+</html>

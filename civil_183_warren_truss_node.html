@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warren Truss Node</title>
+<style>
+  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 40px; cursor: pointer; }
+  .node { position: absolute; top: 18px; left: 18px; width: 4px; height: 4px; background: #333; border-radius: 50%; z-index: 2; }
+  .line { position: absolute; background: #4682B4; height: 2px; transform-origin: right center; top: 19px; left: -10px; width: 30px; }
+  .line1 { transform: rotate(0deg); }
+  .line2 { transform: rotate(120deg); }
+  .line3 { transform: rotate(240deg); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="container" id="icon">
+    <div class="line line1"></div>
+    <div class="line line2"></div>
+    <div class="line line3"></div>
+    <div class="node"></div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const lines = document.querySelectorAll('.line');
+    
+    const idle = gsap.to(lines, {
+      scaleX: 1.1,
+      duration: 0.6,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+
+    icon.addEventListener('click', () => {
+      idle.kill();
+      gsap.to('.node', { scale: 3, opacity: 0, duration: 0.2 });
+      gsap.to('.line1', { x: -500, duration: 1, ease: "power2.out" });
+      gsap.to('.line2', { x: 250, y: -433, duration: 1, ease: "power2.out" });
+      gsap.to('.line3', { x: 250, y: 433, duration: 1, ease: "power2.out" });
+      gsap.to(lines, { opacity: 0, duration: 1, delay: 0.5 });
+    });
+  </script>
+</body>
+</html>

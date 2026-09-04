@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Acoustic Spreading</title>
+<style>
+  body { margin: 0; background: #1a1a24; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .icon-container { position: relative; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  .source { position: absolute; width: 4px; height: 4px; background: #7ED321; border-radius: 50%; z-index: 10; box-shadow: 0 0 4px #7ED321; }
+  .wavefront { position: absolute; width: 4px; height: 4px; border: 1px solid #7ED321; border-radius: 50%; opacity: 0; box-sizing: border-box; }
+  .thermocline { position: absolute; width: 100vw; height: 2px; background: rgba(255,100,100,0.5); top: calc(50% + 20px); opacity: 0; box-shadow: 0 0 10px red; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="thermocline" id="thermocline"></div>
+  <div class="icon-container" id="icon">
+    <div class="source"></div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    let isAnimating = false;
+    let waveInterval;
+
+    function spawnWave() {
+      if(isAnimating) return;
+      let w = document.createElement('div');
+      w.className = 'wavefront';
+      icon.appendChild(w);
+      gsap.to(w, {
+        width: 40, height: 40, opacity: 0, duration: 2, ease: "power1.out",
+        onStart: () => { w.style.opacity = 0.8; },
+        onComplete: () => { if(w.parentNode) w.remove(); }
+      });
+    }
+    
+    waveInterval = setInterval(spawnWave, 600);
+    spawnWave();
+
+    icon.addEventListener('click', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+      clearInterval(waveInterval);
+      
+      gsap.to('#thermocline', { opacity: 1, duration: 0.5 });
+      gsap.killTweensOf('.wavefront');
+
+      let heavyWave = document.createElement('div');
+      heavyWave.className = 'wavefront';
+      heavyWave.style.borderWidth = '2px';
+      heavyWave.style.opacity = '1';
+      icon.appendChild(heavyWave);
+
+      gsap.to(heavyWave, {
+        width: window.innerWidth, height: window.innerHeight * 2, y: window.innerHeight,
+        borderRadius: '50% 50% 0 0', opacity: 0, duration: 1.5, ease: "power2.in"
+      });
+
+      gsap.to('.source', { y: window.innerHeight, opacity: 0, duration: 1, ease: "power3.in", delay: 0.3 });
+    });
+  </script>
+</body>
+</html>

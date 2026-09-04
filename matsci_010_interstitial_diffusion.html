@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+  .container { position: relative; width: 60px; height: 60px; cursor: pointer; }
+  .host-atom { position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #444; transform: translate(-50%, -50%); box-shadow: inset -2px -2px 5px #222;}
+  .interstitial { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #f39c12; transform: translate(-50%, -50%); box-shadow: 0 0 8px #f39c12; z-index: 10;}
+  .trail { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #f39c12; opacity: 0.6; transform: translate(-50%, -50%); pointer-events: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="container"></div>
+<script>
+  const container = document.getElementById('container');
+  const size = 20;
+  for(let i=0; i<3; i++) {
+    for(let j=0; j<3; j++) {
+      let atom = document.createElement('div');
+      atom.className = 'host-atom';
+      atom.style.left = (j * size + size/2) + 'px';
+      atom.style.top = (i * size + size/2) + 'px';
+      container.appendChild(atom);
+    }
+  }
+  
+  let inter = document.createElement('div');
+  inter.className = 'interstitial';
+  inter.style.left = size + 'px';
+  inter.style.top = size + 'px';
+  container.appendChild(inter);
+
+  let idleAnim = gsap.to(inter, {
+    x: "random(-4, 4)",
+    y: "random(-4, 4)",
+    duration: 0.1,
+    repeat: -1,
+    yoyo: true,
+    ease: "none"
+  });
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    idleAnim.kill();
+    gsap.set(inter, {x: 0, y: 0});
+    
+    let rect = inter.getBoundingClientRect();
+    document.body.appendChild(inter);
+    inter.style.left = rect.left + 'px';
+    inter.style.top = rect.top + 'px';
+
+    let path = [];
+    let curX = rect.left;
+    let curY = rect.top;
+    for(let i=0; i<30; i++) {
+        curX += (Math.random() > 0.5 ? 1 : -1) * (40 + Math.random()*20);
+        curY += (Math.random() > 0.5 ? 1 : -1) * (40 + Math.random()*20);
+        path.push({x: curX, y: curY});
+    }
+
+    let tl = gsap.timeline();
+    path.forEach((p, index) => {
+        tl.to(inter, {
+            left: p.x, top: p.y, duration: 0.1, ease: "power1.inOut",
+            onUpdate: function() {
+                if(Math.random() > 0.5) {
+                    let trail = document.createElement('div');
+                    trail.className = 'trail';
+                    trail.style.left = inter.style.left;
+                    trail.style.top = inter.style.top;
+                    document.body.appendChild(trail);
+                    gsap.to(trail, {opacity: 0, scale: 0, duration: 0.5, onComplete: () => trail.remove()});
+                }
+            }
+        });
+    });
+    
+    tl.to(inter, {scale: 5, opacity: 0, duration: 0.5}, "+=0.2");
+    gsap.to('.host-atom', {opacity: 0, duration: 0.5, delay: 0.5});
+  });
+</script>
+</body>
+</html>

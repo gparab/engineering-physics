@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif;}
+  svg { width: 80px; height: 80px; cursor: pointer; overflow: visible;}
+  .line { stroke: #555; stroke-width: 1.5; fill: none; }
+  .plane { fill: rgba(142, 68, 173, 0.7); stroke: #8e44ad; stroke-width: 1; transition: all 0.3s; }
+  .normal { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 2; }
+  
+  #flash { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; border-radius: 50%; background: white; box-shadow: 0 0 30px 10px white; opacity: 0; pointer-events: none;}
+  #beam1, #beam2 { stroke: cyan; stroke-width: 2; stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0;}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container" style="position:relative;">
+    <svg viewBox="0 0 100 100" id="crystal">
+        <path class="line" d="M50 10 L85 30 L85 70 L50 90 L15 70 L15 30 Z" />
+        <path class="line" d="M50 10 L50 50 L85 70" />
+        <path class="line" d="M50 50 L15 70" />
+        <polygon class="plane" points="85,30 50,90 15,30" id="plane" />
+        <line class="normal" x1="50" y1="50" x2="50" y2="25" id="normal" />
+        <line id="beam1" x1="-20" y1="20" x2="50" y2="50" />
+        <line id="beam2" x1="50" y1="50" x2="120" y2="20" />
+    </svg>
+    <div id="flash"></div>
+</div>
+<script>
+  let idle = gsap.to('#normal', {attr: {y2: 15}, duration: 1, yoyo: true, repeat: -1, ease: "sine.inOut"});
+  
+  let clicked = false;
+  document.getElementById('crystal').addEventListener('click', () => {
+      if(clicked) return;
+      clicked = true;
+      idle.kill();
+      
+      let tl = gsap.timeline();
+      tl.to('#beam1', {opacity: 1, strokeDashoffset: 0, duration: 0.3})
+        .to('#beam2', {opacity: 1, strokeDashoffset: 0, duration: 0.3})
+        .to('#flash', {opacity: 1, scale: 150, duration: 0.5, ease: "power2.in"})
+        .to('#crystal', {opacity: 0, duration: 0.1})
+        .to('#flash', {opacity: 0, duration: 1, delay: 0.2});
+  });
+</script>
+</body>
+</html>

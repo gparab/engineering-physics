@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bode Plot</title>
+<style>
+  body { margin: 0; padding: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 32px; cursor: pointer; }
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+  .grid { stroke: rgba(142, 68, 173, 0.3); stroke-width: 0.5; }
+  .curve { fill: none; stroke: #8E44AD; stroke-width: 1.5; }
+  .cursor { stroke: #FFF; stroke-width: 1; stroke-dasharray: 2 1; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 40 32">
+    <g class="grid-lines">
+      <path class="grid" d="M 0 16 H 40 M 10 0 V 32 M 20 0 V 32 M 30 0 V 32" />
+    </g>
+    <!-- Mag plot -->
+    <path class="curve mag" d="M 0 8 H 20 Q 25 8, 30 14 L 40 22" />
+    <!-- Phase plot -->
+    <path class="curve phase" d="M 0 24 H 15 Q 20 24, 25 28 L 40 32" />
+    <!-- Cursor -->
+    <line class="cursor" x1="10" y1="0" x2="10" y2="32" />
+  </svg>
+</div>
+
+<script>
+  const cursor = document.querySelector('.cursor');
+  
+  // Idle sweep
+  gsap.to(cursor, {
+    attr: { x1: 30, x2: 30 },
+    duration: 2,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+
+  document.getElementById('model').addEventListener('click', () => {
+    gsap.killTweensOf(cursor);
+    
+    // Resonance violent oscillation
+    const tl = gsap.timeline();
+    tl.to('.curve', {
+      y: () => (Math.random()-0.5)*10,
+      duration: 0.05,
+      repeat: 20
+    });
+    
+    // Shatter like glass
+    tl.add(() => {
+      document.querySelector('.mag').style.opacity = 0;
+      document.querySelector('.phase').style.opacity = 0;
+      document.querySelector('.cursor').style.opacity = 0;
+      document.querySelector('.grid-lines').style.opacity = 0;
+      
+      const svg = document.querySelector('svg');
+      for(let i=0; i<30; i++) {
+        let l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        l.setAttribute("x1", 20); l.setAttribute("y1", 16);
+        l.setAttribute("x2", 20 + (Math.random()-0.5)*10);
+        l.setAttribute("y2", 16 + (Math.random()-0.5)*10);
+        l.setAttribute("stroke", "#8E44AD");
+        l.setAttribute("stroke-width", "1");
+        svg.appendChild(l);
+        
+        gsap.to(l, {
+          attr: {
+            x1: 20 + (Math.random()-0.5)*300,
+            y1: 16 + (Math.random()-0.5)*300,
+            x2: 20 + (Math.random()-0.5)*300,
+            y2: 16 + (Math.random()-0.5)*300
+          },
+          rotation: (Math.random()-0.5)*720,
+          opacity: 0,
+          duration: 1,
+          ease: "power3.out"
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>34. Petri Net</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: -apple-system, sans-serif;
+            transition: background-color 3s;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: color 3s;
+        }
+        svg {
+            width: 400px;
+            height: 400px;
+            overflow: visible;
+        }
+        .place {
+            fill: none;
+            stroke: #8B4513;
+            stroke-width: 4;
+        }
+        .transition {
+            fill: #8B4513;
+        }
+        .arc {
+            fill: none;
+            stroke: #8B4513;
+            stroke-width: 2;
+            marker-end: url(#arrow);
+        }
+        .token {
+            fill: #8B4513;
+            transition: fill 1s;
+        }
+        .deadlock .token {
+            fill: #FF0000 !important;
+        }
+        .deadlock #info {
+            color: #222;
+        }
+        .fade-out {
+            opacity: 0.1;
+            transition: opacity 4s ease-in;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="info">PETRI NET // 034</div>
+    
+    <svg id="net" viewBox="0 0 400 400">
+        <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#8B4513" />
+            </marker>
+        </defs>
+
+        <!-- Arcs -->
+        <path class="arc" d="M 200,80 L 200,140" />
+        <path class="arc" d="M 200,160 L 120,240" />
+        <path class="arc" d="M 200,160 L 280,240" />
+        
+        <path class="arc" d="M 120,280 L 200,340" />
+        <path class="arc" d="M 280,280 L 200,340" />
+        
+        <path class="arc" d="M 180,350 Q 50,200 180,70" fill="none" marker-end="url(#arrow)" />
+
+        <!-- Places -->
+        <circle class="place" cx="200" cy="60" r="20" />
+        <circle class="place" cx="120" cy="260" r="20" />
+        <circle class="place" cx="280" cy="260" r="20" />
+
+        <!-- Transitions -->
+        <rect class="transition" x="170" y="140" width="60" height="10" />
+        <rect class="transition" x="170" y="340" width="60" height="10" />
+
+        <!-- Tokens -->
+        <circle class="token" id="t1" cx="200" cy="60" r="8" opacity="1" />
+        <circle class="token" id="t2" cx="120" cy="260" r="8" opacity="0" />
+        <circle class="token" id="t3" cx="280" cy="260" r="8" opacity="0" />
+    </svg>
+
+    <script>
+        const tl = gsap.timeline({ repeat: -1 });
+        let crashed = false;
+
+        function animateCycle() {
+            if(crashed) return;
+
+            const cycle = gsap.timeline();
+            
+            // T1 moves down to transition 1
+            cycle.to("#t1", { y: 80, duration: 0.5, ease: "power1.in" })
+                 .to("#t1", { opacity: 0, duration: 0.1 })
+                 
+                 // Split to t2 and t3
+                 .to(["#t2", "#t3"], { opacity: 1, duration: 0.1 }, "+=0.1")
+                 
+                 // t2 and t3 move to transition 2
+                 .to("#t2", { x: 60, y: 70, duration: 1, ease: "power1.inOut" })
+                 .to("#t3", { x: -60, y: 70, duration: 1, ease: "power1.inOut" }, "<")
+                 
+                 // disappear at transition 2
+                 .to(["#t2", "#t3"], { opacity: 0, duration: 0.1 })
+                 
+                 // back to t1
+                 .set("#t1", { y: 0 })
+                 .to("#t1", { opacity: 1, duration: 0.1 });
+                 
+            return cycle;
+        }
+
+        tl.add(animateCycle());
+
+        window.addEventListener('click', () => {
+            if(crashed) return;
+            crashed = true;
+            
+            tl.pause();
+            document.body.classList.add("deadlock");
+            
+            // Fades to black
+            document.body.style.backgroundColor = "#000";
+            document.getElementById("net").classList.add("fade-out");
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snell's Law Refraction</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #1a1a1a;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    #container {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+    }
+    .medium-top {
+        position: absolute;
+        top: 0; left: 0;
+        width: 40px; height: 20px;
+    }
+    .medium-bottom {
+        position: absolute;
+        bottom: 0; left: 0;
+        width: 40px; height: 20px;
+        background: rgba(52, 152, 219, 0.2);
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .normal {
+        position: absolute;
+        top: 0; left: 20px;
+        width: 1px; height: 40px;
+        background: dashed 1px rgba(255, 255, 255, 0.3);
+        border-left: 1px dashed rgba(255, 255, 255, 0.3);
+    }
+    .ray-in {
+        position: absolute;
+        top: 0; left: 6px;
+        width: 20px; height: 2px;
+        background: #3498db;
+        box-shadow: 0 0 4px #3498db;
+        transform-origin: bottom right;
+        transform: rotate(45deg);
+    }
+    .ray-out {
+        position: absolute;
+        top: 20px; left: 20px;
+        width: 20px; height: 2px;
+        background: #3498db;
+        box-shadow: 0 0 4px #3498db;
+        transform-origin: top left;
+        animation: sweep 2s infinite alternate ease-in-out;
+    }
+
+    @keyframes sweep {
+        0% { transform: rotate(30deg); }
+        100% { transform: rotate(40deg); }
+    }
+
+    /* Click Animation Elements */
+    .tir-beam {
+        position: absolute;
+        width: 4px; height: 4px;
+        background: #3498db;
+        box-shadow: 0 0 10px #3498db, 0 0 20px #3498db;
+        border-radius: 50%;
+        opacity: 0;
+        z-index: 10;
+        pointer-events: none;
+    }
+</style>
+</head>
+<body>
+
+<div id="container" onclick="triggerTIR()">
+    <div class="medium-bottom"></div>
+    <div class="normal"></div>
+    <div class="ray-in" id="ray-in"></div>
+    <div class="ray-out" id="ray-out"></div>
+</div>
+
+<script>
+    function triggerTIR() {
+        const rayIn = document.getElementById('ray-in');
+        const rayOut = document.getElementById('ray-out');
+        const container = document.getElementById('container');
+        
+        // Increase incident angle
+        rayIn.style.transition = 'transform 0.3s';
+        rayIn.style.transform = 'rotate(70deg) translate(-2px, 8px)';
+        
+        // Refracted ray disappears, becomes reflected
+        rayOut.style.animation = 'none';
+        rayOut.style.transition = 'transform 0.3s, opacity 0.3s';
+        rayOut.style.transform = 'rotate(-70deg)';
+        
+        setTimeout(() => {
+            container.style.display = 'none';
+            spawnBouncingBeam();
+        }, 300);
+    }
+
+    function spawnBouncingBeam() {
+        let beam = document.createElement('div');
+        beam.className = 'tir-beam';
+        document.body.appendChild(beam);
+        
+        let x = window.innerWidth / 2;
+        let y = window.innerHeight / 2;
+        let vx = 15;
+        let vy = -15;
+        
+        beam.style.opacity = '1';
+        
+        function animate() {
+            x += vx;
+            y += vy;
+            
+            if (x < 0 || x > window.innerWidth) vx = -vx;
+            if (y < 0 || y > window.innerHeight) vy = -vy;
+            
+            beam.style.left = x + 'px';
+            beam.style.top = y + 'px';
+            
+            requestAnimationFrame(animate);
+        }
+        animate();
+        
+        // Add trail
+        setInterval(() => {
+            let trail = document.createElement('div');
+            trail.className = 'tir-beam';
+            trail.style.left = x + 'px';
+            trail.style.top = y + 'px';
+            trail.style.opacity = '0.5';
+            trail.style.transition = 'opacity 0.5s';
+            document.body.appendChild(trail);
+            setTimeout(() => {
+                trail.style.opacity = '0';
+                setTimeout(() => trail.remove(), 500);
+            }, 50);
+        }, 16);
+    }
+</script>
+
+</body>
+</html>

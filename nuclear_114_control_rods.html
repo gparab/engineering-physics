@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuclear - Control Rods</title>
+<style>
+  body { margin: 0; padding: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 30px; height: 40px; cursor: pointer; }
+  .core { position: absolute; bottom: 0; left: 0; width: 30px; height: 20px; border: 2px solid #555; border-radius: 2px; box-sizing: border-box; }
+  .rod { position: absolute; width: 4px; height: 25px; background-color: #708090; top: -10px; border-radius: 2px; }
+  .rod1 { left: 4px; }
+  .rod2 { left: 13px; }
+  .rod3 { left: 22px; }
+  .neutron { position: absolute; width: 2px; height: 2px; background-color: #00ffff; border-radius: 50%; box-shadow: 0 0 2px #00ffff; }
+  .scram-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; opacity: 0; pointer-events: none; z-index: 10; }
+  .scram-text { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #708090; font-family: monospace; font-size: 5vw; letter-spacing: 0.5em; opacity: 0; pointer-events: none; z-index: 11; font-weight: bold; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="core"></div>
+  <div class="rod rod1"></div>
+  <div class="rod rod2"></div>
+  <div class="rod rod3"></div>
+</div>
+<div class="scram-overlay" id="overlay"></div>
+<div class="scram-text" id="scramText">SCRAM</div>
+<script>
+  const container = document.getElementById('container');
+  // Create neutrons
+  for (let i = 0; i < 5; i++) {
+    let n = document.createElement('div');
+    n.className = 'neutron';
+    n.style.bottom = (5 + Math.random() * 10) + 'px';
+    n.style.left = (5 + Math.random() * 15) + 'px';
+    container.appendChild(n);
+    
+    gsap.to(n, {
+      x: () => (Math.random() - 0.5) * 20,
+      y: () => (Math.random() - 0.5) * 15,
+      duration: 0.5 + Math.random(),
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
+  }
+
+  const idleTL = gsap.timeline({repeat: -1, yoyo: true});
+  idleTL.to('.rod', {y: 5, duration: 2, ease: "sine.inOut", stagger: 0.3});
+
+  container.addEventListener('click', () => {
+    idleTL.kill();
+    gsap.killTweensOf('.neutron');
+    
+    // SCRAM action
+    gsap.to('.rod', {y: 18, duration: 0.15, ease: "power4.in"});
+    gsap.to('.neutron', {opacity: 0, duration: 0.1});
+    
+    // Flash text and black out
+    gsap.to('#overlay', {opacity: 1, duration: 0.1, delay: 0.15});
+    gsap.to('#scramText', {opacity: 0.5, scale: 1.5, duration: 0.5, delay: 0.15, ease: "power2.out"});
+    gsap.to('#scramText', {opacity: 0, duration: 1, delay: 0.65});
+    
+    gsap.to('#container', {scale: 0, opacity: 0, duration: 0.5, delay: 1});
+  });
+</script>
+</body>
+</html>

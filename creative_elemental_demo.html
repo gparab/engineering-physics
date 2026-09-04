@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creative Elemental Abstracts</title>
+<style>
+  :root {
+    --bg: #030305;
+    --card: #08080b;
+    --ink: #ffffff;
+    --hint: #555555;
+    --border: rgba(255,255,255,0.05);
+    
+    /* Elemental Colors */
+    --c-fluid: #00e5ff;
+    --c-earth: #6ee7b7;
+    --c-fire: #ff4500;
+    --c-air: #e2e8f0;
+    --c-water: #3b82f6;
+  }
+  body {
+    background-color: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 60px 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 40px;
+  }
+  .header-text { text-align: center; max-width: 600px; margin-bottom: 20px; }
+  h1 { font-weight: 300; letter-spacing: 8px; margin: 0 0 10px 0; text-transform: uppercase; font-size: 20px; color: #eee; }
+  p { color: var(--hint); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin: 0; line-height: 1.5; }
+
+  .showcase-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;
+    max-width: 1000px; width: 100%;
+  }
+  /* Center the bottom two cards */
+  .card:nth-child(4) { grid-column: 1 / 3; justify-self: right; width: calc(150% - 15px); }
+  .card:nth-child(5) { grid-column: 2 / 4; justify-self: left; width: calc(150% - 15px); margin-left: calc(50% + 15px);}
+  @media (max-width: 768px) {
+    .showcase-grid { grid-template-columns: 1fr; }
+    .card:nth-child(4), .card:nth-child(5) { grid-column: 1; justify-self: stretch; width: 100%; margin-left: 0; }
+  }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    height: 280px; display: flex; flex-direction: column; position: relative; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.02);
+  }
+  
+  .card-header { padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 10; border-bottom: 1px solid var(--border); }
+  .card-header span.title { font-size: 13px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; color: #ddd; }
+  .card-header span.sim { font-size: 10px; font-weight: 300; letter-spacing: 3px; color: var(--hint); text-transform: uppercase; display: block; margin-top: 4px; }
+  
+  .reset-btn { background: transparent; color: var(--hint); border: 1px solid #333; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+  .reset-btn:hover { color: var(--ink); border-color: var(--ink); }
+
+  .interactive-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+  .hint { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 9px; color: #444; letter-spacing: 3px; text-transform: uppercase; pointer-events: none; }
+
+  /* =======================================================================
+     SVG CORE STYLES
+     ======================================================================= */
+  .orb-container { width: 100px; height: 100px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
+  svg {
+    width: 100%; height: 100%;
+    stroke-linecap: round; stroke-linejoin: round; fill: none; overflow: visible;
+  }
+
+  /* =======================================================================
+     1. FLUID: THE COALESCENCE
+     ======================================================================= */
+  .orb-fluid { filter: url(#goo); }
+  .drop { fill: #000; stroke: #fff; stroke-width: 2px; transition: 0.5s; transform-origin: center; }
+  .d-left { animation: orbit-left 6s linear infinite; }
+  .d-right { animation: orbit-right 6s linear infinite; }
+
+  .orb-container:hover .drop { fill: var(--c-fluid); stroke: var(--c-fluid); filter: drop-shadow(0 0 10px var(--c-fluid)); }
+
+  .active-fluid { pointer-events: none; }
+  .active-fluid .d-left { animation: coalesce-left 1s cubic-bezier(0.9, 0, 0.1, 1) forwards; }
+  .active-fluid .d-right { animation: coalesce-right 1s cubic-bezier(0.9, 0, 0.1, 1) forwards; }
+
+  @keyframes orbit-left { 0% { transform: translateX(0); } 50% { transform: translateX(8px); } 100% { transform: translateX(0); } }
+  @keyframes orbit-right { 0% { transform: translateX(0); } 50% { transform: translateX(-8px); } 100% { transform: translateX(0); } }
+  @keyframes coalesce-left { 
+    30% { transform: translateX(10px) scale(1.2); }
+    100% { transform: translateX(10px) translateY(80px) scale(0.1); opacity: 0; }
+  }
+  @keyframes coalesce-right { 
+    30% { transform: translateX(-10px) scale(1.2); }
+    100% { transform: translateX(-10px) translateY(80px) scale(0.1); opacity: 0; }
+  }
+
+  /* =======================================================================
+     2. EARTH: THE SHEAR
+     ======================================================================= */
+  .earth-half { fill: #000; stroke: #fff; stroke-width: 2px; transition: 0.4s; }
+  .e-top { animation: shear-idle-top 5s ease-in-out infinite; }
+  .e-bot { animation: shear-idle-bot 5s ease-in-out infinite; }
+  
+  .orb-container:hover .earth-half { stroke: var(--c-earth); filter: drop-shadow(0 0 8px var(--c-earth)); }
+  .orb-container:hover .e-top { transform: translateY(-4px); }
+  .orb-container:hover .e-bot { transform: translateY(4px); }
+
+  .active-earth { pointer-events: none; }
+  .active-earth .e-top { animation: shear-snap-top 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+  .active-earth .e-bot { animation: shear-snap-bot 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+
+  @keyframes shear-idle-top { 50% { transform: translateY(-2px); } }
+  @keyframes shear-idle-bot { 50% { transform: translateY(2px); } }
+  @keyframes shear-snap-top { 100% { transform: translateY(-60px); opacity: 0; } }
+  @keyframes shear-snap-bot { 100% { transform: translateY(60px); opacity: 0; } }
+
+  /* =======================================================================
+     3. FIRE: THE BREACH
+     ======================================================================= */
+  .f-cage { stroke: #fff; stroke-width: 1.5px; fill: none; stroke-dasharray: 4; animation: cage-spin 4s linear infinite; transform-origin: 30px 30px; transition: 0.3s; }
+  .f-core { fill: var(--c-fire); filter: drop-shadow(0 0 10px var(--c-fire)); transition: 0.3s; }
+
+  .orb-container:hover .f-cage { stroke: var(--c-fire); filter: drop-shadow(0 0 5px var(--c-fire)); animation: cage-spin 1s linear infinite; }
+  .orb-container:hover .f-core { transform: scale(1.5); }
+
+  .active-fire { pointer-events: none; }
+  .active-fire .f-cage { animation: cage-breach 0.5s ease-out forwards; }
+  .active-fire .f-core { animation: core-escape 0.8s cubic-bezier(1, 0, 0, 1) forwards; }
+
+  @keyframes cage-spin { 100% { transform: rotate(360deg); } }
+  @keyframes cage-breach { 100% { transform: scale(3) rotate(180deg); opacity: 0; } }
+  @keyframes core-escape {
+    0% { transform: translate(0, 0); }
+    20% { transform: translate(30px, -20px); }
+    40% { transform: translate(-30px, -40px); }
+    60% { transform: translate(20px, -60px); }
+    100% { transform: translate(0, -100px) scale(0.1); opacity: 0; }
+  }
+
+  /* =======================================================================
+     4. AIR: THE VORTEX
+     ======================================================================= */
+  .a-wing { stroke: #fff; stroke-width: 2px; fill: none; transition: 0.4s; }
+  .a-rotor { fill: none; stroke: var(--c-air); stroke-width: 1px; opacity: 0; transform-origin: 30px 30px; }
+  
+  .orb-container:hover .a-wing { stroke: var(--c-air); filter: drop-shadow(0 0 8px var(--c-air)); transform: translateY(-5px); }
+
+  .active-air { pointer-events: none; }
+  .active-air .a-wing { animation: wing-lift 0.6s cubic-bezier(0.9, 0, 0.1, 1) forwards; }
+  .active-air .a-rotor { animation: rotor-spin 0.8s ease-out forwards; }
+  .active-air .a-rotor:nth-child(2) { animation-delay: 0.1s; }
+  .active-air .a-rotor:nth-child(3) { animation-delay: 0.2s; }
+
+  @keyframes wing-lift { 100% { transform: translateY(-100px) scale(0.5); opacity: 0; } }
+  @keyframes rotor-spin {
+    0% { transform: scale(0.5) rotateX(70deg) rotateZ(0deg); opacity: 1; }
+    100% { transform: scale(3) rotateX(70deg) rotateZ(360deg) translateY(-200px); opacity: 0; stroke-width: 0px; }
+  }
+
+  /* =======================================================================
+     5. WATER: THE PRESSURE
+     ======================================================================= */
+  .w-capsule { fill: #000; stroke: #fff; stroke-width: 2px; transition: 0.4s; transform-origin: 30px 30px; animation: pressure-idle 4s ease-in-out infinite; }
+  .w-shock { fill: none; stroke: var(--c-water); stroke-width: 2px; opacity: 0; transform-origin: 30px 30px; }
+  
+  .orb-container:hover .w-capsule { stroke: var(--c-water); filter: drop-shadow(0 0 10px var(--c-water)); }
+
+  .active-water { pointer-events: none; }
+  .active-water .w-capsule { animation: pressure-crush 0.5s cubic-bezier(1, 0, 0, 1) forwards; }
+  .active-water .w-shock { animation: shockwave 0.8s ease-out 0.3s forwards; }
+
+  @keyframes pressure-idle { 50% { transform: translateY(-5px); } }
+  @keyframes pressure-crush {
+    0% { transform: scale(1, 1); }
+    30% { transform: scale(0.9, 1.1); }
+    100% { transform: scale(6, 0.05); opacity: 0; fill: var(--c-water); }
+  }
+  @keyframes shockwave {
+    0% { transform: scale(1, 0.1); opacity: 1; }
+    100% { transform: scale(3, 1); opacity: 0; }
+  }
+
+</style>
+</head>
+<body>
+
+  <!-- Global SVG Filters -->
+  <svg style="width:0;height:0;position:absolute;">
+    <defs>
+      <filter id="goo">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+        <feBlend in="SourceGraphic" in2="goo" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="header-text">
+    <h1>AVANT-GARDE PHYSICS</h1>
+    <p>Highly conceptual geometry mapped to extreme elemental forces.</p>
+  </div>
+
+  <div class="showcase-grid">
+
+    <!-- FLUID (X) -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Coalescence</span>
+          <span class="sim">Fluid Simulation (X)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-fluid')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container orb-fluid" onclick="this.classList.add('active-fluid');">
+          <svg viewBox="0 0 60 60">
+            <circle class="drop d-left" cx="22" cy="30" r="10" />
+            <circle class="drop d-right" cx="38" cy="30" r="10" />
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+    <!-- EARTH (Y) -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Shear</span>
+          <span class="sim">Earth Simulation (Y)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-earth')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container" onclick="this.classList.add('active-earth');">
+          <svg viewBox="0 0 60 60">
+            <path class="earth-half e-top" d="M 30 10 A 20 20 0 0 0 30 50 Z" />
+            <path class="earth-half e-bot" d="M 30 10 A 20 20 0 0 1 30 50 Z" />
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+    <!-- FIRE (Z) -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Breach</span>
+          <span class="sim">Fire Simulation (Z)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-fire')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container" onclick="this.classList.add('active-fire');">
+          <svg viewBox="0 0 60 60">
+            <polygon class="f-cage" points="30,10 47.3,20 47.3,40 30,50 12.7,40 12.7,20" />
+            <circle class="f-core" cx="30" cy="30" r="3" />
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+    <!-- AIR (A) -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Vortex</span>
+          <span class="sim">Air Simulation (A)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-air')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container" onclick="this.classList.add('active-air');">
+          <svg viewBox="0 0 60 60">
+            <!-- Lift Wing -->
+            <path class="a-wing" d="M 15 35 Q 30 15 45 35" />
+            <line class="a-wing" x1="15" y1="35" x2="45" y2="35" />
+            <!-- Vortex Rings -->
+            <circle class="a-rotor" cx="30" cy="30" r="20" />
+            <circle class="a-rotor" cx="30" cy="30" r="20" />
+            <circle class="a-rotor" cx="30" cy="30" r="20" />
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+    <!-- WATER (B) -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="title">The Pressure</span>
+          <span class="sim">Water Simulation (B)</span>
+        </div>
+        <button class="reset-btn" onclick="resetOrb(this, 'active-water')">Reset</button>
+      </div>
+      <div class="interactive-area">
+        <div class="orb-container" onclick="this.classList.add('active-water');">
+          <svg viewBox="0 0 60 60">
+            <!-- Capsule -->
+            <rect class="w-capsule" x="22" y="10" width="16" height="40" rx="8" />
+            <!-- Shockwaves -->
+            <circle class="w-shock" cx="30" cy="30" r="15" />
+            <circle class="w-shock" cx="30" cy="30" r="25" />
+          </svg>
+        </div>
+      </div>
+      <div class="hint">Interact</div>
+    </div>
+
+  </div>
+
+  <script>
+    function resetOrb(btn, activeClass) {
+      const card = btn.closest('.card');
+      const orb = card.querySelector('.orb-container');
+      orb.classList.remove(activeClass);
+      // Force DOM reflow to reset animations immediately
+      void orb.offsetWidth;
+    }
+  </script>
+</body>
+</html>

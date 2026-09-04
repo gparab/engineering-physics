@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #121212;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+  }
+  .bucket {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 5px;
+    top: 5px;
+    display: flex;
+  }
+  .cup {
+    width: 10px;
+    height: 20px;
+    border: 2px solid #000080;
+    box-sizing: border-box;
+  }
+  .cup-left {
+    border-radius: 10px 0 0 10px;
+    border-right: none;
+  }
+  .cup-right {
+    border-radius: 0 10px 10px 0;
+    border-left: none;
+  }
+  .jet {
+    position: absolute;
+    width: 2px;
+    height: 30px;
+    background: #000080;
+    left: 14px;
+    bottom: -15px;
+    opacity: 0.8;
+  }
+  .flow-left, .flow-right {
+    position: absolute;
+    width: 2px;
+    height: 6px;
+    background: #4169E1;
+    top: 12px;
+    opacity: 0;
+    border-radius: 1px;
+  }
+  .flow-left { left: 9px; animation: u-turn-left 1.5s infinite linear; }
+  .flow-right { left: 19px; animation: u-turn-right 1.5s infinite linear; }
+  
+  @keyframes u-turn-left {
+    0% { transform: translateY(10px); opacity: 1; }
+    50% { transform: translateY(-5px) translateX(-5px) rotate(-90deg); }
+    100% { transform: translateY(10px) translateX(-8px) rotate(-180deg); opacity: 0; }
+  }
+  @keyframes u-turn-right {
+    0% { transform: translateY(10px); opacity: 1; }
+    50% { transform: translateY(-5px) translateX(5px) rotate(90deg); }
+    100% { transform: translateY(10px) translateX(8px) rotate(180deg); opacity: 0; }
+  }
+  
+  .droplet {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #4169E1;
+    border-radius: 50%;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="bucket" id="bucket">
+    <div class="cup cup-left"></div>
+    <div class="cup cup-right"></div>
+  </div>
+  <div class="jet" id="jet"></div>
+  <div class="flow-left"></div>
+  <div class="flow-right"></div>
+</div>
+<script>
+  document.getElementById('model').onclick = function() {
+    this.style.pointerEvents = 'none';
+    document.getElementById('bucket').style.display = 'none';
+    document.getElementById('jet').style.display = 'none';
+    document.querySelector('.flow-left').style.display = 'none';
+    document.querySelector('.flow-right').style.display = 'none';
+    
+    for(let i=0; i<40; i++) {
+      let drop = document.createElement('div');
+      drop.className = 'droplet';
+      this.appendChild(drop);
+      
+      let angle = (Math.random() * Math.PI) - Math.PI/2;
+      let force = Math.random() * 150 + 50;
+      let vx = Math.sin(angle) * force;
+      let vy = -Math.cos(angle) * force;
+      
+      drop.animate([
+        { transform: 'translate(15px, 15px) scale(1)', opacity: 1 },
+        { transform: `translate(${15 + vx}px, ${15 + vy}px) scale(1)`, opacity: 1, offset: 0.3 },
+        { transform: `translate(${15 + vx * 1.5}px, ${15 + vy + 300}px) scale(0)`, opacity: 0 }
+      ], {
+        duration: 1000 + Math.random()*500,
+        easing: 'cubic-bezier(0.2, 1, 0.8, 1)',
+        fill: 'forwards'
+      });
+    }
+  };
+</script>
+</body>
+</html>

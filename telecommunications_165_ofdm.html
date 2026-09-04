@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .container { position: relative; cursor: pointer; }
+  canvas { display: block; }
+  .label { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <canvas id="simCanvas" width="400" height="400"></canvas>
+  <div class="label">OFDM</div>
+</div>
+<script>
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const COLOR = '#F1C40F';
+let state = 'idle';
+let time = 0;
+let crashTime = 0;
+let particles = [];
+
+document.getElementById('container').addEventListener('click', () => {
+  if (state === 'idle') state = 'clicked';
+});
+
+function drawSinc(cx, amp, shift) {
+  ctx.beginPath();
+  for(let x=0; x<400; x++) {
+    let t = (x - cx + shift) / 20;
+    let y = 0;
+    if (t === 0) y = amp;
+    else y = amp * Math.sin(Math.PI * t) / (Math.PI * t);
+    if (x === 0) ctx.moveTo(x, 250 - y);
+    else ctx.lineTo(x, 250 - y);
+  }
+  ctx.stroke();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, 400, 400);
+  time += 0.05;
+  
+  if (state === 'idle') {
+    ctx.strokeStyle = COLOR;
+    ctx.lineWidth = 2;
+    for(let i=0; i<5; i++) {
+      let amp = 50 + 30 * Math.sin(time + i);
+      drawSinc(100 + i*50, amp, 0);
+    }
+  } else {
+    crashTime += 0.02;
+    if (crashTime < 1) {
+      ctx.strokeStyle = COLOR;
+      ctx.lineWidth = 2;
+      for(let i=0; i<5; i++) {
+        let shift = crashTime * 50 * (i%2==0?1:-1);
+        let amp = 50 + 30 * Math.sin(time + i);
+        drawSinc(100 + i*50, amp, shift);
+      }
+    } else if (crashTime >= 1 && particles.length === 0) {
+       for(let i=0; i<200; i++) {
+         particles.push({
+           x: 200 + (Math.random()-0.5)*200, y: 250 + (Math.random()-0.5)*100,
+           vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20,
+           life: 1
+         });
+       }
+    }
+    
+    if (particles.length > 0) {
+      ctx.fillStyle = COLOR;
+      for(let p of particles) {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        if (p.life > 0) {
+          ctx.globalAlpha = p.life;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

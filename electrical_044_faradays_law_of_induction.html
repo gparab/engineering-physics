@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faraday's Law of Induction</title>
+<style>
+  body { margin: 0; padding: 0; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 30px; height: 40px; cursor: pointer; }
+  svg { width: 100%; height: 100%; overflow: visible; }
+  .coil { fill: none; stroke: #E74C3C; stroke-width: 1.5; stroke-linecap: round; }
+  .field-line { fill: none; stroke: #aab7b8; stroke-width: 1; stroke-dasharray: 4 4; opacity: 0.5; }
+  .spark { position: absolute; width: 2px; height: 2px; background-color: #E74C3C; border-radius: 50%; opacity: 0; pointer-events: none; }
+  #flash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; opacity: 0; pointer-events: none; z-index: 999; }
+</style>
+</head>
+<body>
+<div id="flash"></div>
+<div id="container">
+  <svg viewBox="0 0 30 40" id="coil-svg">
+    <!-- Field lines -->
+    <path class="field-line" d="M15,50 L15,-10" id="fl1" />
+    <path class="field-line" d="M5,45 Q15,20 5,-5" id="fl2" />
+    <path class="field-line" d="M25,45 Q15,20 25,-5" id="fl3" />
+    <!-- Coil (helical approximation) -->
+    <path class="coil" d="M5,10 C15,5 25,10 25,15 C15,20 5,15 5,20 C15,25 25,20 25,25 C15,30 5,25 5,30" />
+  </svg>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  // Animate field lines (dash offset to simulate movement upwards)
+  gsap.to('.field-line', {
+    strokeDashoffset: -24,
+    duration: 1,
+    repeat: -1,
+    ease: "none"
+  });
+
+  // Create idle sparks
+  for (let i = 0; i < 3; i++) {
+    let spark = document.createElement('div');
+    spark.className = 'spark';
+    container.appendChild(spark);
+    gsap.fromTo(spark, 
+      { x: () => 5 + Math.random() * 20, y: () => 10 + Math.random() * 20, opacity: 1, scale: 0.5 },
+      { y: "-=5", opacity: 0, scale: 2, duration: 0.5, repeat: -1, delay: i * 0.3, ease: "power1.out" }
+    );
+  }
+
+  container.addEventListener('click', () => {
+    // Massive flux spike; blinding flash, coil launches off-screen like railgun
+    gsap.killTweensOf('.field-line');
+    gsap.killTweensOf('.spark');
+    
+    // Quick field line spike
+    gsap.to('.field-line', { strokeWidth: 4, stroke: '#E74C3C', opacity: 1, duration: 0.1 });
+    
+    // Flash
+    gsap.to('#flash', { opacity: 1, duration: 0.1, yoyo: true, repeat: 1 });
+    
+    // Launch coil
+    gsap.to('#coil-svg', { y: -window.innerHeight, scaleY: 2, duration: 0.4, ease: "power4.in", delay: 0.1 });
+    document.querySelectorAll('.spark').forEach(s => s.remove());
+  });
+</script>
+</body>
+</html>

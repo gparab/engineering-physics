@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f5f5f5; overflow: hidden; }
+  .container { position: relative; width: 60px; height: 30px; cursor: pointer; }
+  .nozzle { fill: none; stroke: #555; stroke-width: 1.5; }
+  .particle { fill: #E74C3C; opacity: 0.8; }
+  .shockwave { stroke: #333; stroke-width: 2; opacity: 0; fill: none; }
+</style>
+</head>
+<body>
+  <div class="container" id="model">
+    <svg viewBox="0 0 100 50" width="100%" height="100%" id="svg-element">
+      <path class="nozzle nozzle-top" d="M 0 5 Q 30 5 50 20 Q 70 5 100 0" id="topWall" />
+      <path class="nozzle nozzle-bot" d="M 0 45 Q 30 45 50 30 Q 70 45 100 50" id="botWall" />
+      <path class="shockwave" d="M 70 0 L 70 50" id="shock" />
+      <g id="particles"></g>
+    </svg>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    const container = document.getElementById('model');
+    const pGroup = document.getElementById('particles');
+    let isIdle = true;
+    
+    function spawnParticle() {
+      if(!isIdle) return;
+      let p = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      p.setAttribute("class", "particle");
+      p.setAttribute("r", 1);
+      let startY = 10 + Math.random() * 30;
+      p.setAttribute("cx", 0);
+      p.setAttribute("cy", startY);
+      pGroup.appendChild(p);
+      
+      gsap.to(p, {
+        x: 50,
+        y: 25 + (startY - 25)*0.2, 
+        duration: 1.5,
+        ease: "power1.in",
+        onComplete: () => {
+          gsap.to(p, {
+            x: 100,
+            y: 25 + (startY - 25)*2,
+            duration: 0.5,
+            ease: "power2.out",
+            onComplete: () => { if(isIdle) p.remove(); }
+          });
+        }
+      });
+      setTimeout(spawnParticle, 100);
+    }
+    spawnParticle();
+
+    container.addEventListener('click', () => {
+      isIdle = false;
+      
+      gsap.to("#shock", { opacity: 1, duration: 0.2 });
+      gsap.to("#shock", { 
+        x: -30, 
+        duration: 1, 
+        ease: "power2.inOut",
+        onComplete: () => {
+          gsap.to("#topWall", { y: -200, rotation: 45, duration: 1, ease: "power2.in" });
+          gsap.to("#botWall", { y: 200, rotation: -45, duration: 1, ease: "power2.in" });
+          gsap.to(".particle", { 
+            x: "random(0, 100)", 
+            y: "random(-100, 150)", 
+            opacity: 0, 
+            duration: 1,
+            stagger: 0.01 
+          });
+          gsap.to("#shock", { scaleY: 5, opacity: 0, duration: 0.5 });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

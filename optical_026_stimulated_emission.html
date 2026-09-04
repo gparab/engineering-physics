@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stimulated Emission</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #1a1a1a;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    #container {
+        position: relative;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+    }
+    /* Atom */
+    .nucleus {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+    }
+    .shell {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+    }
+    .electron {
+        position: absolute;
+        top: -2px;
+        left: 50%;
+        width: 4px;
+        height: 4px;
+        background: #fff;
+        border-radius: 50%;
+        transform: translate(-50%, 0);
+        transition: top 0.1s ease-in-out;
+    }
+    
+    /* Photons */
+    .photon {
+        position: absolute;
+        width: 8px;
+        height: 2px;
+        background: #e74c3c;
+        border-radius: 1px;
+        box-shadow: 0 0 4px #e74c3c;
+        opacity: 0;
+    }
+    .photon-in {
+        top: 5px;
+        left: -15px;
+        animation: photonIn 2s infinite linear;
+    }
+    .photon-out-1 {
+        top: 5px;
+        left: 15px;
+        animation: photonOut1 2s infinite linear;
+    }
+    .photon-out-2 {
+        top: 9px;
+        left: 15px;
+        animation: photonOut1 2s infinite linear;
+    }
+    
+    @keyframes photonIn {
+        0% { left: -20px; opacity: 0; }
+        10% { opacity: 1; }
+        45% { left: 5px; opacity: 1; }
+        46% { opacity: 0; }
+        100% { opacity: 0; left: 5px; }
+    }
+    @keyframes photonOut1 {
+        0%, 45% { left: 5px; opacity: 0; }
+        46% { opacity: 1; left: 5px; }
+        80% { left: 35px; opacity: 1; }
+        90% { opacity: 0; left: 40px; }
+        100% { opacity: 0; }
+    }
+
+    /* Click Animation Elements */
+    .cascade-container {
+        position: absolute;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        pointer-events: none;
+        overflow: hidden;
+    }
+    .laser-beam {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 0;
+        height: 8px;
+        background: #e74c3c;
+        box-shadow: 0 0 20px #e74c3c, 0 0 40px #e74c3c, 0 0 80px #e74c3c;
+        transform: translateY(-50%);
+        transition: width 0.1s ease-in;
+        z-index: 10;
+    }
+</style>
+</head>
+<body>
+
+<div id="container" onclick="triggerLaser()">
+    <div class="nucleus"></div>
+    <div class="shell">
+        <div class="electron" id="electron"></div>
+    </div>
+    <div class="photon photon-in"></div>
+    <div class="photon photon-out-1"></div>
+    <div class="photon photon-out-2"></div>
+</div>
+
+<div class="cascade-container" id="cascade">
+    <div class="laser-beam" id="beam"></div>
+</div>
+
+<script>
+    const electron = document.getElementById('electron');
+    setInterval(() => {
+        electron.style.top = '7px'; // drop down
+        setTimeout(() => {
+            electron.style.top = '-2px'; // go back up after photon passes
+        }, 1100);
+    }, 2000);
+
+    function triggerLaser() {
+        const container = document.getElementById('container');
+        const cascade = document.getElementById('cascade');
+        const beam = document.getElementById('beam');
+        
+        container.style.display = 'none';
+        
+        // Spawn cascading photons
+        for (let i = 0; i < 50; i++) {
+            let p = document.createElement('div');
+            p.className = 'photon';
+            p.style.opacity = '1';
+            p.style.left = '50vw';
+            p.style.top = '50vh';
+            // Random offset for cascade effect
+            p.style.transform = `translate(${Math.random()*60-30}px, ${Math.random()*60-30}px)`;
+            p.style.transition = 'all 0.4s ease-in';
+            cascade.appendChild(p);
+            
+            setTimeout(() => {
+                p.style.left = '100vw';
+                p.style.transform = `translate(${Math.random()*200}px, ${Math.random()*100-50}px)`;
+            }, 50);
+        }
+
+        setTimeout(() => {
+            beam.style.width = '100vw';
+            setTimeout(() => {
+                beam.style.opacity = '0';
+                beam.style.transition = 'opacity 0.8s ease';
+            }, 200);
+        }, 400);
+    }
+</script>
+
+</body>
+</html>

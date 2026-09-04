@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>133. DMA Controller</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #0d0d0d; overflow: hidden; }
+  #container { position: relative; width: 30px; height: 20px; cursor: pointer; }
+  .cpu { position: absolute; bottom: 0; left: 10px; width: 10px; height: 10px; background: #333; border-radius: 2px; }
+  .bridge { position: absolute; bottom: 0; left: 0; width: 30px; height: 16px; border: 2px solid #16A085; border-bottom: none; border-radius: 15px 15px 0 0; box-sizing: border-box; }
+  .packet { position: absolute; width: 4px; height: 4px; background: #16A085; border-radius: 50%; opacity: 0; box-shadow: 0 0 4px #16A085;}
+  #memory { position: absolute; bottom: -100px; width: 100vw; height: 50px; background: rgba(22, 160, 133, 0.1); border-top: 1px solid #16A085; opacity: 0; }
+  .ripple { position: absolute; border: 1px solid #16A085; border-radius: 50%; opacity: 0; transform: translate(-50%, -50%); pointer-events: none;}
+</style>
+</head>
+<body>
+<div id="memory"></div>
+<div id="container">
+  <div class="cpu"></div>
+  <div class="bridge"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+<script>
+  gsap.registerPlugin(MotionPathPlugin);
+  const container = document.getElementById('container');
+  let packets = [];
+  let t = gsap.timeline({repeat: -1});
+
+  for(let i=0; i<3; i++) {
+    let p = document.createElement('div');
+    p.className = 'packet';
+    container.appendChild(p);
+    packets.push(p);
+    
+    gsap.set(p, {x: -2, y: 16});
+    let pt = gsap.timeline({repeat: -1, delay: i * 0.5});
+    pt.to(p, {opacity: 1, duration: 0.1})
+      .to(p, {
+        duration: 1.5,
+        motionPath: {
+          path: [{x: -2, y: 16}, {x: 5, y: -2}, {x: 15, y: -4}, {x: 25, y: -2}, {x: 32, y: 16}],
+          curviness: 1.5
+        },
+        ease: "power1.inOut"
+      }, "<")
+      .to(p, {opacity: 0, duration: 0.1}, "-=0.1");
+    t.add(pt, 0);
+  }
+
+  container.addEventListener('click', () => {
+    t.kill();
+    gsap.set('.packet', {opacity: 0});
+    gsap.to('#memory', {opacity: 1, bottom: 0, duration: 0.5});
+    
+    gsap.to(container, {
+      y: window.innerHeight/2,
+      duration: 0.6,
+      ease: "power2.in",
+      onComplete: () => {
+        container.style.opacity = 0;
+        createRipple();
+      }
+    });
+  });
+
+  function createRipple() {
+    for(let i=0; i<3; i++) {
+      let r = document.createElement('div');
+      r.className = 'ripple';
+      r.style.left = '50vw';
+      r.style.top = '100vh';
+      document.body.appendChild(r);
+      gsap.to(r, {
+        width: 1000,
+        height: 1000,
+        opacity: 1,
+        duration: 0.2,
+        delay: i * 0.1,
+        yoyo: true,
+        repeat: 1,
+        ease: "sine.out"
+      });
+    }
+  }
+</script>
+</body>
+</html>

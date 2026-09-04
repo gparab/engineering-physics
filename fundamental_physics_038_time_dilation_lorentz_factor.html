@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Dilation (Lorentz Factor)</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; flex-direction: column; background-color: #111; overflow: hidden; color: white; font-family: sans-serif; gap: 40px; }
+        
+        .clock-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .clock {
+            width: 80px; height: 80px;
+            border: 4px solid #FF0000;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 10px rgba(255,0,0,0.5);
+            background: #222;
+            cursor: pointer;
+            transition: all 0.5s;
+        }
+
+        .center {
+            width: 6px; height: 6px;
+            background: #FF0000;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .hand {
+            position: absolute;
+            bottom: 50%; left: 50%;
+            width: 2px; height: 30px;
+            background: #FF0000;
+            transform-origin: bottom center;
+            transform: translateX(-50%);
+        }
+
+        .stationary .hand {
+            animation: tick 1s linear infinite;
+        }
+
+        .moving {
+            animation: move-fast 2s ease-in-out infinite alternate;
+        }
+
+        .moving .hand {
+            animation: tick 3s linear infinite;
+        }
+
+        @keyframes tick {
+            100% { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        @keyframes move-fast {
+            0% { transform: translateX(-50px) scaleX(0.7); }
+            100% { transform: translateX(50px) scaleX(0.7); }
+        }
+
+        /* Click action */
+        .lightspeed {
+            animation: lightspeed-dash 0.5s forwards !important;
+        }
+
+        .lightspeed .hand {
+            animation-play-state: paused;
+        }
+
+        @keyframes lightspeed-dash {
+            0% { transform: translateX(50px) scaleX(0.7); }
+            50% { transform: translateX(500px) scaleX(0.1); width: 80px; }
+            100% { transform: translateX(1000px) scaleX(0); width: 0; opacity: 0; border: 0; box-shadow: 0 0 20px 10px #fff; }
+        }
+    </style>
+</head>
+<body id="body">
+    <div class="clock-container">
+        <span>Stationary (v=0)</span>
+        <div class="clock stationary">
+            <div class="center"></div>
+            <div class="hand"></div>
+        </div>
+    </div>
+    
+    <div class="clock-container">
+        <span>Moving (v &rarr; c)</span>
+        <div class="clock moving" id="moving-clock">
+            <div class="center"></div>
+            <div class="hand"></div>
+        </div>
+    </div>
+
+    <script>
+        const movingClock = document.getElementById('moving-clock');
+        let clicked = false;
+        
+        document.body.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+            movingClock.classList.add('lightspeed');
+            // Stop alternating animation
+            movingClock.style.animationName = 'lightspeed-dash';
+            movingClock.style.animationDuration = '0.3s';
+            movingClock.style.animationIterationCount = '1';
+        });
+    </script>
+</body>
+</html>

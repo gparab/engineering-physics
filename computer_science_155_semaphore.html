@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semaphore</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+        }
+        
+        .pole {
+            position: absolute;
+            left: 28px;
+            bottom: 0;
+            width: 4px;
+            height: 40px;
+            background-color: #333;
+        }
+        
+        .arm {
+            position: absolute;
+            left: 30px;
+            bottom: 30px;
+            width: 25px;
+            height: 6px;
+            background-color: #C0392B;
+            transform-origin: 2px 3px;
+            border-radius: 3px;
+            animation: armWag 3s infinite;
+        }
+
+        .resource {
+            position: absolute;
+            left: 40px;
+            bottom: 5px;
+            width: 15px;
+            height: 15px;
+            border: 2px solid #555;
+            box-sizing: border-box;
+        }
+
+        .thread {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #3498DB;
+            border-radius: 50%;
+        }
+
+        .t1 { animation: threadRun1 3s infinite; }
+        .t2 { animation: threadRun2 3s infinite 1.5s; opacity: 0; }
+
+        @keyframes armWag {
+            0%, 20% { transform: rotate(0deg); } /* Blocked */
+            40%, 60% { transform: rotate(-90deg); } /* Open */
+            80%, 100% { transform: rotate(0deg); } /* Blocked */
+        }
+
+        @keyframes threadRun1 {
+            0% { left: 0; bottom: 10px; opacity: 1; }
+            35% { left: 20px; bottom: 10px; opacity: 1; } /* Wait at gate */
+            45% { left: 45px; bottom: 10px; opacity: 1; } /* In resource */
+            60% { left: 45px; bottom: 10px; opacity: 1; }
+            70% { left: 70px; bottom: 10px; opacity: 1; } /* Leave */
+            71%, 100% { opacity: 0; left: 70px; }
+        }
+
+        @keyframes threadRun2 {
+            0% { left: 0; bottom: 10px; opacity: 1; }
+            35% { left: 20px; bottom: 10px; opacity: 1; } /* Wait at gate */
+            45% { left: 45px; bottom: 10px; opacity: 1; } /* In resource */
+            60% { left: 45px; bottom: 10px; opacity: 1; }
+            70% { left: 70px; bottom: 10px; opacity: 1; } /* Leave */
+            71%, 100% { opacity: 0; left: 70px; }
+        }
+
+        /* Deadlock state */
+        .clicked .arm {
+            animation: none !important;
+            transform: rotate(-45deg) !important;
+            background-color: #7f8c8d !important;
+        }
+        .clicked .t1, .clicked .t2 {
+            animation: none !important;
+            opacity: 1 !important;
+            background-color: #7f8c8d !important;
+            bottom: 30px !important;
+        }
+        .clicked .t1 { left: 20px !important; top: 20px !important; }
+        .clicked .t2 { left: 45px !important; top: 0px !important; }
+        .clicked .pole { background-color: #7f8c8d !important; }
+        .clicked .resource { border-color: #7f8c8d !important; }
+
+        .deadlock-flash {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #7f8c8d;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .clicked .deadlock-flash {
+            animation: flashFreeze 0.5s forwards;
+        }
+        
+        @keyframes flashFreeze {
+            0% { opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.1; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container" id="model">
+        <div class="pole"></div>
+        <div class="resource"></div>
+        <div class="arm"></div>
+        <div class="thread t1"></div>
+        <div class="thread t2"></div>
+        <div class="deadlock-flash"></div>
+    </div>
+
+    <script>
+        document.getElementById('model').addEventListener('click', function() {
+            this.classList.add('clicked');
+        });
+    </script>
+</body>
+</html>

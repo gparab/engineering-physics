@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radioactive Decay Series</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #111;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+        }
+
+        .grid {
+            stroke: #333;
+            stroke-width: 1;
+        }
+
+        .step {
+            fill: #333;
+            opacity: 0.5;
+        }
+        
+        .step-final {
+            fill: #7F8C8D; /* Lead grey */
+        }
+
+        .nucleus {
+            fill: #FF4500; /* Decay Orange */
+            r: 8;
+        }
+
+        .particle {
+            fill: #fff;
+            r: 2;
+            opacity: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container" id="decay-container">
+        <svg width="200" height="200" viewBox="0 0 200 200" id="decay-svg">
+            <!-- Grid Lines -->
+            <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
+                <rect width="20" height="20" fill="none" class="grid"/>
+                <path d="M 20 0 L 0 0 0 20" fill="none" class="grid"/>
+            </pattern>
+            <rect width="200" height="200" fill="url(#gridPattern)" />
+
+            <!-- Steps -->
+            <!-- We will animate nucleus from top left to bottom right -->
+            <rect x="20" y="20" width="20" height="20" class="step" />
+            <rect x="60" y="40" width="20" height="20" class="step" />
+            <rect x="100" y="80" width="20" height="20" class="step" />
+            <rect x="120" y="120" width="20" height="20" class="step" />
+            <rect x="160" y="160" width="20" height="20" class="step step-final" />
+
+            <!-- Nucleus -->
+            <circle cx="30" cy="30" class="nucleus" id="nucleus" />
+
+            <!-- Particles for emission -->
+            <circle cx="0" cy="0" class="particle" id="p1" />
+            <circle cx="0" cy="0" class="particle" id="p2" />
+        </svg>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('decay-container');
+        const nucleus = document.getElementById('nucleus');
+        const p1 = document.getElementById('p1');
+        const p2 = document.getElementById('p2');
+
+        const steps = [
+            { x: 30, y: 30 },
+            { x: 70, y: 50 },
+            { x: 110, y: 90 },
+            { x: 130, y: 130 }
+        ];
+
+        let idleTl = gsap.timeline({ repeat: -1 });
+
+        // Build idle animation: jumps down the steps
+        steps.forEach((step, i) => {
+            if (i > 0) {
+                // Jump to next step
+                idleTl.to(nucleus, {
+                    duration: 0.5,
+                    cx: step.x,
+                    cy: step.y,
+                    ease: "power1.inOut",
+                    onComplete: () => {
+                        // Change color slightly
+                        gsap.set(nucleus, { fill: `hsl(${20 + i*15}, 100%, 50%)` });
+                        // Emit particle
+                        gsap.set([p1, p2], { cx: step.x, cy: step.y, opacity: 1 });
+                        gsap.to(p1, { duration: 0.5, cx: step.x - 20, cy: step.y - 20, opacity: 0, ease: "power1.out" });
+                        gsap.to(p2, { duration: 0.5, cx: step.x + 20, cy: step.y - 20, opacity: 0, ease: "power1.out" });
+                    }
+                });
+                idleTl.to(nucleus, { duration: 0.5 }); // Rest
+            }
+        });
+
+        // Loop back to start smoothly
+        idleTl.to(nucleus, {
+            duration: 0,
+            cx: steps[0].x,
+            cy: steps[0].y,
+            fill: "#FF4500",
+            delay: 0.5
+        });
+
+        container.addEventListener('click', () => {
+            idleTl.kill();
+
+            const finalStep = { x: 170, y: 170 }; // center of lead block
+
+            const tl = gsap.timeline();
+
+            // Final jump to lead block
+            tl.to(nucleus, {
+                duration: 0.6,
+                cx: finalStep.x,
+                cy: finalStep.y,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    // Emit last particles
+                    gsap.set([p1, p2], { cx: finalStep.x, cy: finalStep.y, opacity: 1 });
+                    gsap.to(p1, { duration: 0.4, cx: finalStep.x - 30, cy: finalStep.y - 10, opacity: 0 });
+                    gsap.to(p2, { duration: 0.4, cx: finalStep.x - 10, cy: finalStep.y - 30, opacity: 0 });
+                }
+            });
+
+            // Solidify into heavy unmoving block (morph to square or change color)
+            tl.to(nucleus, {
+                duration: 0.3,
+                fill: "#7F8C8D", // Lead grey
+                attr: { r: 10 }
+            });
+
+            // Sink through the bottom of the screen
+            tl.to(nucleus, {
+                duration: 1,
+                cy: 500, // Sink out of SVG viewport
+                ease: "power3.in"
+            }, "+=0.2");
+            
+            tl.to(container, {
+                duration: 0.5,
+                opacity: 0,
+                delay: 0.5
+            }, "-=0.5");
+        });
+
+    </script>
+</body>
+</html>

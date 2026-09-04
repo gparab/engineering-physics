@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .container { position: relative; cursor: pointer; }
+  canvas { display: block; }
+  .label { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <canvas id="simCanvas" width="400" height="400"></canvas>
+  <div class="label">TCP Sliding Window</div>
+</div>
+<script>
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const COLOR = '#16A085';
+let state = 'idle';
+let time = 0;
+let windowStart = 0;
+let particles = [];
+let explodeTime = 0;
+
+document.getElementById('container').addEventListener('click', () => {
+  if (state === 'idle') {
+    state = 'clicked';
+    for(let i=0; i<100; i++) {
+       particles.push({
+         x: 200 + (Math.random()-0.5)*200, y: 200 + (Math.random()-0.5)*20,
+         vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20,
+         life: 1
+       });
+    }
+  }
+});
+
+function draw() {
+  ctx.clearRect(0, 0, 400, 400);
+  time++;
+  
+  if (state === 'idle') {
+    if (time % 60 === 0) windowStart = (windowStart + 1) % 10;
+    
+    for(let i=0; i<15; i++) {
+      ctx.fillStyle = '#30363d';
+      ctx.fillRect(25 + i*24, 188, 20, 24);
+    }
+    
+    ctx.strokeStyle = COLOR;
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = COLOR;
+    ctx.strokeRect(23 + windowStart*24, 186, 24*4, 28);
+    ctx.shadowBlur = 0;
+    
+    let ackY = 240 - ((time % 60) / 60) * 40;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(23 + windowStart*24 + 12, ackY, 3, 0, Math.PI*2);
+    ctx.fill();
+    
+  } else {
+    explodeTime++;
+    if (explodeTime < 20) {
+      for(let i=0; i<15; i++) {
+        ctx.fillStyle = '#30363d';
+        ctx.fillRect(25 + i*24, 188, 20, 24);
+      }
+      ctx.strokeStyle = '#E74C3C';
+      ctx.lineWidth = 3;
+      let w = 24*4 - (explodeTime/20) * 24*3;
+      ctx.strokeRect(23 + windowStart*24 + (Math.random()-0.5)*5, 186 + (Math.random()-0.5)*5, w, 28);
+      
+      ctx.strokeStyle = '#E74C3C';
+      ctx.beginPath();
+      ctx.moveTo(25 + (windowStart+3)*24, 188); ctx.lineTo(45 + (windowStart+3)*24, 212);
+      ctx.moveTo(45 + (windowStart+3)*24, 188); ctx.lineTo(25 + (windowStart+3)*24, 212);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = COLOR;
+      for(let p of particles) {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        if (p.life > 0) {
+          ctx.globalAlpha = p.life;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

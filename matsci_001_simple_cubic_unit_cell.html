@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #ffffff; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+  #scene { width: 40px; height: 40px; perspective: 200px; cursor: pointer; }
+  .cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; }
+  .edge { position: absolute; background: #3498db; }
+  .atom { position: absolute; width: 6px; height: 6px; background: #3498db; border-radius: 50%; transform: translate(-50%, -50%); }
+  .dust { position: absolute; width: 2px; height: 2px; background: #3498db; border-radius: 50%; opacity: 0; pointer-events: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="scene">
+  <div class="cube" id="cube"></div>
+</div>
+<script>
+  const cube = document.getElementById('cube');
+  const size = 20;
+  const positions = [
+    [10,10,10], [30,10,10], [10,30,10], [30,30,10],
+    [10,10,-10], [30,10,-10], [10,30,-10], [30,30,-10]
+  ];
+  const edges = [
+    [0,1], [2,3], [0,2], [1,3],
+    [4,5], [6,7], [4,6], [5,7],
+    [0,4], [1,5], [2,6], [3,7]
+  ];
+
+  edges.forEach(e => {
+    const p1 = positions[e[0]], p2 = positions[e[1]];
+    const edge = document.createElement('div');
+    edge.className = 'edge e-edge';
+    edge.style.left = p1[0] + 'px';
+    edge.style.top = p1[1] + 'px';
+    const dx = p2[0]-p1[0], dy = p2[1]-p1[1], dz = p2[2]-p1[2];
+    const len = Math.hypot(dx, dy, dz);
+    edge.style.width = len + 'px';
+    edge.style.height = '1px';
+    edge.style.transformOrigin = '0 0';
+    const rotY = Math.atan2(-dz, dx) * 180 / Math.PI;
+    const rotZ = Math.atan2(dy, Math.sqrt(dx*dx + dz*dz)) * 180 / Math.PI;
+    edge.style.transform = `translateZ(${p1[2]}px) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
+    cube.appendChild(edge);
+  });
+
+  const atoms = [];
+  positions.forEach(p => {
+    const atom = document.createElement('div');
+    atom.className = 'atom';
+    atom.style.left = p[0] + 'px';
+    atom.style.top = p[1] + 'px';
+    atom.style.transform = `translate3d(-50%, -50%, ${p[2]}px)`;
+    cube.appendChild(atom);
+    atoms.push({el: atom, pos: p});
+  });
+
+  const idleCube = gsap.to(cube, { rotationX: 360, rotationY: 360, duration: 8, repeat: -1, ease: "linear" });
+  atoms.forEach(a => {
+    gsap.to(a.el, { scale: 1.4, duration: 0.8, yoyo: true, repeat: -1, ease: "sine.inOut", delay: Math.random() });
+  });
+
+  document.getElementById('scene').addEventListener('click', () => {
+    idleCube.kill();
+    gsap.killTweensOf(".atom");
+    const center = 20;
+    atoms.forEach(a => {
+      const dx = a.pos[0] - center, dy = a.pos[1] - center, dz = a.pos[2];
+      const mag = Math.hypot(dx, dy, dz);
+      gsap.to(a.el, { 
+        x: (dx/mag) * 1000, y: (dy/mag) * 1000, z: (dz/mag) * 1000, 
+        duration: 1, ease: "power2.out" 
+      });
+    });
+    
+    document.querySelectorAll('.e-edge').forEach(el => el.style.display = 'none');
+    
+    for(let i=0; i<50; i++){
+      const dust = document.createElement('div');
+      dust.className = 'dust';
+      document.body.appendChild(dust);
+      gsap.set(dust, { 
+        x: window.innerWidth/2 + (Math.random()-0.5)*size, 
+        y: window.innerHeight/2 + (Math.random()-0.5)*size, 
+        opacity: 1 
+      });
+      gsap.to(dust, {
+        x: "+=" + (Math.random()-0.5)*500,
+        y: "+=" + (Math.random()-0.5)*500,
+        opacity: 0,
+        duration: 1 + Math.random(),
+        ease: "power2.out"
+      });
+    }
+  });
+</script>
+</body>
+</html>

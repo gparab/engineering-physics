@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .container { position: relative; cursor: pointer; }
+  canvas { display: block; }
+  .label { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <canvas id="simCanvas" width="400" height="400"></canvas>
+  <div class="label">Turbo Code</div>
+</div>
+<script>
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const COLOR = '#C0392B';
+let state = 'idle';
+let time = 0;
+let speed = 1;
+let offset = 0;
+
+document.getElementById('container').addEventListener('click', () => {
+  if (state === 'idle') state = 'clicked';
+});
+
+function draw() {
+  ctx.clearRect(0, 0, 400, 400);
+  
+  if (state === 'clicked') {
+    speed *= 1.1;
+    offset += speed * 0.1;
+  }
+  time += speed;
+  
+  ctx.save();
+  if (state === 'clicked') {
+    ctx.translate(offset, 0);
+    ctx.scale(1 + offset*0.01, 1 - offset*0.005);
+  }
+  
+  ctx.strokeStyle = COLOR;
+  ctx.lineWidth = 2;
+  
+  ctx.fillStyle = '#30363d';
+  ctx.fillRect(100, 150, 60, 40);
+  ctx.fillRect(100, 210, 60, 40);
+  ctx.fillRect(240, 180, 60, 40);
+  
+  ctx.fillStyle = '#fff';
+  ctx.font = '10px sans-serif';
+  ctx.fillText('ENC 1', 115, 175);
+  ctx.fillText('ENC 2', 115, 235);
+  ctx.fillText('INT', 260, 205);
+  
+  ctx.beginPath();
+  ctx.moveTo(160, 170); ctx.lineTo(240, 190);
+  ctx.moveTo(240, 210); ctx.lineTo(160, 230);
+  ctx.stroke();
+  
+  ctx.fillStyle = '#fff';
+  ctx.shadowBlur = Math.min(speed, 20);
+  ctx.shadowColor = '#fff';
+  let t1 = (time % 100) / 100;
+  let p1x = 160 + t1 * 80;
+  let p1y = 170 + t1 * 20;
+  ctx.beginPath(); ctx.arc(p1x, p1y, 4, 0, Math.PI*2); ctx.fill();
+  
+  let t2 = ((time+50) % 100) / 100;
+  let p2x = 240 - t2 * 80;
+  let p2y = 210 + t2 * 20;
+  ctx.beginPath(); ctx.arc(p2x, p2y, 4, 0, Math.PI*2); ctx.fill();
+  
+  ctx.restore();
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>108. Nuclear Fusion</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { width: 400px; height: 400px; position: relative; cursor: pointer; }
+  .nucleus { position: absolute; width: 30px; height: 30px; border-radius: 50%; box-shadow: 0 0 15px #00FFFF; }
+  #d { background: radial-gradient(circle, #00FFFF, #008888); top: 185px; left: 80px; }
+  #t { background: radial-gradient(circle, #00FFFF, #008888); top: 185px; left: 290px; width: 36px; height: 36px; top: 182px; }
+  
+  .orbit { animation: orbitAnim 2s infinite linear; transform-origin: 120px 15px; }
+  .orbit-t { animation: orbitAnim 2s infinite linear reverse; transform-origin: -90px 18px; }
+  
+  @keyframes orbitAnim {
+    0% { transform: rotate(0deg) translateX(10px) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
+  }
+
+  #burst { position: absolute; width: 10px; height: 10px; background: white; border-radius: 50%; top: 195px; left: 195px; opacity: 0; box-shadow: 0 0 50px white; transform: scale(1); }
+  
+  .neutron { position: absolute; width: 8px; height: 8px; background: white; border-radius: 50%; top: 195px; left: 195px; opacity: 0; box-shadow: 0 0 10px white; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="d" class="nucleus orbit"></div>
+  <div id="t" class="nucleus orbit-t"></div>
+  <div id="burst"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const d = document.getElementById('d');
+  const t = document.getElementById('t');
+  const burst = document.getElementById('burst');
+  let clicked = false;
+
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+
+    d.classList.remove('orbit');
+    t.classList.remove('orbit-t');
+    
+    d.style.transition = 'all 0.5s cubic-bezier(0.5, 0, 1, 1)';
+    t.style.transition = 'all 0.5s cubic-bezier(0.5, 0, 1, 1)';
+    
+    d.style.left = '185px';
+    d.style.top = '185px';
+    t.style.left = '182px';
+    t.style.top = '182px';
+    
+    setTimeout(() => {
+      d.style.opacity = '0';
+      t.style.opacity = '0';
+      
+      burst.style.opacity = '1';
+      burst.style.transition = 'all 0.4s ease-out';
+      burst.style.transform = 'scale(50)';
+      
+      const neutron = document.createElement('div');
+      neutron.className = 'neutron';
+      container.appendChild(neutron);
+      
+      setTimeout(() => {
+        neutron.style.opacity = '1';
+        neutron.style.transition = 'all 0.6s linear';
+        neutron.style.transform = 'translate(600px, -300px)';
+        
+        burst.style.transition = 'all 1s ease-in';
+        burst.style.opacity = '0';
+      }, 100);
+      
+    }, 500);
+  });
+</script>
+</body>
+</html>

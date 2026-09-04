@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Room Reverberation Ray Tracing</title>
+<style>
+    body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1a1a1a;
+        overflow: hidden;
+    }
+    #room {
+        position: relative;
+        width: 40px;
+        height: 30px;
+        border: 2px solid #1abc9c;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+    .source {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 4px;
+        height: 4px;
+        background-color: #fff;
+        border-radius: 50%;
+    }
+    .ray {
+        position: absolute;
+        background-color: #1abc9c;
+        border-radius: 50%;
+        width: 2px;
+        height: 2px;
+        transform: translate(-50%, -50%);
+    }
+    
+    .concert-hall {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 40px;
+        height: 30px;
+        border: 2px solid #1abc9c;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        display: none;
+    }
+    .rt60-curve {
+        position: absolute;
+        bottom: 10vh;
+        left: 10vw;
+        width: 80vw;
+        height: 30vh;
+        border-left: 2px solid rgba(26, 188, 156, 0.5);
+        border-bottom: 2px solid rgba(26, 188, 156, 0.5);
+        display: none;
+    }
+    .impulse {
+        position: absolute;
+        bottom: 0;
+        width: 2px;
+        background-color: #1abc9c;
+        transform-origin: bottom center;
+    }
+</style>
+</head>
+<body>
+
+<div class="concert-hall" id="concertHall"></div>
+<div class="rt60-curve" id="rt60"></div>
+
+<div id="room">
+    <div class="source"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    const room = document.getElementById('room');
+    let isIdle = true;
+    
+    // Idle animation: a few rays bouncing
+    function spawnIdleRay() {
+        if (!isIdle) return;
+        const ray = document.createElement('div');
+        ray.classList.add('ray');
+        ray.style.left = '12px';
+        ray.style.top = '12px';
+        room.appendChild(ray);
+
+        // Simple bounce simulation
+        const tl = gsap.timeline({
+            onComplete: () => ray.remove()
+        });
+        
+        // Random paths inside 40x30 room
+        tl.to(ray, { x: 20, y: -10, opacity: 0.8, duration: 0.3, ease: "none" })
+          .to(ray, { x: 5, y: 10, opacity: 0.6, duration: 0.4, ease: "none" })
+          .to(ray, { x: 25, y: 5, opacity: 0.3, duration: 0.3, ease: "none" })
+          .to(ray, { x: 15, y: 15, opacity: 0, duration: 0.2, ease: "none" });
+
+        setTimeout(spawnIdleRay, 800);
+    }
+    spawnIdleRay();
+
+    let clicked = false;
+    room.addEventListener('click', () => {
+        if (clicked) return;
+        clicked = true;
+        isIdle = false;
+
+        room.style.display = 'none';
+
+        const hall = document.getElementById('concertHall');
+        hall.style.display = 'block';
+
+        // Scale room to concert hall
+        gsap.to(hall, {
+            width: '90vw',
+            height: '90vh',
+            borderWidth: 1,
+            borderColor: 'rgba(26, 188, 156, 0.2)',
+            duration: 1.5,
+            ease: "power2.inOut",
+            onComplete: () => {
+                // Thousands of rays mapping impulse response
+                const rt60 = document.getElementById('rt60');
+                rt60.style.display = 'block';
+                
+                const numRays = 150;
+                for (let i = 0; i < numRays; i++) {
+                    const impulse = document.createElement('div');
+                    impulse.classList.add('impulse');
+                    impulse.style.left = (i / numRays * 100) + '%';
+                    
+                    // Exponential decay curve
+                    const heightVal = Math.exp(-i / 30) * 100;
+                    impulse.style.height = heightVal + '%';
+                    
+                    // Add noise to simulate reflections
+                    impulse.style.opacity = Math.max(0, heightVal/100 * (0.5 + Math.random()*0.5));
+                    
+                    rt60.appendChild(impulse);
+                    
+                    gsap.from(impulse, {
+                        scaleY: 0,
+                        duration: 0.5,
+                        delay: (i / numRays) * 2, // Sweep across
+                        ease: "bounce.out"
+                    });
+                }
+                
+                // Decay into silence
+                gsap.to([hall, rt60], {
+                    opacity: 0,
+                    delay: 3,
+                    duration: 3,
+                    ease: "power2.inOut"
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

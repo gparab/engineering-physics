@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>109. Plasma Confinement</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; perspective: 1000px; }
+  #container { width: 500px; height: 500px; position: relative; cursor: pointer; transform-style: preserve-3d; transform: rotateX(60deg); }
+  .torus { width: 300px; height: 300px; border: 2px dashed rgba(138, 43, 226, 0.4); border-radius: 50%; position: absolute; top: 100px; left: 100px; box-shadow: inset 0 0 20px rgba(138, 43, 226, 0.2); }
+  
+  .particle { position: absolute; width: 6px; height: 6px; background: #8A2BE2; border-radius: 50%; box-shadow: 0 0 10px #8A2BE2; top: 250px; left: 250px; margin-top: -3px; margin-left: -3px; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="torus"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  let clicked = false;
+  const particles = [];
+  const numParticles = 40;
+  
+  for(let i = 0; i < numParticles; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    container.appendChild(p);
+    particles.push({
+      el: p,
+      theta: Math.random() * Math.PI * 2,
+      phi: Math.random() * Math.PI * 2,
+      vTheta: 0.02 + Math.random() * 0.01,
+      vPhi: 0.1 + Math.random() * 0.05
+    });
+  }
+
+  let animationId;
+  function animate() {
+    if(!clicked) {
+      particles.forEach(p => {
+        p.theta += p.vTheta;
+        p.phi += p.vPhi;
+        
+        const R = 150;
+        const r = 30;
+        
+        const x = 250 + (R + r * Math.cos(p.phi)) * Math.cos(p.theta);
+        const y = 250 + (R + r * Math.cos(p.phi)) * Math.sin(p.theta);
+        const z = r * Math.sin(p.phi);
+        
+        p.el.style.transform = `translate3d(${x - 250}px, ${y - 250}px, ${z}px)`;
+      });
+      animationId = requestAnimationFrame(animate);
+    }
+  }
+  animate();
+
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    cancelAnimationFrame(animationId);
+    
+    particles.forEach(p => {
+      p.el.style.transition = 'all ' + (0.5 + Math.random()) + 's cubic-bezier(0.25, 1, 0.5, 1)';
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 400 + Math.random() * 200;
+      p.el.style.transform = `translate3d(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px, ${(Math.random()-0.5)*200}px)`;
+      p.el.style.opacity = '0';
+    });
+    
+    document.querySelector('.torus').style.transition = 'all 1s';
+    document.querySelector('.torus').style.borderColor = 'rgba(255, 0, 0, 0.8)';
+    document.querySelector('.torus').style.boxShadow = 'inset 0 0 50px rgba(255, 0, 0, 0.5)';
+    setTimeout(() => {
+      document.querySelector('.torus').style.opacity = '0';
+      document.querySelector('.torus').style.transform = 'scale(1.5)';
+    }, 100);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>55. Fourier Transform</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0d0d0d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 300px;
+    height: 150px;
+    cursor: pointer;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .signal {
+    fill: none;
+    stroke: #16A085;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 5px #16A085);
+  }
+  .axis {
+    stroke: #333;
+    stroke-width: 2;
+  }
+  
+  .pop-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0px;
+    height: 0px;
+    border: 5px solid #16A085;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="fourier">
+  <svg viewBox="0 0 300 150">
+    <line x1="0" y1="120" x2="300" y2="120" class="axis" />
+    <path class="signal" id="signalPath" />
+  </svg>
+  <div class="pop-ring" id="pop"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const signalPath = document.getElementById('signalPath');
+  
+  // Data for Time Domain (squiggle)
+  // Sum of 3 sine waves
+  const timeData = [];
+  for (let x = 0; x <= 300; x += 3) {
+    const y = Math.sin(x * 0.05) * 20 + Math.sin(x * 0.15) * 10 + Math.sin(x * 0.3) * 5;
+    timeData.push({ x, y: 75 - y });
+  }
+  
+  // Data for Frequency Domain (spikes)
+  const freqData = [];
+  for (let x = 0; x <= 300; x += 3) {
+    let y = 120; // baseline
+    if (Math.abs(x - 50) < 3) y = 40;
+    else if (Math.abs(x - 150) < 3) y = 70;
+    else if (Math.abs(x - 250) < 3) y = 90;
+    freqData.push({ x, y });
+  }
+  
+  // To interpolate smoothly
+  const state = { progress: 0 }; // 0 = time, 1 = freq
+  
+  function draw() {
+    let d = `M ${timeData[0].x} ${timeData[0].y + (freqData[0].y - timeData[0].y) * state.progress} `;
+    for (let i = 1; i < timeData.length; i++) {
+      const currentY = timeData[i].y + (freqData[i].y - timeData[i].y) * state.progress;
+      d += `L ${timeData[i].x} ${currentY} `;
+    }
+    signalPath.setAttribute('d', d);
+  }
+  
+  // Initial draw
+  draw();
+  
+  // Idle Animation: morph back and forth
+  const idleTl = gsap.to(state, {
+    progress: 1,
+    duration: 2,
+    ease: "power2.inOut",
+    repeat: -1,
+    yoyo: true,
+    onUpdate: draw
+  });
+
+  // Click Animation
+  const container = document.getElementById('fourier');
+  let clicked = false;
+  
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    idleTl.kill();
+    
+    const tl = gsap.timeline();
+    
+    // Morph fully to frequency domain first if not already
+    tl.to(state, {
+      progress: 1,
+      duration: 0.3,
+      ease: "power1.out",
+      onUpdate: draw
+    })
+    // Spikes spread to infinite bandwidth
+    .to(signalPath, {
+      opacity: 0.5,
+      duration: 0.2
+    })
+    .call(() => {
+      // Animate the path to look like many infinite spikes spreading out
+      const spreadState = { width: 0 };
+      gsap.to(spreadState, {
+        width: 150,
+        duration: 0.5,
+        ease: "power2.in",
+        onUpdate: () => {
+          let d = `M 0 120 `;
+          for (let x = 0; x <= 300; x += 5) {
+            // Random noise spreading outwards
+            if (x > 150 - spreadState.width && x < 150 + spreadState.width) {
+              d += `L ${x} ${120 - Math.random() * 100} `;
+              d += `L ${x+2} 120 `;
+            } else {
+              d += `L ${x} 120 `;
+            }
+          }
+          signalPath.setAttribute('d', d);
+        }
+      });
+    })
+    // Pop and vanish
+    .to("#pop", {
+      width: "500px",
+      height: "500px",
+      borderWidth: "0px",
+      opacity: 1,
+      duration: 0.4,
+      ease: "power2.out"
+    }, "+=0.3")
+    .to("svg", {
+      opacity: 0,
+      scale: 0,
+      duration: 0.2
+    }, "-=0.4");
+  });
+</script>
+</body>
+</html>

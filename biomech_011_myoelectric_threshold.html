@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myoelectric Threshold</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #container { width: 50px; height: 40px; position: relative; cursor: pointer; }
+        .threshold { position: absolute; width: 100%; height: 1px; background: repeating-linear-gradient(90deg, #8B572A, #8B572A 2px, transparent 2px, transparent 4px); top: 10px; opacity: 0.5; }
+        svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+        path { fill: none; stroke: #8B572A; stroke-width: 1.5; stroke-linejoin: round; }
+        .gate { position: absolute; right: -5px; top: 50%; transform: translateY(-50%); width: 10px; height: 20px; border: 1.5px solid #8B572A; border-left: none; border-radius: 0 10px 10px 0; }
+        .gate::before { content: ''; position: absolute; left: 0; top: -1.5px; width: 1.5px; height: 20px; background-color: #8B572A; }
+        .square-wave { position: absolute; left: 45px; top: 20px; height: 20px; width: 0; border-top: 2px solid #8B572A; border-right: 2px solid #8B572A; border-bottom: 2px solid transparent; border-left: 2px solid transparent; opacity: 0; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="threshold"></div>
+        <svg><path id="emgLine" d="M0 20 L50 20"></path></svg>
+        <div class="gate" id="gate"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const emgLine = document.getElementById('emgLine');
+        const container = document.getElementById('container');
+        const gate = document.getElementById('gate');
+        
+        let points = [];
+        let numPoints = 25;
+        for(let i=0; i<numPoints; i++) points.push({x: i * (45/(numPoints-1)), y: 25});
+        
+        let clicked = false;
+        
+        gsap.ticker.add(() => {
+            if(clicked) return;
+            // Generate crackling EMG below threshold (y=10)
+            let d = `M ${points[0].x} ${points[0].y}`;
+            for(let i=1; i<numPoints; i++) {
+                // keep y between 15 and 35
+                points[i].y = 25 + (Math.random() * 16 - 8);
+                d += ` L ${points[i].x} ${points[i].y}`;
+            }
+            emgLine.setAttribute('d', d);
+        });
+
+        container.addEventListener('click', () => {
+            if(clicked) return; clicked = true;
+            
+            // Spike crosses threshold
+            let d = `M 0 25`;
+            for(let i=1; i<numPoints; i++) {
+                let y = 25;
+                if(i === Math.floor(numPoints/2)) y = 2; // cross threshold (y=10)
+                else if(i === Math.floor(numPoints/2)-1 || i === Math.floor(numPoints/2)+1) y = 15;
+                d += ` L ${points[i].x} ${y}`;
+            }
+            emgLine.setAttribute('d', d);
+            
+            // Gate snaps open, square wave zooms forward
+            gsap.to(gate, { scaleY: 1.5, borderColor: '#FFF', duration: 0.1, yoyo: true, repeat: 1, delay: 0.1 });
+            gsap.to(emgLine, { opacity: 0, duration: 0.1, delay: 0.2 });
+            
+            // Generate infinite square wave flying out
+            let sw = document.createElement('div');
+            sw.style.position = 'absolute';
+            sw.style.left = '45px'; sw.style.top = '10px';
+            container.appendChild(sw);
+            
+            let svgStr = `<svg width="2000" height="40" style="position:absolute; left:0; top:0;"><path d="`;
+            let cx = 0;
+            while(cx < 2000) {
+                svgStr += `M ${cx} 20 L ${cx} 0 L ${cx+20} 0 L ${cx+20} 20 L ${cx+40} 20 `;
+                cx += 40;
+            }
+            svgStr += `" fill="none" stroke="#FFF" stroke-width="2" stroke-linejoin="miter"/></svg>`;
+            sw.innerHTML = svgStr;
+            
+            gsap.fromTo(sw, { x: 0 }, { x: -2000, duration: 2, ease: "power1.in", onComplete: () => {
+                container.style.display = 'none';
+            }});
+        });
+    </script>
+</body>
+</html>

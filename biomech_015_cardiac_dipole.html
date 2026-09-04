@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardiac Dipole</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; perspective: 200px; }
+        #container { width: 40px; height: 40px; position: relative; cursor: pointer; transform-style: preserve-3d; }
+        .heart { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+        .heart-path { fill: none; stroke: rgba(224, 32, 32, 0.4); stroke-width: 1; }
+        
+        .vector { position: absolute; left: 50%; top: 40%; width: 2px; height: 15px; background-color: #E02020; transform-origin: top center; transform: rotate(120deg); }
+        .vector::after { content: ''; position: absolute; bottom: -2px; left: -2px; border-width: 4px 3px 0 3px; border-style: solid; border-color: #E02020 transparent transparent transparent; transform: rotate(180deg); }
+        
+        .micro-vector { position: absolute; width: 1px; height: 6px; background-color: #E02020; transform-origin: center; display: none; }
+        .flatline { position: absolute; width: 0; height: 1.5px; background-color: #E02020; top: 50%; left: -50vw; z-index: 10; opacity: 0; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Wireframe heart approx -->
+        <svg class="heart" viewBox="0 0 40 40">
+            <path class="heart-path" d="M20,12 A6,6 0 0,0 10,12 C10,18 20,28 20,28 C20,28 30,18 30,12 A6,6 0 0,0 20,12 Z"></path>
+            <!-- internal cross lines for wireframe look -->
+            <path class="heart-path" d="M12,15 L28,15 M15,20 L25,20 M20,12 L20,28" stroke-dasharray="1 2"></path>
+        </svg>
+        <div class="vector" id="vector"></div>
+    </div>
+    <div class="flatline" id="flatline"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const vector = document.getElementById('vector');
+        const container = document.getElementById('container');
+        const flatline = document.getElementById('flatline');
+        let clicked = false;
+
+        // PQRST idle cycle
+        let tl = gsap.timeline({ repeat: -1 });
+        // Start at resting (around 60 deg)
+        gsap.set(vector, { rotation: 60, scaleY: 0.2 });
+        // P wave
+        tl.to(vector, { rotation: 70, scaleY: 0.5, duration: 0.15, ease: "sine.inOut" })
+          .to(vector, { rotation: 60, scaleY: 0.2, duration: 0.15, ease: "sine.inOut" })
+        // PR interval delay
+          .to(vector, { rotation: 60, duration: 0.1 })
+        // Q wave
+          .to(vector, { rotation: 30, scaleY: 0.3, duration: 0.05 })
+        // R wave (main spike)
+          .to(vector, { rotation: 120, scaleY: 1.2, duration: 0.08, ease: "power2.inOut" })
+        // S wave
+          .to(vector, { rotation: 45, scaleY: 0.4, duration: 0.08, ease: "power2.inOut" })
+        // ST segment
+          .to(vector, { rotation: 60, scaleY: 0.2, duration: 0.15 })
+        // T wave
+          .to(vector, { rotation: 80, scaleY: 0.6, duration: 0.2, ease: "sine.inOut" })
+          .to(vector, { rotation: 60, scaleY: 0.2, duration: 0.2, ease: "sine.inOut" })
+        // T-P rest
+          .to(vector, { rotation: 60, duration: 0.4 });
+
+        // Fibrillation
+        container.addEventListener('click', () => {
+            if(clicked) return; clicked = true;
+            tl.kill();
+            
+            vector.style.display = 'none';
+            document.querySelector('.heart-path').style.stroke = 'rgba(224, 32, 32, 0.1)';
+            
+            // Create hundreds of chaotic micro-vectors
+            let mvs = [];
+            for(let i=0; i<60; i++) {
+                let mv = document.createElement('div');
+                mv.className = 'micro-vector';
+                // random position inside heart bounds roughly
+                let x = 10 + Math.random() * 20;
+                let y = 10 + Math.random() * 15;
+                mv.style.left = `${x}px`;
+                mv.style.top = `${y}px`;
+                mv.style.display = 'block';
+                container.appendChild(mv);
+                mvs.push(mv);
+                
+                // spin wildly
+                gsap.to(mv, {
+                    rotation: Math.random() * 1440,
+                    x: (Math.random() - 0.5) * 20,
+                    y: (Math.random() - 0.5) * 20,
+                    duration: 1 + Math.random(),
+                    ease: "power1.inOut"
+                });
+            }
+            
+            // Asystole flatline sweeps across
+            setTimeout(() => {
+                gsap.to(mvs, { opacity: 0, duration: 0.1 });
+                gsap.to('.heart', { opacity: 0, duration: 0.2 });
+                
+                gsap.set(flatline, { opacity: 1, left: 0, width: 0 });
+                gsap.to(flatline, {
+                    width: '100vw',
+                    duration: 1.5,
+                    ease: "none",
+                    onComplete: () => {
+                        // flatline drops or fades
+                        gsap.to(flatline, { opacity: 0, duration: 1 });
+                    }
+                });
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Four-Bar Linkage</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #1a1a1a; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 30px; cursor: pointer; }
+  .link { position: absolute; background: #9B59B6; height: 2px; transform-origin: 0 50%; }
+  .joint { position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%; transform: translate(-2px, -1px); z-index: 2; }
+  #ground { width: 24px; left: 8px; top: 24px; background: rgba(155, 89, 182, 0.3); }
+  #crank { width: 10px; left: 8px; top: 24px; }
+  #coupler { width: 20px; }
+  #rocker { width: 14px; left: 32px; top: 24px; }
+  .pivot1 { left: 8px; top: 24px; }
+  .pivot2 { left: 32px; top: 24px; }
+</style>
+</head>
+<body>
+<div class="container" id="linkage">
+  <div class="link" id="ground"></div>
+  <div class="link" id="crank"></div>
+  <div class="link" id="coupler"></div>
+  <div class="link" id="rocker"></div>
+  <div class="joint pivot1"></div>
+  <div class="joint pivot2"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const crank = document.getElementById('crank');
+  const coupler = document.getElementById('coupler');
+  const rocker = document.getElementById('rocker');
+  const container = document.getElementById('linkage');
+  let angle = 0; let animating = true;
+  const L1 = 24, L2 = 10, L3 = 20, L4 = 14;
+  function update() {
+    if(!animating) return;
+    angle -= 0.05;
+    const Ax = Math.cos(angle) * L2;
+    const Ay = Math.sin(angle) * L2;
+    const Bx = L1, By = 0;
+    const D = Math.sqrt((Bx - Ax)**2 + (By - Ay)**2);
+    const theta = Math.atan2(By - Ay, Bx - Ax);
+    const cosAlpha = (L4**2 + D**2 - L3**2) / (2 * L4 * D);
+    const alpha = Math.acos(Math.max(-1, Math.min(1, cosAlpha)));
+    const rockerAngle = theta - alpha;
+    const Cx = Bx - Math.cos(rockerAngle) * L4;
+    const Cy = By - Math.sin(rockerAngle) * L4;
+    const couplerAngle = Math.atan2(Cy - Ay, Cx - Ax);
+    gsap.set(crank, { rotation: angle * 180 / Math.PI });
+    gsap.set(coupler, { x: 8 + Ax, y: 24 + Ay, rotation: couplerAngle * 180 / Math.PI });
+    gsap.set(rocker, { rotation: (rockerAngle + Math.PI) * 180 / Math.PI });
+    requestAnimationFrame(update);
+  }
+  update();
+  container.addEventListener('click', () => {
+    animating = false;
+    document.querySelectorAll('.joint').forEach(j => j.style.display = 'none');
+    const links = [crank, coupler, rocker, document.getElementById('ground')];
+    links.forEach(link => {
+      gsap.to(link, {
+        x: `+=${(Math.random()-0.5)*window.innerWidth}`,
+        y: `+=${(Math.random()-0.5)*window.innerHeight}`,
+        rotation: `+=${(Math.random()-0.5)*1000}`,
+        opacity: 0,
+        duration: 1.5,
+        ease: "power2.out"
+      });
+    });
+    setTimeout(() => container.remove(), 1500);
+  });
+</script>
+</body>
+</html>

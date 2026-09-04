@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bone Compression Stress</title>
+<style>
+  body {
+    margin: 0; padding: 0; height: 100vh;
+    display: flex; justify-content: center; align-items: center;
+    background-color: #111; overflow: hidden; font-family: sans-serif;
+  }
+  #container {
+    width: 20px; height: 40px; cursor: pointer; position: relative;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <svg id="bone" viewBox="0 0 20 40" width="20" height="40" style="overflow:visible;">
+    <defs>
+      <pattern id="honeycomb" patternUnits="userSpaceOnUse" width="6" height="10.392">
+        <path d="M3 0 L6 1.732 L6 5.196 L3 6.928 L0 5.196 L0 1.732 Z" fill="none" stroke="#E8DCC4" stroke-width="0.8"/>
+      </pattern>
+    </defs>
+    <rect width="20" height="40" fill="url(#honeycomb)" rx="2" ry="2"/>
+  </svg>
+</div>
+<script>
+  const bone = document.getElementById("bone");
+  const container = document.getElementById("container");
+  
+  const tl = gsap.timeline({repeat: -1, yoyo: true});
+  tl.to(bone, { scaleY: 0.95, duration: 1, ease: "sine.inOut", transformOrigin: "center center" });
+  
+  container.addEventListener("click", () => {
+    tl.kill();
+    gsap.to(bone, { scaleX: 1.5, scaleY: 0.8, duration: 0.1, ease: "power4.out", onComplete: () => {
+      bone.style.display = "none";
+      for(let i=0; i<50; i++) {
+         let frag = document.createElement("div");
+         frag.style.width = (Math.random() * 3 + 1) + "px";
+         frag.style.height = (Math.random() * 4 + 1) + "px";
+         frag.style.border = "0.5px solid #E8DCC4";
+         frag.style.position = "absolute";
+         let startX = Math.random()*20;
+         let startY = Math.random()*40;
+         frag.style.left = startX + "px";
+         frag.style.top = startY + "px";
+         container.appendChild(frag);
+         
+         gsap.to(frag, {
+           x: (startX - 10) * (Math.random() * 30 + 10),
+           y: 200 + Math.random() * 500,
+           rotation: Math.random() * 720 - 360,
+           opacity: 0,
+           duration: 1.5 + Math.random() * 0.5,
+           ease: "power2.in"
+         });
+      }
+    }});
+  });
+</script>
+</body>
+</html>

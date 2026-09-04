@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>139. Watchdog Timer</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #0d0d0d; overflow: hidden; }
+  #container { position: relative; width: 24px; height: 24px; cursor: pointer; }
+  .clock { position: absolute; width: 20px; height: 20px; border: 2px solid #C0392B; border-radius: 50%; box-sizing: border-box; top: 2px; left: 2px;}
+  .hand { position: absolute; width: 1px; height: 8px; background: #C0392B; top: 10px; left: 11.5px; transform-origin: bottom center; }
+  .arm { position: absolute; width: 6px; height: 2px; background: #fff; right: -4px; top: 11px; transform-origin: right center; opacity: 0.7;}
+  #flash { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="flash"></div>
+<div id="container">
+  <div class="clock">
+    <div class="hand" id="hand"></div>
+  </div>
+  <div class="arm" id="arm"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  let tick = gsap.to('#hand', {
+    rotation: 300,
+    duration: 2.5,
+    ease: "steps(12)",
+    onComplete: () => {
+      if(!clicked) {
+        gsap.to('#arm', { rotation: -30, duration: 0.1, yoyo: true, repeat: 1 });
+        gsap.set('#hand', {rotation: 0});
+        tick.restart();
+      }
+    }
+  });
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    tick.kill();
+    
+    // Arm misses (moves away)
+    gsap.to('#arm', { y: 10, opacity: 0, duration: 0.2 });
+    
+    // Timer hits zero (goes to 360)
+    gsap.to('#hand', {
+      rotation: 360,
+      duration: 0.5,
+      ease: "power2.in",
+      onComplete: () => {
+        // Page-wide reboot flash
+        gsap.to('#flash', {
+          opacity: 1,
+          duration: 0.1,
+          onComplete: () => {
+            container.remove();
+            gsap.to('#flash', { opacity: 0, duration: 1.5, delay: 0.5 });
+          }
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Entanglement</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; perspective: 600px; }
+        .system { position: relative; width: 300px; height: 100px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        
+        .thread { position: absolute; left: 50px; right: 50px; height: 2px; background: rgba(127, 255, 212, 0.5); box-shadow: 0 0 5px #7FFFD4; top: 50%; transform: translateY(-50%); transition: opacity 0.2s; }
+        
+        .particle { position: relative; width: 40px; height: 40px; transform-style: preserve-3d; }
+        .core { position: absolute; width: 100%; height: 100%; background: radial-gradient(circle, #fff, #7FFFD4); border-radius: 50%; box-shadow: 0 0 15px #7FFFD4; }
+        .axis { position: absolute; width: 2px; height: 60px; background: #fff; left: 19px; top: -10px; }
+        .axis::before { content: ''; position: absolute; top: -5px; left: -4px; border-bottom: 5px solid #fff; border-left: 5px solid transparent; border-right: 5px solid transparent; }
+
+        /* Idle State */
+        .p1 { animation: spin1 2s linear infinite, tilt 4s ease-in-out infinite alternate; }
+        .p2 { animation: spin2 2s linear infinite, tilt 4s ease-in-out infinite alternate-reverse; }
+
+        @keyframes spin1 { to { transform: rotateY(360deg); } }
+        @keyframes spin2 { to { transform: rotateY(-360deg); } }
+        
+        @keyframes tilt {
+            0% { transform: rotateZ(-30deg) rotateY(0deg); }
+            100% { transform: rotateZ(30deg) rotateY(360deg); }
+        }
+
+        /* Click state */
+        .cut .thread { display: none; }
+        .cut .p1, .cut .p2 { animation: erratic-spin 1s linear forwards; }
+        
+        @keyframes erratic-spin {
+            0% { transform: rotateZ(0) rotateX(0) rotateY(0); }
+            100% { transform: rotateZ(180deg) rotateX(360deg) rotateY(720deg); }
+        }
+
+        .flash {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #7FFFD4; opacity: 0; pointer-events: none; mix-blend-mode: screen;
+        }
+
+        .annihilate .flash { animation: flash-bang 0.5s ease-out forwards; }
+        .annihilate .system { display: none; }
+
+        @keyframes flash-bang {
+            0% { opacity: 1; } 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="system" id="sys">
+        <div class="thread"></div>
+        <div class="particle p1">
+            <div class="core"></div>
+            <div class="axis"></div>
+        </div>
+        <div class="particle p2">
+            <div class="core"></div>
+            <div class="axis"></div>
+        </div>
+    </div>
+    <div class="flash"></div>
+    <script>
+        const sys = document.getElementById('sys');
+        let clicked = false;
+        
+        sys.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+            
+            // Cut thread, independent erratic spin
+            sys.classList.add('cut');
+            
+            // Annihilate after 1s
+            setTimeout(() => {
+                document.body.classList.add('annihilate');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

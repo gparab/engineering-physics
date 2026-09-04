@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enhanced Oil Recovery (Waterflood)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #222;
+    overflow: hidden;
+  }
+  
+  .container {
+    position: relative;
+    width: 24px;
+    height: 16px;
+    cursor: pointer;
+    background-color: #000; /* Black oil */
+    overflow: hidden;
+    border-radius: 2px;
+  }
+
+  .water-front {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30%;
+    height: 100%;
+    background-color: #1E90FF;
+  }
+
+  .finger {
+    position: absolute;
+    top: 20%;
+    right: -4px;
+    width: 6px;
+    height: 2px;
+    background-color: #1E90FF;
+    border-radius: 0 2px 2px 0;
+  }
+  
+  .finger2 {
+    top: 60%;
+    width: 4px;
+  }
+
+  /* Full screen block */
+  .solid-block {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    background: repeating-linear-gradient(
+      45deg,
+      #000,
+      #000 20px,
+      #111 20px,
+      #111 40px
+    );
+    transform: translate(-50%, -50%) scale(0);
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+  }
+  
+  .water-flood {
+    position: fixed;
+    top: 0;
+    left: -100vw;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(30, 144, 255, 0.5);
+    z-index: 9;
+    pointer-events: none;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="model">
+  <div class="water-front">
+    <div class="finger"></div>
+    <div class="finger finger2"></div>
+  </div>
+</div>
+
+<div class="water-flood" id="flood"></div>
+<div class="solid-block" id="block"></div>
+
+<script>
+  // Idle: Water pushes oil, viscous fingering spikes
+  gsap.to(".water-front", {
+    width: "50%",
+    duration: 2,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+
+  gsap.to(".finger", {
+    width: "+=4",
+    duration: 1,
+    yoyo: true,
+    repeat: -1,
+    stagger: 0.5,
+    ease: "sine.inOut"
+  });
+
+  const model = document.getElementById('model');
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf(".water-front");
+    gsap.killTweensOf(".finger");
+
+    // Water breaks through
+    gsap.to(".water-front", {
+      width: "120%",
+      duration: 0.3,
+      ease: "power2.in"
+    });
+
+    // Screen floods with water
+    gsap.to("#flood", {
+      left: 0,
+      duration: 0.5,
+      ease: "power2.out"
+    });
+
+    // Stranded oil turns solid unmovable block filling screen
+    gsap.to("#block", {
+      scale: 1,
+      opacity: 1,
+      duration: 0.8,
+      delay: 0.3,
+      ease: "bounce.out"
+    });
+    
+    gsap.to(model, {
+      opacity: 0,
+      duration: 0.1,
+      delay: 0.2
+    });
+  });
+</script>
+</body>
+</html>

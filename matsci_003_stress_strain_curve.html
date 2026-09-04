@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #fff; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+  #scene { width: 30px; height: 30px; position: relative; cursor: pointer; }
+  .axis { position: absolute; background: #333; }
+  .axis-x { width: 30px; height: 2px; bottom: 0; left: 0; }
+  .axis-y { width: 2px; height: 30px; bottom: 0; left: 0; }
+  svg { position: absolute; top: 0; left: 0; width: 30px; height: 30px; overflow: visible; }
+  .path { fill: none; stroke: #2ecc71; stroke-width: 2; stroke-linecap: round; }
+  .dot { position: absolute; width: 4px; height: 4px; background: #2ecc71; border-radius: 50%; box-shadow: 0 0 4px #2ecc71; transform: translate(-50%, -50%); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+</head>
+<body>
+<div id="scene">
+  <div class="axis axis-x"></div>
+  <div class="axis axis-y"></div>
+  <svg>
+    <path id="curve" class="path" d="M 0 30 L 10 10 Q 15 5, 20 12 T 30 15" />
+  </svg>
+  <div class="dot" id="dot"></div>
+</div>
+<script>
+  gsap.registerPlugin(MotionPathPlugin);
+  const dot = document.getElementById('dot');
+  
+  const idleAnim = gsap.to(dot, {
+    motionPath: {
+      path: "M 0 30 L 10 10",
+      align: "self"
+    },
+    duration: 1,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+
+  document.getElementById('scene').addEventListener('click', () => {
+    idleAnim.kill();
+    gsap.to(dot, {
+      motionPath: {
+        path: "#curve",
+        align: "self"
+      },
+      duration: 1.5,
+      ease: "power1.inOut",
+      onComplete: () => {
+        gsap.to(dot, { scale: 3, opacity: 0, duration: 0.2 });
+        const svg = document.querySelector('svg');
+        const axes = document.querySelectorAll('.axis');
+        
+        gsap.to(svg, { y: -window.innerHeight/2, rotation: -45, opacity: 0, duration: 1, ease: "power2.in" });
+        gsap.to(axes, { y: window.innerHeight/2, rotation: 45, opacity: 0, duration: 1, ease: "power2.in" });
+      }
+    });
+  });
+</script>
+</body>
+</html>

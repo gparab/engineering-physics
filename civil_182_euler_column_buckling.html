@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Euler Column Buckling</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #fafafa;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 20px;
+    height: 60px;
+    cursor: pointer;
+  }
+  .pin {
+    width: 6px;
+    height: 6px;
+    background: #444;
+    border-radius: 50%;
+    position: absolute;
+    left: 7px;
+  }
+  .pin-top { top: 0; }
+  .pin-bottom { bottom: 0; }
+  
+  .column-svg {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    width: 20px;
+    height: 54px;
+    pointer-events: none;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="container" id="icon">
+    <div class="pin pin-top"></div>
+    <div class="pin pin-bottom"></div>
+    <svg class="column-svg">
+      <path id="columnPath" d="M 10 0 Q 10 27 10 54" fill="none" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const path = document.getElementById('columnPath');
+    const topPin = document.querySelector('.pin-top');
+    
+    const idle = gsap.to(path, {
+      attr: { d: "M 10 0 Q 15 27 10 54" },
+      duration: 0.8,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+
+    icon.addEventListener('click', () => {
+      idle.kill();
+      gsap.timeline()
+        .to(path, { attr: { d: "M 10 0 Q 30 27 10 54" }, duration: 0.2, ease: "power2.in" })
+        .to(topPin, { y: 10, duration: 0.2 }, "<")
+        .add(() => {
+          path.style.display = 'none';
+          topPin.style.display = 'none';
+          document.querySelector('.pin-bottom').style.display = 'none';
+          
+          const rect = icon.getBoundingClientRect();
+          const topHalf = document.createElement('div');
+          topHalf.style.position = 'absolute';
+          topHalf.style.width = '2px';
+          topHalf.style.height = '27px';
+          topHalf.style.background = '#FF8C00';
+          topHalf.style.left = (rect.left + 10) + 'px';
+          topHalf.style.top = rect.top + 'px';
+          
+          const bottomHalf = topHalf.cloneNode();
+          bottomHalf.style.top = (rect.top + 27) + 'px';
+          
+          document.body.appendChild(topHalf);
+          document.body.appendChild(bottomHalf);
+          
+          gsap.to(topHalf, { y: window.innerHeight, x: 200, rotation: 360, duration: 1, ease: "power2.in" });
+          gsap.to(bottomHalf, { y: window.innerHeight, x: -200, rotation: -360, duration: 1.2, ease: "power2.in" });
+        });
+    });
+  </script>
+</body>
+</html>

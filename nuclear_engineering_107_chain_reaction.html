@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>107. Chain Reaction</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 100vw; height: 100vh; cursor: pointer; }
+  .node { position: absolute; width: 6px; height: 6px; background: #FFD700; border-radius: 50%; box-shadow: 0 0 10px #FFD700; transform: translate(-50%, -50%); opacity: 0; }
+  .pulse { animation: pulse 2s infinite; }
+  @keyframes pulse { 0% { opacity: 0.5; box-shadow: 0 0 5px #FFD700; } 50% { opacity: 1; box-shadow: 0 0 20px #FFD700; } 100% { opacity: 0.5; box-shadow: 0 0 5px #FFD700; } }
+  #flash { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: white; opacity: 0; pointer-events: none; transition: opacity 0.5s ease-in; }
+</style>
+</head>
+<body>
+<div id="container"></div>
+<div id="flash"></div>
+<script>
+  const container = document.getElementById('container');
+  const flash = document.getElementById('flash');
+  let clicked = false;
+  
+  function drawNode(x, y, level, isPulse) {
+    const node = document.createElement('div');
+    node.className = 'node ' + (isPulse ? 'pulse' : '');
+    node.style.left = x + 'px';
+    node.style.top = y + 'px';
+    container.appendChild(node);
+    
+    // Animate in
+    setTimeout(() => { node.style.transition = 'opacity 0.5s'; node.style.opacity = '1'; }, level * 300);
+  }
+
+  const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  
+  drawNode(cx, cy + 100, 0, true);
+  drawNode(cx - 50, cy, 1, true);
+  drawNode(cx + 50, cy, 1, true);
+  drawNode(cx - 80, cy - 100, 2, true);
+  drawNode(cx - 20, cy - 100, 2, true);
+  drawNode(cx + 20, cy - 100, 2, true);
+  drawNode(cx + 80, cy - 100, 2, true);
+
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    let activeNodes = [{x: cx, y: cy-100, vx: 0, vy: -1}];
+    let count = 0;
+    
+    const explosion = setInterval(() => {
+      let newNodes = [];
+      activeNodes.forEach(n => {
+        for(let i=0; i<3; i++) {
+          const angle = (Math.random() * 2 * Math.PI);
+          const dist = 50 + Math.random() * 50;
+          const nx = n.x + Math.cos(angle)*dist;
+          const ny = n.y + Math.sin(angle)*dist;
+          
+          const el = document.createElement('div');
+          el.className = 'node';
+          el.style.left = nx + 'px';
+          el.style.top = ny + 'px';
+          el.style.opacity = '1';
+          container.appendChild(el);
+          newNodes.push({x: nx, y: ny});
+          count++;
+        }
+      });
+      activeNodes = newNodes;
+      
+      if (count > 500) {
+        clearInterval(explosion);
+        flash.style.opacity = '1';
+        setTimeout(() => {
+            container.innerHTML = '';
+            flash.style.transition = 'opacity 2s ease-out';
+            flash.style.opacity = '0';
+        }, 600);
+      }
+    }, 100);
+  });
+</script>
+</body>
+</html>

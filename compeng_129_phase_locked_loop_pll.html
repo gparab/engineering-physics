@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase-Locked Loop (PLL)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    width: 250px;
+    height: 250px;
+    cursor: pointer;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  .loop {
+    fill: none;
+    stroke: #E74C3C;
+    stroke-width: 2;
+    stroke-dasharray: 4;
+  }
+  .box {
+    fill: #0f172a;
+    stroke: #E74C3C;
+    stroke-width: 2;
+  }
+  .wave-ref {
+    fill: none;
+    stroke: rgba(231, 76, 60, 0.4);
+    stroke-width: 2;
+  }
+  .wave-vco {
+    fill: none;
+    stroke: #E74C3C;
+    stroke-width: 3;
+    filter: drop-shadow(0 0 3px #E74C3C);
+  }
+  text {
+    fill: #E74C3C;
+    font-family: monospace;
+    font-size: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 100 100" id="svg-element">
+    <path class="loop" d="M50,70 A25,25 0 1,1 50,20 A25,25 0 0,1 50,70" />
+    
+    <rect class="box" x="40" y="10" width="20" height="20" rx="2" />
+    <text x="44" y="23">PD</text>
+    
+    <rect class="box" x="70" y="40" width="20" height="20" rx="2" />
+    <text x="72" y="53">VCO</text>
+    
+    <rect x="25" y="40" width="40" height="20" fill="none" stroke="#334155" stroke-width="1" />
+    
+    <g clip-path="url(#wave-clip)">
+      <clipPath id="wave-clip">
+        <rect x="25" y="40" width="40" height="20" />
+      </clipPath>
+      <path class="wave-ref" d="M25,50 Q30,40 35,50 T45,50 T55,50 T65,50 T75,50 T85,50" />
+      <g id="vco-wave-group">
+        <path class="wave-vco" d="M25,50 Q30,40 35,50 T45,50 T55,50 T65,50 T75,50 T85,50" id="vco-wave" />
+      </g>
+    </g>
+  </svg>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const vcoGroup = document.getElementById('vco-wave-group');
+  const vcoPath = document.getElementById('vco-wave');
+  
+  const tl = gsap.timeline({ repeat: -1 });
+  tl.fromTo(vcoGroup, { x: -5 }, { x: 0, duration: 1, ease: "elastic.out(1, 0.3)" })
+    .to(vcoGroup, { x: 0, duration: 1 }); // perfectly locked hold
+
+  const model = document.getElementById('model');
+  model.addEventListener('click', () => {
+    tl.kill();
+    
+    const clickTl = gsap.timeline();
+    // Frequency ramps to infinity
+    clickTl.to(vcoGroup, {
+      scaleX: 0.1,
+      transformOrigin: "25px 50px",
+      duration: 1,
+      ease: "power4.in"
+    })
+    .to(vcoPath, {
+      opacity: 0,
+      duration: 0.1
+    })
+    .to("#svg-element", { scale: 0, opacity: 0, rotation: 180, duration: 0.5, ease: "back.in(1)" }, "+=0.1");
+  });
+</script>
+</body>
+</html>

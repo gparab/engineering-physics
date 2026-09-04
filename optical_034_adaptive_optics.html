@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adaptive Optics</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #1a1a1a;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    #container {
+        position: relative;
+        width: 50px;
+        height: 40px;
+        cursor: pointer;
+    }
+    .wavefront {
+        position: absolute;
+        top: 0; left: 10px;
+        width: 30px; height: 10px;
+        border-top: 2px solid rgba(41, 128, 185, 0.5);
+        border-radius: 50% 50% 0 0 / 100% 30% 0 0;
+        animation: distort 1.5s infinite alternate ease-in-out;
+    }
+    @keyframes distort {
+        0% { border-radius: 50% 50% 0 0 / 100% 30% 0 0; transform: translateY(0); }
+        50% { border-radius: 10% 90% 0 0 / 40% 100% 0 0; transform: translateY(5px); }
+        100% { border-radius: 80% 20% 0 0 / 100% 50% 0 0; transform: translateY(2px); }
+    }
+    .mirror {
+        position: absolute;
+        bottom: 5px; left: 0;
+        width: 50px; height: 4px;
+        background: #ccc;
+        display: flex;
+        justify-content: space-between;
+    }
+    .actuator {
+        width: 2px; height: 10px;
+        background: #7f8c8d;
+        margin-top: 4px;
+        animation: pushPull 1.5s infinite alternate ease-in-out;
+    }
+    .a1 { animation-delay: 0s; }
+    .a2 { animation-delay: 0.3s; }
+    .a3 { animation-delay: 0.6s; }
+    .a4 { animation-delay: 0.9s; }
+    .a5 { animation-delay: 1.2s; }
+    
+    @keyframes pushPull {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-4px); }
+    }
+
+    .plane-wave {
+        position: absolute;
+        bottom: 12px; left: 10px;
+        width: 30px; height: 2px;
+        background: #2980b9;
+        box-shadow: 0 0 4px #2980b9;
+        opacity: 0;
+        animation: flatWave 1.5s infinite linear;
+    }
+    @keyframes flatWave {
+        0% { transform: translateY(0); opacity: 0.8; }
+        100% { transform: translateY(-15px); opacity: 0; }
+    }
+
+    /* Click Animation Elements */
+    .laser-star {
+        position: absolute;
+        bottom: 50%; left: 50%;
+        width: 4px; height: 0;
+        background: #f1c40f;
+        box-shadow: 0 0 10px #f1c40f, 0 0 20px #f1c40f;
+        transform: translateX(-50%);
+        pointer-events: none;
+        z-index: 10;
+        transition: height 0.3s ease-out;
+    }
+    .grid-overlay {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background-image: 
+            linear-gradient(rgba(41, 128, 185, 0.2) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(41, 128, 185, 0.2) 1px, transparent 1px);
+        background-size: 50px 50px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s;
+    }
+    .blur-layer {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        backdrop-filter: blur(0px);
+        pointer-events: none;
+        transition: backdrop-filter 1s ease;
+    }
+</style>
+</head>
+<body>
+
+<div class="blur-layer" id="blurLayer"></div>
+<div class="grid-overlay" id="gridLayer"></div>
+
+<div id="container" onclick="triggerAO()">
+    <div class="wavefront" id="wf"></div>
+    <div class="plane-wave"></div>
+    <div class="mirror">
+        <div class="actuator a1"></div>
+        <div class="actuator a2"></div>
+        <div class="actuator a3"></div>
+        <div class="actuator a4"></div>
+        <div class="actuator a5"></div>
+    </div>
+</div>
+
+<div class="laser-star" id="laser"></div>
+
+<script>
+    function triggerAO() {
+        const wf = document.getElementById('wf');
+        const laser = document.getElementById('laser');
+        const gridLayer = document.getElementById('gridLayer');
+        const blurLayer = document.getElementById('blurLayer');
+        const container = document.getElementById('container');
+        
+        // Initial state is blurry
+        blurLayer.style.backdropFilter = 'blur(10px)';
+        
+        setTimeout(() => {
+            container.style.display = 'none';
+            // Shoot laser
+            laser.style.height = '50vh';
+            
+            setTimeout(() => {
+                gridLayer.style.opacity = '1';
+                
+                // Correct focus
+                setTimeout(() => {
+                    blurLayer.style.backdropFilter = 'blur(0px)';
+                    
+                    setTimeout(() => {
+                        laser.style.opacity = '0';
+                        gridLayer.style.opacity = '0';
+                    }, 1000);
+                }, 500);
+            }, 300);
+        }, 100);
+    }
+</script>
+
+</body>
+</html>

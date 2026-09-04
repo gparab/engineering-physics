@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #121212;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 24px;
+    height: 30px;
+    cursor: pointer;
+  }
+  .cavern {
+    position: absolute;
+    width: 20px; height: 20px;
+    border: 2px solid #A4C639;
+    border-radius: 50% 50% 5px 5px;
+    bottom: 0; left: 2px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .valve {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: #A4C639;
+    top: 2px; left: 9px;
+    border-radius: 1px;
+    transition: all 0.3s;
+  }
+  .molecule {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .burst {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: rgba(164, 198, 57, 0.8);
+    border-radius: 50%;
+    left: 10px; top: 10px;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="valve" id="valve"></div>
+  <div class="cavern" id="cavern">
+    <!-- Molecules -->
+  </div>
+</div>
+<script>
+  let cavern = document.getElementById('cavern');
+  let molecules = [];
+  for(let i=0; i<15; i++) {
+    let m = document.createElement('div');
+    m.className = 'molecule';
+    m.style.left = Math.random()*16 + 'px';
+    m.style.top = Math.random()*16 + 'px';
+    let vx = (Math.random() - 0.5) * 4;
+    let vy = (Math.random() - 0.5) * 4;
+    molecules.push({el: m, x: parseFloat(m.style.left), y: parseFloat(m.style.top), vx: vx, vy: vy});
+    cavern.appendChild(m);
+  }
+  
+  let animationId = requestAnimationFrame(function animate() {
+    molecules.forEach(m => {
+      m.x += m.vx; m.y += m.vy;
+      if(m.x <= 0 || m.x >= 14) m.vx *= -1;
+      if(m.y <= 0 || m.y >= 14) m.vy *= -1;
+      m.el.style.left = m.x + 'px';
+      m.el.style.top = m.y + 'px';
+    });
+    animationId = requestAnimationFrame(animate);
+  });
+  
+  document.getElementById('model').onclick = function() {
+    this.style.pointerEvents = 'none';
+    cancelAnimationFrame(animationId);
+    
+    let v = document.getElementById('valve');
+    v.style.transform = 'translateY(-100px) rotate(360deg)';
+    v.style.opacity = '0';
+    
+    cavern.style.transition = 'all 0.5s 0.2s';
+    cavern.style.transform = 'scaleY(0)';
+    cavern.style.transformOrigin = 'bottom';
+    
+    molecules.forEach(m => {
+      m.el.style.transition = 'all 0.6s cubic-bezier(0.1, 0.8, 0.2, 1)';
+      m.el.style.transform = `translate(${(Math.random()-0.5)*50}px, -150px) scale(0)`;
+    });
+  };
+</script>
+</body>
+</html>

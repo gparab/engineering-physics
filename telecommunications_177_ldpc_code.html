@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDPC Code</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #0d0d0d;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 400px;
+        height: 300px;
+        cursor: pointer;
+    }
+    svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .edge {
+        stroke: #444;
+        stroke-width: 2;
+    }
+    .node {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background: #333;
+        border: 2px solid #1ABC9C;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: background 0.3s;
+    }
+    .check-node {
+        border-radius: 4px; /* Squares for check nodes */
+        border-color: #f1c40f;
+    }
+    .msg {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #1ABC9C;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+    }
+    
+    .explosion-particle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #1ABC9C;
+        border-radius: 50%;
+    }
+</style>
+</head>
+<body>
+<div id="container">
+    <svg id="edges-svg"></svg>
+    <!-- Variable Nodes -->
+    <div class="node var-node" id="v1" style="left: 100px; top: 80px;"></div>
+    <div class="node var-node" id="v2" style="left: 200px; top: 80px;"></div>
+    <div class="node var-node" id="v3" style="left: 300px; top: 80px;"></div>
+    
+    <!-- Check Nodes -->
+    <div class="node check-node" id="c1" style="left: 150px; top: 220px;"></div>
+    <div class="node check-node" id="c2" style="left: 250px; top: 220px;"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    const svg = document.getElementById('edges-svg');
+    const container = document.getElementById('container');
+    const edges = [
+        ['v1', 'c1'],
+        ['v2', 'c1'],
+        ['v2', 'c2'],
+        ['v3', 'c2'],
+        ['v1', 'c2'] // Trapping cycle
+    ];
+    
+    const nodeCoords = {};
+    document.querySelectorAll('.node').forEach(n => {
+        nodeCoords[n.id] = { x: parseInt(n.style.left), y: parseInt(n.style.top) };
+    });
+    
+    edges.forEach(e => {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', nodeCoords[e[0]].x);
+        line.setAttribute('y1', nodeCoords[e[0]].y);
+        line.setAttribute('x2', nodeCoords[e[1]].x);
+        line.setAttribute('y2', nodeCoords[e[1]].y);
+        line.setAttribute('class', 'edge');
+        svg.appendChild(line);
+    });
+
+    // Message passing animation
+    let idleTL = gsap.timeline({ repeat: -1 });
+    edges.forEach(e => {
+        const msg = document.createElement('div');
+        msg.className = 'msg';
+        container.appendChild(msg);
+        
+        idleTL.set(msg, { left: nodeCoords[e[0]].x, top: nodeCoords[e[0]].y, opacity: 1 }, 0);
+        idleTL.to(msg, { left: nodeCoords[e[1]].x, top: nodeCoords[e[1]].y, duration: 0.8, ease: "power1.inOut" }, 0);
+        idleTL.set(msg, { opacity: 0 }, 0.8);
+        
+        idleTL.set(msg, { left: nodeCoords[e[1]].x, top: nodeCoords[e[1]].y, opacity: 1, background: '#f1c40f' }, 1);
+        idleTL.to(msg, { left: nodeCoords[e[0]].x, top: nodeCoords[e[0]].y, duration: 0.8, ease: "power1.inOut" }, 1);
+        idleTL.set(msg, { opacity: 0, background: '#1ABC9C' }, 1.8);
+    });
+    
+    // Nodes turn solid
+    idleTL.to('.var-node', { background: '#1ABC9C', duration: 0.5 }, 1.8);
+    idleTL.to('.var-node', { background: '#333', duration: 0.5 }, 2.5);
+
+    let clicked = false;
+    container.addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        idleTL.kill();
+        
+        gsap.set('.msg', { opacity: 0 });
+        
+        // trapping set: nodes oscillate endlessly (red/green)
+        let oscTL = gsap.timeline();
+        oscTL.to('.node', { background: '#e74c3c', scale: 1.2, duration: 0.1, yoyo: true, repeat: 15 })
+             .to('.node', { background: '#1ABC9C', scale: 0.8, duration: 0.1, yoyo: true, repeat: 15 }, 0);
+             
+        oscTL.to('.node, .edge', { opacity: 0, duration: 0.1, delay: 0.5 });
+        
+        // explosion
+        oscTL.call(() => {
+            document.querySelectorAll('.node').forEach(n => {
+                for(let i=0; i<10; i++) {
+                    let p = document.createElement('div');
+                    p.className = 'explosion-particle';
+                    p.style.left = n.style.left;
+                    p.style.top = n.style.top;
+                    container.appendChild(p);
+                    gsap.to(p, {
+                        x: (Math.random()-0.5)*200,
+                        y: (Math.random()-0.5)*200,
+                        opacity: 0,
+                        duration: 1,
+                        ease: "power3.out"
+                    });
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

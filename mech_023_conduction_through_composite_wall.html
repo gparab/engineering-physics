@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Composite Wall Conduction</title>
+<style>
+  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; cursor: pointer; }
+  #container { position: relative; width: 90px; height: 60px; display: flex; }
+  .layer { height: 100%; position: relative; overflow: hidden; }
+  .layer1 { width: 30px; background: #E74C3C; } /* Hot */
+  .layer2 { width: 30px; background: #95A5A6; border-left: 1px solid #000; border-right: 1px solid #000; } /* Insulator */
+  .layer3 { width: 30px; background: #3498DB; } /* Cold */
+  
+  .wave { position: absolute; top: 0; bottom: 0; width: 10px; background: rgba(255,255,255,0.3); filter: blur(2px); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="layer layer1"><div class="wave" id="w1"></div></div>
+  <div class="layer layer2"><div class="wave" id="w2"></div></div>
+  <div class="layer layer3"><div class="wave" id="w3"></div></div>
+</div>
+<script>
+  // Idle: wave pulses
+  function pulse() {
+    gsap.set('.wave', { x: -10 });
+    // layer 1 fast
+    gsap.to('#w1', { x: 30, duration: 0.5, ease: "none", onComplete: () => {
+      // layer 2 slow (insulator)
+      gsap.to('#w2', { x: 30, duration: 1.5, ease: "none", onComplete: () => {
+        // layer 3 medium
+        gsap.to('#w3', { x: 30, duration: 0.8, ease: "none", onComplete: pulse });
+      }});
+    }});
+  }
+  pulse();
+
+  let clicked = false;
+  document.body.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    gsap.killTweensOf('.wave');
+    gsap.set('.wave', { opacity: 0 });
+    
+    // Infinite conductivity: gradient snaps flat (all turn bright orange)
+    gsap.to('.layer', {
+      backgroundColor: '#E67E22',
+      border: 'none',
+      duration: 0.2,
+      onComplete: () => {
+        // Wall melts uniformly
+        gsap.to('.layer', {
+          y: window.innerHeight,
+          scaleY: 4,
+          opacity: 0,
+          stagger: 0.05,
+          duration: 1.5,
+          ease: "power2.in"
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

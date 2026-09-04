@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+  #container { position: relative; width: 60px; height: 40px; cursor: pointer; }
+  .wire { position: absolute; top: 19px; width: 60px; height: 2px; background: #E74C3C; }
+  .triangle { position: absolute; left: 15px; top: 10px; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 15px solid #E74C3C; }
+  .bar { position: absolute; left: 30px; top: 10px; width: 2px; height: 20px; background: #E74C3C; }
+  .particle { position: absolute; top: 18px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="wire" id="wire"></div>
+  <div class="triangle" id="triangle"></div>
+  <div class="bar" id="bar"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  const particles = [];
+  for(let i=0; i<5; i++) {
+    let p = document.createElement('div');
+    p.className = 'particle';
+    container.appendChild(p);
+    particles.push(p);
+    gsap.fromTo(p, { x: 0, opacity: 1 }, {
+      x: 30,
+      opacity: 0,
+      duration: 1,
+      repeat: -1,
+      delay: i * 0.2,
+      ease: 'power1.inOut'
+    });
+  }
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    gsap.killTweensOf('.particle');
+    
+    // Avalanche breakdown
+    for(let i=0; i<30; i++) {
+      let spark = document.createElement('div');
+      spark.className = 'particle';
+      container.appendChild(spark);
+      gsap.set(spark, { x: 30, opacity: 1, background: '#E74C3C' });
+      gsap.to(spark, {
+        x: 30 - gsap.utils.random(50, 300),
+        y: gsap.utils.random(-150, 150),
+        scale: gsap.utils.random(0.5, 2),
+        opacity: 0,
+        duration: gsap.utils.random(0.5, 1.5),
+        ease: 'power3.out'
+      });
+    }
+    
+    gsap.to('#triangle', { scale: 1.5, x: -200, y: gsap.utils.random(-100, 100), rotation: gsap.utils.random(-360, 360), opacity: 0, duration: 1, ease: 'power3.out' });
+    gsap.to('#bar', { scale: 1.5, x: -200, y: gsap.utils.random(-100, 100), rotation: gsap.utils.random(-360, 360), opacity: 0, duration: 1, ease: 'power3.out' });
+    gsap.to('#wire', { opacity: 0, duration: 0.2 });
+    particles.forEach(p => gsap.to(p, { opacity: 0 }));
+  });
+</script>
+</body>
+</html>

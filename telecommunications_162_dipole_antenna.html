@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .container { position: relative; cursor: pointer; }
+  canvas { display: block; }
+  .label { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <canvas id="simCanvas" width="400" height="400"></canvas>
+  <div class="label">Dipole Antenna (Telecom)</div>
+</div>
+<script>
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const COLOR = '#E67E22';
+let state = 'idle';
+let time = 0;
+let waves = [];
+let particles = [];
+
+document.getElementById('container').addEventListener('click', () => {
+  if(state === 'idle') {
+    state = 'clicked';
+    for(let i=0; i<200; i++) {
+      particles.push({
+        x: 200 + (Math.random()-0.5)*100, y: 200,
+        vx: (Math.random()-0.5)*30, vy: (Math.random()-0.5)*30,
+        life: 1
+      });
+    }
+  }
+});
+
+function draw() {
+  ctx.clearRect(0, 0, 400, 400);
+  time += 0.05;
+  if(state === 'idle') {
+    if (Math.random() < 0.1) waves.push(0);
+    ctx.strokeStyle = COLOR;
+    ctx.lineWidth = 1;
+    for(let i=0; i<waves.length; i++) {
+      waves[i] += 1;
+      ctx.globalAlpha = Math.max(0, 1 - waves[i]/150);
+      ctx.beginPath(); ctx.arc(200, 200, waves[i], 0, Math.PI*2); ctx.stroke();
+    }
+    waves = waves.filter(w => w < 150);
+    ctx.globalAlpha = 1;
+    
+    ctx.fillStyle = '#8b949e';
+    ctx.fillRect(130, 198, 65, 4);
+    ctx.fillRect(205, 198, 65, 4);
+    
+    let offset = Math.sin(time) * 30;
+    ctx.fillStyle = COLOR;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = COLOR;
+    ctx.beginPath();
+    ctx.arc(165 + offset, 200, 3, 0, Math.PI*2);
+    ctx.arc(235 - offset, 200, 3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  } else if (state === 'clicked') {
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = COLOR;
+    for(let p of particles) {
+      p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+      if (p.life > 0) {
+        ctx.globalAlpha = p.life;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 30px; cursor: pointer; }
+  .chamber { position: absolute; width: 25px; height: 20px; border: 1.5px solid #888; border-radius: 4px 0 0 4px; left: 0; top: 5px; box-sizing: border-box; overflow: hidden; background: #222; }
+  .grid { position: absolute; width: 4px; height: 20px; border-left: 1px dotted #aaa; border-right: 1px dotted #aaa; left: 25px; top: 5px; }
+  .beam { position: absolute; width: 0; height: 12px; background: rgba(0, 168, 255, 0.4); left: 30px; top: 9px; box-shadow: 0 0 5px #00A8FF; border-radius: 0 10px 10px 0; }
+  .ion { position: absolute; width: 2px; height: 2px; background-color: #00A8FF; border-radius: 50%; box-shadow: 0 0 3px #00A8FF; }
+  .short { position: absolute; border: 2px solid #00A8FF; width: 0; height: 0; border-radius: 50%; opacity: 0; top: 15px; left: 15px; transform: translate(-50%, -50%); box-shadow: 0 0 20px #00A8FF inset; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="chamber" id="chamber"></div>
+  <div class="grid" id="grid"></div>
+  <div class="beam" id="beam"></div>
+  <div class="short" id="short"></div>
+</div>
+<script>
+  const model = document.getElementById('model');
+  const chamber = document.getElementById('chamber');
+  const beam = document.getElementById('beam');
+  let ions = [];
+  let idleAnim;
+  
+  function createIon() {
+    const ion = document.createElement('div');
+    ion.className = 'ion';
+    ion.style.left = '5px';
+    ion.style.top = (5 + Math.random() * 10) + 'px';
+    model.appendChild(ion);
+    ions.push(ion);
+    
+    gsap.to(ion, {
+      x: 35 + Math.random()*10,
+      duration: 0.5 + Math.random()*0.3,
+      ease: 'power1.in',
+      onComplete: () => {
+        if (model.contains(ion)) {
+          model.removeChild(ion);
+          ions = ions.filter(i => i !== ion);
+        }
+      }
+    });
+  }
+
+  function startIdle() {
+    idleAnim = setInterval(createIon, 100);
+    gsap.to(beam, {width: 40, duration: 0.5, repeat: -1, yoyo: true, ease: 'sine.inOut'});
+  }
+  startIdle();
+
+  model.addEventListener('click', () => {
+    clearInterval(idleAnim);
+    gsap.killTweensOf(beam);
+    
+    // Create huge curling ions backwards
+    for (let i = 0; i < 40; i++) {
+      let backIon = document.createElement('div');
+      backIon.className = 'ion';
+      backIon.style.left = (window.innerWidth/2) + 'px';
+      backIon.style.top = (window.innerHeight/2) + 'px';
+      backIon.style.width = '3px';
+      backIon.style.height = '3px';
+      document.body.appendChild(backIon);
+      
+      const angle = (Math.PI/2) + Math.random() * Math.PI; // Curl back
+      const r = 200 + Math.random() * 600;
+      
+      gsap.to(backIon, {
+        x: r * Math.cos(angle),
+        y: r * Math.sin(angle),
+        duration: 1 + Math.random(),
+        ease: 'power2.out',
+        opacity: 0
+      });
+    }
+
+    gsap.to('#short', {
+      width: Math.max(window.innerWidth, window.innerHeight) * 2,
+      height: Math.max(window.innerWidth, window.innerHeight) * 2,
+      opacity: 1,
+      duration: 0.8,
+      ease: 'power4.in',
+      onComplete: () => {
+        model.style.display = 'none';
+        gsap.to('#short', {opacity: 0, duration: 0.5});
+      }
+    });
+    
+    gsap.to([chamber, document.getElementById('grid'), beam], {opacity: 0, duration: 0.2});
+  });
+</script>
+</body>
+</html>

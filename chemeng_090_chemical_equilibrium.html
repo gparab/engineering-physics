@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical Equilibrium</title>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; cursor: pointer; overflow: hidden; }
+        #container { width: 50px; height: 40px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+        .arrow-container { position: absolute; top: 10px; width: 50px; height: 16px; transform-origin: center center; }
+        .arrow-top { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #32CD32; }
+        .head-right { position: absolute; right: -2px; top: -3px; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 8px solid #32CD32; }
+        .arrow-bottom { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #32CD32; }
+        .head-left { position: absolute; left: -2px; bottom: -3px; width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-right: 8px solid #32CD32; }
+        .fulcrum { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 12px solid #777; margin-top: 25px; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="arrow-container" id="arrows">
+            <div class="arrow-top"><div class="head-right"></div></div>
+            <div class="arrow-bottom"><div class="head-left"></div></div>
+        </div>
+        <div class="fulcrum" id="fulcrum"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const arrows = document.getElementById('arrows');
+        const container = document.getElementById('container');
+
+        // Oscillate like a balanced scale
+        gsap.to(arrows, {
+            rotation: 10,
+            duration: 1,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut"
+        });
+
+        let clicked = false;
+        document.body.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+
+            gsap.killTweensOf(arrows);
+            
+            // Tipping violently to the right
+            gsap.to(arrows, {
+                rotation: 60,
+                duration: 0.3,
+                ease: "power2.in"
+            });
+            
+            // Structure vanishes / shoots to right
+            gsap.to(container, {
+                x: 800,
+                y: 300,
+                rotation: 180,
+                scale: 0.2,
+                opacity: 0,
+                duration: 1,
+                delay: 0.3,
+                ease: "power3.in"
+            });
+        });
+    </script>
+</body>
+</html>

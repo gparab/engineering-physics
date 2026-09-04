@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rectifier (Diode Bridge)</title>
+<style>
+  body { margin: 0; padding: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 40px; cursor: pointer; }
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+  .wire { stroke: #9B59B6; stroke-width: 1.5; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  .diode { fill: none; stroke: #9B59B6; stroke-width: 1.5; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 40 40">
+    <!-- Diamond layout. Center is 20,20. Nodes at (20,4), (36,20), (20,36), (4,20) -->
+    <path class="wire" d="M 0 20 H 4" />
+    <path class="wire" d="M 36 20 H 40" />
+    <path class="wire" d="M 20 0 V 4" />
+    <path class="wire" d="M 20 36 V 40" />
+
+    <!-- D1: Top Left (4,20 to 20,4) pointing up-right -->
+    <g class="d1">
+      <path class="diode" d="M 4 20 L 9 15 M 9 15 L 15 21 L 17 9 Z M 11 13 L 17 7 M 15 9 L 20 4" />
+    </g>
+    <!-- Simplified Diodes to look cleaner -->
+    <g class="d1" transform="translate(12, 12) rotate(45) translate(-12, -12)">
+      <path class="diode" d="M 4 12 H 10 M 10 8 L 14 12 L 10 16 Z M 14 8 V 16 M 14 12 H 20" />
+    </g>
+  </svg>
+</div>
+
+<script>
+  // Re-draw simpler diamond bridge
+  const svg = document.querySelector('svg');
+  svg.innerHTML = `
+    <path class="wire" d="M 0 20 H 4 M 36 20 H 40 M 20 0 V 4 M 20 36 V 40" />
+    <!-- Diamond -->
+    <path class="wire bridge" d="M 4 20 L 20 4 L 36 20 L 20 36 Z" />
+    
+    <!-- Diode Symbols on each branch -->
+    <!-- Top-Left -->
+    <path class="diode p1" d="M 9 18 L 13 12 L 15 16 Z M 11 11 L 15 15" />
+    <!-- Top-Right -->
+    <path class="diode p2" d="M 27 12 L 31 18 L 25 16 Z M 29 11 L 25 15" />
+    <!-- Bottom-Right -->
+    <path class="diode p1" d="M 27 28 L 31 22 L 25 24 Z M 29 29 L 25 25" />
+    <!-- Bottom-Left -->
+    <path class="diode p2" d="M 9 22 L 13 28 L 15 24 Z M 11 29 L 15 25" />
+  `;
+
+  // Idle: p1 highlights, then p2 highlights (AC cycles)
+  const tl = gsap.timeline({repeat: -1});
+  tl.to('.p1', { strokeWidth: 2.5, stroke: "#E082FF", duration: 0.5 })
+    .to('.p1', { strokeWidth: 1.5, stroke: "#9B59B6", duration: 0.1 })
+    .to('.p2', { strokeWidth: 2.5, stroke: "#E082FF", duration: 0.5 })
+    .to('.p2', { strokeWidth: 1.5, stroke: "#9B59B6", duration: 0.1 });
+
+  document.getElementById('model').addEventListener('click', () => {
+    tl.kill();
+    // All short out
+    gsap.to('.diode, .bridge', { stroke: "#E74C3C", strokeWidth: 3, duration: 0.1 });
+    
+    setTimeout(() => {
+      // Vanish in smoke
+      for(let i=0; i<12; i++) {
+        let s = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        s.setAttribute("cx", 20); s.setAttribute("cy", 20);
+        s.setAttribute("r", 4);
+        s.setAttribute("fill", "#555");
+        svg.appendChild(s);
+        
+        gsap.to(s, {
+          x: (Math.random()-0.5)*150,
+          y: (Math.random()-0.5)*150,
+          scale: 3 + Math.random()*3,
+          opacity: 0,
+          duration: 1.5,
+          ease: "power2.out"
+        });
+      }
+      gsap.to('.wire, .diode, .bridge', {opacity: 0, duration: 0.2});
+    }, 200);
+  });
+</script>
+</body>
+</html>

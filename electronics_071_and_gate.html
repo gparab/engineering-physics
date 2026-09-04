@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+  #container { position: relative; width: 60px; height: 40px; cursor: pointer; }
+  .gate { position: absolute; left: 15px; top: 0; width: 20px; height: 40px; border: 2px solid #1ABC9C; border-right: none; border-radius: 4px; box-sizing: border-box; }
+  .arc { position: absolute; left: 25px; top: 0; width: 20px; height: 40px; border: 2px solid #1ABC9C; border-left: none; border-radius: 0 20px 20px 0; box-sizing: border-box; }
+  .lead { position: absolute; height: 2px; background: #1ABC9C; }
+  #in1 { width: 15px; top: 10px; left: 0; }
+  #in2 { width: 15px; top: 30px; left: 0; }
+  #out { width: 15px; top: 20px; left: 45px; }
+  .pulse { position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; opacity: 0; box-shadow: 0 0 5px #1ABC9C; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="gate" id="gate-body"></div>
+  <div class="arc" id="gate-arc"></div>
+  <div class="lead" id="in1"></div>
+  <div class="lead" id="in2"></div>
+  <div class="lead" id="out"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  let p1 = document.createElement('div'); p1.className = 'pulse'; p1.style.top = '8px'; container.appendChild(p1);
+  let p2 = document.createElement('div'); p2.className = 'pulse'; p2.style.top = '28px'; container.appendChild(p2);
+  let p3 = document.createElement('div'); p3.className = 'pulse'; p3.style.top = '18px'; container.appendChild(p3);
+  
+  let tl = gsap.timeline({ repeat: -1 });
+  tl.fromTo([p1, p2], { x: 0, opacity: 1 }, { x: 15, duration: 0.5, ease: 'none' })
+    .to([p1, p2], { opacity: 0, duration: 0.1 })
+    .fromTo(p3, { x: 45, opacity: 1 }, { x: 60, opacity: 0, duration: 0.5, ease: 'none' }, "-=0.1");
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    tl.kill();
+    
+    // Quantum superposition cloud
+    for(let i=0; i<30; i++) {
+      let bit = document.createElement('div');
+      bit.innerText = Math.random() > 0.5 ? '1' : '0';
+      bit.style.position = 'absolute';
+      bit.style.color = '#1ABC9C';
+      bit.style.fontSize = '12px';
+      bit.style.fontFamily = 'monospace';
+      bit.style.left = '30px';
+      bit.style.top = '20px';
+      container.appendChild(bit);
+      
+      gsap.to(bit, {
+        x: gsap.utils.random(-300, 300),
+        y: gsap.utils.random(-300, 300),
+        rotation: gsap.utils.random(-360, 360),
+        opacity: 0,
+        scale: gsap.utils.random(0.5, 3),
+        duration: gsap.utils.random(1, 2.5),
+        ease: 'power3.out'
+      });
+    }
+    
+    gsap.to('#container > div:not(.pulse)', { scale: 0, rotation: 360, opacity: 0, duration: 0.5 });
+    gsap.to('.pulse', { opacity: 0, duration: 0.2 });
+  });
+</script>
+</body>
+</html>

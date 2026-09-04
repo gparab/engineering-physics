@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #faf9f8; overflow: hidden; }
+  .container { position: relative; width: 80px; height: 30px; cursor: pointer; }
+  .casing { fill: none; stroke: #555; stroke-width: 1.5; }
+  .rotor { stroke: #333; stroke-width: 1; stroke-dasharray: 1 3; }
+  .air { fill: #3498DB; opacity: 0.6; }
+  .combustion { fill: #D35400; opacity: 0.8; }
+  .exhaust { fill: #E74C3C; opacity: 0.5; }
+  
+  @keyframes spinRotor {
+    100% { stroke-dashoffset: -4; }
+  }
+  .spinning { animation: spinRotor 0.2s linear infinite; }
+</style>
+</head>
+<body>
+  <div class="container" id="model">
+    <svg viewBox="0 0 100 40" width="100%" height="100%" id="svg-element">
+      <path class="casing" d="M 0 10 L 20 15 L 40 15 L 60 10 L 80 15 L 100 12" />
+      <path class="casing" d="M 0 30 L 20 25 L 40 25 L 60 30 L 80 25 L 100 28" />
+      
+      <path class="air flow-path" d="M 0 15 L 40 15 L 40 25 L 0 25 Z" id="inletFlow" />
+      <path class="combustion flow-path" d="M 40 15 L 70 15 L 70 25 L 40 25 Z" id="combustFlow" />
+      <path class="exhaust flow-path" d="M 70 15 L 100 15 L 100 25 L 70 25 Z" id="exhaustFlow" />
+      
+      <line class="rotor spinning" x1="20" y1="15" x2="20" y2="25" />
+      <line class="rotor spinning" x1="30" y1="15" x2="30" y2="25" />
+      <line class="rotor spinning" x1="60" y1="10" x2="60" y2="30" />
+    </svg>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    const container = document.getElementById('model');
+    
+    let pulse = gsap.to(".flow-path", {
+      opacity: 0.3,
+      duration: 0.1,
+      yoyo: true,
+      repeat: -1
+    });
+
+    container.addEventListener('click', () => {
+      pulse.kill();
+      
+      document.querySelectorAll('.rotor').forEach(el => el.classList.remove('spinning'));
+      
+      gsap.to("#exhaustFlow", { opacity: 0, duration: 0.5 });
+      gsap.to("#combustFlow", { x: -40, fill: "#E74C3C", duration: 0.5, ease: "power2.in" });
+      
+      gsap.to("#inletFlow", {
+        attr: { d: "M -200 -100 L 0 15 L 0 25 L -200 150 Z" },
+        fill: "#E74C3C",
+        duration: 1,
+        ease: "power2.out",
+        onComplete: () => {
+          gsap.to(".casing, .rotor", { y: 200, rotation: 45, duration: 1, stagger: 0.1 });
+          gsap.to("#svg-element", { opacity: 0, duration: 1 });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

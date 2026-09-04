@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Well Logging (Resistivity)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #111;
+    overflow: hidden;
+  }
+  
+  .container {
+    position: relative;
+    width: 24px;
+    height: 30px;
+    cursor: pointer;
+  }
+
+  .borehole {
+    position: absolute;
+    top: 0;
+    left: 4px;
+    width: 4px;
+    height: 100%;
+    background-color: #333;
+  }
+
+  .tool {
+    position: absolute;
+    top: 0;
+    left: 3px;
+    width: 6px;
+    height: 8px;
+    background-color: #888;
+    border-radius: 2px;
+  }
+
+  .graph-container {
+    position: absolute;
+    top: 0;
+    left: 12px;
+    width: 12px;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  svg {
+    width: 100%;
+    height: 100%;
+    stroke: #00FA9A;
+    fill: none;
+    stroke-width: 1px;
+    stroke-linejoin: round;
+  }
+  
+  /* Macro beam */
+  .oil-beam {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    width: 100vw;
+    height: 4px;
+    background: #00FA9A;
+    box-shadow: 0 0 20px 5px #00FA9A;
+    transform: translateY(-50%) scaleX(0);
+    transform-origin: left center;
+    z-index: 10;
+    pointer-events: none;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="model">
+  <div class="borehole"></div>
+  <div class="tool" id="tool"></div>
+  <div class="graph-container">
+    <svg viewBox="0 0 12 30" id="graph">
+      <path id="path" d="M2,0 L8,5 L2,10 L6,15 L1,20 L7,25 L2,30"></path>
+    </svg>
+  </div>
+</div>
+
+<div class="oil-beam" id="beam"></div>
+
+<script>
+  // Idle: Tool moves down, graph path wiggles
+  gsap.to("#tool", {
+    y: 22,
+    duration: 3,
+    repeat: -1,
+    yoyo: true,
+    ease: "linear"
+  });
+
+  const path = document.getElementById('path');
+  
+  gsap.to(path, {
+    attr: { d: "M5,0 L1,5 L8,10 L2,15 L7,20 L3,25 L9,30" },
+    duration: 0.5,
+    repeat: -1,
+    yoyo: true,
+    ease: "sine.inOut"
+  });
+
+  const model = document.getElementById('model');
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf("#tool");
+    gsap.killTweensOf(path);
+
+    // Resistivity shoots horizontally off-screen
+    gsap.to(path, {
+      attr: { d: "M2,0 L8,5 L2,10 L1000,15 L1,20 L7,25 L2,30" },
+      duration: 0.2,
+      ease: "power2.in"
+    });
+
+    // Beam shoots across screen
+    gsap.to("#beam", {
+      scaleX: 1,
+      duration: 0.4,
+      delay: 0.1,
+      ease: "power4.out"
+    });
+    
+    gsap.to("#beam", {
+      height: "100vh",
+      opacity: 0,
+      duration: 0.6,
+      delay: 0.5,
+      ease: "power2.in"
+    });
+
+    gsap.to(model, {
+      opacity: 0,
+      duration: 0.2,
+      delay: 0.2
+    });
+  });
+</script>
+</body>
+</html>

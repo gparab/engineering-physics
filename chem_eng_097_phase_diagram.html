@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase Diagram (Triple Point)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #121212;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+        .axis-y, .axis-x {
+            position: absolute;
+            background-color: #333;
+        }
+        .axis-y { width: 1px; height: 30px; left: 0; bottom: 0; }
+        .axis-x { width: 30px; height: 1px; left: 0; bottom: 0; }
+
+        .line {
+            position: absolute;
+            background-color: #BA55D3;
+            transform-origin: bottom left;
+        }
+        .line-s-g { width: 15px; height: 1px; left: 0; bottom: 0; transform: rotate(45deg); }
+        .line-s-l { width: 15px; height: 1px; left: 10px; bottom: 10px; transform: rotate(70deg); }
+        .line-l-g { width: 15px; height: 1px; left: 10px; bottom: 10px; transform: rotate(20deg); }
+
+        .critical-point {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: #BA55D3;
+            border-radius: 50%;
+            left: 23px;
+            bottom: 15px;
+        }
+
+        .state-point {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: #fff;
+            border-radius: 50%;
+            left: 10px;
+            bottom: 10px;
+            transform: translate(-50%, 50%);
+            z-index: 10;
+        }
+
+        .bg-color {
+            position: absolute;
+            width: 300vw;
+            height: 300vh;
+            left: -150vw;
+            top: -150vh;
+            background-color: transparent;
+            z-index: -1;
+            pointer-events: none;
+            transition: background-color 0.5s ease;
+        }
+        
+        .supercritical-haze {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            background: radial-gradient(circle, rgba(186,85,211,0.8) 0%, rgba(186,85,211,0) 70%);
+            opacity: 0;
+            z-index: 5;
+            pointer-events: none;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+</head>
+<body>
+    <div class="bg-color" id="bg-color"></div>
+    <div class="supercritical-haze" id="haze"></div>
+    
+    <div class="container" id="model-container">
+        <div class="axis-y"></div>
+        <div class="axis-x"></div>
+        <div class="line line-s-g"></div>
+        <div class="line line-s-l"></div>
+        <div class="line line-l-g"></div>
+        <div class="critical-point"></div>
+        <div class="state-point" id="point"></div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(MotionPathPlugin);
+        
+        const container = document.getElementById('model-container');
+        const point = document.getElementById('point');
+        const bgColor = document.getElementById('bg-color');
+        const haze = document.getElementById('haze');
+
+        // Idle Animation: orbit triple point (10, 20 from bottom is 10,10 from top approx)
+        const idleTL = gsap.timeline({ repeat: -1 });
+        idleTL.to(point, {
+            motionPath: {
+                path: [
+                    {x: 0, y: -8},
+                    {x: 6, y: -4},
+                    {x: 8, y: 4},
+                    {x: 0, y: 8},
+                    {x: -6, y: 4},
+                    {x: -8, y: -4},
+                    {x: 0, y: -8}
+                ],
+                curviness: 1.5
+            },
+            duration: 3,
+            ease: "none",
+            onUpdate: function() {
+                // Approximate regions based on angle to triple point
+                let p = this.progress();
+                if(p < 0.33) bgColor.style.backgroundColor = 'rgba(100, 100, 255, 0.1)'; // Solid
+                else if(p < 0.66) bgColor.style.backgroundColor = 'rgba(255, 100, 100, 0.1)'; // Liquid
+                else bgColor.style.backgroundColor = 'rgba(100, 255, 100, 0.1)'; // Gas
+            }
+        });
+
+        // Click Animation
+        container.addEventListener('click', () => {
+            idleTL.kill();
+            
+            const clickTL = gsap.timeline();
+            
+            // Rocket past critical point (which is at roughly x:13, y:-5 relative to triple point start)
+            clickTL.to(point, {
+                x: 15, y: -15, 
+                duration: 0.3,
+                ease: "power2.in"
+            })
+            .to(point, {
+                scale: 50,
+                opacity: 0,
+                duration: 0.5,
+                ease: "power2.out"
+            })
+            .to('.line, .axis-x, .axis-y, .critical-point', {
+                opacity: 0,
+                filter: "blur(5px)",
+                duration: 0.5
+            }, "<")
+            .to(haze, {
+                opacity: 1,
+                scale: 3,
+                duration: 1,
+                ease: "power1.out"
+            }, "<")
+            .to(haze, {
+                opacity: 0,
+                duration: 1,
+                ease: "power2.inOut"
+            }, "+=0.5");
+        });
+    </script>
+</body>
+</html>

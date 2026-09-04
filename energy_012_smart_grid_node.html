@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #121212;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+  }
+  .node-center {
+    position: absolute;
+    width: 10px; height: 10px;
+    background: #00FFFF;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    left: 15px; top: 15px;
+    box-shadow: 0 0 5px #00FFFF;
+    transition: all 0.3s;
+  }
+  .node-small {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: #00FFFF;
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+  .ns1 { left: 18px; top: 0px; }
+  .ns2 { left: 36px; top: 18px; }
+  .ns3 { left: 18px; top: 36px; }
+  .ns4 { left: 0px; top: 18px; }
+  
+  .line {
+    position: absolute;
+    background: repeating-linear-gradient(90deg, #00FFFF, #00FFFF 2px, transparent 2px, transparent 4px);
+    height: 1px;
+    transform-origin: 0 0;
+    opacity: 0.5;
+  }
+  .l1 { left: 20px; top: 15px; width: 15px; transform: rotate(-90deg); }
+  .l2 { left: 25px; top: 20px; width: 15px; transform: rotate(0deg); }
+  .l3 { left: 20px; top: 25px; width: 15px; transform: rotate(90deg); }
+  .l4 { left: 15px; top: 20px; width: 15px; transform: rotate(180deg); }
+  
+  .packet {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: #fff;
+    box-shadow: 0 0 3px #fff;
+    border-radius: 50%;
+  }
+  
+  .p1 { left: 19px; top: 15px; animation: pkt1 1s infinite alternate; }
+  @keyframes pkt1 { 100% { transform: translateY(-13px); } }
+  .p2 { left: 25px; top: 19px; animation: pkt2 1.2s infinite alternate; }
+  @keyframes pkt2 { 100% { transform: translateX(11px); } }
+  .p3 { left: 19px; top: 25px; animation: pkt3 0.9s infinite alternate; }
+  @keyframes pkt3 { 100% { transform: translateY(11px); } }
+  .p4 { left: 15px; top: 19px; animation: pkt4 1.1s infinite alternate; }
+  @keyframes pkt4 { 100% { transform: translateX(-13px); } }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="line l1"></div><div class="line l2"></div><div class="line l3"></div><div class="line l4"></div>
+  <div class="node-center" id="nc"></div>
+  <div class="node-small ns1"></div><div class="node-small ns2"></div>
+  <div class="node-small ns3"></div><div class="node-small ns4"></div>
+  <div class="packet p1"></div><div class="packet p2"></div>
+  <div class="packet p3"></div><div class="packet p4"></div>
+</div>
+<script>
+  document.getElementById('model').onclick = function() {
+    this.style.pointerEvents = 'none';
+    document.querySelectorAll('.packet').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.line').forEach(l => l.style.display = 'none');
+    
+    let nodes = document.querySelectorAll('.node-small, .node-center');
+    nodes.forEach((n, i) => {
+      setTimeout(() => {
+        n.style.background = '#333';
+        n.style.boxShadow = 'none';
+        setTimeout(() => {
+          n.style.transform = 'scale(0)';
+        }, 150);
+      }, i * 150);
+    });
+  };
+</script>
+</body>
+</html>

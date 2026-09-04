@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concrete Strut-and-Tie</title>
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; overflow: hidden; }
+  .beam { position: relative; width: 400px; height: 200px; background-color: #dcdcdc; border: 2px solid #aaa; cursor: pointer; display: flex; overflow: hidden; transition: transform 0.5s ease-out; }
+  
+  /* Left and right halves for splitting */
+  .half-left, .half-right { position: absolute; top: 0; width: 100%; height: 100%; pointer-events: none; }
+  .half-left { clip-path: polygon(0 0, 50% 0, 20% 100%, 0 100%); transition: transform 1s ease-in-out, opacity 1s; }
+  .half-right { clip-path: polygon(50% 0, 100% 0, 100% 100%, 20% 100%); transition: transform 1s ease-in-out, opacity 1s; }
+  
+  /* Visualizing struts (compression) and ties (tension) */
+  .strut, .tie { position: absolute; transform-origin: top left; }
+  .strut { background-color: rgba(112, 128, 144, 0.6); /* #708090 */ }
+  .tie { background-color: rgba(178, 34, 34, 0.6); }
+
+  /* Specific elements in left half */
+  .l-strut { top: 0; left: 100px; width: 220px; height: 40px; transform: rotate(56deg); }
+  .l-tie { bottom: 20px; left: 20px; width: 180px; height: 10px; }
+  
+  /* Specific elements in right half */
+  .r-strut { top: 0; left: 300px; width: 220px; height: 40px; transform: rotate(124deg); }
+  .r-tie { bottom: 20px; left: 200px; width: 180px; height: 10px; }
+  
+  /* The crack */
+  .crack { position: absolute; top: 0; left: 200px; width: 4px; height: 100%; background: none; z-index: 10; pointer-events: none; }
+  
+  svg { position: absolute; width: 100%; height: 100%; pointer-events: none; }
+  polyline { fill: none; stroke: #333; stroke-width: 4; stroke-dasharray: 400; stroke-dashoffset: 400; transition: stroke-dashoffset 0.5s ease-in; }
+</style>
+</head>
+<body>
+<div class="beam" id="beam">
+  <!-- Crack SVG -->
+  <svg>
+    <polyline id="crack-line" points="200,0 170,50 190,100 120,150 80,200" />
+  </svg>
+
+  <div class="half-left" id="leftHalf">
+    <div class="strut l-strut" id="strut1"></div>
+    <div class="tie l-tie" id="tie1"></div>
+  </div>
+  
+  <div class="half-right" id="rightHalf">
+    <div class="strut r-strut" id="strut2"></div>
+    <div class="tie r-tie" id="tie2"></div>
+  </div>
+</div>
+<script>
+  const beam = document.getElementById('beam');
+  const strut1 = document.getElementById('strut1');
+  const strut2 = document.getElementById('strut2');
+  const tie1 = document.getElementById('tie1');
+  const tie2 = document.getElementById('tie2');
+  const crack = document.getElementById('crack-line');
+  const leftHalf = document.getElementById('leftHalf');
+  const rightHalf = document.getElementById('rightHalf');
+
+  let t = 0;
+  let clicked = false;
+  let idleAnim = setInterval(() => {
+    t += 0.1;
+    // Struts thicken
+    let w = 40 + Math.sin(t) * 10;
+    strut1.style.height = w + 'px';
+    strut2.style.height = w + 'px';
+    // Ties pull tight
+    let th = 10 - Math.sin(t) * 4;
+    tie1.style.height = th + 'px';
+    tie2.style.height = th + 'px';
+  }, 50);
+
+  beam.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    clearInterval(idleAnim);
+    
+    // Show crack
+    crack.style.strokeDashoffset = '0';
+    
+    setTimeout(() => {
+      // Split halves
+      leftHalf.style.transform = 'translate(-50px, 20px) rotate(-5deg)';
+      leftHalf.style.opacity = '0';
+      rightHalf.style.transform = 'translate(50px, 20px) rotate(5deg)';
+      rightHalf.style.opacity = '0';
+      crack.style.opacity = '0';
+      beam.style.backgroundColor = 'transparent';
+      beam.style.borderColor = 'transparent';
+    }, 600);
+  });
+</script>
+</body>
+</html>

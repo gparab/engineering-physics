@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amanita Mushroom Demo</title>
+<style>
+  :root {
+    --ink: #ededed;
+    --paper: #111;
+  }
+  body {
+    background-color: transparent;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+  .card {
+    background: var(--paper);
+    padding: 30px 50px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    z-index: 10;
+  }
+
+  /* The Orb Container */
+  .orb {
+    display: block;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    overflow: visible;
+    color: var(--ink);
+    transform-origin: 50% 50%;
+    cursor: pointer;
+    text-decoration: none;
+    outline: none;
+    position: relative;
+  }
+  .orb * { transform-box: fill-box; }
+  .orb svg { overflow: visible; width: 100%; height: 100%; }
+  
+  /* Mushroom specific */
+  .mushroom-body {
+    transform-origin: 22px 34px;
+    animation: shroom-breathe 4s ease-in-out infinite;
+  }
+  
+  /* Idle Spore */
+  .idle-spore {
+    opacity: 0;
+    transform-origin: 22px 14px;
+  }
+
+  /* Hover States */
+  .shroom-orb:hover .mushroom-body {
+    animation: shroom-wiggle 1s ease-in-out infinite;
+  }
+  .shroom-orb:hover .idle-spore.s1 { animation: spore-float-up 2s infinite; }
+  .shroom-orb:hover .idle-spore.s2 { animation: spore-float-up 2s infinite 0.6s; }
+
+  /* Clicked / Poof State */
+  .shroom-orb.poofed {
+    pointer-events: none;
+  }
+  .shroom-orb.poofed .mushroom-body {
+    animation: poof-vanish 0.2s forwards;
+  }
+
+  @keyframes shroom-breathe {
+    0%, 100% { transform: scaleY(1); }
+    50%      { transform: scaleY(1.05) scaleX(0.98); }
+  }
+  @keyframes shroom-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25%      { transform: rotate(-5deg); }
+    75%      { transform: rotate(5deg); }
+  }
+  @keyframes spore-float-up {
+    0% { opacity: 0; transform: translateY(0) scale(0.5); }
+    30% { opacity: 0.6; }
+    100% { opacity: 0; transform: translateY(-15px) translateX(5px) scale(1.5); }
+  }
+  @keyframes poof-vanish {
+    0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+    100% { transform: scale(1.3); opacity: 0; filter: brightness(2); }
+  }
+
+  /* Spore Particle system for click */
+  .spore-particle {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: #f4ecd8;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+  }
+  
+  .hint {
+    margin-top: 30px;
+    font-size: 13px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 10;
+  }
+  .reset-btn {
+    position: absolute; top: 15px; right: 15px;
+    background: #333; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; z-index: 10;
+  }
+  .reset-btn:hover { background: #555; }
+
+</style>
+</head>
+<body>
+
+  <div class="card" id="shroom-card">
+    <button class="reset-btn" onclick="resetShroom()">Reset</button>
+    <h1 class="title">Sitemap
+      <a class="orb shroom-orb" id="shroom-trigger" href="#" onclick="triggerPoof(); return false;" title="Poof">
+        <svg viewBox="0 0 44 44">
+          <g class="mushroom-body">
+            <!-- Ground -->
+            <line x1="12" y1="34" x2="32" y2="34" stroke="#8b4513" stroke-width="2" stroke-linecap="round"/>
+            
+            <!-- Stem -->
+            <path d="M 18,34 C 18,22 20,20 22,18 C 24,20 26,22 26,34 Z" fill="#f4ecd8"/>
+            
+            <!-- Gills -->
+            <ellipse cx="22" cy="20" rx="14" ry="2.5" fill="#d3c7b2"/>
+            
+            <!-- Cap -->
+            <path d="M 8,20 C 8,5 36,5 36,20 Z" fill="#e32f2f"/>
+            
+            <!-- Spots -->
+            <circle cx="16" cy="14" r="1.5" fill="#fff" opacity="0.9"/>
+            <circle cx="28" cy="15" r="2" fill="#fff" opacity="0.9"/>
+            <circle cx="22" cy="9" r="1.5" fill="#fff" opacity="0.9"/>
+            <circle cx="12" cy="18" r="1" fill="#fff" opacity="0.8"/>
+            <circle cx="32" cy="18" r="1.2" fill="#fff" opacity="0.8"/>
+            <circle cx="23" cy="15" r="1" fill="#fff" opacity="0.7"/>
+          </g>
+          
+          <!-- Hover Spores -->
+          <circle class="idle-spore s1" cx="16" cy="10" r="1" fill="#fff"/>
+          <circle class="idle-spore s2" cx="30" cy="12" r="1" fill="#fff"/>
+        </svg>
+      </a>
+    </h1>
+    <div class="hint">Hover to disturb • Click to poof</div>
+  </div>
+
+  <script>
+    function triggerPoof() {
+      const orb = document.getElementById('shroom-trigger');
+      if (orb.classList.contains('poofed')) return;
+      orb.classList.add('poofed');
+      
+      const card = document.getElementById('shroom-card');
+      
+      // Get exact coordinates of the mushroom cap center
+      const rect = orb.getBoundingClientRect();
+      const cardRect = card.getBoundingClientRect();
+      const centerX = (rect.left - cardRect.left) + rect.width / 2;
+      const centerY = (rect.top - cardRect.top) + rect.height / 2 - 5; // offset slightly up for the cap
+      
+      // Generate spore explosion
+      for(let i=0; i<45; i++) {
+        let s = document.createElement('div');
+        s.className = 'spore-particle';
+        s.style.left = centerX + 'px';
+        s.style.top = centerY + 'px';
+        
+        let angle = Math.random() * Math.PI * 2;
+        let dist = 20 + Math.random() * 80;
+        let tx = Math.cos(angle) * dist;
+        let ty = Math.sin(angle) * dist - (Math.random() * 40); // Bias slightly upwards
+        
+        s.style.setProperty('--tx', `${tx}px`);
+        s.style.setProperty('--ty', `${ty}px`);
+        s.style.animation = `spore-drift ${0.5 + Math.random()}s cubic-bezier(0.1, 0.8, 0.3, 1) forwards`;
+        
+        card.appendChild(s);
+      }
+    }
+
+    function resetShroom() {
+      document.getElementById('shroom-trigger').className = 'orb shroom-orb';
+      document.querySelectorAll('.spore-particle').forEach(el => el.remove());
+    }
+  </script>
+</body>
+</html>

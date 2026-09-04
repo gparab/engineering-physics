@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evanescent Plasmon</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; perspective: 300px; }
+        #container { width: 50px; height: 50px; position: relative; cursor: pointer; }
+        .gold-film { position: absolute; bottom: 10px; width: 100%; height: 4px; background-color: #F5A623; box-shadow: 0 -2px 10px rgba(245, 166, 35, 0.5); }
+        .incident-ray { position: absolute; width: 2px; height: 40px; background: linear-gradient(to bottom, rgba(255,255,255,0), #FFF); left: 10px; top: -20px; transform: rotate(-30deg); transform-origin: bottom center; }
+        .surface-wave { position: absolute; bottom: 14px; left: 0; width: 100%; height: 6px; overflow: hidden; }
+        .wave-svg { position: absolute; left: 0; top: 0; width: 200%; height: 100%; }
+        .wave-path { fill: none; stroke: #FFF; stroke-width: 1; opacity: 0.8; filter: drop-shadow(0 0 2px #F5A623); }
+        
+        .molecule { position: absolute; width: 3px; height: 3px; background-color: #00FFCC; border-radius: 50%; opacity: 0; top: 0; }
+        .blinding-light { position: absolute; top: 50%; left: 50%; width: 1px; height: 1px; background-color: #FFF; border-radius: 50%; transform: translate(-50%, -50%); opacity: 0; box-shadow: 0 0 50px 20px #FFF, 0 0 100px 50px #F5A623; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="incident-ray" id="ray"></div>
+        <div class="gold-film"></div>
+        <div class="surface-wave">
+            <svg class="wave-svg" id="waveSvg" viewBox="0 0 100 6" preserveAspectRatio="none">
+                <path class="wave-path" id="wavePath" d="M0,3 Q2.5,0 5,3 T10,3 T15,3 T20,3 T25,3 T30,3 T35,3 T40,3 T45,3 T50,3 T55,3 T60,3 T65,3 T70,3 T75,3 T80,3 T85,3 T90,3 T95,3 T100,3"></path>
+            </svg>
+        </div>
+        <div class="molecule" id="m1" style="left: 15px;"></div>
+        <div class="molecule" id="m2" style="left: 35px;"></div>
+        <div class="molecule" id="m3" style="left: 25px;"></div>
+    </div>
+    <div class="blinding-light" id="blind"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const waveSvg = document.getElementById('waveSvg');
+        const ray = document.getElementById('ray');
+        let clicked = false;
+        
+        // Wave animation
+        gsap.to(waveSvg, {
+            x: "-50%",
+            duration: 1,
+            ease: "none",
+            repeat: -1
+        });
+        
+        const container = document.getElementById('container');
+        
+        container.addEventListener('click', () => {
+            if(clicked) return; clicked = true;
+            
+            // Molecules fall onto surface
+            gsap.to('.molecule', {
+                y: 35, // fall down to film
+                opacity: 1,
+                duration: 0.3,
+                stagger: 0.1,
+                ease: "power2.in"
+            });
+            
+            // Resonance angle shifts -> Ray rotates
+            gsap.to(ray, {
+                rotation: -60,
+                duration: 0.5,
+                delay: 0.4,
+                ease: "power1.inOut",
+                onComplete: () => {
+                    // Surface wave stops being trapped, bounces out
+                    gsap.killTweensOf(waveSvg);
+                    document.querySelector('.wave-path').style.stroke = 'transparent';
+                    
+                    // Blinding light expands towards user
+                    gsap.to('#blind', {
+                        width: '300vw',
+                        height: '300vw',
+                        opacity: 1,
+                        duration: 0.5,
+                        ease: "power2.in",
+                        onComplete: () => {
+                            container.style.display = 'none';
+                            // Fade out blinding light
+                            gsap.to('#blind', { opacity: 0, duration: 1, delay: 0.2 });
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

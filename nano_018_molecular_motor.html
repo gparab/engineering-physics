@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molecular Motor (Kinesin)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    font-family: sans-serif;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    cursor: pointer;
+    width: 200px;
+    height: 60px;
+  }
+  .track {
+    position: absolute;
+    bottom: 0;
+    width: 200vw;
+    left: -50vw;
+    height: 8px;
+    background: #bdc3c7;
+    border-radius: 4px;
+  }
+  .motor {
+    position: absolute;
+    bottom: 8px; left: 50%;
+    width: 20px; height: 30px;
+    transform: translateX(-50%);
+  }
+  .head1, .head2 {
+    position: absolute;
+    bottom: 0;
+    width: 8px; height: 12px;
+    background: #8e44ad;
+    border-radius: 5px;
+  }
+  .head1 { left: 2px; }
+  .head2 { left: 10px; }
+  .stalk {
+    position: absolute;
+    bottom: 10px; left: 8px;
+    width: 4px; height: 15px;
+    background: #9b59b6;
+  }
+  .cargo {
+    position: absolute;
+    bottom: 25px; left: 0px;
+    width: 20px; height: 20px;
+    background: #d2b4de;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  }
+  .atp {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: #f1c40f;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #f1c40f;
+    opacity: 0;
+  }
+  .massive-cargo {
+    position: absolute;
+    bottom: 25px; left: -500px;
+    width: 30px; height: 30px;
+    background: #8e44ad;
+    border-radius: 50%;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div class="track"></div>
+<div class="massive-cargo" id="massiveCargo"></div>
+<div class="container" id="model">
+  <div class="motor" id="motor">
+    <div class="cargo" id="cargo"></div>
+    <div class="stalk"></div>
+    <div class="head1" id="head1"></div>
+    <div class="head2" id="head2"></div>
+    <div class="atp" id="atp"></div>
+  </div>
+</div>
+<script>
+  const model = document.getElementById('model');
+  const head1 = document.getElementById('head1');
+  const head2 = document.getElementById('head2');
+  const atp = document.getElementById('atp');
+  let stepToggle = false;
+
+  const idleTl = gsap.timeline({repeat: -1, repeatDelay: 1});
+  idleTl.set(atp, { x: 20, y: -20, opacity: 0 })
+    .to(atp, { x: 5, y: 15, opacity: 1, duration: 0.3 }) // ATP binds
+    .to(atp, { scale: 2, opacity: 0, duration: 0.2 }) // Hydrolysis flash
+    .to('#motor', { x: "+=10", duration: 0.3 }, "<") // Step forward
+    .to(head1, { y: -5, x: 8, duration: 0.15, yoyo: true, repeat: 1 }, "<")
+    .to('#motor', { x: "+=0", duration: 0.1, onComplete: () => {
+      // swap styles or positions to simulate stepping
+      const x1 = gsap.getProperty(head1, "x");
+      const x2 = gsap.getProperty(head2, "x");
+      gsap.set(head1, {x: x1 - 8});
+      gsap.set(head2, {x: x2 + 8});
+    } });
+
+  let isAnimating = false;
+  model.addEventListener('click', () => {
+    if (isAnimating) return;
+    isAnimating = true;
+    idleTl.kill();
+    
+    const tl = gsap.timeline();
+    // Massive ATP wave
+    for(let i=0; i<30; i++){
+       const spark = document.createElement('div');
+       spark.className = 'atp';
+       document.getElementById('motor').appendChild(spark);
+       gsap.set(spark, {x: Math.random()*40-20, y: Math.random()*-40-20, opacity: 1});
+       tl.to(spark, {opacity: 0, duration: 0.5, scale: 2}, 0);
+    }
+
+    // Transform cargo into massive vesicle
+    tl.to('#cargo', { scale: 200, backgroundColor: '#d2b4de', duration: 1.5, ease: "power2.inOut" }, 0)
+      // Sprint off screen
+      .to('#motor', { x: "150vw", duration: 1.5, ease: "power3.in" }, 0.5)
+      .to(head1, { x: "+=20", duration: 0.1, yoyo: true, repeat: 15 }, 0.5)
+      .to(head2, { x: "-=20", duration: 0.1, yoyo: true, repeat: 15 }, 0.55);
+  });
+</script>
+</body>
+</html>

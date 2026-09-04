@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PID Controller</title>
+<style>
+  body { margin: 0; padding: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  .container { position: relative; width: 48px; height: 32px; cursor: pointer; }
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+  .line { stroke: #F39C12; stroke-width: 1.5; fill: none; }
+  .box { fill: none; stroke: #F39C12; stroke-width: 1.5; }
+  .plant { fill: none; stroke: #F39C12; stroke-width: 2; }
+  .lbl { fill: #F39C12; font-size: 5px; font-family: sans-serif; font-weight: bold; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 48 32">
+    <!-- Input to split -->
+    <path class="line" d="M 2 16 H 8" />
+    <path class="line" d="M 8 6 V 26" />
+    
+    <!-- P I D boxes -->
+    <rect class="box b-p" x="12" y="4" width="8" height="6" />
+    <text class="lbl" x="14.5" y="8.5">P</text>
+    
+    <rect class="box b-i" x="12" y="13" width="8" height="6" />
+    <text class="lbl" x="15" y="17.5">I</text>
+    
+    <rect class="box b-d" x="12" y="22" width="8" height="6" />
+    <text class="lbl" x="14.5" y="26.5">D</text>
+    
+    <path class="line" d="M 8 6 H 12 M 8 16 H 12 M 8 26 H 12" />
+    <path class="line" d="M 20 6 H 24 M 20 16 H 24 M 20 26 H 24" />
+    <path class="line" d="M 24 6 V 26" />
+    
+    <!-- To Plant -->
+    <path class="line" d="M 24 16 H 28" />
+    <rect class="plant" x="28" y="12" width="10" height="8" />
+    <path class="line" d="M 38 16 H 46" />
+  </svg>
+</div>
+
+<script>
+  // Idle animation: slight pulsing of the boxes
+  gsap.to('.b-p', { scale: 1.05, transformOrigin: "center", repeat: -1, yoyo: true, duration: 1 });
+  gsap.to('.b-i', { scale: 1.05, transformOrigin: "center", repeat: -1, yoyo: true, duration: 2 });
+  gsap.to('.b-d', { scale: 1.05, transformOrigin: "center", repeat: -1, yoyo: true, duration: 0.5 });
+
+  document.getElementById('model').addEventListener('click', () => {
+    // D box goes crazy
+    gsap.to('.b-d', {
+      scale: 3,
+      stroke: "#E74C3C",
+      duration: 0.5,
+      ease: "power2.in"
+    });
+    
+    // Erratic shaking of everything
+    gsap.to('svg', {
+      x: () => (Math.random()-0.5)*15,
+      y: () => (Math.random()-0.5)*15,
+      duration: 0.05,
+      repeat: 20
+    });
+    
+    setTimeout(() => {
+      // Tear apart
+      document.querySelectorAll('.box, .line, .plant, .lbl').forEach(el => {
+        gsap.to(el, {
+          x: (Math.random()-0.5) * 600,
+          y: (Math.random()-0.5) * 600,
+          rotation: (Math.random()-0.5) * 720,
+          opacity: 0,
+          duration: 1.5,
+          ease: "power3.out"
+        });
+      });
+    }, 1000);
+  });
+</script>
+</body>
+</html>

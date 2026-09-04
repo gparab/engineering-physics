@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuclear - PET</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 40px; height: 40px; cursor: pointer; }
+  .particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; top: 17px; left: 17px; }
+  .positron { background: #FF1493; box-shadow: 0 0 6px #FF1493; }
+  .electron { background: #00BFFF; box-shadow: 0 0 6px #00BFFF; }
+  .gamma { position: absolute; top: 19px; left: 20px; width: 0; height: 2px; background: #FFF; box-shadow: 0 0 10px #FFF; opacity: 0; }
+  .g-left { transform-origin: left; transform: rotate(180deg); }
+  .g-right { transform-origin: left; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="particle positron" id="pos"></div>
+  <div class="particle electron" id="elec"></div>
+  <div class="gamma g-left" id="g1"></div>
+  <div class="gamma g-right" id="g2"></div>
+</div>
+<script>
+  let dancing = true;
+  let t = 0;
+  
+  function animate() {
+    if(!dancing) return;
+    t += 0.1;
+    let r = 10;
+    document.getElementById('pos').style.transform = `translate(${r*Math.cos(t)}px, ${r*Math.sin(t)}px)`;
+    document.getElementById('elec').style.transform = `translate(${r*Math.cos(t + Math.PI)}px, ${r*Math.sin(t + Math.PI)}px)`;
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  document.getElementById('container').addEventListener('click', () => {
+    dancing = false;
+    
+    // spiral in
+    gsap.to(['#pos', '#elec'], {
+      x: 0, y: 0,
+      duration: 0.3,
+      ease: "power2.in",
+      onComplete: () => {
+        // Annihilate
+        gsap.set(['#pos', '#elec'], {opacity: 0});
+        
+        // Gamma rays shoot 180 apart
+        gsap.set(['#g1', '#g2'], {opacity: 1});
+        gsap.to('#g1', {width: '100vw', duration: 0.5, ease: "power4.out"});
+        gsap.to('#g2', {width: '100vw', duration: 0.5, ease: "power4.out"});
+        
+        // Fade out
+        gsap.to(['#g1', '#g2'], {opacity: 0, duration: 0.5, delay: 0.5});
+        gsap.to('#container', {opacity: 0, duration: 1, delay: 1});
+      }
+    });
+  });
+</script>
+</body>
+</html>

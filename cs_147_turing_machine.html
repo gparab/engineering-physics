@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turing Machine</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111;
+    overflow: hidden;
+  }
+  #container {
+    position: relative;
+    width: 100px;
+    height: 60px;
+    cursor: pointer;
+  }
+  .tape {
+    position: absolute;
+    top: 30px;
+    left: -50px;
+    width: 200px;
+    height: 12px;
+    background-color: rgba(127, 140, 141, 0.2);
+    display: flex;
+    border: 1px solid rgba(127, 140, 141, 0.5);
+  }
+  .cell {
+    width: 12px;
+    height: 10px;
+    border-right: 1px solid rgba(127, 140, 141, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: monospace;
+    font-size: 8px;
+    color: #7F8C8D;
+  }
+  .head {
+    position: absolute;
+    top: 15px;
+    left: 44px;
+    width: 12px;
+    height: 12px;
+    background-color: #7F8C8D;
+    border-radius: 2px;
+    box-shadow: 0 0 5px #7F8C8D;
+  }
+  .head::after {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 4px;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+    border-top: 4px solid #7F8C8D;
+  }
+  .fire {
+    position: absolute;
+    background-color: #E74C3C;
+    border-radius: 50%;
+    opacity: 0;
+    filter: blur(2px);
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="tape" id="tape">
+    <div class="cell">0</div>
+    <div class="cell">1</div>
+    <div class="cell">0</div>
+    <div class="cell">0</div>
+    <div class="cell">1</div>
+    <div class="cell">1</div>
+    <div class="cell">0</div>
+    <div class="cell">1</div>
+    <div class="cell">0</div>
+    <div class="cell">1</div>
+    <div class="cell">0</div>
+    <div class="cell">0</div>
+    <div class="cell">1</div>
+    <div class="cell">1</div>
+    <div class="cell">0</div>
+  </div>
+  <div class="head"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const tape = document.getElementById('tape');
+  const cells = document.querySelectorAll('.cell');
+  
+  let idleTl = gsap.timeline({ repeat: -1 });
+
+  function playIdle() {
+    gsap.set(tape, { x: 0 });
+    
+    // Tape shuttles left/right; head clicks to read/write symbols
+    const moves = [
+      { shift: -13, val: '1' },
+      { shift: -26, val: '0' },
+      { shift: -13, val: '1' },
+      { shift: 0, val: '0' },
+      { shift: 13, val: '1' }
+    ];
+    
+    moves.forEach((m, i) => {
+      idleTl.to(tape, { x: m.shift, duration: 0.3, ease: "power1.inOut" }, i * 0.8);
+      idleTl.to('.head', { y: 2, duration: 0.1, yoyo: true, repeat: 1 }, i * 0.8 + 0.4);
+      // Fakes writing symbol by just changing opacity/color slightly for a sec
+      idleTl.to('.head', { backgroundColor: '#fff', duration: 0.1, yoyo: true, repeat: 1 }, i * 0.8 + 0.4);
+    });
+  }
+
+  playIdle();
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    idleTl.kill();
+
+    const tl = gsap.timeline();
+    
+    // Halting Problem — locks up
+    tl.to(tape, { x: '+=2', duration: 0.05, yoyo: true, repeat: 10, ease: "none" }, 0);
+    tl.to('.head', { x: '+=2', duration: 0.05, yoyo: true, repeat: 10, ease: "none" }, 0);
+    
+    // Catches fire, burns tape to ash
+    tl.to('.head', { backgroundColor: '#E74C3C', boxShadow: '0 0 15px #E74C3C', duration: 0.5 }, 0.5);
+    
+    // Generate fire particles
+    for(let i=0; i<30; i++) {
+      const f = document.createElement('div');
+      f.className = 'fire';
+      f.style.width = (Math.random() * 10 + 5) + 'px';
+      f.style.height = f.style.width;
+      f.style.left = (Math.random() * 200 - 50) + 'px';
+      f.style.top = '30px';
+      container.appendChild(f);
+      
+      tl.to(f, {
+        opacity: Math.random() * 0.8 + 0.2,
+        y: -100 - Math.random() * 100,
+        x: '+=' + (Math.random() * 40 - 20),
+        scale: Math.random() * 2,
+        duration: 1 + Math.random(),
+        ease: "power1.in"
+      }, 0.8 + Math.random() * 0.5);
+    }
+    
+    // Tape turns to ash and drops
+    tl.to('.tape', {
+      backgroundColor: '#333',
+      borderColor: '#222',
+      color: '#000',
+      duration: 0.5
+    }, 0.8);
+    tl.to('.cell', { color: '#000', borderColor: '#222', duration: 0.5 }, 0.8);
+    
+    tl.to('.tape', {
+      y: window.innerHeight,
+      rotation: 20,
+      opacity: 0,
+      duration: 1.5,
+      ease: "power2.in"
+    }, 1.2);
+    
+    tl.to('.head', {
+      y: window.innerHeight,
+      rotation: -30,
+      opacity: 0,
+      duration: 1.2,
+      ease: "power2.in"
+    }, 1.3);
+  });
+</script>
+</body>
+</html>

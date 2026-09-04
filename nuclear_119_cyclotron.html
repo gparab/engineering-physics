@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuclear - Cyclotron</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 40px; height: 40px; cursor: pointer; }
+  .dee { position: absolute; width: 16px; height: 36px; border: 2px solid #0000CD; top: 0; }
+  .dee-left { left: 0; border-radius: 20px 0 0 20px; border-right: none; }
+  .dee-right { right: 0; border-radius: 0 20px 20px 0; border-left: none; }
+  .particle { position: absolute; width: 3px; height: 3px; background: #FFF; border-radius: 50%; box-shadow: 0 0 5px #FFF; top: 18.5px; left: 18.5px; }
+  #beam { position: absolute; width: 0; height: 2px; background: #0000CD; box-shadow: 0 0 10px #0000CD; top: 0; left: 18.5px; transform-origin: left; opacity: 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="dee dee-left"></div>
+  <div class="dee dee-right"></div>
+  <div class="particle" id="part"></div>
+  <div id="beam"></div>
+</div>
+<script>
+  let running = true;
+  let angle = 0;
+  let r = 0;
+  const part = document.getElementById('part');
+  
+  function animate() {
+    if(!running) return;
+    angle += 0.15;
+    r = (angle / (Math.PI * 4)) * 8; 
+    if (r > 16) {
+      angle = 0; // loop back for idle
+    }
+    
+    let x = r * Math.cos(angle);
+    let y = r * Math.sin(angle);
+    part.style.transform = `translate(${x}px, ${y}px)`;
+    
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  document.getElementById('container').addEventListener('click', () => {
+    running = false;
+    
+    // Continue accelerating outward until max radius
+    gsap.to({a: angle}, {
+      a: angle + Math.PI*4,
+      duration: 1,
+      ease: "power2.in",
+      onUpdate: function() {
+        let currA = this.targets()[0].a;
+        let currR = (currA / (Math.PI * 4)) * 8;
+        if (currR > 18) currR = 18;
+        let x = currR * Math.cos(currA);
+        let y = currR * Math.sin(currA);
+        part.style.transform = `translate(${x}px, ${y}px)`;
+      },
+      onComplete: () => {
+        // Shoots tangentially off-screen
+        let finalA = angle + Math.PI*4;
+        let startX = 18 * Math.cos(finalA);
+        let startY = 18 * Math.sin(finalA);
+        
+        let targetX = startX + 1000 * Math.sin(finalA); // tangential
+        let targetY = startY - 1000 * Math.cos(finalA);
+        
+        gsap.to(part, {
+          x: targetX,
+          y: targetY,
+          duration: 0.5,
+          ease: "none"
+        });
+        
+        // Dissolve cyclotron
+        gsap.to('.dee', {opacity: 0, scale: 1.5, duration: 1});
+        gsap.to('#container', {pointerEvents: 'none'});
+      }
+    });
+  });
+</script>
+</body>
+</html>

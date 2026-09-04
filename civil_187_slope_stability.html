@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slope Stability (Slip Circle)</title>
+<style>
+  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; overflow: hidden; }
+  .container { position: relative; width: 80px; height: 60px; cursor: pointer; }
+  .base { position: absolute; bottom: 10px; left: 0; width: 80px; height: 50px; background: #ddd; clip-path: polygon(0 50px, 80px 50px, 80px 0, 40px 0, 20px 20px, 0 20px); }
+  .slope { position: absolute; bottom: 10px; left: 0; width: 80px; height: 50px; background: #6B8E23; clip-path: polygon(0 50px, 80px 50px, 80px 0, 40px 0, 20px 20px, 0 20px); }
+  .slip-circle { position: absolute; top: 15px; left: 15px; width: 50px; height: 50px; border: 1px dashed #333; border-radius: 50%; clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%); z-index: 1; }
+  .wedge { position: absolute; bottom: 10px; left: 0; width: 80px; height: 50px; background: #8FBC8F; clip-path: polygon(40px 0, 80px 0, 80px 15px, 65px 35px, 40px 40px, 20px 20px); transform-origin: 40px -10px; z-index: 2; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="container" id="icon">
+    <div class="base"></div>
+    <div class="slope"></div>
+    <div class="slip-circle"></div>
+    <div class="wedge" id="wedge"></div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const wedge = document.getElementById('wedge');
+    
+    // Idle: vibrate
+    const idle = gsap.to(wedge, { rotation: 1, x: 1, duration: 0.1, yoyo: true, repeat: -1, ease: "rough" });
+
+    icon.addEventListener('click', () => {
+      idle.kill();
+      // Rotate downward like wheel, spread at base
+      gsap.to(wedge, {
+        rotation: -45,
+        y: 20,
+        x: -15,
+        duration: 0.8,
+        ease: "power2.in",
+        onComplete: () => {
+          gsap.to(wedge, { scaleY: 0.2, scaleX: 1.5, y: 30, duration: 0.5 });
+        }
+      });
+      gsap.to('.slip-circle', { opacity: 0, duration: 0.5 });
+    });
+  </script>
+</body>
+</html>

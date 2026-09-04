@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>25. Simplex Algorithm</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12; /* scientific dark */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            display: block;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="info">SIMPLEX ALGORITHM // 025</div>
+    <div id="canvas-container"></div>
+    <script>
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 5, 10);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Shape: 3D convex polyhedron
+        const geometry = new THREE.DodecahedronGeometry(1.5, 0);
+        const edges = new THREE.EdgesGeometry(geometry);
+        const material = new THREE.LineBasicMaterial({ color: 0xDDA0DD, transparent: true, opacity: 0.6 });
+        const polyhedron = new THREE.LineSegments(edges, material);
+        scene.add(polyhedron);
+
+        // Glowing dot
+        const dotGeo = new THREE.SphereGeometry(0.08, 16, 16);
+        const dotMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const dot = new THREE.Mesh(dotGeo, dotMat);
+        scene.add(dot);
+
+        const vertices = [];
+        const posAttr = geometry.attributes.position;
+        for (let i = 0; i < posAttr.count; i++) {
+            vertices.push(new THREE.Vector3().fromBufferAttribute(posAttr, i));
+        }
+
+        // Sort vertices by Y to simulate "adjacent higher vertex"
+        vertices.sort((a, b) => a.y - b.y);
+        
+        let currentVertexIndex = 0;
+        dot.position.copy(vertices[0]);
+
+        // Idle Animation
+        let idleAnim;
+        function hop() {
+            currentVertexIndex = (currentVertexIndex + 1) % vertices.length;
+            const target = vertices[currentVertexIndex];
+            
+            idleAnim = gsap.to(dot.position, {
+                x: target.x,
+                y: target.y,
+                z: target.z,
+                duration: 0.8,
+                ease: "power2.inOut",
+                onComplete: hop
+            });
+        }
+        hop();
+
+        // Slow rotation
+        gsap.to(polyhedron.rotation, {
+            y: Math.PI * 2,
+            duration: 20,
+            repeat: -1,
+            ease: "none"
+        });
+        
+        // Raycaster for click
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        window.addEventListener('click', (event) => {
+            if (idleAnim) idleAnim.kill(); // stop hopping
+            
+            // Big enough across the page - scale up and then collapse
+            const tl = gsap.timeline();
+            tl.to(polyhedron.scale, { x: 3, y: 3, z: 3, duration: 0.5, ease: "power2.out" }, 0)
+              .to(dot.scale, { x: 3, y: 3, z: 3, duration: 0.5, ease: "power2.out" }, 0)
+              .to(polyhedron.scale, { y: 0.01, duration: 0.6, ease: "power3.inOut" }) // Flatten to 2D
+              .to(polyhedron.scale, { x: 0.01, duration: 0.6, ease: "power3.inOut" }) // Flatten to 1D
+              .to(polyhedron.scale, { z: 0, duration: 0.4, ease: "power4.in" })       // Collapse to origin
+              .to(dot.scale, { x: 0, y: 0, z: 0, duration: 0.4, ease: "power4.in" }, "-=0.4");
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>

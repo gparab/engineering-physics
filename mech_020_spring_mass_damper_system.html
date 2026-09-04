@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring-Mass-Damper</title>
+<style>
+  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; cursor: pointer; }
+  #container { position: relative; width: 60px; height: 120px; }
+  .ceiling { position: absolute; top: 0; left: 10px; width: 40px; height: 4px; background: #fff; }
+  .spring { position: absolute; left: 18px; top: 4px; width: 10px; height: 50px; }
+  .spring path { stroke: #3498DB; stroke-width: 2; fill: none; }
+  .dashpot { position: absolute; right: 18px; top: 4px; width: 12px; height: 50px; }
+  .dash-outer { position: absolute; bottom: 0; width: 10px; height: 25px; border: 2px solid #555; border-top: none; }
+  .dash-inner { position: absolute; top: 0; left: 3px; width: 4px; height: 35px; background: #aaa; }
+  .dash-piston { position: absolute; bottom: 0; left: -2px; width: 8px; height: 4px; background: #aaa; }
+  .mass { position: absolute; left: 15px; top: 54px; width: 30px; height: 20px; background: #3498DB; border-radius: 2px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="ceiling"></div>
+  <svg class="spring" viewBox="0 0 10 50" preserveAspectRatio="none">
+    <path d="M5,0 L5,5 L0,10 L10,15 L0,20 L10,25 L0,30 L10,35 L0,40 L10,45 L5,50" id="spring-path" />
+  </svg>
+  <div class="dashpot">
+    <div class="dash-inner"><div class="dash-piston"></div></div>
+    <div class="dash-outer"></div>
+  </div>
+  <div class="mass"></div>
+</div>
+<script>
+  const mass = document.querySelector('.mass');
+  const springPath = document.getElementById('spring-path');
+  const dashInner = document.querySelector('.dash-inner');
+  const dashOuter = document.querySelector('.dash-outer');
+  
+  let time = 0;
+  let clicked = false;
+  
+  let drawSpring = (h) => {
+    let segments = 8;
+    let segmentHeight = (h - 10) / segments;
+    let d = `M5,0 L5,5 `;
+    for(let i=0; i<segments; i++){
+      let x = i%2===0 ? 0 : 10;
+      d += `L${x},${5 + (i+1)*segmentHeight} `;
+    }
+    d += `L5,${h}`;
+    springPath.setAttribute('d', d);
+  };
+
+  let idleAnim = gsap.ticker.add(() => {
+    time += 0.05;
+    let y = Math.sin(time) * 10;
+    gsap.set(mass, { y: y });
+    
+    // adjust spring and dashpot
+    let h = 50 + y;
+    gsap.set('.spring', { height: h });
+    drawSpring(h);
+    gsap.set(dashOuter, { y: y });
+  });
+
+  document.body.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    gsap.ticker.remove(idleAnim);
+    
+    // Resonance!
+    let resObj = { y: gsap.getProperty(mass, "y"), amp: 10 };
+    
+    gsap.to(resObj, {
+      amp: 100,
+      duration: 1,
+      ease: "power2.in",
+      onUpdate: () => {
+        time += 0.3;
+        let y = Math.sin(time) * resObj.amp;
+        gsap.set(mass, { y: y });
+        let h = Math.max(10, 50 + y);
+        gsap.set('.spring', { height: h });
+        drawSpring(h);
+        gsap.set(dashOuter, { y: y });
+      },
+      onComplete: () => {
+        // Shatter spring, fly away
+        document.querySelector('.spring').style.opacity = 0;
+        document.querySelector('.dashpot').style.opacity = 0;
+        
+        // spring fragments
+        for(let i=0; i<5; i++){
+          let frag = document.createElement('div');
+          frag.style.position = 'absolute';
+          frag.style.width = '10px'; frag.style.height = '2px';
+          frag.style.background = '#3498DB';
+          frag.style.left = '25px'; frag.style.top = '50px';
+          document.body.appendChild(frag);
+          gsap.to(frag, {
+            x: (Math.random()-0.5)*300,
+            y: (Math.random()-0.5)*300,
+            rotation: Math.random()*720,
+            opacity: 0,
+            duration: 1,
+            ease: "power2.out"
+          });
+        }
+        
+        gsap.to(mass, {
+          y: window.innerHeight,
+          rotation: 360,
+          scale: 2,
+          duration: 1,
+          ease: "power2.in"
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

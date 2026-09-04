@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Larmor Precession Spin</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  #container { perspective: 200px; cursor: pointer; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div id="spin-system" style="width: 20px; height: 40px; transform-style: preserve-3d; position: relative;">
+    <div id="arrow" style="position: absolute; left: 9px; top: -10px; width: 2px; height: 30px; background: #00C3FF;">
+      <div style="position: absolute; top: 0; left: -3px; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 6px solid #00C3FF;"></div>
+    </div>
+    <div id="proton" style="position: absolute; left: 2px; top: 12px; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #00C3FF, #004455);"></div>
+  </div>
+</div>
+<script>
+  gsap.set("#spin-system", { transformOrigin: "10px 20px", rotationZ: 15 });
+  const idle = gsap.to("#spin-system", { rotationY: 360, duration: 1, repeat: -1, ease: "linear" });
+  
+  document.getElementById("container").addEventListener("click", () => {
+    idle.kill();
+    gsap.to("body", { backgroundColor: "#004455", duration: 0.05, yoyo: true, repeat: 1 });
+    gsap.to("#spin-system", { rotationZ: 90, duration: 0.2, ease: "power2.out", onComplete: () => {
+      gsap.to("#spin-system", {
+        rotationY: "+=2160", scale: 20, opacity: 0,
+        x: (Math.random()-0.5)*1000, y: (Math.random()-0.5)*1000,
+        duration: 2, ease: "power1.in"
+      });
+      for(let i=0; i<60; i++){
+        let dot = document.createElement("div");
+        dot.style.cssText = `position:absolute;width:2px;height:2px;background:#00C3FF;border-radius:50%;left:${window.innerWidth/2}px;top:${window.innerHeight/2}px;opacity:0.8;`;
+        document.body.appendChild(dot);
+        gsap.to(dot, {
+          x: (Math.random()-0.5)*1200, y: (Math.random()-0.5)*1200, opacity: 0,
+          duration: 1 + Math.random(), ease: "expo.out"
+        });
+      }
+    }});
+  });
+</script>
+</body>
+</html>

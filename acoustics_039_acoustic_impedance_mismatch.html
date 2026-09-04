@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acoustic Impedance Mismatch</title>
+<style>
+    body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f5f7fa;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 60px;
+        height: 40px;
+        cursor: pointer;
+    }
+    .medium1 {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 30px;
+        height: 40px;
+        background-color: transparent;
+    }
+    .medium2 {
+        position: absolute;
+        left: 30px;
+        top: 0;
+        width: 30px;
+        height: 40px;
+        background-color: rgba(41, 128, 185, 0.2);
+        border-left: 2px solid #2980b9;
+        box-sizing: border-box;
+    }
+    .wave {
+        position: absolute;
+        top: 15px;
+        height: 10px;
+        width: 10px;
+        border: 2px solid #2980b9;
+        border-radius: 50%;
+        opacity: 0;
+    }
+    .matching-layer {
+        position: absolute;
+        left: 30px;
+        top: 0;
+        width: 5px;
+        height: 40px;
+        background-color: #2980b9;
+        display: none;
+    }
+    .massive-wave {
+        position: absolute;
+        top: -50vh;
+        left: 30px;
+        height: 200vh;
+        width: 10px;
+        background-color: #2980b9;
+        opacity: 0.8;
+        display: none;
+        border-radius: 50%;
+    }
+</style>
+</head>
+<body>
+
+<div id="container">
+    <div class="medium1"></div>
+    <div class="matching-layer" id="matchingLayer"></div>
+    <div class="medium2"></div>
+</div>
+<div class="massive-wave" id="massiveWave"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    const container = document.getElementById('container');
+    
+    let isIdle = true;
+
+    function spawnWave() {
+        if (!isIdle) return;
+        const wave = document.createElement('div');
+        wave.classList.add('wave');
+        wave.style.left = '0px';
+        container.appendChild(wave);
+
+        gsap.to(wave, {
+            left: 25,
+            opacity: 1,
+            duration: 0.8,
+            ease: "none",
+            onComplete: () => {
+                // Split wave at boundary
+                
+                // Reflected wave
+                const reflected = document.createElement('div');
+                reflected.classList.add('wave');
+                reflected.style.left = '25px';
+                reflected.style.opacity = '1';
+                container.appendChild(reflected);
+                
+                gsap.to(reflected, {
+                    left: 0,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "none",
+                    onComplete: () => reflected.remove()
+                });
+
+                // Transmitted wave
+                const transmitted = document.createElement('div');
+                transmitted.classList.add('wave');
+                transmitted.style.left = '30px';
+                transmitted.style.opacity = '0.3';
+                transmitted.style.transform = 'scale(0.5)';
+                container.appendChild(transmitted);
+                
+                gsap.to(transmitted, {
+                    left: 60,
+                    opacity: 0,
+                    duration: 0.6,
+                    ease: "none",
+                    onComplete: () => transmitted.remove()
+                });
+                
+                wave.remove();
+            }
+        });
+        
+        setTimeout(spawnWave, 1600);
+    }
+    spawnWave();
+
+    let clicked = false;
+    container.addEventListener('click', () => {
+        if (clicked) return;
+        clicked = true;
+        isIdle = false;
+
+        // Insert matching layer
+        const matching = document.getElementById('matchingLayer');
+        matching.style.display = 'block';
+        
+        gsap.fromTo(matching, { y: -40 }, { y: 0, duration: 0.5, ease: "bounce.out" });
+
+        // Wait a bit, then huge wave
+        setTimeout(() => {
+            const mWave = document.getElementById('massiveWave');
+            mWave.style.display = 'block';
+            
+            // Sweep screen
+            gsap.to(mWave, {
+                width: '150vw',
+                x: '150vw',
+                opacity: 0,
+                duration: 2,
+                ease: "power2.inOut"
+            });
+            
+            gsap.to(container, { opacity: 0, duration: 0.5 });
+        }, 800);
+    });
+</script>
+</body>
+</html>

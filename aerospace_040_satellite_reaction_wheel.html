@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #1e293b; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .container { position: relative; width: 44px; height: 44px; cursor: pointer; }
+  .satellite { position: absolute; width: 44px; height: 44px; border: 2.5px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 10px rgba(226, 232, 240, 0.2); }
+  .wheel { width: 22px; height: 22px; border: 2.5px dashed #F1C40F; border-radius: 50%; box-sizing: border-box; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="satellite" id="satellite">
+    <div class="wheel" id="wheel"></div>
+  </div>
+</div>
+<script>
+  const satellite = document.getElementById('satellite');
+  const wheel = document.getElementById('wheel');
+  
+  let wheelTween = gsap.to(wheel, { rotation: 360, duration: 0.8, repeat: -1, ease: 'linear' });
+  let satTween = gsap.to(satellite, { rotation: -360, duration: 6, repeat: -1, ease: 'linear' });
+
+  document.getElementById('model').addEventListener('click', () => {
+    wheelTween.kill();
+    satTween.kill();
+    
+    gsap.to(wheel, { rotation: "+=7200", duration: 2.5, ease: 'power2.in' });
+    gsap.to(wheel, { borderColor: '#e74c3c', duration: 2.5, ease: 'power2.in' });
+    
+    gsap.to(satellite, {
+      rotation: "-=2160",
+      x: window.innerWidth + 100,
+      y: -(window.innerHeight + 100),
+      duration: 1.5,
+      delay: 0.8,
+      ease: 'power3.in'
+    });
+  });
+</script>
+</body>
+</html>

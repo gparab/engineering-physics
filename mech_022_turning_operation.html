@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turning Operation</title>
+<style>
+  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; cursor: pointer; }
+  #container { position: relative; width: 100px; height: 60px; }
+  .workpiece { position: absolute; left: 10px; top: 10px; width: 50px; height: 40px; background: linear-gradient(to bottom, #7f8c8d, #bdc3c7, #7f8c8d); border-radius: 4px; border-right: 2px solid #555; }
+  .tool { position: absolute; left: 60px; top: 25px; width: 20px; height: 10px; background: #e67e22; clip-path: polygon(100% 0, 100% 100%, 0 50%); transform-origin: left center; }
+  .chip { position: absolute; left: 55px; top: 15px; width: 20px; height: 20px; border: 2px solid #95A5A6; border-bottom: none; border-right: none; border-radius: 50% 0 0 0; opacity: 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="workpiece"></div>
+  <div class="tool"></div>
+  <div class="chip"></div>
+</div>
+<script>
+  const workpiece = document.querySelector('.workpiece');
+  const tool = document.querySelector('.tool');
+  const chip = document.querySelector('.chip');
+  
+  // Workpiece spinning illusion
+  let spinAnim = gsap.to(workpiece, {
+    scaleY: 0.95,
+    duration: 0.1,
+    yoyo: true,
+    repeat: -1,
+    ease: "none"
+  });
+
+  // Tool advance loop
+  let toolAnim = gsap.to(tool, {
+    x: -5,
+    duration: 2,
+    repeat: -1,
+    yoyo: true,
+    ease: "none"
+  });
+
+  // Chip curling
+  let chipAnim = gsap.to(chip, {
+    rotation: -360,
+    opacity: 1,
+    duration: 1,
+    repeat: -1,
+    ease: "none"
+  });
+
+  let clicked = false;
+  document.body.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    // Tool chatter -> failure
+    gsap.killTweensOf([workpiece, tool, chip]);
+    
+    // Chatter
+    gsap.to(tool, {
+      y: "+=3",
+      rotation: 10,
+      duration: 0.05,
+      yoyo: true,
+      repeat: 10,
+      onComplete: () => {
+        // Catastrophic failure
+        // Shrapnel
+        chip.style.opacity = 0;
+        for(let i=0; i<10; i++){
+          let sh = document.createElement('div');
+          sh.style.position = 'absolute';
+          sh.style.width = '4px'; sh.style.height = '4px';
+          sh.style.background = (i%2===0)?'#95A5A6':'#e67e22';
+          sh.style.left = '60px'; sh.style.top = '25px';
+          document.getElementById('container').appendChild(sh);
+          
+          gsap.to(sh, {
+            x: (Math.random()-0.5)*500,
+            y: (Math.random()-0.5)*500,
+            rotation: Math.random()*720,
+            scale: 2,
+            duration: 1,
+            ease: "power2.out"
+          });
+        }
+        
+        // Tool breaks
+        gsap.to(tool, { x: 200, y: 100, rotation: 180, opacity: 0, duration: 1 });
+        
+        // Workpiece ejects
+        gsap.to(workpiece, { x: -300, y: -200, rotation: -45, scale: 2, opacity: 0, duration: 1, ease: "power2.in" });
+      }
+    });
+  });
+</script>
+</body>
+</html>

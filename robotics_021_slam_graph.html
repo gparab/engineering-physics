@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SLAM Graph</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1410;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .container {
+    width: 60px;
+    height: 60px;
+    position: relative;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .node { fill: #F4A460; }
+  .landmark { fill: #c48440; }
+  .edge { stroke: #F4A460; stroke-width: 1; opacity: 0.5; }
+  .robot { fill: #fff; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="icon">
+  <svg viewBox="0 0 60 60" id="graph">
+    <!-- Edges -->
+    <g id="edges">
+      <line class="edge" x1="10" y1="30" x2="25" y2="20" />
+      <line class="edge" x1="25" y1="20" x2="40" y2="30" />
+      <line class="edge" x1="40" y1="30" x2="35" y2="45" />
+      <line class="edge" x1="35" y1="45" x2="20" y2="45" />
+      
+      <!-- Landmark edges -->
+      <line class="edge" x1="10" y1="30" x2="30" y2="10" stroke-dasharray="2 2" />
+      <line class="edge" x1="25" y1="20" x2="30" y2="10" stroke-dasharray="2 2" />
+      <line class="edge" x1="40" y1="30" x2="50" y2="20" stroke-dasharray="2 2" />
+    </g>
+    
+    <!-- Landmarks -->
+    <rect class="landmark" x="28" y="8" width="4" height="4" />
+    <rect class="landmark" x="48" y="18" width="4" height="4" />
+    
+    <!-- Pose Nodes -->
+    <circle class="node" cx="10" cy="30" r="2" />
+    <circle class="node" cx="25" cy="20" r="2" />
+    <circle class="node" cx="40" cy="30" r="2" />
+    <circle class="node" cx="35" cy="45" r="2" />
+    
+    <!-- Current Pose (Robot) -->
+    <circle class="node" cx="20" cy="45" r="2" />
+    
+    <g id="robot-group" transform="translate(20,45)">
+      <circle class="robot" cx="0" cy="0" r="3" />
+    </g>
+  </svg>
+</div>
+
+<script>
+  // Idle Animation: Loop closure optimization shift
+  gsap.to("#graph", {
+    rotation: 5,
+    scaleX: 1.05,
+    scaleY: 0.95,
+    x: 2,
+    y: -2,
+    duration: 2,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+
+  // Robot moving slightly
+  gsap.to("#robot-group", {
+    x: -3,
+    y: 2,
+    duration: 1,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+
+  // Click Disappearance Motion: Catastrophic loop-closure failure; graph violently folds in on itself into a tangled knot and disappears.
+  document.body.addEventListener('click', () => {
+    gsap.killTweensOf("*");
+    
+    const clickTl = gsap.timeline();
+    
+    clickTl.to("#graph", {
+      rotation: 720,
+      scale: 0.1,
+      duration: 0.8,
+      ease: "back.in(2)"
+    }, 0)
+    .to(".node, .landmark, .edge, .robot", {
+      x: 30, // center
+      y: 30,
+      duration: 0.5,
+      ease: "power2.in"
+    }, 0)
+    .to("#icon", {
+      opacity: 0,
+      duration: 0.2
+    }, 0.6)
+    .to("body", {
+      backgroundColor: "#2e1f14",
+      duration: 0.2,
+      yoyo: true,
+      repeat: 1
+    }, 0.5);
+  }, { once: true });
+</script>
+</body>
+</html>

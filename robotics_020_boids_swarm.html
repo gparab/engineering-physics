@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boids Swarm</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a0812;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .container {
+    width: 60px;
+    height: 60px;
+    position: relative;
+  }
+  .boid {
+    position: absolute;
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 10px solid #FF69B4;
+    transform-origin: 50% 50%;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="swarm">
+  <!-- 5 Boids -->
+  <div class="boid" id="b1" style="top: 25px; left: 15px;"></div>
+  <div class="boid" id="b2" style="top: 15px; left: 25px;"></div>
+  <div class="boid" id="b3" style="top: 35px; left: 25px;"></div>
+  <div class="boid" id="b4" style="top: 20px; left: 40px;"></div>
+  <div class="boid" id="b5" style="top: 30px; left: 40px;"></div>
+</div>
+
+<script>
+  // Idle Animation: Undulate in synchronized flocking motion
+  const boids = document.querySelectorAll('.boid');
+  
+  // Point them right initially (rotate 90 deg)
+  gsap.set(boids, { rotation: 90 });
+  
+  boids.forEach((boid, i) => {
+    // Sway Y
+    gsap.to(boid, {
+      y: (i % 2 === 0 ? 5 : -5),
+      duration: 1 + i * 0.1,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+    // Sway X
+    gsap.to(boid, {
+      x: (i % 2 === 0 ? 3 : -3),
+      duration: 1.2 + i * 0.15,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+    // Wiggle rotation slightly
+    gsap.to(boid, {
+      rotation: 90 + (i % 2 === 0 ? 15 : -15),
+      duration: 0.8 + i * 0.1,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+  });
+
+  // Click Disappearance Motion: Scatter aggressively in perfectly opposite directions.
+  document.body.addEventListener('click', () => {
+    gsap.killTweensOf(boids);
+    
+    const scatterAngles = [
+      Math.PI,           // Left
+      -Math.PI / 4,      // Top Right
+      Math.PI / 4,       // Bottom Right
+      -3 * Math.PI / 4,  // Top Left
+      3 * Math.PI / 4    // Bottom Left
+    ];
+    
+    const clickTl = gsap.timeline();
+    
+    boids.forEach((boid, i) => {
+      const angle = scatterAngles[i];
+      const dist = 500;
+      
+      clickTl.to(boid, {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        rotation: (angle * 180 / Math.PI) + 90, // point in direction of travel
+        duration: 0.6,
+        ease: "power3.in"
+      }, 0);
+    });
+    
+    clickTl.to("body", {
+      backgroundColor: "#4a1c36",
+      duration: 0.2,
+      yoyo: true,
+      repeat: 1
+    }, 0.2);
+  }, { once: true });
+</script>
+</body>
+</html>

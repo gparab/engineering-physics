@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Network Perceptron</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111;
+    overflow: hidden;
+  }
+  #container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+  }
+  .neuron {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    background-color: #3498DB;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 5px #3498DB;
+    z-index: 2;
+  }
+  .dendrite {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 1px;
+    background-color: rgba(52, 152, 219, 0.4);
+    transform-origin: 0 0;
+    z-index: 1;
+  }
+  .pulse {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background-color: #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+  }
+  .output {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 25px;
+    height: 2px;
+    background-color: rgba(52, 152, 219, 0.8);
+    transform-origin: 0 0;
+    transform: translateY(-50%);
+    z-index: 1;
+  }
+  .fire {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: #fff;
+    border-radius: 50%;
+    opacity: 0;
+    box-shadow: 0 0 10px #fff;
+  }
+  #flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="neuron"></div>
+  <div class="output"></div>
+  <div class="fire"></div>
+</div>
+<div id="flash"></div>
+<script>
+  const container = document.getElementById('container');
+  
+  const dendriteData = [
+    { angle: 135, len: 25 },
+    { angle: 180, len: 20 },
+    { angle: 225, len: 25 }
+  ];
+
+  const dendrites = [];
+  const pulses = [];
+
+  dendriteData.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'dendrite';
+    el.style.width = `${d.len}px`;
+    el.style.transform = `rotate(${d.angle}deg)`;
+    container.appendChild(el);
+    dendrites.push({ el, ...d });
+
+    const pulse = document.createElement('div');
+    pulse.className = 'pulse';
+    container.appendChild(pulse);
+    pulses.push(pulse);
+  });
+
+  const fire = document.querySelector('.fire');
+  const neuron = document.querySelector('.neuron');
+  let idleTl = gsap.timeline({ repeat: -1 });
+
+  function playIdle() {
+    dendrites.forEach((d, i) => {
+      const pulse = pulses[i];
+      const startX = 30 + Math.cos(d.angle * Math.PI / 180) * d.len;
+      const startY = 30 + Math.sin(d.angle * Math.PI / 180) * d.len;
+      
+      gsap.set(pulse, { left: startX, top: startY, opacity: 0 });
+      
+      idleTl.to(pulse, {
+        opacity: 1,
+        duration: 0.1
+      }, i * 0.3);
+      idleTl.to(pulse, {
+        left: 30,
+        top: 30,
+        duration: 0.5,
+        ease: "power2.in"
+      }, i * 0.3);
+      idleTl.to(pulse, { opacity: 0, duration: 0.1 }, i * 0.3 + 0.5);
+    });
+
+    idleTl.to(neuron, { scale: 1.3, backgroundColor: '#fff', duration: 0.1 }, 1.2);
+    idleTl.to(neuron, { scale: 1, backgroundColor: '#3498DB', duration: 0.3 }, 1.3);
+
+    gsap.set(fire, { left: 30, top: 30, opacity: 0 });
+    idleTl.to(fire, { opacity: 1, duration: 0.1 }, 1.2);
+    idleTl.to(fire, { left: 55, duration: 0.4, ease: "power2.out" }, 1.2);
+    idleTl.to(fire, { opacity: 0, duration: 0.1 }, 1.5);
+    
+    idleTl.to({}, { duration: 0.5 });
+  }
+
+  playIdle();
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    idleTl.kill();
+    gsap.killTweensOf('.pulse, .fire, .neuron');
+
+    const tl = gsap.timeline();
+    
+    // Weights explode to infinity (lines get super thick and extend)
+    dendrites.forEach(d => {
+      tl.to(d.el, {
+        width: window.innerWidth,
+        height: 10,
+        backgroundColor: '#fff',
+        duration: 0.8,
+        ease: "expo.in"
+      }, 0);
+    });
+    tl.to('.output', {
+        width: window.innerWidth,
+        height: 10,
+        backgroundColor: '#fff',
+        duration: 0.8,
+        ease: "expo.in"
+    }, 0);
+    
+    tl.to(neuron, {
+      scale: 10,
+      backgroundColor: '#fff',
+      boxShadow: '0 0 100px #fff',
+      duration: 0.8,
+      ease: "expo.in"
+    }, 0);
+
+    // Blinding white star fades
+    tl.to('#flash', { opacity: 1, duration: 0.2 }, 0.8);
+    tl.to(container, { opacity: 0, duration: 0 }, 1.0);
+    tl.to('#flash', { opacity: 0, duration: 1.5 }, 1.0);
+  });
+</script>
+</body>
+</html>

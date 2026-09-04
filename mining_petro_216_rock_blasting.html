@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Blasting (Shockwave)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #222;
+    overflow: hidden;
+  }
+  
+  .container {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+
+  .borehole {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background-color: #FF0000;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .crack {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 10px;
+    background-color: #555;
+    transform-origin: 0 0;
+  }
+
+  .fuse-spark {
+    position: absolute;
+    top: 30%;
+    left: 60%;
+    width: 2px;
+    height: 2px;
+    background-color: #FFA500;
+    border-radius: 50%;
+    box-shadow: 0 0 4px #FFA500;
+  }
+
+  .flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #FFF;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .shockwave-ring {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border: 10px solid #FF0000;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="model">
+  <!-- Radial cracks -->
+  <div class="crack" style="transform: translate(-50%, -50%) rotate(0deg) translateY(-8px)"></div>
+  <div class="crack" style="transform: translate(-50%, -50%) rotate(72deg) translateY(-8px)"></div>
+  <div class="crack" style="transform: translate(-50%, -50%) rotate(144deg) translateY(-8px)"></div>
+  <div class="crack" style="transform: translate(-50%, -50%) rotate(216deg) translateY(-8px)"></div>
+  <div class="crack" style="transform: translate(-50%, -50%) rotate(288deg) translateY(-8px)"></div>
+  
+  <div class="borehole"></div>
+  <div class="fuse-spark" id="spark"></div>
+</div>
+
+<div class="flash" id="flash"></div>
+<div class="shockwave-ring" id="shockwave"></div>
+
+<script>
+  const model = document.getElementById('model');
+
+  // Idle: Fuse sparks continuously
+  gsap.to("#spark", {
+    opacity: 0.2,
+    scale: 0.5,
+    duration: 0.1,
+    yoyo: true,
+    repeat: -1,
+    ease: "steps(2)"
+  });
+  
+  gsap.to("#spark", {
+    x: "random(-2, 2)",
+    y: "random(-2, 2)",
+    duration: 0.2,
+    repeat: -1
+  });
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf("#spark");
+    
+    // Blinding flash
+    gsap.to("#flash", {
+      opacity: 1,
+      duration: 0.1,
+      yoyo: true,
+      repeat: 1,
+      ease: "power4.inOut"
+    });
+
+    // Shockwave ring
+    gsap.to("#shockwave", {
+      width: "200vw",
+      height: "200vw",
+      borderWidth: 0,
+      opacity: 1,
+      duration: 1,
+      ease: "power2.out"
+    });
+    
+    // Model fragments
+    gsap.to(model, {
+      scale: 3,
+      opacity: 0,
+      duration: 0.5,
+      ease: "expo.out"
+    });
+    
+    // Background flashes to red/black
+    gsap.to("body", {
+      backgroundColor: "#000",
+      delay: 0.1,
+      duration: 1
+    });
+  });
+</script>
+</body>
+</html>

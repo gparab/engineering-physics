@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hall Effect Sensor</title>
+    <style>
+        body { margin: 0; padding: 0; background: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #container { position: relative; width: 400px; height: 300px; cursor: pointer; }
+        canvas { position: absolute; top: 0; left: 0; }
+        #magnet {
+            position: absolute; width: 60px; height: 30px; background: linear-gradient(to right, #E74C3C 50%, #3498DB 50%); border-radius: 4px; top: 50px; left: -60px; z-index: 10; font-family: sans-serif; font-weight: bold; color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; box-sizing: border-box; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="magnet"><span>N</span><span>S</span></div>
+        <canvas id="hallCanvas" width="400" height="300"></canvas>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const canvas = document.getElementById('hallCanvas');
+        const magnet = document.getElementById('magnet');
+        const ctx = canvas.getContext('2d');
+        const width = 400, height = 300;
+        const color = '#8E44AD'; // purple
+        
+        let electrons = [];
+        for (let i = 0; i < 100; i++) {
+            electrons.push({
+                x: Math.random() * width,
+                y: 130 + Math.random() * 40,
+                vx: 2 + Math.random(),
+                vy: 0,
+                baseY: 130 + Math.random() * 40
+            });
+        }
+        
+        let isDestroyed = false;
+        let magnetActive = false;
+        let scramble = false;
+        
+        function passMagnet() {
+            if (isDestroyed) return;
+            gsap.fromTo(magnet, 
+                { left: -60, top: 50, scale: 1 }, 
+                { left: 400, duration: 3, ease: 'none', 
+                  onUpdate: function() {
+                      let x = parseFloat(magnet.style.left);
+                      magnetActive = (x > 100 && x < 300);
+                  },
+                  onComplete: () => {
+                      magnetActive = false;
+                      setTimeout(passMagnet, 2000);
+                  }
+                }
+            );
+        }
+        passMagnet();
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw semiconductor slab
+            ctx.fillStyle = 'rgba(142, 68, 173, 0.2)';
+            ctx.fillRect(50, 120, 300, 60);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(50, 120, 300, 60);
+            
+            ctx.fillStyle = '#fff';
+            
+            electrons.forEach(e => {
+                if (!scramble) {
+                    e.x += e.vx;
+                    if (e.x > 350) {
+                        e.x = 50;
+                        e.y = e.baseY;
+                    }
+                    
+                    // Hall effect: pushed sideways
+                    if (magnetActive && e.x > 150 && e.x < 250) {
+                        e.y -= 1; // pushed up
+                    } else {
+                        e.y += (e.baseY - e.y) * 0.1; // return to base
+                    }
+                } else {
+                    e.x += e.vx;
+                    e.y += e.vy;
+                    e.vx += (Math.random() - 0.5) * 2;
+                    e.vy += (Math.random() - 0.5) * 2;
+                }
+                
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Draw voltage indication
+            if (magnetActive && !scramble) {
+                ctx.fillStyle = '#E74C3C';
+                ctx.fillText("+ + + +", 180, 115);
+                ctx.fillStyle = '#3498DB';
+                ctx.fillText("- - - -", 180, 195);
+            }
+            
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        container.addEventListener('click', () => {
+            if (isDestroyed) return;
+            isDestroyed = true;
+            scramble = true;
+            magnetActive = false;
+            
+            gsap.killTweensOf(magnet);
+            gsap.to(magnet, { scale: 3, top: 135, left: 170, rotation: 1080, duration: 1.5 });
+            
+            electrons.forEach(e => {
+                e.vx = (Math.random() - 0.5) * 10;
+                e.vy = (Math.random() - 0.5) * 10;
+            });
+            
+            gsap.to(container, { opacity: 0, duration: 2, delay: 1 });
+        });
+    </script>
+</body>
+</html>

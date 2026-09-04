@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psychrometric Evaporation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model">
+        <svg width="40" height="40" viewBox="0 0 40 40" overflow="visible">
+            <g class="arrows" stroke="#E74C3C" stroke-width="1">
+                <line x1="8" y1="20" x2="12" y2="20" />
+                <line x1="32" y1="20" x2="28" y2="20" />
+            </g>
+            <circle class="kernel" cx="20" cy="20" r="6" fill="#F5C200" />
+            <circle class="core" cx="20" cy="20" r="3" fill="#007AFF" />
+            <path class="vapor" d="M18,12 Q16,8 20,4" stroke="#888" stroke-width="1" fill="none" opacity="0"/>
+            <path class="vapor2" d="M22,12 Q24,8 20,4" stroke="#888" stroke-width="1" fill="none" opacity="0"/>
+            <g class="fragments" style="visibility:hidden">
+                <circle class="frag" cx="20" cy="20" r="2" fill="#fff" />
+                <circle class="frag" cx="20" cy="20" r="2" fill="#fff" />
+                <circle class="frag" cx="20" cy="20" r="2" fill="#fff" />
+                <circle class="frag" cx="20" cy="20" r="2" fill="#fff" />
+            </g>
+        </svg>
+    </div>
+    <script>
+        gsap.to('.arrows line', { x: (i) => i === 0 ? 2 : -2, duration: 0.8, yoyo: true, repeat: -1, ease: "sine.inOut" });
+        gsap.to('.core', { r: 1.5, duration: 2, yoyo: true, repeat: -1, ease: "sine.inOut" });
+        
+        gsap.to('.vapor', { y: -5, opacity: 0.6, duration: 1.5, repeat: -1, ease: "power1.out" });
+        gsap.to('.vapor2', { y: -5, opacity: 0.6, duration: 1.5, delay: 0.75, repeat: -1, ease: "power1.out" });
+
+        document.getElementById('model').addEventListener('click', () => {
+            gsap.killTweensOf('*');
+            gsap.set('.arrows, .vapor, .vapor2, .core', { display: 'none' });
+            
+            gsap.to('.kernel', { r: 12, fill: "#FFF", duration: 0.3, ease: "power2.in", onComplete: () => {
+                gsap.set('.kernel', { display: 'none' });
+                gsap.set('.fragments', { visibility: 'visible' });
+                gsap.to('.frag', {
+                    x: () => (Math.random() - 0.5) * window.innerWidth,
+                    y: () => (Math.random() - 0.5) * window.innerHeight,
+                    scale: 3,
+                    opacity: 0,
+                    duration: 0.6,
+                    ease: "power2.out"
+                });
+            }});
+        });
+    </script>
+</body>
+</html>

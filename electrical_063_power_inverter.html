@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Power Inverter</title>
+<style>
+  body { margin: 0; padding: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  .container { position: relative; width: 48px; height: 32px; cursor: pointer; }
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+  .dc-line { stroke: #1ABC9C; stroke-width: 1.5; fill: none; }
+  .block { fill: none; stroke: #1ABC9C; stroke-width: 1.5; }
+  .pwm-bar { fill: #1ABC9C; }
+  .ac-wave { stroke: #1ABC9C; stroke-width: 1.5; fill: none; }
+  .spark { fill: #F1C40F; opacity: 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 48 32">
+    <path class="dc-line" d="M 2 16 H 14" />
+    <rect class="block" x="14" y="8" width="16" height="16" />
+    
+    <g id="pwm">
+      <rect class="pwm-bar" x="16" y="16" width="1" height="0" />
+      <rect class="pwm-bar" x="18" y="16" width="1" height="0" />
+      <rect class="pwm-bar" x="20" y="16" width="1" height="0" />
+      <rect class="pwm-bar" x="22" y="16" width="1" height="0" />
+      <rect class="pwm-bar" x="24" y="16" width="1" height="0" />
+      <rect class="pwm-bar" x="26" y="16" width="1" height="0" />
+    </g>
+    
+    <path class="ac-wave" d="M 30 16 Q 34 8, 38 16 T 46 16" />
+  </svg>
+</div>
+
+<script>
+  const bars = document.querySelectorAll('.pwm-bar');
+  const heights = [2, 5, 7, 5, 2, 0];
+  
+  bars.forEach((bar, i) => {
+    gsap.to(bar, {
+      attr: { y: 16 - heights[i], height: heights[i] },
+      duration: 0.1,
+      yoyo: true,
+      repeat: -1,
+      ease: "steps(2)",
+      delay: i * 0.05
+    });
+  });
+
+  const wave = document.querySelector('.ac-wave');
+  gsap.to(wave, { x: 2, duration: 0.2, repeat: -1, ease: "linear", yoyo: true });
+
+  document.getElementById('model').addEventListener('click', () => {
+    gsap.killTweensOf(bars);
+    gsap.killTweensOf(wave);
+    
+    // PWM stops, flat DC step
+    bars.forEach(bar => {
+      gsap.to(bar, { attr: { y: 10, height: 6 }, fill: "#E74C3C", duration: 0.1 });
+    });
+    
+    gsap.to('.ac-wave', { attr: { d: "M 30 10 H 46" }, stroke: "#E74C3C", duration: 0.1 });
+    gsap.to('.block', { stroke: "#E74C3C", duration: 0.1 });
+    
+    // Burn out and smoke
+    setTimeout(() => {
+      gsap.to('.block, .pwm-bar', { fill: "#E74C3C", scale: 1.5, transformOrigin: "center", opacity: 0, duration: 0.5 });
+      
+      const svg = document.querySelector('svg');
+      for(let i=0; i<15; i++) {
+        let spark = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        spark.setAttribute("cx", 22); spark.setAttribute("cy", 16);
+        spark.setAttribute("r", 1.5);
+        spark.setAttribute("fill", i%2===0 ? "#F1C40F" : "#E74C3C");
+        svg.appendChild(spark);
+        
+        gsap.to(spark, {
+          x: (Math.random()-0.5)*200,
+          y: (Math.random()-0.5)*200,
+          opacity: 0,
+          duration: 0.8 + Math.random()*0.5,
+          ease: "power3.out"
+        });
+      }
+      gsap.to(['.dc-line', '.ac-wave'], {opacity: 0, duration: 0.3});
+    }, 300);
+  });
+</script>
+</body>
+</html>

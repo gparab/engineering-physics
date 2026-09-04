@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fermentation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #121212;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .droplet {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .yeast-cell {
+            position: absolute;
+            width: 14px;
+            height: 16px;
+            background-color: #FFE4B5;
+            border-radius: 50%;
+        }
+
+        .bud {
+            position: absolute;
+            width: 0px;
+            height: 0px;
+            background-color: #FFE4B5;
+            border-radius: 50%;
+            top: 2px;
+            right: 2px;
+            transform-origin: bottom left;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model-container">
+        <div class="droplet" id="droplet">
+            <div class="yeast-cell" id="mother">
+                <div class="bud" id="bud"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('model-container');
+        const mother = document.getElementById('mother');
+        const bud = document.getElementById('bud');
+        const droplet = document.getElementById('droplet');
+
+        // Idle Animation
+        const pulsateTL = gsap.timeline({ repeat: -1, yoyo: true });
+        pulsateTL.to(mother, { scale: 1.1, duration: 1, ease: "sine.inOut" });
+
+        const budTL = gsap.timeline({ repeat: -1 });
+        budTL.to(bud, { width: 8, height: 8, top: -4, right: -4, duration: 1.5, ease: "power1.inOut" })
+             .to(bud, { x: 10, y: -10, opacity: 0, duration: 1, ease: "power1.out" })
+             .set(bud, { width: 0, height: 0, x: 0, y: 0, opacity: 1, top: 2, right: 2 });
+
+        // Click Animation
+        container.addEventListener('click', () => {
+            pulsateTL.kill();
+            budTL.kill();
+            
+            const clickTL = gsap.timeline();
+            
+            clickTL.to(droplet, { scale: 0, opacity: 0, duration: 0.5, ease: "power2.in" })
+                   .to(bud, { scale: 0, opacity: 0, duration: 0.2 }, "<")
+                   .to(mother, { 
+                       scale: 0.5, 
+                       backgroundColor: "#8B4513", // dormant spore color
+                       duration: 0.5 
+                   }, "<")
+                   .to(mother, {
+                       y: window.innerHeight / 2 + 50,
+                       duration: 1,
+                       ease: "power2.in"
+                   }, "+=0.2")
+                   .to(container, { display: 'none', duration: 0 });
+        });
+    </script>
+</body>
+</html>

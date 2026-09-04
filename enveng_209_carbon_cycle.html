@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carbon Cycle (Mass Balance)</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        cursor: pointer;
+    }
+    .node {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: #555;
+        z-index: 2;
+    }
+    #factory { bottom: 10px; left: 10px; border-radius: 2px; }
+    #atmosphere { top: 10px; left: 33px; }
+    #tree { bottom: 10px; right: 10px; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); border-radius: 0; background-color: #32CD32; }
+    
+    path {
+        fill: none;
+        stroke: rgba(255,255,255,0.1);
+        stroke-width: 2;
+    }
+    .carbon {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background-color: #32CD32;
+        border-radius: 50%;
+        margin-top: -2px;
+        margin-left: -2px;
+        z-index: 3;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <svg width="80" height="80" style="position:absolute; top:0; left:0; z-index:1;">
+            <path id="cyclePath" d="M 17,66 Q 17,17 40,17 Q 63,17 63,66 L 40,66 Z" />
+        </svg>
+        <div id="factory" class="node"></div>
+        <div id="atmosphere" class="node"></div>
+        <div id="tree" class="node"></div>
+    </div>
+<script>
+    gsap.registerPlugin(MotionPathPlugin);
+    const container = document.getElementById('container');
+    const atmosphere = document.getElementById('atmosphere');
+    const tree = document.getElementById('tree');
+    let clicked = false;
+    let particles = [];
+
+    function spawnCarbon() {
+        if(clicked) return;
+        let c = document.createElement('div');
+        c.className = 'carbon';
+        container.appendChild(c);
+        particles.push(c);
+
+        gsap.to(c, {
+            duration: 4,
+            ease: "none",
+            motionPath: {
+                path: "#cyclePath",
+                align: "#cyclePath",
+                autoRotate: false
+            },
+            onComplete: () => {
+                if(!clicked) {
+                    c.remove();
+                    particles = particles.filter(p => p !== c);
+                }
+            }
+        });
+    }
+
+    let interval = setInterval(spawnCarbon, 500);
+
+    container.addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        clearInterval(interval);
+
+        const tl = gsap.timeline();
+        
+        // Tree dies
+        tl.to(tree, {
+            backgroundColor: '#8B4513',
+            scaleY: 0.2,
+            transformOrigin: "bottom",
+            duration: 0.5
+        });
+
+        // Carbon backs up at atmosphere
+        gsap.killTweensOf('.carbon');
+        
+        particles.forEach(p => {
+            tl.to(p, {
+                left: '40px',
+                top: '17px',
+                duration: 1,
+                ease: "power2.in"
+            }, "backup");
+        });
+
+        // Atmosphere node swells
+        tl.to(atmosphere, {
+            scale: 4,
+            backgroundColor: '#32CD32',
+            boxShadow: '0 0 15px #32CD32',
+            duration: 1.5
+        }, "backup");
+
+        // Explodes
+        tl.to(atmosphere, {
+            scale: 20,
+            opacity: 0,
+            duration: 0.5,
+            ease: "power1.in"
+        });
+        tl.to('.carbon, #factory, #tree, svg', {
+            opacity: 0,
+            duration: 0.2
+        }, "-=0.3");
+    });
+</script>
+</body>
+</html>

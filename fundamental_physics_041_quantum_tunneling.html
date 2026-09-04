@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Tunneling</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+        
+        .system { position: relative; width: 400px; height: 200px; cursor: pointer; }
+        
+        .barrier { position: absolute; left: 150px; top: 0; width: 100px; height: 200px; background: rgba(100, 100, 100, 0.8); border: 2px solid #555; z-index: 5; transition: all 0.3s; }
+        
+        .wave-group { position: absolute; top: 50%; width: 100%; height: 100px; transform: translateY(-50%); }
+
+        .wave-path { fill: none; stroke: #FFFF00; stroke-linecap: round; }
+        
+        .incident { stroke-width: 4; animation: slide 2s linear infinite; }
+        .reflected { stroke-width: 3; stroke: rgba(255,255,0,0.5); opacity: 0; }
+        .transmitted { stroke-width: 1.5; stroke: rgba(255,255,0,0.8); opacity: 0; }
+
+        @keyframes slide {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(50px); }
+        }
+
+        .animating .reflected { animation: reflect-slide 2s linear infinite; opacity: 1; }
+        .animating .transmitted { animation: slide 2s linear infinite; opacity: 1; }
+
+        @keyframes reflect-slide {
+            0% { transform: translateX(0) scaleX(-1); }
+            100% { transform: translateX(-50px) scaleX(-1); }
+        }
+
+        /* Click state */
+        .frozen .incident, .frozen .reflected, .frozen .transmitted {
+            animation-play-state: paused !important;
+        }
+
+        .crushing .barrier {
+            width: 0; left: 200px; opacity: 0.2;
+        }
+        
+        .particle {
+            position: absolute; top: 50%; left: 200px; width: 10px; height: 10px; background: #FFF; border-radius: 50%; transform: translate(-50%, -50%); opacity: 0; box-shadow: 0 0 10px #FF0; z-index: 10;
+        }
+
+        .frozen .particle { opacity: 1; transition: opacity 0.1s; }
+        
+        .crushing .particle {
+            height: 200px; width: 2px; background: red; box-shadow: 0 0 20px red;
+            transition: all 0.2s 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <div class="system animating" id="sys">
+        <svg class="wave-group" style="left: -50px; width: 200px;">
+            <path class="wave-path incident" d="M 0,50 Q 12.5,0 25,50 T 50,50 T 75,50 T 100,50 T 125,50 T 150,50 T 175,50 T 200,50"></path>
+        </svg>
+        <svg class="wave-group" style="left: -50px; width: 200px;">
+            <path class="wave-path reflected" d="M 0,50 Q 12.5,20 25,50 T 50,50 T 75,50 T 100,50 T 125,50 T 150,50 T 175,50 T 200,50" transform-origin="100px 50px"></path>
+        </svg>
+        
+        <div class="barrier" id="barrier"></div>
+        <div class="particle" id="particle"></div>
+
+        <svg class="wave-group" style="left: 250px; width: 200px;">
+            <path class="wave-path transmitted" d="M 0,50 Q 12.5,40 25,50 T 50,50 T 75,50 T 100,50 T 125,50 T 150,50 T 175,50 T 200,50"></path>
+        </svg>
+    </div>
+    
+    <script>
+        const sys = document.getElementById('sys');
+        let clicked = false;
+        
+        sys.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+            sys.classList.remove('animating');
+            sys.classList.add('frozen');
+            
+            setTimeout(() => {
+                sys.classList.add('crushing');
+                // clear SVGs
+                document.querySelectorAll('svg').forEach(s => s.style.opacity = '0');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiplexer (MUX)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    width: 250px;
+    height: 250px;
+    cursor: pointer;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  .trapezoid {
+    fill: none;
+    stroke: #E67E22;
+    stroke-width: 3;
+  }
+  .stream {
+    stroke: #E67E22;
+    stroke-width: 2;
+    stroke-linecap: round;
+    opacity: 0.5;
+  }
+  .selected-stream {
+    stroke: #E67E22;
+    stroke-width: 3;
+    opacity: 1;
+    filter: drop-shadow(0 0 5px #E67E22);
+  }
+  .spark {
+    fill: #E67E22;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 100 100" id="svg-element">
+    <g id="mux-group">
+      <!-- MUX trapezoid -->
+      <polygon class="trapezoid" points="40,20 60,35 60,65 40,80" id="mux-shape" />
+      <!-- Inputs -->
+      <line class="stream" x1="10" y1="30" x2="35" y2="30" id="in1" />
+      <line class="stream" x1="10" y1="50" x2="35" y2="50" id="in2" />
+      <line class="stream" x1="10" y1="70" x2="35" y2="70" id="in3" />
+      <!-- Selector -->
+      <line class="stream" x1="50" y1="90" x2="50" y2="75" />
+      <!-- Output -->
+      <line class="selected-stream" x1="65" y1="50" x2="90" y2="50" id="out" />
+    </g>
+    
+    <!-- Streams passing through -->
+    <circle r="2" fill="#E67E22" id="packet1" />
+    <circle r="2" fill="#E67E22" id="packet2" />
+    
+    <!-- Sparks -->
+    <g id="sparks"></g>
+  </svg>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  gsap.set(["#packet1", "#packet2"], { opacity: 0 });
+  
+  const tl = gsap.timeline({ repeat: -1 });
+  tl.set("#packet1", { x: 10, y: 50, opacity: 1 })
+    .to("#packet1", { x: 90, duration: 1.5, ease: "none" })
+    .to("#packet1", { opacity: 0, duration: 0.1 }, "-=0.1")
+    .set("#packet2", { x: 10, y: 30, opacity: 1 })
+    .to("#packet2", { x: 40, duration: 0.5, ease: "none" })
+    .to("#packet2", { opacity: 0, duration: 0.1 });
+
+  // Create sparks
+  const sparksGroup = document.getElementById('sparks');
+  for (let i = 0; i < 12; i++) {
+    const spark = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    spark.setAttribute('class', 'spark');
+    spark.setAttribute('r', Math.random() * 2 + 1);
+    spark.setAttribute('cx', 40);
+    spark.setAttribute('cy', i % 2 === 0 ? 30 : 70);
+    sparksGroup.appendChild(spark);
+  }
+
+  const model = document.getElementById('model');
+  model.addEventListener('click', () => {
+    tl.kill();
+    gsap.killTweensOf("*");
+    
+    const clickTl = gsap.timeline();
+    // Unselected streams disintegrate
+    const sparks = document.querySelectorAll('.spark');
+    sparks.forEach((s, i) => {
+      const startY = i % 2 === 0 ? 30 : 70;
+      clickTl.to(s, {
+        opacity: 1,
+        x: 40 - Math.random() * 20,
+        y: startY + (Math.random() - 0.5) * 40,
+        duration: 0.5 + Math.random() * 0.5,
+        ease: "power2.out",
+        opacity: 0
+      }, 0);
+    });
+    
+    clickTl.to(["#in1", "#in3", "#packet1", "#packet2"], { opacity: 0, duration: 0.2 }, 0)
+           .to("#mux-shape", {
+             attr: { points: "40,50 60,50 60,50 40,50" }, // collapse to line
+             duration: 0.4,
+             ease: "power2.inOut"
+           }, 0.2)
+           .to(["#mux-shape", "#in2", "#out"], { x: 150, opacity: 0, duration: 0.6, ease: "power2.in" }, 0.6);
+  });
+</script>
+</body>
+</html>

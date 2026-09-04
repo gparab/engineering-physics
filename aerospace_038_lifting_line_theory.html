@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #eaeaea; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; perspective: 600px; }
+  .container { position: relative; width: 80px; height: 50px; cursor: pointer; transform-style: preserve-3d; }
+  .wing { position: absolute; width: 60px; height: 12px; background: #444; left: 10px; top: 19px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+  .vortex { position: absolute; width: 12px; height: 40px; border: 1.5px solid #8E44AD; border-radius: 50%; opacity: 0.7; top: 19px; transform-origin: top center; box-sizing: border-box; }
+  .v-left { left: 10px; transform: rotate(20deg); }
+  .v-right { right: 10px; transform: rotate(-20deg); }
+  .ground { position: absolute; width: 100vw; height: 100vh; background: #d0d0d0; top: 100vh; left: 0; transition: top 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="ground" id="ground"></div>
+<div class="container" id="model">
+  <div class="wing" id="wing"></div>
+  <div class="vortex v-left" id="vl"></div>
+  <div class="vortex v-right" id="vr"></div>
+</div>
+<script>
+  const model = document.getElementById('model');
+  const vl = document.getElementById('vl');
+  const vr = document.getElementById('vr');
+  const ground = document.getElementById('ground');
+  
+  gsap.to(model, { y: -5, duration: 1.2, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to([vl, vr], { scaleY: 1.3, opacity: 0.3, duration: 0.4, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf(model);
+    gsap.killTweensOf([vl, vr]);
+    
+    ground.style.top = '55vh';
+    
+    gsap.to([vl, vr], { scaleY: 0, opacity: 0, duration: 0.6, ease: 'power2.out' });
+    gsap.to(model, { y: '50vh', marginTop: -25, duration: 0.6, ease: 'power2.out' });
+    
+    setTimeout(() => {
+      gsap.to(model, {
+        z: -2000,
+        y: -200,
+        duration: 1.5,
+        ease: 'power3.in'
+      });
+      gsap.to(ground, { top: 0, duration: 1.5, ease: 'power3.inOut' });
+    }, 700);
+  });
+</script>
+</body>
+</html>

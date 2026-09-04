@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activated Sludge Biofilm</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+    }
+    #bead {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 10px;
+        height: 10px;
+        background-color: #666;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+    }
+    #biofilm {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 15px;
+        height: 15px;
+        background-color: rgba(85, 107, 47, 0.8);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        filter: blur(2px);
+        z-index: 1;
+    }
+    .bod {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background-color: #fff;
+        border-radius: 50%;
+        opacity: 0.6;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="biofilm"></div>
+        <div id="bead"></div>
+    </div>
+<script>
+    const container = document.getElementById('container');
+    const biofilm = document.getElementById('biofilm');
+    const bead = document.getElementById('bead');
+    
+    // Idle: Biofilm expands as BOD particles drift in
+    let biofilmSize = 15;
+    
+    function spawnBOD() {
+        if(clicked) return;
+        let p = document.createElement('div');
+        p.className = 'bod';
+        
+        let angle = Math.random() * Math.PI * 2;
+        let radius = 30 + Math.random() * 20;
+        
+        let startX = 30 + Math.cos(angle) * radius;
+        let startY = 30 + Math.sin(angle) * radius;
+        
+        p.style.left = startX + 'px';
+        p.style.top = startY + 'px';
+        
+        container.appendChild(p);
+        
+        gsap.to(p, {
+            left: 30 + (Math.cos(angle) * biofilmSize/2),
+            top: 30 + (Math.sin(angle) * biofilmSize/2),
+            duration: 1 + Math.random(),
+            ease: "power1.in",
+            onComplete: () => {
+                if(!clicked) {
+                    p.remove();
+                    biofilmSize = Math.min(biofilmSize + 0.5, 35);
+                    gsap.to(biofilm, {
+                        width: biofilmSize,
+                        height: biofilmSize,
+                        duration: 0.2
+                    });
+                }
+            }
+        });
+    }
+
+    let interval = setInterval(spawnBOD, 200);
+
+    // subtle pulse of biofilm
+    gsap.to(biofilm, {
+        scale: 1.05,
+        duration: 1,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut"
+    });
+
+    let clicked = false;
+    container.addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        clearInterval(interval);
+        
+        // Over-thickened biofilm sloughs off
+        gsap.killTweensOf(biofilm);
+        gsap.killTweensOf('.bod');
+        document.querySelectorAll('.bod').forEach(el => el.remove());
+
+        const tl = gsap.timeline();
+        
+        // Bead stays, biofilm chunks off and washes away
+        tl.to(biofilm, {
+            x: 200,
+            y: 200,
+            scale: 2,
+            opacity: 0,
+            duration: 1.5,
+            ease: "power2.in",
+            rotation: 180
+        });
+
+        tl.to(bead, {
+            opacity: 0,
+            duration: 0.5
+        }, "-=0.5");
+    });
+</script>
+</body>
+</html>

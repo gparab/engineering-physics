@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nanofluidic Channel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    font-family: sans-serif;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    cursor: pointer;
+    width: 60px;
+    height: 20px;
+  }
+  .channel-wall {
+    position: absolute;
+    width: 100%; height: 4px;
+    background: #bdc3c7;
+  }
+  .top-wall { top: 0; }
+  .bottom-wall { bottom: 0; }
+  .edl {
+    position: absolute;
+    width: 100%; height: 6px;
+    background: rgba(52, 152, 219, 0.2);
+  }
+  .top-edl { top: 4px; }
+  .bottom-edl { bottom: 4px; }
+  
+  .water-molecule {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: #3498db;
+    border-radius: 50%;
+    top: 8px; left: -10px;
+  }
+  .wave {
+    position: fixed;
+    top: 0; left: -100vw;
+    width: 100vw; height: 100vh;
+    background: #3498db;
+    opacity: 0.8;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div class="wave" id="wave"></div>
+<div class="container" id="model">
+  <div class="channel-wall top-wall"></div>
+  <div class="edl top-edl"></div>
+  <div class="channel-wall bottom-wall"></div>
+  <div class="edl bottom-edl"></div>
+  <div id="flow"></div>
+</div>
+<script>
+  const flow = document.getElementById('flow');
+  const model = document.getElementById('model');
+
+  function spawnMolecule() {
+    const mol = document.createElement('div');
+    mol.className = 'water-molecule';
+    flow.appendChild(mol);
+    gsap.to(mol, {
+      x: 80,
+      duration: 1.5,
+      ease: "none",
+      onComplete: () => mol.remove()
+    });
+  }
+
+  const idleInterval = setInterval(spawnMolecule, 400);
+
+  let isAnimating = false;
+  model.addEventListener('click', () => {
+    if (isAnimating) return;
+    isAnimating = true;
+    clearInterval(idleInterval);
+    
+    const tl = gsap.timeline();
+    // Apply electric field flash
+    tl.to('.edl', { backgroundColor: 'rgba(231, 76, 60, 0.5)', duration: 0.2, yoyo: true, repeat: 3 })
+      // High velocity jet of molecules
+      .add(() => {
+        for(let i=0; i<30; i++) {
+          setTimeout(() => {
+            const mol = document.createElement('div');
+            mol.className = 'water-molecule';
+            mol.style.background = '#e74c3c';
+            flow.appendChild(mol);
+            gsap.to(mol, { x: 100, duration: 0.2, ease: "none", onComplete: () => mol.remove() });
+          }, i * 20);
+        }
+      }, 0.5)
+      // Massive fluid wave washes screen
+      .to('#wave', { x: '0', duration: 0.5, ease: "power2.in" }, 1.0)
+      .to('#wave', { x: '100vw', duration: 0.5, ease: "power2.out" }, 1.8)
+      .set('#model', { display: 'none' });
+  });
+</script>
+</body>
+</html>

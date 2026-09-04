@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dijkstra's Algorithm</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111;
+    overflow: hidden;
+  }
+  #container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+  }
+  .node {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: rgba(26, 188, 156, 0.5);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+  .edge {
+    position: absolute;
+    height: 1px;
+    background-color: rgba(26, 188, 156, 0.2);
+    transform-origin: 0 0;
+    z-index: 1;
+  }
+  .wave {
+    position: absolute;
+    height: 2px;
+    background-color: #1ABC9C;
+    transform-origin: 0 0;
+    z-index: 3;
+    opacity: 0;
+    box-shadow: 0 0 5px #1ABC9C;
+  }
+  #flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #1ABC9C;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div id="container"></div>
+<div id="flash"></div>
+<script>
+  const container = document.getElementById('container');
+  const color = '#1ABC9C';
+  
+  const nodesData = [
+    { x: 10, y: 50 }, // 0 (start)
+    { x: 35, y: 20 }, // 1
+    { x: 40, y: 80 }, // 2
+    { x: 65, y: 35 }, // 3
+    { x: 70, y: 65 }, // 4
+    { x: 90, y: 50 }  // 5 (end)
+  ];
+  
+  const edgesData = [
+    { u: 0, v: 1, cost: 2, path: false },
+    { u: 0, v: 2, cost: 4, path: true }, // we'll make path 0->2->4->5 the shortest visually for animation
+    { u: 1, v: 3, cost: 5, path: false },
+    { u: 2, v: 4, cost: 1, path: true },
+    { u: 1, v: 2, cost: 1, path: false },
+    { u: 3, v: 5, cost: 3, path: false },
+    { u: 4, v: 5, cost: 2, path: true },
+    { u: 3, v: 4, cost: 2, path: false }
+  ];
+
+  const nodes = [];
+  const edges = [];
+
+  nodesData.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'node';
+    el.style.left = `${d.x}px`;
+    el.style.top = `${d.y}px`;
+    container.appendChild(el);
+    nodes.push(el);
+  });
+
+  edgesData.forEach(e => {
+    const u = nodesData[e.u];
+    const v = nodesData[e.v];
+    const dx = v.x - u.x;
+    const dy = v.y - u.y;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    
+    const edge = document.createElement('div');
+    edge.className = 'edge';
+    edge.style.width = `${len}px`;
+    edge.style.left = `${u.x}px`;
+    edge.style.top = `${u.y}px`;
+    edge.style.transform = `rotate(${angle}deg)`;
+    container.appendChild(edge);
+    edges.push({ el: edge, len, ...e });
+  });
+
+  let idleTl = gsap.timeline({ repeat: -1 });
+
+  function playIdle() {
+    idleTl.clear();
+    
+    // reset nodes
+    idleTl.set(nodes, { backgroundColor: 'rgba(26, 188, 156, 0.5)', scale: 1 });
+    
+    // Wavefront expands
+    nodes.forEach((n, i) => {
+      idleTl.to(n, { backgroundColor: color, scale: 1.5, duration: 0.2 }, i * 0.4);
+      idleTl.to(n, { scale: 1, duration: 0.2 }, i * 0.4 + 0.2);
+    });
+    
+    idleTl.to({}, { duration: 1 });
+  }
+
+  playIdle();
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    idleTl.kill();
+    
+    const tl = gsap.timeline();
+    
+    // Unselected paths wither to dust
+    const unselected = edges.filter(e => !e.path);
+    unselected.forEach(e => {
+      tl.to(e.el, { opacity: 0, duration: 0.5, ease: "power1.out" }, 0);
+    });
+    
+    const unselectedNodes = [nodes[1], nodes[3]];
+    unselectedNodes.forEach(n => {
+      tl.to(n, { opacity: 0, y: '+=10', duration: 0.5 }, 0);
+    });
+
+    // Shortest path illuminates blindingly
+    const selectedEdges = edges.filter(e => e.path);
+    selectedEdges.forEach(e => {
+      tl.to(e.el, { backgroundColor: '#fff', height: 4, duration: 0.5, boxShadow: '0 0 10px #fff' }, 0.5);
+    });
+    const selectedNodes = [nodes[0], nodes[2], nodes[4], nodes[5]];
+    selectedNodes.forEach(n => {
+      tl.to(n, { backgroundColor: '#fff', scale: 2, duration: 0.5, boxShadow: '0 0 15px #fff' }, 0.5);
+    });
+
+    // Blinding flash
+    tl.to('#flash', { opacity: 1, duration: 0.1 }, 1);
+    tl.to(container, { opacity: 0, duration: 0 }, 1.1);
+    tl.to('#flash', { opacity: 0, duration: 1.5 }, 1.1);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schrödinger's Probability Cloud</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+        #canvas { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        const numParticles = 800;
+        let clicked = false;
+        let collapseProgress = 0;
+
+        for(let i = 0; i < numParticles; i++) {
+            particles.push({
+                x: Math.random() * 200 - 100,
+                y: Math.random() * 200 - 100,
+                baseX: 0,
+                baseY: 0,
+                angle: Math.random() * Math.PI * 2,
+                radius: Math.random() * 50 + 10,
+                speed: Math.random() * 0.05 + 0.02
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+
+            if (!clicked) {
+                particles.forEach(p => {
+                    p.angle += p.speed;
+                    // Dumbbell shape approximation
+                    const r = Math.sqrt(Math.abs(Math.cos(p.angle))) * p.radius;
+                    p.x = r * Math.cos(p.angle) * (Math.random() > 0.5 ? 1 : -1) * 2;
+                    p.y = r * Math.sin(p.angle) + (Math.random() - 0.5) * 20;
+
+                    ctx.fillStyle = `rgba(75, 0, 130, ${Math.random() * 0.5 + 0.2})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            } else {
+                collapseProgress += 0.05;
+                if (collapseProgress < 1) {
+                    particles.forEach(p => {
+                        p.x = p.x * (1 - collapseProgress);
+                        p.y = p.y * (1 - collapseProgress);
+                        ctx.fillStyle = `rgba(75, 0, 130, 1)`;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                } else if (collapseProgress < 1.2) {
+                    ctx.fillStyle = '#4B0082';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            ctx.restore();
+            requestAnimationFrame(draw);
+        }
+
+        canvas.addEventListener('click', () => {
+            if(!clicked) clicked = true;
+        });
+
+        draw();
+    </script>
+</body>
+</html>

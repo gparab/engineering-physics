@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retaining Wall Active Earth Pressure</title>
+<style>
+  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #fafafa; overflow: hidden; }
+  .container { position: relative; width: 60px; height: 40px; cursor: pointer; }
+  .wall { position: absolute; bottom: 0; left: 10px; width: 8px; height: 35px; background: #666; transform-origin: bottom left; }
+  .soil { position: absolute; bottom: 0; left: 18px; width: 35px; height: 35px; background: #CD853F; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+  .wedge { position: absolute; bottom: 0; left: 18px; width: 35px; height: 35px; background: rgba(205,133,63,0.8); clip-path: polygon(0 0, 100% 0, 0 100%); transform-origin: bottom left; }
+  .failure-plane { position: absolute; bottom: 0; left: 18px; width: 50px; height: 1px; background: rgba(0,0,0,0.2); transform-origin: left; transform: rotate(-45deg); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="container" id="icon">
+    <div class="soil"></div>
+    <div class="failure-plane"></div>
+    <div class="wedge" id="wedge"></div>
+    <div class="wall" id="wall"></div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const wall = document.getElementById('wall');
+    const wedge = document.getElementById('wedge');
+    
+    // Idle: Wall leans slightly, wedge shifts
+    const idle = gsap.timeline({ repeat: -1, yoyo: true })
+      .to(wall, { rotation: -3, duration: 1.5, ease: "sine.inOut" })
+      .to(wedge, { x: -1, y: 1, duration: 1.5, ease: "sine.inOut" }, 0);
+
+    icon.addEventListener('click', () => {
+      idle.kill();
+      // Tip over and slide out
+      gsap.to(wall, { rotation: -90, x: -10, duration: 0.5, ease: "power2.in" });
+      gsap.to(wedge, { x: -20, y: 20, rotation: -10, opacity: 0, duration: 1, ease: "power2.in" });
+      gsap.to('.soil', { opacity: 0, duration: 1, delay: 0.5 });
+    });
+  </script>
+</body>
+</html>

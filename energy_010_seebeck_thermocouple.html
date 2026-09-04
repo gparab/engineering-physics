@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #121212;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 30px;
+    height: 20px;
+    cursor: pointer;
+  }
+  .wire {
+    position: absolute;
+    width: 20px; height: 10px;
+    border: 2px solid;
+    border-radius: 5px;
+    box-sizing: border-box;
+    left: 5px; top: 5px;
+    /* Red on left (hot), Blue on right (cold) */
+    border-image: linear-gradient(to right, #FF0000, #0000FF) 1;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 2px, 18px 2px, 18px 8px, 2px 8px, 2px 0);
+  }
+  .junction-hot {
+    position: absolute;
+    width: 4px; height: 10px;
+    background: #FF0000;
+    left: 3px; top: 5px;
+  }
+  .junction-cold {
+    position: absolute;
+    width: 4px; height: 10px;
+    background: #0000FF;
+    right: 3px; top: 5px;
+  }
+  
+  .electron {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation: flow 2s infinite linear;
+  }
+  @keyframes flow {
+    0% { left: 5px; top: 4px; }
+    40% { left: 23px; top: 4px; }
+    50% { left: 23px; top: 14px; }
+    90% { left: 5px; top: 14px; }
+    100% { left: 5px; top: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="wire" id="wire"></div>
+  <div class="junction-hot" id="jh"></div>
+  <div class="junction-cold" id="jc"></div>
+  <div class="electron"></div>
+  <div class="electron" style="animation-delay: -1s;"></div>
+</div>
+<script>
+  document.getElementById('model').onclick = function() {
+    this.style.pointerEvents = 'none';
+    document.querySelectorAll('.electron').forEach(e => e.style.display = 'none');
+    
+    let w = document.getElementById('wire');
+    let jh = document.getElementById('jh');
+    let jc = document.getElementById('jc');
+    
+    // Equalization
+    w.style.transition = 'all 0.5s';
+    jh.style.transition = 'all 0.5s';
+    jc.style.transition = 'all 0.5s';
+    
+    w.style.borderImage = 'none';
+    w.style.borderColor = '#888';
+    jh.style.background = '#888';
+    jc.style.background = '#888';
+    
+    setTimeout(() => {
+      // Dissolve into ash
+      this.style.transition = 'all 1s cubic-bezier(0.1, 0.8, 0.2, 1)';
+      this.style.transform = 'translateY(50px) scale(0)';
+      this.style.opacity = '0';
+      this.style.filter = 'blur(5px)';
+    }, 600);
+  };
+</script>
+</body>
+</html>

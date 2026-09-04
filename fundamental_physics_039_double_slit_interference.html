@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double-Slit Interference</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; cursor: pointer; }
+        .experiment { position: relative; width: 400px; height: 300px; }
+        
+        .wave-source { position: absolute; left: 0; top: 0; width: 100px; height: 300px; overflow: hidden; }
+        .incoming-wave { position: absolute; border: 2px solid #00FA9A; border-radius: 50%; width: 300px; height: 300px; top: 50%; left: -150px; transform: translateY(-50%); opacity: 0; animation: propagate 2s linear infinite; }
+        .incoming-wave:nth-child(2) { animation-delay: 0.5s; }
+        .incoming-wave:nth-child(3) { animation-delay: 1s; }
+        .incoming-wave:nth-child(4) { animation-delay: 1.5s; }
+
+        .barrier { position: absolute; left: 100px; top: 0; width: 10px; height: 300px; background: #555; }
+        .slit { position: absolute; left: 0; width: 10px; height: 20px; background: #111; }
+        .slit.top { top: 100px; }
+        .slit.bottom { top: 180px; }
+
+        .interference-region { position: absolute; left: 110px; top: 0; width: 280px; height: 300px; overflow: hidden; }
+        .ripple { position: absolute; border: 1px solid rgba(0,250,154,0.5); border-radius: 50%; width: 20px; height: 20px; opacity: 0; animation: ripple-grow 2s linear infinite; }
+        
+        /* Top slit ripples */
+        .rt1 { top: 110px; left: -10px; animation-delay: 0s; } .rt2 { top: 110px; left: -10px; animation-delay: 0.5s; } .rt3 { top: 110px; left: -10px; animation-delay: 1s; } .rt4 { top: 110px; left: -10px; animation-delay: 1.5s; }
+        /* Bottom slit ripples */
+        .rb1 { top: 190px; left: -10px; animation-delay: 0s; } .rb2 { top: 190px; left: -10px; animation-delay: 0.5s; } .rb3 { top: 190px; left: -10px; animation-delay: 1s; } .rb4 { top: 190px; left: -10px; animation-delay: 1.5s; }
+
+        @keyframes propagate {
+            0% { width: 10px; height: 10px; opacity: 1; }
+            100% { width: 200px; height: 200px; opacity: 0; }
+        }
+        @keyframes ripple-grow {
+            0% { width: 0; height: 0; transform: translate(0, 0); opacity: 1; }
+            100% { width: 400px; height: 400px; transform: translate(-200px, -200px); opacity: 0; }
+        }
+
+        .screen { position: absolute; right: 0; top: 0; width: 10px; height: 300px; background: #333; display: flex; flex-direction: column; justify-content: space-around; }
+        
+        .pattern { width: 100%; height: 20px; background: rgba(0, 250, 154, 0.8); box-shadow: 0 0 10px #00FA9A; transition: opacity 0.3s; }
+        .pattern:nth-child(even) { height: 30px; opacity: 0.4; }
+
+        .eye { position: absolute; top: 20px; left: 200px; width: 40px; height: 20px; background: #fff; border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; opacity: 0; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 10px #fff; }
+        .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; }
+
+        /* Observed State */
+        .observed .ripple { display: none; }
+        .observed .pattern { opacity: 0 !important; box-shadow: none; }
+        
+        .observed .eye { opacity: 1; animation: blink 0.5s; }
+        @keyframes blink { 0% { height: 2px; } 100% { height: 20px; } }
+
+        .particles-hit { position: absolute; right: 10px; top: 0; width: 10px; height: 300px; }
+        .cluster { position: absolute; width: 4px; height: 4px; background: #00FA9A; border-radius: 50%; opacity: 0; }
+        
+        .observed .cluster { opacity: 1; transition: opacity 0.1s; }
+    </style>
+</head>
+<body>
+    <div class="experiment" id="exp">
+        <div class="wave-source">
+            <div class="incoming-wave"></div><div class="incoming-wave"></div>
+            <div class="incoming-wave"></div><div class="incoming-wave"></div>
+        </div>
+        <div class="barrier">
+            <div class="slit top"></div>
+            <div class="slit bottom"></div>
+        </div>
+        <div class="interference-region">
+            <div class="ripple rt1"></div><div class="ripple rt2"></div><div class="ripple rt3"></div><div class="ripple rt4"></div>
+            <div class="ripple rb1"></div><div class="ripple rb2"></div><div class="ripple rb3"></div><div class="ripple rb4"></div>
+        </div>
+        <div class="screen">
+            <div class="pattern"></div><div class="pattern"></div><div class="pattern"></div>
+            <div class="pattern"></div><div class="pattern"></div><div class="pattern"></div>
+            <div class="pattern"></div>
+        </div>
+        <div class="particles-hit" id="hits"></div>
+        <div class="eye"><div class="pupil"></div></div>
+    </div>
+
+    <script>
+        const exp = document.getElementById('exp');
+        const hits = document.getElementById('hits');
+        
+        // generate clusters behind slits
+        for(let i=0; i<40; i++) {
+            let p1 = document.createElement('div');
+            p1.className = 'cluster';
+            p1.style.top = (100 + Math.random()*20) + 'px';
+            p1.style.left = (Math.random()*8) + 'px';
+            hits.appendChild(p1);
+
+            let p2 = document.createElement('div');
+            p2.className = 'cluster';
+            p2.style.top = (180 + Math.random()*20) + 'px';
+            p2.style.left = (Math.random()*8) + 'px';
+            hits.appendChild(p2);
+        }
+
+        let clicked = false;
+        document.body.addEventListener('click', () => {
+            if(clicked) return;
+            clicked = true;
+            exp.classList.add('observed');
+        });
+    </script>
+</body>
+</html>

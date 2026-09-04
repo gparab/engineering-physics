@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kirchhoff's Voltage Law</title>
+<style>
+  body { margin: 0; padding: 0; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 40px; height: 26px; cursor: pointer; }
+  svg { width: 100%; height: 100%; overflow: visible; }
+  .loop-path { fill: none; stroke: #9B59B6; stroke-width: 1.5; stroke-opacity: 0.3; }
+  .glow-path { fill: none; stroke: #9B59B6; stroke-width: 2; stroke-linecap: round; filter: drop-shadow(0 0 2px #9B59B6); }
+</style>
+</head>
+<body>
+<div id="container">
+  <svg viewBox="0 0 40 26" id="svg-element">
+    <rect x="2" y="2" width="36" height="22" rx="2" class="loop-path" />
+    <rect x="2" y="2" width="36" height="22" rx="2" class="glow-path" id="glow" stroke-dasharray="20 96" stroke-dashoffset="0" />
+  </svg>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  const glow = document.getElementById('glow');
+  
+  // Total length is roughly 2*(36+22) = 116. stroke-dasharray is 20 96.
+  gsap.to(glow, {
+    strokeDashoffset: -116,
+    duration: 2,
+    repeat: -1,
+    ease: "none"
+  });
+
+  container.addEventListener('click', () => {
+    gsap.killTweensOf(glow);
+    
+    // Loop shrinks inward to a zero-potential point, vanishes
+    gsap.to('#svg-element', {
+      scale: 0.01,
+      rotation: 180,
+      opacity: 0,
+      duration: 0.6,
+      ease: "power2.in",
+      onComplete: () => container.style.display = 'none'
+    });
+  });
+</script>
+</body>
+</html>

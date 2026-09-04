@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Denavit-Hartenberg Kinematics</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #0d0d0d;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .container {
+    width: 30px;
+    height: 30px;
+    position: relative;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="container">
+  <svg viewBox="0 0 30 30" id="icon">
+    <!-- Base / Root frame -->
+    <g id="base" transform="translate(15,25)">
+      <!-- Segment 1 -->
+      <line id="seg1" x1="0" y1="0" x2="0" y2="-10" stroke="#FF4500" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="1" fill="#FF4500"/>
+      <!-- Joint 1 -->
+      <g id="joint1" transform="translate(0,-10)">
+        <circle cx="0" cy="0" r="1.2" fill="#FF4500"/>
+        <!-- Segment 2 -->
+        <line id="seg2" x1="0" y1="0" x2="8" y2="-8" stroke="#FF4500" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Joint 2 -->
+        <g id="joint2" transform="translate(8,-8)">
+          <circle cx="0" cy="0" r="1.2" fill="#FF4500"/>
+          <!-- Segment 3 -->
+          <line id="seg3" x1="0" y1="0" x2="6" y2="2" stroke="#FF4500" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="6" cy="2" r="0.8" fill="#FF4500"/>
+        </g>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<script>
+  // Idle Animation: The arm subtly traces a smooth, tiny figure-eight pattern.
+  const tl = gsap.timeline({ repeat: -1, yoyo: true });
+  
+  // Create figure-8 by combining sinusoidal rotations
+  tl.to("#joint1", {
+    rotation: 20,
+    duration: 1.5,
+    ease: "sine.inOut"
+  }, 0)
+  .to("#joint1", {
+    rotation: -20,
+    duration: 1.5,
+    ease: "sine.inOut"
+  }, 1.5)
+  .to("#joint2", {
+    rotation: 30,
+    duration: 0.75,
+    ease: "sine.inOut",
+    repeat: 3,
+    yoyo: true
+  }, 0);
+
+  // Click Disappearance Motion: The joints unhinge, and the segments fold perfectly into a single point before winking out.
+  document.body.addEventListener('click', () => {
+    tl.kill();
+    
+    const clickTl = gsap.timeline();
+    
+    // Unhinge and fold
+    clickTl.to("#joint2", {
+      rotation: -135, // Fold segment 3 over segment 2
+      duration: 0.4,
+      ease: "power2.inOut"
+    }, 0)
+    .to("#joint1", {
+      rotation: 180, // Fold segment 2 over segment 1
+      duration: 0.4,
+      ease: "power2.inOut"
+    }, 0.2)
+    .to("#base", {
+      rotation: 180,
+      scale: 0.1,
+      duration: 0.5,
+      ease: "power3.in"
+    }, 0.4)
+    .to("#icon", {
+      opacity: 0,
+      scale: 0,
+      duration: 0.2
+    }, 0.8)
+    .to("body", {
+      backgroundColor: "#1a0a05",
+      duration: 0.2,
+      yoyo: true,
+      repeat: 1
+    }, 0.8);
+  }, { once: true });
+</script>
+</body>
+</html>

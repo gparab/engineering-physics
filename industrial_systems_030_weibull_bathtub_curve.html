@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>30. Weibull Bathtub Curve</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: -apple-system, sans-serif;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        svg {
+            width: 600px;
+            height: 300px;
+            overflow: visible;
+        }
+        .curve {
+            fill: none;
+            stroke: #DC143C;
+            stroke-width: 4;
+            stroke-linecap: round;
+        }
+        .axis {
+            stroke: #333;
+            stroke-width: 2;
+        }
+        #marker {
+            fill: #fff;
+            stroke: #DC143C;
+            stroke-width: 2;
+        }
+        .flash {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+</head>
+<body>
+    <div id="info">WEIBULL BATHTUB CURVE // 030</div>
+    
+    <svg id="chart" viewBox="0 0 600 300">
+        <!-- Axes -->
+        <line class="axis" x1="20" y1="20" x2="20" y2="280" />
+        <line class="axis" x1="20" y1="280" x2="580" y2="280" />
+        
+        <!-- The Bathtub Curve (split into two for the tear effect) -->
+        <g id="curve-group">
+            <path id="curve-left" class="curve" d="M 40,50 Q 80,240 180,250 L 300,250" />
+            <path id="curve-right" class="curve" d="M 300,250 L 420,250 Q 520,240 560,50" />
+            
+            <path id="full-path" fill="none" stroke="none" d="M 40,50 Q 80,240 180,250 L 420,250 Q 520,240 560,50" />
+        </g>
+        
+        <circle id="marker" cx="0" cy="0" r="6" />
+    </svg>
+    <div class="flash" id="flash"></div>
+
+    <script>
+        gsap.registerPlugin(MotionPathPlugin);
+
+        // Idle Animation
+        const anim = gsap.to("#marker", {
+            duration: 4,
+            ease: "none",
+            motionPath: {
+                path: "#full-path",
+                align: "#full-path",
+                alignOrigin: [0.5, 0.5]
+            },
+            repeat: -1
+        });
+
+        let crashed = false;
+
+        window.addEventListener('click', () => {
+            if(crashed) return;
+            crashed = true;
+            
+            // Force marker to middle flat zone instantly
+            anim.kill();
+            gsap.set("#marker", { x: 300, y: 250 });
+            
+            // Catastrophic failure
+            const tl = gsap.timeline();
+            
+            tl.to("#flash", { opacity: 1, duration: 0.1, yoyo: true, repeat: 1 })
+              .to("#marker", { scale: 5, opacity: 0, duration: 0.2 }, 0)
+              .to("#curve-left", { 
+                  rotation: -45, 
+                  transformOrigin: "left bottom", 
+                  y: 500, 
+                  duration: 1, 
+                  ease: "power2.in" 
+              }, 0.1)
+              .to("#curve-right", { 
+                  rotation: 45, 
+                  transformOrigin: "right bottom", 
+                  y: 500, 
+                  duration: 1, 
+                  ease: "power2.in" 
+              }, 0.1);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computational Complexity</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #111;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+        }
+
+        .axes {
+            stroke: #555;
+            stroke-width: 2;
+        }
+
+        .curve-log {
+            fill: none;
+            stroke: #2ECC71; /* Green */
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+
+        .curve-exp {
+            fill: none;
+            stroke: #E74C3C; /* Red */
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+
+        .dot-log {
+            fill: #2ECC71;
+            r: 5;
+        }
+
+        .dot-exp {
+            fill: #E74C3C;
+            r: 5;
+        }
+
+        .label {
+            fill: #777;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="chart-container">
+        <svg width="200" height="200" viewBox="0 0 200 200" id="complexity-svg">
+            <!-- Axes -->
+            <line x1="20" y1="180" x2="180" y2="180" class="axes" id="axis-x"/>
+            <line x1="20" y1="180" x2="20" y2="20" class="axes" id="axis-y"/>
+            <text x="170" y="195" class="label">N</text>
+            <text x="5" y="30" class="label">O</text>
+
+            <!-- Curves -->
+            <path d="M 20 180 Q 80 170 180 140" class="curve-log" id="path-log"/>
+            <path d="M 20 180 C 100 180 140 100 160 20" class="curve-exp" id="path-exp"/>
+
+            <!-- Dots -->
+            <circle cx="0" cy="0" class="dot-log" id="dot-log" />
+            <circle cx="0" cy="0" class="dot-exp" id="dot-exp" />
+        </svg>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+    <script>
+        gsap.registerPlugin(MotionPathPlugin);
+
+        const container = document.getElementById('chart-container');
+        const svg = document.getElementById('complexity-svg');
+
+        // Idle Animation
+        const tlLog = gsap.to("#dot-log", {
+            duration: 1.5,
+            repeat: -1,
+            ease: "power1.inOut",
+            motionPath: {
+                path: "#path-log",
+                align: "#path-log",
+                alignOrigin: [0.5, 0.5]
+            }
+        });
+
+        const tlExp = gsap.to("#dot-exp", {
+            duration: 4,
+            repeat: -1,
+            ease: "power3.in",
+            motionPath: {
+                path: "#path-exp",
+                align: "#path-exp",
+                alignOrigin: [0.5, 0.5]
+            }
+        });
+
+        // Click Disappearance Motion
+        container.addEventListener('click', () => {
+            // Stop idle
+            tlLog.kill();
+            tlExp.kill();
+
+            const tl = gsap.timeline();
+
+            // Exponential curve explodes upwards
+            tl.to("#path-exp", {
+                duration: 0.8,
+                attr: { d: "M 20 180 C 100 180 110 -500 120 -1000" },
+                ease: "power4.in"
+            }, 0);
+
+            // Dragging the entire graph with it until it snaps
+            tl.to(svg, {
+                duration: 0.8,
+                y: -500,
+                scaleY: 2,
+                ease: "power4.in"
+            }, 0);
+
+            // Snaps and falls down
+            tl.to(svg, {
+                duration: 0.4,
+                y: 1000,
+                scale: 0.1,
+                opacity: 0,
+                rotation: 45,
+                ease: "power2.in"
+            }, 0.8);
+        });
+
+    </script>
+</body>
+</html>

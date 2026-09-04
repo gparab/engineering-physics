@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>27. RULA Ergonomics</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: -apple-system, sans-serif;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        svg {
+            width: 300px;
+            height: 300px;
+            overflow: visible;
+        }
+        .bone {
+            fill: none;
+            stroke: #FFA07A;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .joint {
+            fill: #32CD32; /* green default */
+        }
+        .desk {
+            fill: none;
+            stroke: #333;
+            stroke-width: 4;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="info">RULA ERGONOMICS // 027</div>
+    <svg id="figure" viewBox="0 0 100 100">
+        <!-- Desk -->
+        <polyline class="desk" points="60,70 90,70 90,100" />
+        <polyline class="desk" points="40,100 40,70 60,70" />
+        
+        <!-- Figure Group -->
+        <g id="stickman">
+            <!-- Torso -->
+            <line class="bone" id="torso" x1="40" y1="40" x2="40" y2="70" />
+            <!-- Head -->
+            <circle class="bone" id="head" cx="40" cy="30" r="8" />
+            <!-- Arm -->
+            <line class="bone" id="upperArm" x1="40" y1="45" x2="50" y2="60" />
+            <line class="bone" id="lowerArm" x1="50" y1="60" x2="70" y2="68" />
+            <!-- Leg -->
+            <line class="bone" id="thigh" x1="40" y1="70" x2="60" y2="75" />
+            <line class="bone" id="calf" x1="60" y1="75" x2="60" y2="95" />
+            
+            <!-- Joints -->
+            <circle class="joint" id="neckJoint" cx="40" cy="40" r="3" />
+            <circle class="joint" id="shoulderJoint" cx="40" cy="45" r="3" />
+            <circle class="joint" id="elbowJoint" cx="50" cy="60" r="3" />
+            <circle class="joint" id="hipJoint" cx="40" cy="70" r="3" />
+            <circle class="joint" id="kneeJoint" cx="60" cy="75" r="3" />
+        </g>
+    </svg>
+
+    <script>
+        // Idle Animation: Posture shifts
+        const tl = gsap.timeline({ repeat: -1, yoyo: true });
+        
+        // Strain (Yellow) to Optimal (Green)
+        const strainColor = "#FFD700";
+        const optimalColor = "#32CD32";
+
+        tl.to(".joint", { fill: strainColor, duration: 2, ease: "sine.inOut" }, 0)
+          // Slouching forward
+          .to("#head", { attr: { cx: 45, cy: 32 }, duration: 2, ease: "sine.inOut" }, 0)
+          .to("#torso", { attr: { x1: 45, y1: 40, x2: 40, y2: 70 }, duration: 2, ease: "sine.inOut" }, 0)
+          .to("#neckJoint", { attr: { cx: 45, cy: 40 }, duration: 2, ease: "sine.inOut" }, 0)
+          .to("#shoulderJoint", { attr: { cx: 43, cy: 45 }, duration: 2, ease: "sine.inOut" }, 0)
+          .to("#upperArm", { attr: { x1: 43, y1: 45, x2: 55, y2: 65 }, duration: 2, ease: "sine.inOut" }, 0)
+          .to("#elbowJoint", { attr: { cx: 55, cy: 65 }, duration: 2, ease: "sine.inOut" }, 0)
+          .to("#lowerArm", { attr: { x1: 55, y1: 65, x2: 70, y2: 68 }, duration: 2, ease: "sine.inOut" }, 0);
+
+        window.addEventListener('click', () => {
+            tl.kill();
+            
+            // Collapse into a heap
+            gsap.to(".joint", { opacity: 0, duration: 0.2 });
+            gsap.to(".desk", { opacity: 0, duration: 0.5 });
+            
+            const fallEase = "bounce.out";
+            const dur = 1.5;
+
+            gsap.to("#head", { attr: { cy: 95, cx: 45 }, duration: dur, ease: fallEase });
+            gsap.to("#torso", { attr: { y1: 90, x1: 30, y2: 95, x2: 60 }, duration: dur, ease: fallEase });
+            gsap.to("#upperArm", { attr: { y1: 95, x1: 30, y2: 98, x2: 50 }, duration: dur, ease: fallEase });
+            gsap.to("#lowerArm", { attr: { y1: 98, x1: 50, y2: 95, x2: 70 }, duration: dur, ease: fallEase });
+            gsap.to("#thigh", { attr: { y1: 95, x1: 60, y2: 98, x2: 40 }, duration: dur, ease: fallEase });
+            gsap.to("#calf", { attr: { y1: 98, x1: 40, y2: 96, x2: 20 }, duration: dur, ease: fallEase });
+            
+            gsap.to(".bone", { stroke: "#555", duration: 1, delay: 0.5 });
+        });
+    </script>
+</body>
+</html>

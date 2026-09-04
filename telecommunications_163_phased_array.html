@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .container { position: relative; cursor: pointer; }
+  canvas { display: block; }
+  .label { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <canvas id="simCanvas" width="400" height="400"></canvas>
+  <div class="label">Phased Array</div>
+</div>
+<script>
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const COLOR = '#9B59B6';
+let state = 'idle';
+let time = 0;
+let elements = [];
+for(let i=0; i<8; i++) elements.push({ x: 200, y: 300 - i * 15 });
+let particles = [];
+
+document.getElementById('container').addEventListener('click', () => {
+  if (state === 'idle') {
+    state = 'clicked';
+    for(let el of elements) {
+      particles.push({
+        x: el.x, y: el.y,
+        vx: (Math.random()-0.5)*40, vy: (Math.random()-0.5)*40,
+        life: 1
+      });
+    }
+  }
+});
+
+function draw() {
+  ctx.clearRect(0, 0, 400, 400);
+  time += 0.05;
+  
+  if (state === 'idle') {
+    ctx.fillStyle = '#8b949e';
+    for(let el of elements) {
+      ctx.beginPath(); ctx.arc(el.x, el.y, 2, 0, Math.PI*2); ctx.fill();
+    }
+    
+    let angle = Math.sin(time*0.5) * 0.3;
+    ctx.save();
+    ctx.translate(200, 240);
+    ctx.rotate(angle);
+    let grad = ctx.createLinearGradient(0, 0, 0, -200);
+    grad.addColorStop(0, COLOR + '88');
+    grad.addColorStop(1, COLOR + '00');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(-10, 0); ctx.lineTo(-50, -200); ctx.lineTo(50, -200); ctx.lineTo(10, 0);
+    ctx.fill();
+    ctx.restore();
+  } else {
+    ctx.fillStyle = COLOR;
+    for(let p of particles) {
+      p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+      if (p.life > 0) {
+        ctx.globalAlpha = p.life;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impedance Oscillator</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #container { width: 30px; height: 60px; position: relative; cursor: pointer; }
+        .spring { position: absolute; width: 10px; height: 20px; left: 10px; top: 0; transform-origin: top center; }
+        .spring-path { fill: none; stroke: #4A4A4A; stroke-width: 1.5; stroke-linejoin: round; }
+        .mass { position: absolute; width: 14px; height: 10px; background-color: #4A4A4A; left: 8px; top: 20px; border-radius: 2px; }
+        .dashpot { position: absolute; width: 12px; height: 15px; border: 1.5px solid #4A4A4A; border-top: none; left: 9px; bottom: 0; }
+        .dashpot-piston { position: absolute; width: 8px; height: 1.5px; background-color: #4A4A4A; left: 11px; bottom: 10px; }
+        .dashpot-rod { position: absolute; width: 1.5px; height: 10px; background-color: #4A4A4A; left: 14.25px; bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <svg class="spring" viewBox="0 0 10 20" preserveAspectRatio="none">
+            <path class="spring-path" id="springPath" d="M5,0 L5,2 L0,4 L10,8 L0,12 L10,16 L5,18 L5,20"></path>
+        </svg>
+        <div class="mass" id="mass"></div>
+        <div class="dashpot-rod" id="rod"></div>
+        <div class="dashpot-piston" id="piston"></div>
+        <div class="dashpot" id="dashpot"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const mass = document.getElementById('mass');
+        const spring = document.querySelector('.spring');
+        const piston = document.getElementById('piston');
+        const rod = document.getElementById('rod');
+        const container = document.getElementById('container');
+        
+        let time = 0;
+        let clicked = false;
+        
+        // Critically damped simulation parameters
+        let y = 0;
+        let v = 0;
+        const k = 0.1;
+        let c = 0.5; // High damping initially
+        
+        // Add driving force to keep it bobbing slightly
+        gsap.ticker.add(() => {
+            if (clicked) return;
+            time += 0.05;
+            let force = Math.sin(time) * 0.5; // Gentle push
+            let accel = force - k * y - c * v;
+            v += accel;
+            y += v;
+            
+            updatePositions(y);
+        });
+        
+        function updatePositions(disp) {
+            mass.style.transform = `translateY(${disp}px)`;
+            spring.style.transform = `scaleY(${(20 + disp) / 20})`;
+            piston.style.transform = `translateY(${disp}px)`;
+            rod.style.transform = `translateY(${disp}px)`;
+        }
+
+        container.addEventListener('click', () => {
+            if(clicked) return; clicked = true;
+            
+            // Damping goes to zero, forcing frequency increases, resonance!
+            let resTime = 0;
+            let resY = y;
+            let resV = v;
+            
+            let resonanceLoop = setInterval(() => {
+                resTime += 0.1;
+                // resonance force
+                let force = Math.sin(resTime * 1.5) * (1 + resTime * 0.5); 
+                let accel = force - (k * 0.5) * resY; // zero damping
+                resV += accel;
+                resY += resV;
+                
+                updatePositions(resY);
+                
+                if (Math.abs(resY) > 30) {
+                    clearInterval(resonanceLoop);
+                    shatter();
+                }
+            }, 16);
+            
+            function shatter() {
+                // Shatter spring and dashpot
+                spring.style.display = 'none';
+                document.getElementById('dashpot').style.border = '1px dashed #4A4A4A';
+                piston.style.display = 'none';
+                rod.style.display = 'none';
+                
+                // create spring shards
+                for(let i=0; i<4; i++) {
+                    let shard = document.createElement('div');
+                    shard.style.position = 'absolute';
+                    shard.style.width = '5px'; shard.style.height = '1px';
+                    shard.style.backgroundColor = '#4A4A4A';
+                    shard.style.left = '10px'; shard.style.top = `${i*5}px`;
+                    container.appendChild(shard);
+                    gsap.to(shard, {
+                        x: (Math.random() - 0.5) * 500,
+                        y: (Math.random() - 0.5) * 500,
+                        rotation: Math.random() * 720,
+                        duration: 1,
+                        ease: "power2.out"
+                    });
+                }
+                
+                // Mass flies off-axis
+                gsap.to(mass, {
+                    x: 300,
+                    y: -500,
+                    rotation: 360,
+                    duration: 1,
+                    ease: "power1.in"
+                });
+            }
+        });
+    </script>
+</body>
+</html>

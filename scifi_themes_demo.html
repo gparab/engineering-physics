@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sci-Fi Minimalist - Theme Comparison</title>
+<style>
+  :root {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  body {
+    background-color: #111; /* Neutral background behind the cards */
+    color: #fff;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+  }
+  .header-text {
+    text-align: center;
+    max-width: 600px;
+    margin-bottom: -20px;
+  }
+  h1 { font-weight: 300; letter-spacing: 6px; margin: 0 0 10px 0; }
+  p { color: #888; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin: 0; }
+
+  .concept-section {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .concept-title {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #aaa;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+  }
+  
+  .grid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  @media (max-width: 768px) { .grid-row { grid-template-columns: 1fr; } }
+
+  /* THEME VARIABLES */
+  .theme-dark {
+    --bg: #050508;
+    --ink: #ffffff;
+    --accent: #00e5ff;
+    --border: rgba(255,255,255,0.05);
+    --shadow: rgba(0, 229, 255, 0.05);
+    --obj-fill: #000000;
+    --obj-stroke: #ffffff;
+    --hint: #555;
+  }
+  
+  .theme-light {
+    --bg: #ffffff;
+    --ink: #000000;
+    --accent: #0066ff; /* Deeper electric blue for white bg */
+    --border: rgba(0,0,0,0.08);
+    --shadow: rgba(0,0,0,0.08);
+    --obj-fill: #ffffff;
+    --obj-stroke: #000000;
+    --hint: #aaa;
+  }
+
+  .card {
+    background: var(--bg);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    box-shadow: 0 15px 40px var(--shadow), inset 0 0 0 1px var(--border);
+    border-radius: 8px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+  .card-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 10;
+  }
+  .card-header span { font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; }
+  
+  .reset-btn {
+    background: transparent; color: var(--hint); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+  }
+  .reset-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .interactive-area {
+    flex: 1; display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .interactive-area.align-left { justify-content: flex-start; padding-left: 10%; }
+  .hint { position: absolute; bottom: 15px; right: 20px; font-size: 9px; color: var(--hint); letter-spacing: 2px; text-transform: uppercase; pointer-events: none; }
+
+  .orb-container {
+    width: 80px; height: 80px; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* =======================================================================
+     1. THE ORBITER (Home)
+     ======================================================================= */
+  .orb-core { width: 14px; height: 14px; background: var(--obj-fill); border-radius: 50%; box-shadow: inset 0 0 0 1px var(--obj-stroke); z-index: 2; transition: transform 0.5s ease, box-shadow 0.3s; }
+  .orb-ring {
+    position: absolute; width: 60px; height: 60px;
+    border: 1px solid var(--accent); opacity: 0.3; border-radius: 50%;
+    transform: rotateX(70deg) rotateY(20deg); transform-style: preserve-3d;
+    animation: orbiter-spin 8s linear infinite; transition: 0.3s;
+  }
+  .orb-satellite { position: absolute; top: -3px; left: 27px; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
+
+  .orb-container:hover .orb-ring { opacity: 1; animation-duration: 2s; }
+  .orb-container:hover .orb-core { transform: scale(1.5); box-shadow: inset 0 0 0 1px var(--accent); }
+
+  .orb-container.active-orbiter { pointer-events: none; }
+  .orb-container.active-orbiter .orb-core { animation: orbiter-warp 0.6s cubic-bezier(0.9, 0, 0.1, 1) forwards; }
+  .orb-container.active-orbiter .orb-ring { opacity: 0; transition: 0.2s; }
+
+  @keyframes orbiter-spin { 0% { transform: rotateX(70deg) rotateY(20deg) rotateZ(0deg); } 100% { transform: rotateX(70deg) rotateY(20deg) rotateZ(360deg); } }
+  @keyframes orbiter-warp {
+    0% { transform: scale(1.5); }
+    30% { transform: scale(0.5); }
+    50% { transform: scaleX(4) scaleY(0.1); background: var(--accent); box-shadow: 0 0 20px var(--accent); }
+    100% { transform: scaleX(20) scaleY(0.02) translateX(300px); background: var(--accent); opacity: 0; }
+  }
+
+  /* =======================================================================
+     2. THE ETCHER (Writing)
+     ======================================================================= */
+  .formula-reveal {
+    position: absolute; left: 10%; top: 50%; transform: translateY(-50%);
+    color: var(--accent); font-family: "Courier New", Courier, monospace; font-size: 18px; font-weight: bold;
+    white-space: nowrap; overflow: hidden; width: 0; text-shadow: 0 0 8px var(--accent); letter-spacing: 1px;
+  }
+  .etcher-wrapper { position: absolute; left: 0px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; z-index: 5; }
+  .etcher-body-svg { overflow: visible; width: 100%; height: 100%; transform-origin: 22px 38px; animation: etcher-idle 3s ease-in-out infinite; cursor: pointer;}
+  
+  .needle-body { fill: var(--obj-fill); stroke: var(--obj-stroke); stroke-width: 1px; transition: 0.3s; }
+  .needle-core { fill: var(--accent); opacity: 0.2; transition: 0.3s; }
+  
+  .etcher-wrapper:hover .needle-body { stroke: var(--accent); }
+  .etcher-wrapper:hover .needle-core { opacity: 1; filter: drop-shadow(0 0 8px var(--accent)); }
+
+  .etcher-wrapper.writing { pointer-events: none; }
+  .etcher-wrapper.writing .needle-core { opacity: 1; filter: drop-shadow(0 0 15px var(--accent)); }
+
+  @keyframes etcher-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @keyframes robotic-etch {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(15px, 15px); }
+    20% { transform: translate(30px, -10px); }
+    30% { transform: translate(60px, 10px); }
+    40% { transform: translate(90px, 0); }
+    50% { transform: translate(120px, -15px); }
+    60% { transform: translate(150px, 15px); }
+    70% { transform: translate(180px, 0px); }
+    80% { transform: translate(200px, -10px); }
+    100% { transform: translate(220px, 0px); }
+  }
+  @keyframes etcher-vanish {
+    0% { transform: translate(220px, 0px) scale(1); opacity: 1; }
+    20% { transform: translate(220px, -30px) scale(1.2); opacity: 1; }
+    100% { transform: translate(220px, -300px) scale(0.1); opacity: 0; }
+  }
+
+  /* =======================================================================
+     3. THE DRONES (CV)
+     ======================================================================= */
+  .drone {
+    position: absolute; width: 0; height: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 8px solid var(--obj-stroke);
+    transform-origin: center 20px; animation: drone-hover 6s ease-in-out infinite; transition: all 0.5s ease;
+  }
+  .drone.d1 { transform: rotate(0deg) translateY(-10px); }
+  .drone.d2 { transform: rotate(120deg) translateY(-10px); }
+  .drone.d3 { transform: rotate(240deg) translateY(-10px); }
+  .drone-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; animation: drone-spin 10s linear infinite;}
+
+  .orb-container:hover .drone-wrapper { animation: drone-spin 2s linear infinite; }
+  .orb-container:hover .drone { border-bottom-color: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
+  
+  .orb-container.active-drone { pointer-events: none; }
+  .orb-container.active-drone .drone { animation: drone-scatter 0.6s cubic-bezier(0.9, 0, 0.1, 1) forwards; }
+
+  @keyframes drone-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes drone-hover { 0%, 100% { scale: 1; } 50% { scale: 1.2; } }
+  @keyframes drone-scatter {
+    0% { transform: translateY(-10px); }
+    20% { transform: translateY(5px) scale(0.5); }
+    100% { transform: translateY(-200px) scale(0.1) scaleY(5); opacity: 0; }
+  }
+
+  /* =======================================================================
+     4. THE ARTIFACT (Sitemap)
+     ======================================================================= */
+  .artifact-wrapper { position: relative; width: 40px; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: artifact-float 5s ease-in-out infinite;}
+  .artifact-top {
+    width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid var(--obj-stroke);
+    margin-bottom: 2px; transition: transform 0.4s ease, border-top-color 0.4s ease;
+  }
+  .artifact-bottom {
+    width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 25px solid var(--obj-stroke);
+    transition: transform 0.4s ease, border-bottom-color 0.4s ease;
+  }
+  .artifact-core {
+    position: absolute; width: 4px; height: 4px; background: var(--accent); border-radius: 50%; opacity: 0; filter: drop-shadow(0 0 10px var(--accent)); transition: opacity 0.4s;
+  }
+  .artifact-beam {
+    position: absolute; width: 2px; height: 100vh; background: var(--accent); opacity: 0; pointer-events: none; box-shadow: 0 0 20px var(--accent);
+  }
+
+  .orb-container:hover .artifact-top { transform: translateY(-5px); border-top-color: var(--hint); }
+  .orb-container:hover .artifact-bottom { transform: translateY(5px); border-bottom-color: var(--hint); }
+  .orb-container:hover .artifact-core { opacity: 1; }
+
+  .orb-container.active-artifact { pointer-events: none; }
+  .orb-container.active-artifact .artifact-top { animation: artifact-open-t 0.8s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+  .orb-container.active-artifact .artifact-bottom { animation: artifact-open-b 0.8s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+  .orb-container.active-artifact .artifact-beam { animation: artifact-fire 0.8s ease-out 0.2s forwards; }
+  .orb-container.active-artifact .artifact-core { opacity: 0; transition: 0.1s; }
+
+  @keyframes artifact-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes artifact-open-t { 100% { transform: translateY(-50px) rotate(45deg) scale(0); opacity: 0; } }
+  @keyframes artifact-open-b { 100% { transform: translateY(50px) rotate(-45deg) scale(0); opacity: 0; } }
+  @keyframes artifact-fire {
+    0% { transform: scaleY(0); opacity: 0; }
+    20% { transform: scaleY(1); opacity: 1; width: 2px;}
+    100% { transform: scaleY(1); opacity: 0; width: 40px; }
+  }
+
+  /* =======================================================================
+     5. THE ECLIPSE (Dive)
+     ======================================================================= */
+  .eclipse-corona {
+    position: absolute; width: 30px; height: 30px; border-radius: 50%;
+    background: transparent; box-shadow: 0 0 15px 2px var(--obj-stroke);
+    animation: eclipse-pulse 4s infinite alternate; transition: box-shadow 0.5s, transform 0.5s;
+  }
+  .eclipse-core {
+    position: absolute; width: 32px; height: 32px; background: var(--bg); border-radius: 50%; z-index: 2; transition: transform 0.5s ease;
+  }
+
+  .orb-container:hover .eclipse-corona { box-shadow: 0 0 20px 5px var(--accent); transform: scale(1.1); animation: eclipse-pulse-fast 1s infinite alternate; }
+  .orb-container:hover .eclipse-core { transform: scale(0.95); background: var(--ink); }
+
+  .orb-container.active-eclipse { pointer-events: none; }
+  .orb-container.active-eclipse .eclipse-core { animation: eclipse-consume 0.8s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+  .orb-container.active-eclipse .eclipse-corona { opacity: 0; transition: 0.2s; }
+
+  @keyframes eclipse-pulse { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+  @keyframes eclipse-pulse-fast { 0% { opacity: 0.8; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1.2); } }
+  @keyframes eclipse-consume {
+    0% { transform: scale(1); background: var(--ink); }
+    30% { transform: scale(0.5); background: var(--ink); }
+    100% { transform: scale(40); background: var(--ink); }
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="header-text">
+    <h1>THEMES</h1>
+    <p>Dark (Deep Space) vs Light (Clinical Lab)</p>
+  </div>
+
+  <!-- 1. ORBITER -->
+  <div class="concept-section">
+    <div class="concept-title">Concept 1: The Orbiter</div>
+    <div class="grid-row">
+      <!-- Dark -->
+      <div class="card theme-dark">
+        <div class="card-header"><span>Dark Theme</span> <button class="reset-btn" onclick="resetOrb(this, 'active-orbiter')">Reset</button></div>
+        <div class="interactive-area">
+          <div class="orb-container" onclick="this.classList.add('active-orbiter');">
+            <div class="orb-ring"><div class="orb-satellite"></div></div>
+            <div class="orb-core"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Light -->
+      <div class="card theme-light">
+        <div class="card-header"><span>Light Theme</span> <button class="reset-btn" onclick="resetOrb(this, 'active-orbiter')">Reset</button></div>
+        <div class="interactive-area">
+          <div class="orb-container" onclick="this.classList.add('active-orbiter');">
+            <div class="orb-ring"><div class="orb-satellite"></div></div>
+            <div class="orb-core"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. ETCHER -->
+  <div class="concept-section">
+    <div class="concept-title">Concept 2: The Etcher</div>
+    <div class="grid-row">
+      <!-- Dark -->
+      <div class="card theme-dark">
+        <div class="card-header"><span>Dark Theme</span> <button class="reset-btn" onclick="resetEtcher(this)">Reset</button></div>
+        <div class="interactive-area align-left">
+          <div class="formula-reveal">∑(3Δt, ∫ds) = t</div>
+          <div class="etcher-wrapper" onclick="triggerEtcher(this);">
+            <svg class="etcher-body-svg" viewBox="0 0 44 44">
+              <polygon class="needle-body" points="20,10 24,10 26,20 22,40 18,20" />
+              <polygon class="needle-core" points="21,12 23,12 24,20 22,35 20,20" />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <!-- Light -->
+      <div class="card theme-light">
+        <div class="card-header"><span>Light Theme</span> <button class="reset-btn" onclick="resetEtcher(this)">Reset</button></div>
+        <div class="interactive-area align-left">
+          <div class="formula-reveal">∑(3Δt, ∫ds) = t</div>
+          <div class="etcher-wrapper" onclick="triggerEtcher(this);">
+            <svg class="etcher-body-svg" viewBox="0 0 44 44">
+              <polygon class="needle-body" points="20,10 24,10 26,20 22,40 18,20" />
+              <polygon class="needle-core" points="21,12 23,12 24,20 22,35 20,20" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SWARM -->
+  <div class="concept-section">
+    <div class="concept-title">Concept 3: The Swarm</div>
+    <div class="grid-row">
+      <!-- Dark -->
+      <div class="card theme-dark">
+        <div class="card-header"><span>Dark Theme</span> <button class="reset-btn" onclick="resetOrb(this, 'active-drone')">Reset</button></div>
+        <div class="interactive-area">
+          <div class="orb-container" onclick="this.classList.add('active-drone');">
+            <div class="drone-wrapper">
+              <div class="drone d1"></div><div class="drone d2"></div><div class="drone d3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Light -->
+      <div class="card theme-light">
+        <div class="card-header"><span>Light Theme</span> <button class="reset-btn" onclick="resetOrb(this, 'active-drone')">Reset</button></div>
+        <div class="interactive-area">
+          <div class="orb-container" onclick="this.classList.add('active-drone');">
+            <div class="drone-wrapper">
+              <div class="drone d1"></div><div class="drone d2"></div><div class="drone d3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ARTIFACT -->
+  <div class="concept-section">
+    <div class="concept-title">Concept 4: The Artifact</div>
+    <div class="grid-row">
+      <!-- Dark -->
+      <div class="card theme-dark">
+        <div class="card-header"><span>Dark Theme</span> <button class="reset-btn" onclick="resetOrb(this, 'active-artifact')">Reset</button></div>
+        <div class="interactive-area">
+          <div class="orb-container" onclick="this.classList.add('active-artifact');">
+            <div class="artifact-wrapper">
+              <div class="artifact-top"></div><div class="artifact-bottom"></div><div class="artifact-core"></div>
+            </div>
+            <div class="artifact-beam"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Light -->
+      <div class="card theme-light">
+        <div class="card-header"><span>Light Theme</span> <button class="reset-btn" onclick="resetOrb(this, 'active-artifact')">Reset</button></div>
+        <div class="interactive-area">
+          <div class="orb-container" onclick="this.classList.add('active-artifact');">
+            <div class="artifact-wrapper">
+              <div class="artifact-top"></div><div class="artifact-bottom"></div><div class="artifact-core"></div>
+            </div>
+            <div class="artifact-beam"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ECLIPSE -->
+  <div class="concept-section">
+    <div class="concept-title">Concept 5: The Eclipse</div>
+    <div class="grid-row">
+      <!-- Dark -->
+      <div class="card theme-dark">
+        <div class="card-header"><span>Dark Theme</span> <button class="reset-btn" onclick="resetOrb(this, 'active-eclipse')">Reset</button></div>
+        <div class="interactive-area">
+          <div class="orb-container" onclick="this.classList.add('active-eclipse');">
+            <div class="eclipse-corona"></div><div class="eclipse-core"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Light -->
+      <div class="card theme-light">
+        <div class="card-header"><span>Light Theme</span> <button class="reset-btn" onclick="resetOrb(this, 'active-eclipse')">Reset</button></div>
+        <div class="interactive-area">
+          <div class="orb-container" onclick="this.classList.add('active-eclipse');">
+            <div class="eclipse-corona"></div><div class="eclipse-core"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function resetOrb(btn, activeClass) {
+      const card = btn.closest('.card');
+      const orb = card.querySelector('.orb-container');
+      orb.classList.remove(activeClass);
+      void orb.offsetWidth; // force reflow
+    }
+
+    function triggerEtcher(el) {
+      const wrapper = el;
+      if (wrapper.classList.contains('writing')) return;
+      
+      const card = wrapper.closest('.card');
+      const formula = card.querySelector('.formula-reveal');
+      
+      wrapper.classList.add('writing');
+      formula.style.transition = 'width 2s steps(25, end)';
+      formula.style.width = '200px';
+      
+      wrapper.style.animation = 'robotic-etch 2s linear forwards';
+      
+      setTimeout(() => {
+         wrapper.style.animation = 'etcher-vanish 0.6s cubic-bezier(0.9, 0, 0.1, 1) forwards';
+      }, 2100);
+    }
+
+    function resetEtcher(btn) {
+      const card = btn.closest('.card');
+      const wrapper = card.querySelector('.etcher-wrapper');
+      const formula = card.querySelector('.formula-reveal');
+      
+      wrapper.classList.remove('writing');
+      wrapper.style.animation = 'none';
+      formula.style.transition = 'none';
+      formula.style.width = '0px';
+      void wrapper.offsetWidth;
+    }
+  </script>
+</body>
+</html>

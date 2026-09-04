@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #fff; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+  #scene { width: 40px; height: 40px; position: relative; cursor: pointer; display: flex; gap: 4px; }
+  .lattice { width: 18px; height: 18px; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 1px; }
+  .atom { background: #e67e22; border-radius: 50%; width: 100%; height: 100%; }
+  
+  #martensite { transform: skewX(-20deg); }
+  #austenite { transform: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="scene">
+  <div class="lattice" id="martensite"></div>
+  <div class="lattice" id="austenite"></div>
+</div>
+<script>
+  const m = document.getElementById('martensite');
+  const a = document.getElementById('austenite');
+  
+  for(let i=0; i<9; i++) {
+    const d1 = document.createElement('div');
+    d1.className = 'atom';
+    m.appendChild(d1);
+    
+    const d2 = document.createElement('div');
+    d2.className = 'atom';
+    a.appendChild(d2);
+  }
+
+  const idle1 = gsap.to(m, { skewX: 0, duration: 1, yoyo: true, repeat: -1, ease: "power1.inOut" });
+  const idle2 = gsap.to(a, { skewX: -20, duration: 1, yoyo: true, repeat: -1, ease: "power1.inOut" });
+
+  document.getElementById('scene').addEventListener('click', () => {
+    idle1.kill(); idle2.kill();
+    gsap.to([m, a], { scaleY: 0.2, skewX: 40, duration: 0.5, ease: "power2.in", onComplete: () => {
+      gsap.to(".atom", { backgroundColor: "#e74c3c", duration: 0.2, yoyo: true, repeat: 1 });
+      
+      gsap.to([m, a], { 
+        scaleY: 100, scaleX: 100, skewX: 0, 
+        duration: 1, 
+        delay: 0.4,
+        ease: "back.out(1.7)",
+        onComplete: () => {
+          gsap.to([m, a], { opacity: 0, duration: 0.5 });
+        }
+      });
+    }});
+  });
+</script>
+</body>
+</html>

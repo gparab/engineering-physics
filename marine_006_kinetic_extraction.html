@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kinetic Extraction</title>
+<style>
+  body { margin: 0; background: #1f2a33; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .icon-container { position: relative; width: 50px; height: 50px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  .turbine-mast { position: absolute; width: 4px; height: 20px; background: #ccc; bottom: 5px; border-radius: 2px; }
+  .turbine-rotor { position: absolute; width: 20px; height: 2px; background: #50E3C2; border-radius: 1px; top: 15px; }
+  .turbine-rotor.vert { transform: rotate(90deg); }
+  .vector { position: absolute; height: 2px; background: rgba(80,227,194,0.5); width: 10px; border-radius: 1px; opacity: 0; }
+  .vector::after { content: ''; position: absolute; right: -2px; top: -2px; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 4px solid rgba(80,227,194,0.5); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="icon-container" id="icon">
+    <div class="turbine-mast"></div>
+    <div class="turbine-rotor" id="rotor1"></div>
+    <div class="turbine-rotor vert" id="rotor2"></div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    let isAnimating = false;
+
+    // Spin rotor
+    const spin = gsap.to(['#rotor1', '#rotor2'], { rotation: "+=360", duration: 2, repeat: -1, ease: "none" });
+    
+    // Idle flow vectors
+    let flowInterval = setInterval(() => {
+      if(isAnimating) return;
+      let v = document.createElement('div');
+      v.className = 'vector';
+      icon.appendChild(v);
+      
+      let startY = Math.random() * 20 + 5;
+      gsap.set(v, { x: -30, y: startY });
+      
+      // fast before disk, slow after
+      let tl = gsap.timeline();
+      tl.to(v, { x: 25, opacity: 1, duration: 1, ease: "none" }) // fast
+        .to(v, { x: 50, opacity: 0, duration: 1.5, ease: "none" }); // slow
+    }, 400);
+
+    icon.addEventListener('click', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+      clearInterval(flowInterval);
+
+      // Turbine locks up
+      spin.pause();
+      
+      // Massive eddies around disk
+      for(let i=0; i<30; i++) {
+        let v = document.createElement('div');
+        v.className = 'vector';
+        v.style.background = '#50E3C2';
+        document.body.appendChild(v);
+        
+        let cx = window.innerWidth / 2;
+        let cy = window.innerHeight / 2;
+        
+        let startY = (Math.random() - 0.5) * 40;
+        gsap.set(v, { x: cx - 200, y: cy + startY, opacity: 1 });
+        
+        // Path around disk
+        gsap.to(v, {
+          duration: 1.5,
+          ease: "power2.inOut",
+          motionPath: {
+            path: [
+              {x: cx - 50, y: cy + startY},
+              {x: cx, y: cy + (startY > 0 ? 150 : -150)}, // divert
+              {x: cx + 100, y: cy + (startY > 0 ? 100 : -100)},
+              {x: cx + 200, y: cy + startY},
+              {x: cx + 400, y: cy + startY}
+            ]
+          },
+          onComplete: () => v.remove()
+        });
+        
+        // Spin the vectors slightly to simulate eddies
+        gsap.to(v, { rotation: (startY > 0 ? 360 : -360), duration: 1.5 });
+      }
+      
+      // Rotors shatter from stress
+      gsap.to(['#rotor1', '#rotor2'], {
+        scale: 0,
+        opacity: 0,
+        rotation: "+=720",
+        duration: 0.5,
+        delay: 0.5
+      });
+    });
+  </script>
+  <!-- Need MotionPathPlugin for the path animation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+  <script>gsap.registerPlugin(MotionPathPlugin);</script>
+</body>
+</html>

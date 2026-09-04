@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buck Converter</title>
+<style>
+  body { margin: 0; padding: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 24px; cursor: pointer; }
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+  .wire { stroke: #3498DB; stroke-width: 1.5; fill: none; stroke-linecap: round; }
+  .switch { stroke: #3498DB; stroke-width: 1.5; fill: none; transform-origin: 10px 4px; }
+  .cap-glow { fill: #3498DB; opacity: 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 40 24">
+    <!-- Vin -->
+    <path class="wire" d="M 2 4 H 10" />
+    <path class="wire" d="M 2 20 H 38" />
+    
+    <!-- Switch -->
+    <path class="switch" id="sw" d="M 10 4 L 16 1" />
+    
+    <!-- Wire to Diode and Inductor -->
+    <path class="wire" d="M 16 4 H 18" />
+    
+    <!-- Diode -->
+    <path class="wire" d="M 18 4 V 10 M 16 10 H 20 L 18 14 Z M 16 14 H 20 M 18 14 V 20" />
+    
+    <!-- Inductor -->
+    <path class="wire" d="M 18 4 H 20 Q 22 1, 24 4 Q 26 1, 28 4 Q 30 1, 32 4 H 34" />
+    
+    <!-- Capacitor -->
+    <path class="wire" d="M 34 4 V 10 M 31 10 H 37 M 31 14 H 37 M 34 14 V 20" />
+    <circle class="cap-glow" cx="34" cy="12" r="5" />
+    
+    <!-- Output -->
+    <path class="wire" d="M 34 4 H 38" />
+  </svg>
+</div>
+
+<script>
+  const sw = document.getElementById('sw');
+  
+  // Idle: Switch opens/closes
+  const tl = gsap.timeline({repeat: -1});
+  tl.to(sw, { rotation: 30, duration: 0.1 })  // Closed (16,4)
+    .to(sw, { rotation: 0, duration: 0.2, delay: 0.2 }); // Open (16,1)
+
+  document.getElementById('model').addEventListener('click', () => {
+    tl.kill();
+    // Switch stuck closed
+    gsap.to(sw, { rotation: 30, duration: 0.1 });
+    
+    // Capacitor gets bright, then explodes
+    gsap.to('.cap-glow', { opacity: 1, scale: 1.5, transformOrigin: "center", fill: "#E74C3C", duration: 0.5 });
+    
+    setTimeout(() => {
+      // Explosion
+      const svg = document.querySelector('svg');
+      for(let i=0; i<20; i++) {
+        let p = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        p.setAttribute("cx", 34); p.setAttribute("cy", 12);
+        p.setAttribute("r", Math.random()*2+1);
+        p.setAttribute("fill", "#E74C3C");
+        svg.appendChild(p);
+        
+        gsap.to(p, {
+          x: (Math.random()-0.5)*300,
+          y: (Math.random()-0.5)*300,
+          opacity: 0,
+          duration: 1,
+          ease: "power4.out"
+        });
+      }
+      gsap.to('svg .wire, svg .switch', {opacity: 0, duration: 0.2});
+      gsap.to('.cap-glow', {opacity: 0, duration: 0.1});
+    }, 600);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Bus</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    width: 250px;
+    height: 150px;
+    cursor: pointer;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  .trace {
+    fill: none;
+    stroke: #7F8C8D;
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  .ripple {
+    fill: none;
+    stroke: #ECF0F1;
+    stroke-width: 4;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 4px #ECF0F1);
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 100 60" id="svg-element">
+    <path class="trace t1" d="M10,15 L90,15" />
+    <path class="trace t2" d="M10,25 L90,25" />
+    <path class="trace t3" d="M10,35 L90,35" />
+    <path class="trace t4" d="M10,45 L90,45" />
+    
+    <g id="ripples" clip-path="url(#trace-clip)">
+      <clipPath id="trace-clip">
+        <rect x="10" y="10" width="80" height="40" />
+      </clipPath>
+      <line class="ripple" x1="-10" y1="15" x2="5" y2="15" id="r1" />
+      <line class="ripple" x1="-10" y1="25" x2="5" y2="25" id="r2" />
+      <line class="ripple" x1="-10" y1="35" x2="5" y2="35" id="r3" />
+      <line class="ripple" x1="-10" y1="45" x2="5" y2="45" id="r4" />
+    </g>
+  </svg>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const ripples = ["#r1", "#r2", "#r3", "#r4"];
+  const tl = gsap.timeline({ repeat: -1 });
+  
+  tl.to(ripples, {
+    x: 100,
+    duration: 1.5,
+    ease: "power1.inOut",
+    stagger: 0
+  });
+
+  const model = document.getElementById('model');
+  model.addEventListener('click', () => {
+    tl.kill();
+    gsap.set(ripples, { opacity: 0 });
+    
+    const clickTl = gsap.timeline();
+    // Traces snap like rubber bands and curl off page
+    const traces = document.querySelectorAll('.trace');
+    traces.forEach((t, i) => {
+      const startY = 15 + i * 10;
+      clickTl.to(t, {
+        attr: { d: `M10,${startY} Q50,${startY - 30 + i*15} 90,${startY}` },
+        duration: 0.1,
+        ease: "power2.inOut"
+      }, 0)
+      .to(t, {
+        attr: { d: `M-50,${startY-50} Q50,${startY + 100} 150,${startY-100}` },
+        opacity: 0,
+        duration: 0.5,
+        ease: "back.in(1.2)"
+      }, "+=0.1");
+    });
+  });
+</script>
+</body>
+</html>

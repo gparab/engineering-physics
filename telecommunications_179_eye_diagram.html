@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eye Diagram</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #0d0d0d;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 400px;
+        height: 300px;
+        cursor: pointer;
+        background: #111;
+        border: 2px solid #333;
+    }
+    canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    .grid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+        background-size: 40px 30px;
+        pointer-events: none;
+    }
+</style>
+</head>
+<body>
+<div id="container">
+    <canvas id="scope"></canvas>
+    <div class="grid"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    const canvas = document.getElementById('scope');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 400;
+    canvas.height = 300;
+
+    let noiseLevel = 0.02;
+    let jitterLevel = 0.01;
+    let bandwidth = 1.0;
+    let isClosing = false;
+    let staticLevel = 0;
+
+    const traces = [];
+    const numTraces = 30;
+
+    // Pre-generate some random bit sequences for traces
+    for(let i=0; i<numTraces; i++) {
+        traces.push({
+            prevBit: Math.random() > 0.5 ? 1 : -1,
+            curBit: Math.random() > 0.5 ? 1 : -1,
+            nextBit: Math.random() > 0.5 ? 1 : -1,
+            alpha: Math.random() * 0.5 + 0.1
+        });
+    }
+
+    function draw() {
+        ctx.fillStyle = 'rgba(17, 17, 17, 0.2)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = `rgba(46, 204, 113, 0.6)`;
+        
+        if (staticLevel > 0) {
+            // Draw static
+            ctx.beginPath();
+            for(let x=0; x<canvas.width; x+=5) {
+                let y = canvas.height/2 + (Math.random()-0.5)*canvas.height*staticLevel;
+                if(x===0) ctx.moveTo(x,y);
+                else ctx.lineTo(x,y);
+            }
+            ctx.stroke();
+            if(isClosing) requestAnimationFrame(draw);
+            return;
+        }
+
+        const tCenter = canvas.width / 2;
+        const UI = canvas.width / 2; // Unit interval width
+
+        traces.forEach(trace => {
+            ctx.beginPath();
+            let jitter = (Math.random() - 0.5) * UI * jitterLevel;
+            
+            for(let x=0; x<=canvas.width; x+=5) {
+                // Normalized time -1 to 1
+                let t = (x - tCenter + jitter) / UI;
+                
+                // Interpolate between bits using raised cosine-like transition
+                let val = 0;
+                
+                if (t < -0.5) {
+                    val = trace.prevBit;
+                } else if (t > 0.5) {
+                    val = trace.nextBit;
+                } else {
+                    // transition
+                    let bitStart = t < 0 ? trace.prevBit : trace.curBit;
+                    let bitEnd = t < 0 ? trace.curBit : trace.nextBit;
+                    
+                    // low pass filtering (bandwidth)
+                    let smoothT = (t + 0.5) * Math.PI * bandwidth;
+                    let phase = Math.sin(t * Math.PI * bandwidth);
+                    val = trace.curBit * Math.cos(t*Math.PI*bandwidth);
+                    // simplified smooth step
+                    if (t < 0) {
+                        val = trace.prevBit + (trace.curBit - trace.prevBit) * (Math.sin((t+0.5)*Math.PI) * 0.5 + 0.5) * bandwidth;
+                    } else {
+                        val = trace.curBit + (trace.nextBit - trace.curBit) * (Math.sin((t-0.5)*Math.PI) * 0.5 + 0.5) * bandwidth;
+                    }
+                }
+                
+                let y = canvas.height/2 - val * (canvas.height/3);
+                y += (Math.random() - 0.5) * canvas.height * noiseLevel; // Noise
+                
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        });
+
+        // randomize traces slightly every frame to make it dynamic
+        if(Math.random() > 0.5) {
+            let idx = Math.floor(Math.random() * traces.length);
+            traces[idx].prevBit = traces[idx].curBit;
+            traces[idx].curBit = traces[idx].nextBit;
+            traces[idx].nextBit = Math.random() > 0.5 ? 1 : -1;
+        }
+
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    let clicked = false;
+    document.getElementById('container').addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        isClosing = true;
+        
+        // click: ISI hits; traces blur, eye closes, static
+        gsap.to(window, { bandwidth: 0.1, duration: 1, ease: "power2.in" });
+        gsap.to(window, { jitterLevel: 0.5, noiseLevel: 0.2, duration: 1, ease: "power2.in" });
+        
+        gsap.to(window, { staticLevel: 1, duration: 0.5, delay: 1, ease: "power2.out" });
+    });
+</script>
+</body>
+</html>

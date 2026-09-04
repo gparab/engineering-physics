@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaussian Plume (Atmospheric Dispersion)</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 80px;
+        height: 60px;
+        cursor: pointer;
+    }
+    #stack {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        width: 6px;
+        height: 25px;
+        background-color: #888;
+        border-radius: 1px;
+    }
+    .puff {
+        position: absolute;
+        background-color: #A9A9A9;
+        border-radius: 50%;
+        filter: blur(1px);
+        opacity: 0.6;
+    }
+    #inversion-layer {
+        position: absolute;
+        top: -100px;
+        left: 0;
+        width: 100vw;
+        height: 20px;
+        background-color: rgba(255,255,255,0.1);
+        backdrop-filter: blur(2px);
+        z-index: 10;
+        box-shadow: 0 10px 20px rgba(255,255,255,0.05);
+    }
+    #fog {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background-color: #A9A9A9;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 20;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="inversion-layer"></div>
+    <div id="container">
+        <div id="stack"></div>
+    </div>
+    <div id="fog"></div>
+<script>
+    const container = document.getElementById('container');
+    let clicked = false;
+
+    function createPuff() {
+        if(clicked) return;
+        let puff = document.createElement('div');
+        puff.className = 'puff';
+        
+        let size = 4 + Math.random()*2;
+        puff.style.width = size + 'px';
+        puff.style.height = size + 'px';
+        
+        puff.style.left = '13px';
+        puff.style.top = '25px'; // top of stack roughly
+        
+        container.appendChild(puff);
+
+        gsap.to(puff, {
+            x: 60 + Math.random()*10,
+            y: (Math.random() - 0.5) * 20 - 5,
+            scale: 4,
+            opacity: 0,
+            duration: 2 + Math.random(),
+            ease: "power1.out",
+            onComplete: () => {
+                if(!clicked) puff.remove();
+            }
+        });
+    }
+
+    let interval = setInterval(createPuff, 100);
+
+    container.addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        clearInterval(interval);
+
+        const tl = gsap.timeline();
+        
+        // Inversion layer clamps down
+        tl.to('#inversion-layer', {
+            top: window.innerHeight / 2 - 20,
+            duration: 1,
+            ease: "power2.inOut"
+        });
+
+        // Plume dives to ground
+        gsap.killTweensOf('.puff');
+        tl.to('.puff', {
+            y: 40,
+            scale: 6,
+            duration: 0.8,
+            ease: "power2.in"
+        }, "-=0.5");
+
+        // Page suffocates in fog
+        tl.to('#fog', {
+            opacity: 1,
+            duration: 1.5,
+            ease: "power1.inOut"
+        });
+    });
+</script>
+</body>
+</html>

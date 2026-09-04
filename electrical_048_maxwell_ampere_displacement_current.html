@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maxwell-Ampere Displacement Current</title>
+<style>
+  body { margin: 0; padding: 0; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 40px; height: 50px; cursor: pointer; }
+  svg { width: 100%; height: 100%; overflow: visible; }
+  .plate { fill: none; stroke: #34495E; stroke-width: 3; stroke-linecap: round; }
+  .wire { fill: none; stroke: #34495E; stroke-width: 1.5; }
+  .virtual-current { fill: none; stroke: #8e44ad; stroke-width: 1.5; stroke-dasharray: 4 4; opacity: 0.7; }
+  .magnetic-loop { fill: none; stroke: #e74c3c; stroke-width: 1; opacity: 0.6; }
+  .spark { fill: none; stroke: #f1c40f; stroke-width: 2; filter: drop-shadow(0 0 4px #f1c40f); opacity: 0; }
+  .vapor { position: absolute; width: 2px; height: 2px; background-color: #34495E; border-radius: 50%; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="container">
+  <svg viewBox="0 0 40 50" id="ma-svg">
+    <!-- Wires -->
+    <line class="wire" x1="20" y1="0" x2="20" y2="15" />
+    <line class="wire" x1="20" y1="35" x2="20" y2="50" />
+    <!-- Plates -->
+    <line class="plate" x1="5" y1="15" x2="35" y2="15" />
+    <line class="plate" x1="5" y1="35" x2="35" y2="35" />
+    <!-- Virtual Current -->
+    <line class="virtual-current" x1="20" y1="15" x2="20" y2="35" id="vc" />
+    <!-- Magnetic Loops -->
+    <ellipse class="magnetic-loop" cx="20" cy="25" rx="12" ry="4" stroke-dasharray="4 4" id="ml1" />
+    <ellipse class="magnetic-loop" cx="20" cy="25" rx="18" ry="6" stroke-dasharray="6 4" id="ml2" />
+    <!-- Spark path (hidden initially) -->
+    <path class="spark" d="M20,15 L15,22 L25,28 L20,35" id="spark-path" />
+  </svg>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  // Idle animations
+  gsap.to('#vc', { strokeDashoffset: -8, duration: 0.5, repeat: -1, ease: "none" });
+  gsap.to(['#ml1', '#ml2'], { strokeDashoffset: -20, duration: 2, repeat: -1, ease: "none" });
+  
+  // Also slightly scale the loops
+  gsap.to(['#ml1', '#ml2'], { scaleX: 1.1, scaleY: 1.2, transformOrigin: "50% 50%", duration: 1, yoyo: true, repeat: -1, ease: "sine.inOut" });
+
+  container.addEventListener('click', () => {
+    // Spark arcs across plates, structure vaporizes
+    gsap.killTweensOf('#vc');
+    gsap.killTweensOf('#ml1');
+    gsap.killTweensOf('#ml2');
+    
+    // Hide loops and virtual current
+    gsap.to(['#vc', '#ml1', '#ml2'], { opacity: 0, duration: 0.1 });
+    
+    // Show spark
+    const spark = document.getElementById('spark-path');
+    gsap.to(spark, { opacity: 1, duration: 0.1, yoyo: true, repeat: 3 });
+    
+    // Flash background
+    gsap.to('body', { backgroundColor: '#fff', duration: 0.1, yoyo: true, repeat: 1 });
+    
+    setTimeout(() => {
+      // Vaporize structure
+      document.getElementById('ma-svg').style.display = 'none';
+      
+      for (let i = 0; i < 40; i++) {
+        let v = document.createElement('div');
+        v.className = 'vapor';
+        // Position at plates
+        v.style.left = (5 + Math.random() * 30) + 'px';
+        v.style.top = (Math.random() > 0.5 ? 15 : 35) + 'px';
+        container.appendChild(v);
+        
+        gsap.to(v, {
+          x: (Math.random() - 0.5) * 100,
+          y: (Math.random() - 0.5) * 100,
+          opacity: 0,
+          scale: 2,
+          duration: 0.5 + Math.random() * 0.5,
+          ease: "power2.out",
+          onComplete: () => v.remove()
+        });
+      }
+    }, 400);
+  });
+</script>
+</body>
+</html>

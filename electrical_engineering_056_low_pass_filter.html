@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>56. Low-Pass Filter</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0d0d0d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 350px;
+    height: 150px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Circuit diagram representation */
+  .circuit {
+    position: relative;
+    width: 100px;
+    height: 80px;
+    margin-right: 20px;
+  }
+  .wire {
+    position: absolute;
+    background: #555;
+  }
+  .w-top { top: 10px; left: 0; width: 100px; height: 2px; }
+  .w-bottom { bottom: 10px; left: 0; width: 100px; height: 2px; }
+  .w-mid { top: 10px; left: 70px; width: 2px; height: 60px; }
+  
+  .resistor {
+    position: absolute;
+    top: 5px;
+    left: 20px;
+    width: 30px;
+    height: 12px;
+    background: #0d0d0d;
+    border-bottom: 2px solid #27AE60;
+    z-index: 2;
+  }
+  .resistor-zig {
+    position: absolute;
+    top: 5px;
+    left: 20px;
+    width: 30px;
+    height: 12px;
+    z-index: 3;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      #27AE60 2px,
+      #27AE60 4px
+    );
+  }
+  
+  .capacitor {
+    position: absolute;
+    top: 35px;
+    left: 62px;
+    width: 18px;
+    height: 10px;
+    background: #0d0d0d;
+    z-index: 2;
+  }
+  .cap-plate {
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: #27AE60;
+  }
+  .cap-plate.p1 { top: 35px; left: 62px; }
+  .cap-plate.p2 { top: 43px; left: 62px; }
+  
+  /* Wave area */
+  .wave-area {
+    width: 200px;
+    height: 100px;
+    position: relative;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .wave-path {
+    fill: none;
+    stroke: #27AE60;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 5px #27AE60);
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="filter">
+  <div class="circuit">
+    <div class="wire w-top"></div>
+    <div class="wire w-bottom"></div>
+    <div class="wire w-mid"></div>
+    
+    <div class="resistor"></div>
+    <div class="resistor-zig"></div>
+    
+    <div class="capacitor"></div>
+    <div class="cap-plate p1"></div>
+    <div class="cap-plate p2"></div>
+  </div>
+  
+  <div class="wave-area">
+    <svg viewBox="0 0 200 100">
+      <path class="wave-path" id="wave" />
+    </svg>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const wavePath = document.getElementById('wave');
+  
+  let time = 0;
+  let filterParams = {
+    noiseAmp: 15,
+    mainAmp: 30
+  };
+  
+  // Idle Animation: high frequency jitters melt away and return
+  gsap.to(filterParams, {
+    noiseAmp: 2,
+    duration: 2,
+    repeat: -1,
+    yoyo: true,
+    ease: "power1.inOut"
+  });
+  
+  function drawWave() {
+    let d = `M 0 50 `;
+    for (let x = 0; x <= 200; x += 2) {
+      // Main low frequency wave
+      const mainWave = Math.sin((x * 0.05) - time) * filterParams.mainAmp;
+      // High frequency noise
+      const noiseWave = Math.sin((x * 0.8) + time * 3) * filterParams.noiseAmp;
+      
+      d += `L ${x} ${50 + mainWave + noiseWave} `;
+    }
+    wavePath.setAttribute('d', d);
+  }
+  
+  function animate() {
+    time += 0.05;
+    drawWave();
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // Click Animation
+  const container = document.getElementById('filter');
+  let clicked = false;
+  
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    gsap.killTweensOf(filterParams);
+    
+    const tl = gsap.timeline();
+    
+    // Cutoff drops to zero -> all amplitudes go to zero
+    tl.to(filterParams, {
+      noiseAmp: 0,
+      mainAmp: 0,
+      duration: 1,
+      ease: "power2.out"
+    })
+    // Output flattens to nothing, then circuit fades
+    .to(".circuit", {
+      opacity: 0,
+      x: -20,
+      duration: 0.5
+    }, "+=0.2")
+    .to(wavePath, {
+      opacity: 0,
+      strokeWidth: 0,
+      duration: 0.5
+    }, "-=0.3");
+  });
+</script>
+</body>
+</html>

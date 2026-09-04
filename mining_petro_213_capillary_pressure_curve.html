@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capillary Pressure Curve</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #111;
+    overflow: hidden;
+  }
+  
+  .container {
+    position: relative;
+    width: 20px;
+    height: 30px;
+    cursor: pointer;
+  }
+
+  .pore-throat {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-left: 2px solid #555;
+    border-right: 2px solid #555;
+    border-radius: 10px / 50%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .water {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background-color: #20B2AA;
+  }
+
+  .oil {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background-color: #111;
+  }
+
+  .meniscus {
+    position: absolute;
+    bottom: 50%;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background-color: #20B2AA;
+    border-radius: 50%;
+    transform: translateY(50%);
+  }
+
+  .oil-burst {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    background-color: #20B2AA;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10;
+    mix-blend-mode: screen;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="model">
+  <div class="pore-throat">
+    <div class="oil"></div>
+    <div class="water"></div>
+    <div class="meniscus" id="meniscus"></div>
+  </div>
+</div>
+
+<div class="oil-burst" id="burst"></div>
+
+<script>
+  gsap.to("#meniscus", {
+    scaleY: 1.8,
+    duration: 1.2,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+
+  const model = document.getElementById('model');
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf("#meniscus");
+    
+    gsap.to("#meniscus", {
+      scaleY: -3,
+      duration: 0.2,
+      ease: "power2.in"
+    });
+
+    gsap.to(".water", {
+      height: "0%",
+      duration: 0.2,
+      delay: 0.1,
+      ease: "power1.in"
+    });
+    
+    gsap.to("#meniscus", {
+      bottom: "0%",
+      opacity: 0,
+      duration: 0.2,
+      delay: 0.1
+    });
+
+    gsap.to("#burst", {
+      scale: 3,
+      borderRadius: "0%",
+      duration: 0.8,
+      delay: 0.2,
+      ease: "expo.out"
+    });
+    
+    gsap.to("#burst", {
+      opacity: 0,
+      duration: 0.5,
+      delay: 0.8
+    });
+    
+    gsap.to(model, {
+      opacity: 0,
+      duration: 0.1,
+      delay: 0.2
+    });
+  });
+</script>
+</body>
+</html>

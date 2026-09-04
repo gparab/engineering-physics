@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Euler Buckling Column</title>
+<style>
+  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; cursor: pointer; }
+  #container { position: relative; width: 60px; height: 100px; }
+  .beam {
+    position: absolute; left: 28px; top: 10px; width: 4px; height: 80px;
+    background: #C0392B; transform-origin: top center; border-radius: 2px;
+  }
+  .pin {
+    position: absolute; left: 26px; width: 8px; height: 8px;
+    background: #fff; border-radius: 50%;
+  }
+  .pin.top { top: 6px; }
+  .pin.bottom { bottom: 6px; }
+  .load {
+    position: absolute; left: 20px; top: -10px; width: 20px; height: 10px;
+  }
+  .arrow {
+    width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid #fff;
+    margin: 0 auto;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="load"><div class="arrow"></div></div>
+  <svg class="beam-svg" style="position: absolute; left:0; top: 10px; width: 60px; height: 80px;">
+    <path id="beam-path" d="M30,0 Q30,40 30,80" stroke="#C0392B" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div class="pin top"></div>
+  <div class="pin bottom"></div>
+</div>
+<script>
+  const beam = document.getElementById('beam-path');
+  const load = document.querySelector('.load');
+  
+  // Idle: slight bowing, unstable equilibrium
+  let time = 0;
+  let idleAnim = gsap.ticker.add(() => {
+    time += 0.1;
+    let dx = Math.sin(time) * 1.5;
+    beam.setAttribute('d', `M30,0 Q${30 + dx},40 30,80`);
+    gsap.set(load, { y: Math.abs(dx)*0.2 });
+  });
+
+  let clicked = false;
+  document.body.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    gsap.ticker.remove(idleAnim);
+    
+    // Click: P_cr exceeded, half-sine bowing dramatically, then folds
+    const animObj = { dx: 1.5, y: 0 };
+    gsap.to(animObj, {
+      dx: 150,
+      y: 40,
+      duration: 0.6,
+      ease: "power2.in",
+      onUpdate: () => {
+        beam.setAttribute('d', `M30,${animObj.y} Q${30 + animObj.dx},40 30,80`);
+        gsap.set(load, { y: animObj.y });
+        gsap.set('.pin.top', { y: animObj.y });
+      },
+      onComplete: () => {
+        // Snap!
+        beam.setAttribute('stroke-dasharray', '5,5');
+        gsap.to('.beam-svg', { rotation: 90, scale: 3, opacity: 0, duration: 1 });
+        gsap.to('.pin', { scale: 5, opacity: 0, duration: 1 });
+        gsap.to('.load', { y: 200, opacity: 0, duration: 0.5 });
+      }
+    });
+  });
+</script>
+</body>
+</html>

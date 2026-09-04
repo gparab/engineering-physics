@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fracture Comminution</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model">
+        <svg width="40" height="40" viewBox="0 0 40 40" overflow="visible">
+            <circle class="roller r1" cx="10" cy="20" r="8" fill="none" stroke="#D8D8D8" stroke-width="2" stroke-dasharray="4,2"/>
+            <circle class="roller r2" cx="30" cy="20" r="8" fill="none" stroke="#D8D8D8" stroke-width="2" stroke-dasharray="4,2"/>
+            <polygon class="seed" points="20,14 24,18 20,26 16,18" fill="#F39C12" />
+            <path class="fracture" d="M18,16 L20,20 L18,24" fill="none" stroke="#FFF" stroke-width="0.5" opacity="0"/>
+        </svg>
+    </div>
+    <script>
+        gsap.to('.r1', { rotation: 360, transformOrigin: "center", duration: 4, repeat: -1, ease: "none" });
+        gsap.to('.r2', { rotation: -360, transformOrigin: "center", duration: 4, repeat: -1, ease: "none" });
+        
+        gsap.to('.seed', { scaleY: 0.9, duration: 1, yoyo: true, repeat: -1, ease: "sine.inOut" });
+        gsap.to('.fracture', { opacity: 1, duration: 0.2, yoyo: true, repeat: -1, delay: 0.8 });
+
+        document.getElementById('model').addEventListener('click', () => {
+            gsap.killTweensOf('*');
+            const container = document.querySelector('svg');
+            const dustGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            for(let i=0; i<40; i++) {
+                let p = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                p.setAttribute("points", "0,0 2,0 1,2");
+                p.setAttribute("fill", "#F39C12");
+                p.setAttribute("class", "dust");
+                p.setAttribute("transform", `translate(20, 20)`);
+                dustGroup.appendChild(p);
+            }
+            container.appendChild(dustGroup);
+            gsap.set('.seed, .fracture', { display: 'none' });
+            
+            gsap.to('.dust', {
+                x: () => (Math.random() - 0.5) * window.innerWidth,
+                y: () => (Math.random() - 0.5) * window.innerHeight,
+                rotation: () => Math.random() * 720,
+                scale: () => Math.random() * 3,
+                opacity: 0,
+                duration: 0.8,
+                ease: "expo.out"
+            });
+            gsap.to('.r1', { x: -window.innerWidth, opacity: 0, duration: 0.8, ease: "power2.in" });
+            gsap.to('.r2', { x: window.innerWidth, opacity: 0, duration: 0.8, ease: "power2.in" });
+        });
+    </script>
+</body>
+</html>

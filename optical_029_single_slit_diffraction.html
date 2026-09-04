@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Single Slit Diffraction</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #1a1a1a;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    #container {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+    }
+    .barrier {
+        position: absolute;
+        top: 0;
+        left: 20px;
+        width: 2px;
+        height: 15px;
+        background: #ccc;
+    }
+    .barrier.bottom {
+        top: 25px;
+    }
+    .plane-wave {
+        position: absolute;
+        top: 0; left: 0;
+        width: 15px; height: 40px;
+        background: repeating-linear-gradient(90deg, 
+            transparent, 
+            transparent 3px, 
+            rgba(155, 89, 182, 0.5) 4px, 
+            transparent 5px
+        );
+        animation: waveMove 1s infinite linear;
+    }
+    @keyframes waveMove {
+        from { transform: translateX(-5px); }
+        to { transform: translateX(0px); }
+    }
+    .diffraction {
+        position: absolute;
+        top: 20px; left: 21px;
+        width: 20px; height: 20px;
+        transform: translateY(-50%);
+        background: radial-gradient(circle at left center, 
+            rgba(155, 89, 182, 1) 0%, 
+            rgba(155, 89, 182, 0.5) 30%, 
+            rgba(155, 89, 182, 0.1) 60%, 
+            transparent 100%
+        );
+        border-radius: 50%;
+        opacity: 0.8;
+        animation: pulseDiffraction 1s infinite alternate ease-in-out;
+    }
+    @keyframes pulseDiffraction {
+        0% { transform: translateY(-50%) scale(0.9); opacity: 0.6; }
+        100% { transform: translateY(-50%) scale(1.1); opacity: 1; }
+    }
+
+    /* Click Animation Elements */
+    .sinc-graph {
+        position: absolute;
+        bottom: 50%;
+        left: 0;
+        width: 100vw;
+        height: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+    }
+    .sinc-bar {
+        width: 1vw;
+        background: #9b59b6;
+        box-shadow: 0 0 10px #9b59b6;
+        margin: 0 1px;
+        transform-origin: bottom;
+        transform: scaleY(0);
+    }
+</style>
+</head>
+<body>
+
+<div id="container" onclick="triggerDiffraction()">
+    <div class="plane-wave"></div>
+    <div class="barrier top" id="b-top"></div>
+    <div class="barrier bottom" id="b-bottom"></div>
+    <div class="diffraction" id="diff"></div>
+</div>
+
+<div class="sinc-graph" id="sincGraph"></div>
+
+<script>
+    function triggerDiffraction() {
+        const bTop = document.getElementById('b-top');
+        const bBottom = document.getElementById('b-bottom');
+        const diff = document.getElementById('diff');
+        const container = document.getElementById('container');
+        const graph = document.getElementById('sincGraph');
+        
+        // Slit narrows
+        bTop.style.transition = 'height 0.2s';
+        bBottom.style.transition = 'top 0.2s, height 0.2s';
+        bTop.style.height = '19.5px';
+        bBottom.style.top = '20.5px';
+        bBottom.style.height = '19.5px';
+        
+        setTimeout(() => {
+            container.style.display = 'none';
+            graph.style.opacity = '1';
+            
+            // Build sinc graph bars
+            const numBars = 50;
+            for (let i = 0; i < numBars; i++) {
+                let bar = document.createElement('div');
+                bar.className = 'sinc-bar';
+                
+                // Calculate sinc^2(x)
+                let x = (i - numBars/2) / (numBars/8);
+                let y = (x === 0) ? 1 : Math.pow(Math.sin(Math.PI * x) / (Math.PI * x), 2);
+                
+                graph.appendChild(bar);
+                
+                setTimeout(() => {
+                    bar.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    bar.style.transform = `scaleY(${y * 400}px)`; // Max height 400px
+                    
+                    // Fluctuating brightness
+                    setInterval(() => {
+                        bar.style.opacity = 0.5 + Math.random() * 0.5;
+                    }, 100);
+                }, i * 20);
+            }
+        }, 200);
+    }
+</script>
+
+</body>
+</html>

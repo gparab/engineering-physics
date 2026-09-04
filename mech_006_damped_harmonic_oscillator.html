@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Damped Harmonic Oscillator</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: flex-start; background-color: #1a1a1a; overflow: hidden; padding-top: 40vh; }
+  .container { position: relative; width: 20px; height: 60px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+  .ceiling { width: 30px; height: 2px; background: #666; }
+  .spring-svg { width: 10px; height: 25px; stroke: #F1C40F; fill: none; stroke-width: 1.5; transform-origin: top center; }
+  .mass { width: 12px; height: 12px; background: #F1C40F; border-radius: 2px; margin-top: -2px; }
+  .dashpot { position: absolute; right: -15px; top: 0; width: 8px; height: 20px; border: 1.5px solid #888; border-top: none; }
+  .dashpot-piston { position: absolute; right: -13px; top: 0; width: 4px; height: 2px; background: #888; }
+</style>
+</head>
+<body>
+<div class="container" id="oscillator">
+  <div class="ceiling"></div>
+  <svg class="spring-svg" id="spring" viewBox="0 0 10 100" preserveAspectRatio="none">
+    <path d="M 5 0 L 5 5 L 0 15 L 10 25 L 0 35 L 10 45 L 0 55 L 10 65 L 0 75 L 10 85 L 5 95 L 5 100" />
+  </svg>
+  <div class="mass" id="mass"></div>
+  <div class="dashpot"></div>
+  <div class="dashpot-piston" id="piston"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('oscillator');
+  const spring = document.getElementById('spring');
+  const mass = document.getElementById('mass');
+  const piston = document.getElementById('piston');
+  
+  let animating = true;
+  let phase = 0;
+  let mode = 'idle';
+  let amplitude = 15;
+  let damp = 0.995; 
+  
+  function update() {
+    if(!animating) return;
+    if(mode === 'idle') {
+      amplitude *= damp; 
+      if(amplitude < 1) amplitude = 15; 
+    } else {
+      amplitude *= 1.05; 
+    }
+    phase += 0.15;
+    const y = Math.cos(phase) * amplitude;
+    const baseHeight = 25;
+    spring.style.height = (baseHeight + y) + 'px';
+    piston.style.top = (baseHeight + y - 10) + 'px';
+    
+    if(mode === 'click' && y > window.innerHeight/2) {
+      animating = false;
+      gsap.to([mass, piston], { y: window.innerHeight, duration: 0.5, ease: "power2.in" });
+      gsap.to(spring, { scaleY: 0.2, opacity: 0, duration: 0.2 });
+      setTimeout(() => container.remove(), 600);
+      return;
+    }
+    requestAnimationFrame(update);
+  }
+  update();
+  container.addEventListener('click', () => {
+    mode = 'click';
+    gsap.to(".dashpot", { opacity: 0, duration: 0.2 }); // damping drops to zero visually
+  });
+</script>
+</body>
+</html>

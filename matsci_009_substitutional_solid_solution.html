@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+  .container { position: relative; width: 60px; height: 60px; cursor: pointer; }
+  .atom { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); transition: all 0.3s ease;}
+  .gray { width: 10px; height: 10px; background: #7f8c8d; }
+  .blue { width: 12px; height: 12px; background: #3498db; box-shadow: 0 0 5px #3498db;}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="container"></div>
+<script>
+  const container = document.getElementById('container');
+  const size = 15;
+  let atoms = [];
+  // 4x4 grid
+  for(let i=0; i<4; i++) {
+    for(let j=0; j<4; j++) {
+      let isBlue = (i===1 && j===1) || (i===2 && j===3);
+      let atom = document.createElement('div');
+      atom.className = 'atom ' + (isBlue ? 'blue' : 'gray');
+      atom.style.left = (j * size + size/2) + 'px';
+      atom.style.top = (i * size + size/2) + 'px';
+      atom.dataset.i = i;
+      atom.dataset.j = j;
+      container.appendChild(atom);
+      atoms.push({el: atom, isBlue, i, j, x: j*size + size/2, y: i*size + size/2});
+    }
+  }
+  
+  // Idle: lattice bulges and compresses
+  let tl = gsap.timeline({repeat: -1, yoyo: true});
+  atoms.forEach(a => {
+    if(!a.isBlue) {
+      let d1 = Math.hypot(a.i - 1, a.j - 1);
+      let d2 = Math.hypot(a.i - 2, a.j - 3);
+      let d = Math.min(d1, d2);
+      if(d <= 1.5) {
+        tl.to(a.el, {scale: 1.15, x: "+="+(a.j===1?0:(a.j>1?1:-1)), duration: 1}, 0);
+      }
+    } else {
+        tl.to(a.el, {scale: 1.2, duration: 1}, 0);
+    }
+  });
+
+  // Click
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    tl.kill();
+    
+    let step = 0;
+    let intv = setInterval(() => {
+        step++;
+        atoms.forEach(a => {
+            if(!a.isBlue && Math.random() < 0.2 + (step*0.1)) {
+                a.isBlue = true;
+                a.el.className = 'atom blue';
+                gsap.to(a.el, {scale: 3, duration: 0.2, yoyo: true, repeat: 1});
+            }
+        });
+        
+        let containerRect = container.getBoundingClientRect();
+        for(let k=0; k<20; k++) {
+            let atom = document.createElement('div');
+            atom.className = 'atom blue';
+            atom.style.left = (containerRect.left + containerRect.width/2 + (Math.random()-0.5)*step*100) + 'px';
+            atom.style.top = (containerRect.top + containerRect.height/2 + (Math.random()-0.5)*step*100) + 'px';
+            document.body.appendChild(atom);
+            gsap.from(atom, {scale: 0, opacity: 0, duration: 0.2});
+        }
+
+        if(step > 15) {
+            clearInterval(intv);
+            gsap.to('.atom', {opacity: 0, scale: 5, duration: 1, stagger: 0.01, onComplete: () => {
+                document.body.innerHTML = '';
+            }});
+        }
+    }, 150);
+  });
+</script>
+</body>
+</html>

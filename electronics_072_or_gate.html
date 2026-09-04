@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+  #container { position: relative; width: 60px; height: 40px; cursor: pointer; }
+  .lead { position: absolute; height: 2px; background: #E67E22; }
+  #in1 { width: 18px; top: 10px; left: 0; }
+  #in2 { width: 18px; top: 30px; left: 0; }
+  #out { width: 15px; top: 20px; left: 45px; }
+  .gate-body { position: absolute; left: 15px; top: 0; width: 30px; height: 40px; }
+  .gate-body svg { width: 100%; height: 100%; overflow: visible; }
+  .pulse { position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%; opacity: 0; box-shadow: 0 0 5px #E67E22; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="lead" id="in1"></div>
+  <div class="lead" id="in2"></div>
+  <div class="lead" id="out"></div>
+  <div class="gate-body">
+    <svg viewBox="0 0 30 40">
+      <path d="M 0,0 C 10,0 30,20 30,20 C 30,20 10,40 0,40 C 10,20 0,0 0,0 Z" fill="none" stroke="#E67E22" stroke-width="2"/>
+    </svg>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  let p1 = document.createElement('div'); p1.className = 'pulse'; p1.style.top = '8px'; container.appendChild(p1);
+  let p3 = document.createElement('div'); p3.className = 'pulse'; p3.style.top = '18px'; container.appendChild(p3);
+  
+  let tl = gsap.timeline({ repeat: -1 });
+  tl.fromTo(p1, { x: 0, opacity: 1 }, { x: 15, duration: 0.5, ease: 'none' })
+    .to(p1, { opacity: 0, duration: 0.1 })
+    .fromTo(p3, { x: 45, opacity: 1 }, { x: 60, opacity: 0, duration: 0.5, ease: 'none' }, "-=0.1");
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    tl.kill();
+    
+    gsap.to('.pulse', { opacity: 0, duration: 0.1 });
+    
+    // Shrinks into black hole
+    let hole = document.createElement('div');
+    hole.style.position = 'absolute';
+    hole.style.width = '4px';
+    hole.style.height = '4px';
+    hole.style.borderRadius = '50%';
+    hole.style.background = '#000';
+    hole.style.boxShadow = '0 0 20px 10px #E67E22';
+    hole.style.left = '28px';
+    hole.style.top = '18px';
+    hole.style.opacity = '0';
+    container.appendChild(hole);
+    
+    gsap.to(hole, { opacity: 1, duration: 0.5 });
+    
+    gsap.to('#container > div:not(.pulse)', {
+      scale: 0,
+      rotation: 720,
+      x: 10,
+      y: 0,
+      opacity: 0,
+      duration: 1.5,
+      ease: 'power3.in',
+      onComplete: () => {
+        gsap.to(hole, { scale: 0, opacity: 0, duration: 0.5 });
+      }
+    });
+  });
+</script>
+</body>
+</html>

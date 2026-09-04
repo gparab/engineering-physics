@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MapReduce</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111;
+    overflow: hidden;
+  }
+  #container {
+    position: relative;
+    width: 100px;
+    height: 80px;
+    cursor: pointer;
+  }
+  .input-block {
+    position: absolute;
+    top: 0;
+    left: 40px;
+    width: 20px;
+    height: 10px;
+    background-color: #2980B9;
+    border-radius: 2px;
+  }
+  .gear-container {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+  }
+  .gear {
+    width: 16px;
+    height: 16px;
+    border: 2px dashed #3498DB;
+    border-radius: 50%;
+    position: relative;
+    box-sizing: border-box;
+  }
+  .data-chunk {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background-color: #fff;
+    border-radius: 50%;
+    opacity: 0;
+  }
+  .press {
+    position: absolute;
+    bottom: 5px;
+    left: 30px;
+    width: 40px;
+    height: 6px;
+    background-color: #E67E22;
+    border-radius: 2px;
+  }
+  .output-block {
+    position: absolute;
+    bottom: -15px;
+    left: 40px;
+    width: 20px;
+    height: 10px;
+    background-color: #F39C12;
+    opacity: 0;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="input-block"></div>
+  <div class="gear-container">
+    <div class="gear" id="g1"></div>
+    <div class="gear" id="g2"></div>
+    <div class="gear" id="g3"></div>
+  </div>
+  <div class="press"></div>
+  <div class="output-block"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const inputBlock = document.querySelector('.input-block');
+  const press = document.querySelector('.press');
+  const outBlock = document.querySelector('.output-block');
+  const gears = document.querySelectorAll('.gear');
+  
+  let idleTl = gsap.timeline({ repeat: -1 });
+
+  function playIdle() {
+    // Input block scatters
+    idleTl.set(inputBlock, { opacity: 1, top: 0, scale: 1 });
+    idleTl.to(inputBlock, { opacity: 0, scale: 0.5, duration: 0.3 }, 0.5);
+    
+    // Gears spin
+    idleTl.to('.gear', { rotation: 360, duration: 1.5, ease: "none" }, 0.5);
+
+    // Data chunks go from input to gears
+    for(let i=0; i<3; i++) {
+      const chunk = document.createElement('div');
+      chunk.className = 'data-chunk';
+      container.appendChild(chunk);
+      
+      const targetX = 12 + i * 35; // approx gear centers
+      
+      idleTl.set(chunk, { left: 48, top: 5, opacity: 0 }, 0);
+      idleTl.to(chunk, { opacity: 1, duration: 0.1 }, 0.5);
+      idleTl.to(chunk, { left: targetX, top: 36, duration: 0.5, ease: "power1.inOut" }, 0.5);
+      
+      // Data chunks go from gears to press
+      idleTl.to(chunk, { left: 48, top: 65, duration: 0.5, ease: "power1.in" }, 1.2);
+      idleTl.to(chunk, { opacity: 0, duration: 0.1 }, 1.7);
+    }
+    
+    // Squish together at press
+    idleTl.to(press, { scaleY: 0.2, duration: 0.2, yoyo: true, repeat: 1 }, 1.7);
+    idleTl.to(outBlock, { opacity: 1, top: 75, duration: 0.3 }, 1.8);
+    idleTl.to(outBlock, { opacity: 0, top: 90, duration: 0.3 }, 2.3);
+    
+    // Clean up dynamically created chunks
+    idleTl.call(() => {
+      document.querySelectorAll('.data-chunk').forEach(el => el.remove());
+    }, null, 2.7);
+  }
+
+  playIdle();
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    idleTl.kill();
+    gsap.killTweensOf('*');
+
+    const tl = gsap.timeline();
+    
+    // Straggler fails (gear 3 turns red and stops)
+    tl.to(gears[2], { borderColor: '#E74C3C', backgroundColor: 'rgba(231,76,60,0.3)', duration: 0.2 }, 0);
+    
+    // Other gears spin fast
+    tl.to([gears[0], gears[1]], { rotation: "+=720", duration: 1, ease: "power1.in" }, 0);
+    
+    // System halts, vacuums data backward (implosion)
+    tl.to(container, { scale: 0.1, rotation: -180, duration: 0.8, ease: "back.in(2)" }, 0.5);
+    
+    // Blinks out
+    tl.to(container, { opacity: 0, scale: 0, duration: 0.2 }, 1.3);
+  });
+</script>
+</body>
+</html>

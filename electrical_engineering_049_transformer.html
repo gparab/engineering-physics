@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>49. Transformer</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0d0d0d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Courier New', Courier, monospace;
+    color: #333;
+  }
+  .container {
+    position: relative;
+    width: 200px;
+    height: 160px;
+    cursor: pointer;
+  }
+  /* Core */
+  .core {
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    width: 120px;
+    height: 120px;
+    border: 15px solid #333;
+    box-sizing: border-box;
+    border-radius: 10px;
+    z-index: 1;
+  }
+  .core-pulse {
+    position: absolute;
+    top: 35px;
+    left: 55px;
+    width: 90px;
+    height: 90px;
+    border: 5px solid #8E44AD;
+    box-sizing: border-box;
+    border-radius: 5px;
+    opacity: 0;
+    z-index: 2;
+    box-shadow: 0 0 10px #8E44AD, inset 0 0 10px #8E44AD;
+  }
+  
+  /* Coils */
+  .coil {
+    position: absolute;
+    width: 40px;
+    height: 90px;
+    top: 35px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    z-index: 3;
+  }
+  .coil.primary {
+    left: 27px;
+  }
+  .coil.secondary {
+    left: 133px;
+    height: 100px;
+    top: 30px;
+  }
+  
+  .winding {
+    height: 6px;
+    background: #8E44AD;
+    border-radius: 3px;
+    box-shadow: 0 0 5px #8E44AD;
+  }
+  
+  .coil.primary .winding { width: 40px; }
+  .coil.secondary .winding { width: 40px; }
+  
+  /* Pulses */
+  .flow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 4;
+  }
+  
+  .spark {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #8E44AD;
+    border-radius: 50%;
+    box-shadow: 0 0 8px 2px #8E44AD;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="transformer">
+  <div class="core"></div>
+  <div class="core-pulse" id="corePulse"></div>
+  
+  <div class="coil primary" id="primaryCoil">
+    <div class="winding"></div>
+    <div class="winding"></div>
+    <div class="winding"></div>
+    <div class="winding"></div>
+    <div class="winding"></div>
+  </div>
+  
+  <div class="coil secondary" id="secondaryCoil">
+    <div class="winding"></div>
+    <div class="winding"></div>
+    <div class="winding"></div>
+    <div class="winding"></div>
+    <div class="winding"></div>
+    <div class="winding"></div>
+    <div class="winding"></div>
+    <div class="winding"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  // Idle Animation
+  const tl = gsap.timeline({ repeat: -1 });
+  
+  // Pulse the primary
+  tl.to("#primaryCoil .winding", {
+    backgroundColor: '#fff',
+    boxShadow: '0 0 15px #fff',
+    duration: 0.5,
+    stagger: 0.1,
+    ease: "power1.inOut"
+  })
+  // Pulse transfers through core
+  .to("#corePulse", {
+    opacity: 0.6,
+    duration: 0.6,
+    ease: "power1.inOut"
+  }, "-=0.2")
+  // Primary dim
+  .to("#primaryCoil .winding", {
+    backgroundColor: '#8E44AD',
+    boxShadow: '0 0 5px #8E44AD',
+    duration: 0.5,
+    stagger: 0.1,
+    ease: "power1.inOut"
+  }, "-=0.3")
+  // Secondary lights up
+  .to("#secondaryCoil .winding", {
+    backgroundColor: '#fff',
+    boxShadow: '0 0 15px #fff',
+    duration: 0.5,
+    stagger: 0.05,
+    ease: "power1.inOut"
+  }, "-=0.4")
+  // Core dims
+  .to("#corePulse", {
+    opacity: 0,
+    duration: 0.6,
+    ease: "power1.inOut"
+  }, "-=0.2")
+  // Secondary dims
+  .to("#secondaryCoil .winding", {
+    backgroundColor: '#8E44AD',
+    boxShadow: '0 0 5px #8E44AD',
+    duration: 0.5,
+    stagger: 0.05,
+    ease: "power1.inOut"
+  });
+
+  // Click Animation
+  const container = document.getElementById('transformer');
+  let clicked = false;
+  
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    tl.kill();
+    
+    const clickTl = gsap.timeline();
+    
+    // Primary absorbs energy
+    clickTl.to("#primaryCoil .winding", {
+      backgroundColor: '#fff',
+      boxShadow: '0 0 30px #fff, 0 0 60px #8E44AD',
+      scale: 1.2,
+      duration: 0.4,
+      ease: "power2.in"
+    })
+    .to(".core", {
+      borderColor: '#8E44AD',
+      boxShadow: '0 0 20px #8E44AD',
+      duration: 0.4
+    }, "-=0.4")
+    // Core gets sucked to primary
+    .to(".core, #corePulse", {
+      x: -30,
+      opacity: 0,
+      scale: 0.8,
+      duration: 0.3,
+      ease: "power3.in"
+    })
+    .to("#secondaryCoil", {
+      opacity: 0,
+      duration: 0.1
+    }, "-=0.1");
+
+    // Generate Sparks for secondary
+    const rect = document.getElementById('secondaryCoil').getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    for(let i = 0; i < 40; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'spark';
+      document.body.appendChild(spark);
+      
+      const angle = Math.random() * Math.PI * 2;
+      const velocity = 100 + Math.random() * 300;
+      
+      gsap.set(spark, {
+        x: centerX,
+        y: centerY,
+        opacity: 1
+      });
+      
+      clickTl.to(spark, {
+        x: centerX + Math.cos(angle) * velocity,
+        y: centerY + Math.sin(angle) * velocity,
+        opacity: 0,
+        duration: 0.5 + Math.random() * 0.5,
+        ease: "power2.out"
+      }, 0.7);
+    }
+    
+    // Primary vanishes
+    clickTl.to("#primaryCoil", {
+      scale: 0,
+      opacity: 0,
+      duration: 0.3,
+      ease: "back.in(2)"
+    }, 0.7);
+  });
+</script>
+</body>
+</html>

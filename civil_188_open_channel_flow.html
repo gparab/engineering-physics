@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Channel Flow</title>
+<style>
+  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f9f9f9; overflow: hidden; }
+  .container { position: relative; width: 60px; height: 40px; cursor: pointer; }
+  .channel { position: absolute; bottom: 5px; left: 5px; width: 50px; height: 25px; background: #ccc; clip-path: polygon(0 0, 10px 25px, 40px 25px, 50px 0, 48px 0, 38px 23px, 12px 23px, 2px 0); }
+  .water-container { position: absolute; bottom: 7px; left: 10px; width: 40px; height: 15px; overflow: hidden; clip-path: polygon(0 0, 40px 0, 33px 15px, 7px 15px); }
+  .water { position: absolute; bottom: 0; left: -10px; width: 60px; height: 20px; background: #1E90FF; }
+  
+  .wave { position: absolute; top: -5px; left: 0; width: 100px; height: 10px; fill: none; stroke: #1E90FF; stroke-width: 2px; }
+  .spill { position: absolute; width: 10px; height: 10px; background: #1E90FF; border-radius: 50%; display: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="container" id="icon">
+    <div class="channel"></div>
+    <div class="water-container" id="wc">
+      <div class="water" id="water">
+        <svg class="wave" viewBox="0 0 100 10" preserveAspectRatio="none">
+          <path id="wavePath" d="M 0 5 Q 12.5 0, 25 5 T 50 5 T 75 5 T 100 5"></path>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const wave = document.getElementById('wavePath');
+    const wc = document.getElementById('wc');
+    
+    // Idle: gently undulate
+    const idle = gsap.to(wave, { attr: { d: "M 0 5 Q 12.5 10, 25 5 T 50 5 T 75 5 T 100 5" }, duration: 1, repeat: -1, yoyo: true, ease: "sine.inOut" });
+
+    icon.addEventListener('click', () => {
+      idle.kill();
+      // Turbulent jump, spill over sides
+      gsap.to(wc, { clipPath: "polygon(-20px -20px, 60px -20px, 33px 15px, 7px 15px)", duration: 0.2 });
+      gsap.to('#water', { height: 40, duration: 0.5, ease: "power2.in" });
+      gsap.to(wave, { attr: { d: "M 0 5 Q 10 20, 20 0 T 40 20 T 60 0 T 80 20 T 100 0" }, duration: 0.1, repeat: 5, yoyo: true });
+      
+      const rect = icon.getBoundingClientRect();
+      for(let i=0; i<30; i++) {
+        let p = document.createElement('div');
+        p.className = 'spill';
+        p.style.display = 'block';
+        p.style.left = (rect.left + 30) + 'px';
+        p.style.top = (rect.top + 10) + 'px';
+        document.body.appendChild(p);
+        
+        let dir = Math.random() > 0.5 ? 1 : -1;
+        gsap.to(p, {
+          x: dir * (50 + Math.random()*200),
+          y: Math.random()*200,
+          opacity: 0,
+          duration: 1 + Math.random(),
+          ease: "power1.in"
+        });
+      }
+      
+      gsap.to('#water', { opacity: 0, duration: 1, delay: 0.5 });
+      gsap.to('.channel', { opacity: 0, duration: 1, delay: 0.5 });
+    });
+  </script>
+</body>
+</html>

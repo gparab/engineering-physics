@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fully Blown Playful Easter Eggs</title>
+<style>
+  :root {
+    --ink: #ededed;
+    --paper: #111;
+    --card-bg: #1a1a1a;
+  }
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    overflow-x: hidden;
+  }
+  .header-text {
+    text-align: center;
+    max-width: 600px;
+    margin-bottom: 20px;
+  }
+  .showcase-card {
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 600px;
+    height: 350px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.8s ease;
+  }
+  .card-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+  }
+  .card-header h2 { margin: 0; font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 10px;}
+  .card-header span { font-size: 14px; font-weight: 400; color: #888; }
+  .reset-btn {
+    background: #333; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;
+  }
+  .reset-btn:hover { background: #444; }
+
+  .interactive-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Orb Base */
+  .orb {
+    display: block; width: 44px; height: 44px;
+    cursor: pointer; outline: none; z-index: 5;
+  }
+  .orb svg { overflow: visible; width: 100%; height: 100%; }
+
+  /* =======================================================================
+     1. UFO (Home)
+     ======================================================================= */
+  .ufo-body { transform-origin: 22px 22px; animation: ufo-idle 4s ease-in-out infinite; }
+  .ufo-beam { transform-origin: 22px 24px; opacity: 0.15; animation: beam-idle 3s infinite; }
+  .ufo-light { animation: ufo-blink 1s infinite; }
+  .ufo-light.l2 { animation-delay: 0.3s; }
+  .ufo-light.l3 { animation-delay: 0.6s; }
+
+  .ufo-orb:hover .ufo-beam { opacity: 0.5; animation: beam-hover 1s infinite; fill: #0ff;}
+  .ufo-orb:hover .ufo-body { animation: ufo-hover-bob 0.8s ease-in-out infinite; }
+
+  .ufo-orb.zap { pointer-events: none; }
+  .ufo-orb.zap .ufo-body { animation: ufo-zap 0.8s cubic-bezier(0.5, 0, 0.2, 1) forwards; }
+  .ufo-orb.zap .ufo-beam { opacity: 0; transition: 0.2s; }
+
+  @keyframes ufo-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  @keyframes ufo-hover-bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(3deg); } }
+  @keyframes beam-idle { 0%, 100% { transform: scaleX(1); opacity: 0.15; } 50% { transform: scaleX(1.1); opacity: 0.25; } }
+  @keyframes beam-hover { 0%, 100% { transform: scaleX(1.2); opacity: 0.4; } 50% { transform: scaleX(1.4); opacity: 0.7; } }
+  @keyframes ufo-blink { 0%, 100% { fill: #0ff; filter: drop-shadow(0 0 2px #0ff); } 50% { fill: #fff; filter: none; } }
+  @keyframes ufo-zap {
+    0% { transform: translate(0,0) scale(1); filter: drop-shadow(0 0 10px #0ff); }
+    15% { transform: translate(-20px, 20px) scale(1.1) rotate(-15deg); }
+    100% { transform: translate(400px, -300px) scale(0.1) rotate(45deg); opacity: 0; }
+  }
+
+  /* =======================================================================
+     2. CHALK (Writing)
+     ======================================================================= */
+  .chalk-container { position: relative; width: 350px; height: 100px; display: flex; align-items: center; }
+  .formula-reveal {
+    position: absolute; left: 45px; top: 50%; transform: translateY(-50%);
+    color: #3b82f6; font-family: monospace; font-size: 22px; font-weight: bold;
+    white-space: nowrap; overflow: hidden; width: 0;
+  }
+  .chalk-orb { position: absolute; left: 0; }
+  .chalk-body { transform-origin: 16px 32px; animation: chalk-float 4s ease-in-out infinite; }
+  .chalk-dust { opacity: 0; }
+  
+  .chalk-orb:hover .chalk-body { animation: chalk-shake 0.3s infinite; }
+  .chalk-orb:hover .chalk-dust.d1 { animation: dust-fall 1s infinite; }
+  .chalk-orb:hover .chalk-dust.d2 { animation: dust-fall 1s infinite 0.3s; }
+  .chalk-orb:hover .chalk-dust.d3 { animation: dust-fall 1s infinite 0.6s; }
+
+  @keyframes chalk-float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(4deg); } }
+  @keyframes chalk-shake { 0%, 100% { transform: rotate(0deg) translate(0); } 50% { transform: rotate(-5deg) translate(-2px, 2px); } }
+  @keyframes dust-fall { 0% { opacity: 0.8; transform: translateY(0); } 100% { opacity: 0; transform: translateY(20px); } }
+
+  .chalk-orb.writing { pointer-events: none; }
+  .chalk-orb.writing .chalk-body { animation: chalk-scribble-action 3s linear forwards; }
+  
+  @keyframes chalk-scribble-action {
+    0% { transform: translate(0,0) rotate(0deg); }
+    10% { transform: translate(30px, -10px) rotate(-10deg); }
+    20% { transform: translate(60px, 5px) rotate(5deg); }
+    30% { transform: translate(90px, -8px) rotate(-5deg); }
+    40% { transform: translate(120px, 8px) rotate(10deg); }
+    50% { transform: translate(150px, -5px) rotate(-10deg); }
+    60% { transform: translate(180px, 5px) rotate(5deg); }
+    70% { transform: translate(210px, -10px) rotate(-5deg); }
+    80% { transform: translate(240px, 5px) rotate(10deg); }
+    85% { transform: translate(270px, 0px) rotate(0deg); }
+    90% { transform: translate(270px, 0px) rotate(0deg); opacity: 1; }
+    100% { transform: translate(270px, 400px) rotate(-45deg); opacity: 0; }
+  }
+
+  /* =======================================================================
+     3. FIREFLIES (CV)
+     ======================================================================= */
+  .wisp-center { transform-origin: 22px 22px; animation: wisp-spin 6s linear infinite; }
+  .wisp { filter: drop-shadow(0 0 5px #adff2f); animation: wisp-pulse 2s infinite; }
+  .wisp.w1 { animation-delay: 0s; transform-origin: 22px 10px; }
+  .wisp.w2 { animation-delay: 0.4s; transform-origin: 12px 28px; }
+  .wisp.w3 { animation-delay: 0.8s; transform-origin: 32px 28px; }
+
+  .wisp-orb:hover .wisp-center { animation: wisp-spin 2s linear infinite; filter: drop-shadow(0 0 10px #adff2f); }
+  .wisp-orb:hover .wisp { animation: wisp-pulse-fast 0.4s infinite; }
+
+  .wisp-particle {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: #adff2f;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #adff2f, 0 0 20px #adff2f;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .wisp-orb.scatter { opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+
+  @keyframes wisp-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes wisp-pulse { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.4); opacity: 1; } }
+  @keyframes wisp-pulse-fast { 0%, 100% { transform: scale(1.3); opacity: 0.8; } 50% { transform: scale(1.8); opacity: 1; } }
+  @keyframes wisp-explode {
+    0% { transform: translate(0,0) scale(1.5); opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+  }
+
+  /* =======================================================================
+     4. SAPLING (Sitemap)
+     ======================================================================= */
+  .sapling-wrapper { transform-origin: 22px 36px; animation: plant-breathe 4s infinite; }
+  .raindrop { opacity: 0; transform-origin: 22px 4px; }
+  
+  .sapling-orb:hover .sapling-wrapper { animation: plant-wiggle 1s infinite; }
+  .sapling-orb:hover .raindrop { animation: rain-fall 1s infinite; }
+  .sapling-orb:hover .raindrop.r2 { animation-delay: 0.3s; transform-origin: 15px 4px; }
+  .sapling-orb:hover .raindrop.r3 { animation-delay: 0.6s; transform-origin: 29px 4px; }
+
+  .vine-growth {
+    fill: none; stroke: #32cd32; stroke-width: 3;
+    stroke-dasharray: 500; stroke-dashoffset: 500;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 8px #32cd32);
+  }
+  .vine-leaf {
+    fill: #32cd32; opacity: 0; transform: scale(0); transform-origin: center;
+    filter: drop-shadow(0 0 5px #32cd32);
+  }
+
+  .sapling-orb.bloom { pointer-events: none; }
+  .sapling-orb.bloom .base-sprout { opacity: 0; transition: opacity 0.3s; }
+  .sapling-orb.bloom .raindrop { display: none; }
+  
+  @keyframes plant-breathe { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.05); } }
+  @keyframes plant-wiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+  @keyframes rain-fall { 
+    0% { opacity: 0; transform: translateY(-10px); } 
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(25px) scale(0.5); } 
+  }
+
+  /* =======================================================================
+     5. JELLYFISH (Publications / Dive)
+     ======================================================================= */
+  .jelly-bell {
+    transform-origin: 22px 14px;
+    animation: jelly-pulse 4s ease-in-out infinite;
+  }
+  .jelly-tentacle-1 {
+    transform-origin: 16px 24px;
+    animation: tentacle-wave 3s ease-in-out infinite;
+  }
+  .jelly-tentacle-2 {
+    transform-origin: 22px 24px;
+    animation: tentacle-wave 3s ease-in-out infinite 0.5s;
+  }
+  .jelly-tentacle-3 {
+    transform-origin: 28px 24px;
+    animation: tentacle-wave 3s ease-in-out infinite 1s;
+  }
+  .jelly-core {
+    animation: core-glow 4s ease-in-out infinite;
+  }
+
+  .jelly-orb:hover {
+    transform: scale(1.15) translateY(-2px);
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.7));
+  }
+  .jelly-orb:hover .jelly-bell {
+    animation: jelly-pulse-fast 1.2s ease-in-out infinite;
+  }
+  .jelly-orb:hover .jelly-core {
+    animation: core-glow-fast 1.2s ease-in-out infinite;
+  }
+  
+  .jelly-orb.swimming {
+    pointer-events: none;
+    animation: swim-down 1.2s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+  }
+  .jelly-orb.swimming .jelly-bell {
+    animation: jelly-swim-pulse 0.4s ease-in-out infinite;
+  }
+
+  @keyframes jelly-pulse {
+    0%, 100% { transform: scale(1, 1); }
+    50%      { transform: scale(1.05, 0.95); }
+  }
+  @keyframes jelly-pulse-fast {
+    0%, 100% { transform: scale(1, 1); }
+    50%      { transform: scale(1.1, 0.9); }
+  }
+  @keyframes jelly-swim-pulse {
+    0%, 100% { transform: scale(0.9, 1.1); }
+    50%      { transform: scale(1.1, 0.8); }
+  }
+  @keyframes tentacle-wave {
+    0%, 100% { transform: rotate(-8deg); }
+    50%      { transform: rotate(8deg); }
+  }
+  @keyframes core-glow {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 0.9; }
+  }
+  @keyframes core-glow-fast {
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1; filter: blur(3px); }
+  }
+  @keyframes swim-down {
+    0%   { transform: translateY(0) scale(1.15); filter: drop-shadow(0 0 12px rgba(0, 255, 255, 1)); }
+    15%  { transform: translateY(-15px) scale(1.1, 0.9); filter: drop-shadow(0 0 16px rgba(0, 255, 255, 1)); }
+    100% { transform: translateY(400px) scale(0.85, 1.25); filter: drop-shadow(0 0 2px rgba(0, 255, 255, 0)); opacity: 0; }
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="header-text">
+    <h1 style="margin:0 0 10px 0;">The Grand Quintet</h1>
+    <p style="margin:0; color:#aaa; font-size:15px;">Full-blown prototypes of all 5 enhanced illustrative interactions, featuring pure CSS physics.</p>
+  </div>
+
+  <!-- 1. UFO -->
+  <div class="showcase-card" id="card-ufo">
+    <div class="card-header">
+      <h2>🛸 UFO <span>(Home)</span></h2>
+      <button class="reset-btn" onclick="resetOrb('ufo-orb')">Reset</button>
+    </div>
+    <div class="interactive-area">
+      <a class="orb ufo-orb" href="#" onclick="this.classList.add('zap'); return false;" title="UFO Zap">
+        <svg viewBox="0 0 44 44">
+          <g class="ufo-body">
+            <polygon class="ufo-beam" points="22,24 6,44 38,44" fill="#0ff"/>
+            <path d="M 14,22 C 14,12 30,12 30,22" fill="#c0d0f0"/>
+            <ellipse cx="22" cy="22" rx="16" ry="5" fill="#888"/>
+            <circle class="ufo-light l1" cx="10" cy="22" r="1.5" fill="#0ff"/>
+            <circle class="ufo-light l2" cx="22" cy="23.5" r="1.5" fill="#0ff"/>
+            <circle class="ufo-light l3" cx="34" cy="22" r="1.5" fill="#0ff"/>
+          </g>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- 2. CHALK -->
+  <div class="showcase-card" id="card-chalk">
+    <div class="card-header">
+      <h2>🖍️ Chalk <span>(Writing)</span></h2>
+      <button class="reset-btn" onclick="resetChalk()">Reset</button>
+    </div>
+    <div class="interactive-area">
+      <div class="chalk-container">
+        <div class="formula-reveal" id="formula">∑(3Δt, 30λ, ∫ds, r_s) = t_0</div>
+        <a class="orb chalk-orb" id="chalk-trigger" href="#" onclick="triggerChalk(); return false;" title="Write Formula">
+          <svg viewBox="0 0 44 44">
+            <g class="chalk-body">
+              <polygon points="28,8 34,10 22,36 16,34" fill="#eee" />
+              <polygon points="16,34 22,36 18,39" fill="#ccc" />
+              <circle class="chalk-dust d1" cx="16" cy="40" r="1.5" fill="#fff"/>
+              <circle class="chalk-dust d2" cx="22" cy="42" r="1" fill="#fff"/>
+              <circle class="chalk-dust d3" cx="12" cy="38" r="1.5" fill="#fff"/>
+            </g>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. FIREFLIES -->
+  <div class="showcase-card" id="card-fireflies">
+    <div class="card-header">
+      <h2>✨ Fireflies <span>(CV)</span></h2>
+      <button class="reset-btn" onclick="resetFireflies()">Reset</button>
+    </div>
+    <div class="interactive-area" id="firefly-area">
+      <a class="orb wisp-orb" id="wisp-trigger" href="#" onclick="triggerFireflies(); return false;" title="Explode Swarm">
+        <svg viewBox="0 0 44 44">
+          <g class="wisp-center">
+            <circle class="wisp w1" cx="22" cy="10" r="3" fill="#adff2f"/>
+            <circle class="wisp w2" cx="12" cy="28" r="2" fill="#adff2f"/>
+            <circle class="wisp w3" cx="32" cy="28" r="2.5" fill="#adff2f"/>
+          </g>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- 4. SAPLING -->
+  <div class="showcase-card" id="card-sapling">
+    <div class="card-header">
+      <h2>🌱 Sapling <span>(Sitemap)</span></h2>
+      <button class="reset-btn" onclick="resetSapling()">Reset</button>
+    </div>
+    <div class="interactive-area">
+      <a class="orb sapling-orb" id="sapling-trigger" href="#" onclick="triggerSapling(); return false;" title="Bloom">
+        <svg viewBox="0 -100 88 150" style="width: 88px; height: 150px; transform: translateY(-30px);">
+          <!-- Hidden Complex Vine -->
+          <path id="grow-vine" class="vine-growth" d="M 44,40 C 44,10 10,-10 44,-35 C 70,-55 20,-75 44,-95"/>
+          <path class="vine-leaf vl1" d="M 44,-35 Q 25,-45 35,-55 Q 50,-45 44,-35" />
+          <path class="vine-leaf vl2" d="M 44,-95 Q 65,-100 55,-115 Q 40,-110 44,-95" />
+          <path class="vine-leaf vl3" d="M 28,-18 Q 10,-20 15,-5 Q 30,0 28,-18" />
+
+          <!-- Base Sprout -->
+          <g class="sapling-wrapper base-sprout">
+            <line x1="24" y1="40" x2="64" y2="40" stroke="#8b4513" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 44,40 Q 44,30 44,24" stroke="#32cd32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M 44,30 Q 38,28 38,24 Q 42,24 44,30" fill="#32cd32"/>
+            <path d="M 44,26 Q 50,22 50,18 Q 46,18 44,26" fill="#32cd32"/>
+          </g>
+          
+          <!-- Raindrops -->
+          <path class="raindrop r1" d="M 44,8 Q 46,12 44,16 Q 42,12 44,8" fill="#00bfff"/>
+          <path class="raindrop r2" d="M 35,8 Q 37,12 35,16 Q 33,12 35,8" fill="#00bfff"/>
+          <path class="raindrop r3" d="M 53,8 Q 55,12 53,16 Q 51,12 53,8" fill="#00bfff"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- 5. JELLYFISH -->
+  <div class="showcase-card" id="card-jellyfish">
+    <div class="card-header">
+      <h2>🪼 Jellyfish <span>(Publications)</span></h2>
+      <button class="reset-btn" onclick="resetJellyfish()">Reset</button>
+    </div>
+    <div class="interactive-area">
+      <a class="orb jelly-orb" id="jelly-trigger" href="#" onclick="triggerJellyfish(); return false;" title="Dive">
+        <svg viewBox="0 0 44 44" width="44" height="44" fill="none" aria-hidden="true">
+          <!-- Tentacles -->
+          <path class="jelly-tentacle-1" d="M 16,24 Q 13,32 17,38 T 15,46" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <path class="jelly-tentacle-2" d="M 22,24 Q 25,32 21,38 T 23,48" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          <path class="jelly-tentacle-3" d="M 28,24 Q 31,32 27,38 T 29,46" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          
+          <!-- Bell -->
+          <path class="jelly-bell" d="M 12,24 C 12,10 16,6 22,6 C 28,6 32,10 32,24 C 28,26 26,23 22,24 C 18,23 16,26 12,24 Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="var(--card-bg)"/>
+          
+          <!-- Inner Core -->
+          <circle class="jelly-core" cx="22" cy="16" r="3.5" fill="#0ff" opacity="0.8"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Universal Reset
+    function resetOrb(className) {
+      const orb = document.querySelector('.' + className);
+      orb.className = 'orb ' + className;
+    }
+
+    // Chalk Logic
+    function triggerChalk() {
+      const orb = document.getElementById('chalk-trigger');
+      const formula = document.getElementById('formula');
+      orb.classList.add('writing');
+      formula.style.transition = 'width 2.6s linear';
+      formula.style.width = '275px';
+    }
+    function resetChalk() {
+      document.getElementById('chalk-trigger').className = 'orb chalk-orb';
+      const formula = document.getElementById('formula');
+      formula.style.transition = 'none';
+      formula.style.width = '0px';
+    }
+
+    // Fireflies Logic
+    function triggerFireflies() {
+      const orb = document.getElementById('wisp-trigger');
+      const card = document.getElementById('card-fireflies');
+      const area = document.getElementById('firefly-area');
+      
+      orb.classList.add('scatter');
+      card.style.backgroundColor = '#000000'; // Theme turns black!
+      
+      // Generate swarm
+      for(let i=0; i<40; i++) {
+        let f = document.createElement('div');
+        f.className = 'wisp-particle';
+        f.style.left = '50%';
+        f.style.top = '50%';
+        
+        let angle = Math.random() * Math.PI * 2;
+        let dist = 60 + Math.random() * 200;
+        let tx = Math.cos(angle) * dist;
+        let ty = Math.sin(angle) * dist;
+        
+        f.style.setProperty('--tx', `${tx}px`);
+        f.style.setProperty('--ty', `${ty}px`);
+        f.style.animation = `wisp-explode ${1 + Math.random()*0.8}s cubic-bezier(0.2, 1, 0.3, 1) forwards`;
+        
+        area.appendChild(f);
+      }
+    }
+    function resetFireflies() {
+      document.getElementById('wisp-trigger').className = 'orb wisp-orb';
+      document.getElementById('card-fireflies').style.backgroundColor = 'var(--card-bg)';
+      document.querySelectorAll('.wisp-particle').forEach(el => el.remove());
+    }
+
+    // Sapling Logic
+    function triggerSapling() {
+      const orb = document.getElementById('sapling-trigger');
+      orb.classList.add('bloom');
+      
+      const vine = document.getElementById('grow-vine');
+      vine.style.transition = 'stroke-dashoffset 2s ease-out';
+      vine.style.strokeDashoffset = '0';
+      
+      const leaves = document.querySelectorAll('.vine-leaf');
+      leaves[0].style.transition = 'transform 0.5s ease-out 0.5s, opacity 0.5s ease 0.5s';
+      leaves[0].style.transform = 'scale(1)'; leaves[0].style.opacity = '1';
+      
+      leaves[1].style.transition = 'transform 0.5s ease-out 1.2s, opacity 0.5s ease 1.2s';
+      leaves[1].style.transform = 'scale(1)'; leaves[1].style.opacity = '1';
+
+      leaves[2].style.transition = 'transform 0.5s ease-out 0.8s, opacity 0.5s ease 0.8s';
+      leaves[2].style.transform = 'scale(1)'; leaves[2].style.opacity = '1';
+    }
+    function resetSapling() {
+      document.getElementById('sapling-trigger').className = 'orb sapling-orb';
+      const vine = document.getElementById('grow-vine');
+      vine.style.transition = 'none';
+      vine.style.strokeDashoffset = '500';
+      
+      const leaves = document.querySelectorAll('.vine-leaf');
+      leaves.forEach(l => {
+        l.style.transition = 'none';
+        l.style.transform = 'scale(0)';
+        l.style.opacity = '0';
+      });
+    }
+
+    // Jellyfish Logic
+    function triggerJellyfish() {
+      const orb = document.getElementById('jelly-trigger');
+      orb.classList.add('swimming');
+    }
+    function resetJellyfish() {
+      document.getElementById('jelly-trigger').className = 'orb jelly-orb';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Positron Annihilation</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #container { width: 40px; height: 40px; position: relative; cursor: pointer; border-radius: 50%; border: 1px dashed rgba(248, 231, 28, 0.4); }
+        .particle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background-color: #F8E71C; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 4px #F8E71C; }
+        .beam { position: absolute; height: 2px; background-color: #FFF; top: 50%; left: 50%; transform-origin: 0 50%; opacity: 0; box-shadow: 0 0 10px #F8E71C, 0 0 20px #FFF; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="particle" id="p1"></div>
+        <div class="particle" id="p2"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const p1 = document.getElementById('p1');
+        const p2 = document.getElementById('p2');
+        const container = document.getElementById('container');
+        
+        let angle = 0;
+        let radius = 12;
+        let t = 0;
+
+        // Idle animation: orbital spiral
+        gsap.ticker.add(() => {
+            if (clicked) return;
+            angle += 0.05;
+            // slowly decaying and expanding spiral
+            let currentRadius = radius + Math.sin(t * 0.05) * 4;
+            t++;
+            
+            gsap.set(p1, { x: Math.cos(angle) * currentRadius, y: Math.sin(angle) * currentRadius });
+            gsap.set(p2, { x: Math.cos(angle + Math.PI) * currentRadius, y: Math.sin(angle + Math.PI) * currentRadius });
+        });
+
+        let clicked = false;
+        container.addEventListener('click', () => {
+            if(clicked) return; clicked = true;
+
+            // Spiral rapidly towards center
+            let dummy = { r: radius + Math.sin(t * 0.05) * 4, a: angle };
+            gsap.to(dummy, {
+                r: 0,
+                a: angle + Math.PI * 4,
+                duration: 0.5,
+                ease: "power2.in",
+                onUpdate: () => {
+                    gsap.set(p1, { x: Math.cos(dummy.a) * dummy.r, y: Math.sin(dummy.a) * dummy.r });
+                    gsap.set(p2, { x: Math.cos(dummy.a + Math.PI) * dummy.r, y: Math.sin(dummy.a + Math.PI) * dummy.r });
+                },
+                onComplete: () => {
+                    // Annihilate
+                    p1.style.display = 'none';
+                    p2.style.display = 'none';
+                    container.style.border = 'none';
+                    
+                    // Create beams
+                    let beam1 = document.createElement('div'); beam1.className = 'beam';
+                    let beam2 = document.createElement('div'); beam2.className = 'beam';
+                    container.appendChild(beam1); container.appendChild(beam2);
+                    
+                    let beamAngle = Math.random() * 360;
+                    
+                    gsap.set(beam1, { rotation: beamAngle, width: 0, opacity: 1, y: -1 });
+                    gsap.set(beam2, { rotation: beamAngle + 180, width: 0, opacity: 1, y: -1 });
+                    
+                    gsap.to([beam1, beam2], { width: window.innerWidth, duration: 0.2, ease: "none" });
+                    gsap.to([beam1, beam2], { opacity: 0, duration: 0.4, delay: 0.1, ease: "power2.out" });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

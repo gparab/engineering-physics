@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nyquist Stability Criterion</title>
+<style>
+  body { margin: 0; padding: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  .container { position: relative; width: 40px; height: 40px; cursor: pointer; }
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+  .axes { stroke: rgba(192, 57, 43, 0.4); stroke-width: 0.5; }
+  .minus-one { fill: #E74C3C; }
+  .contour { stroke: #C0392B; stroke-width: 1.5; fill: none; }
+  .point { stroke: #FFF; stroke-width: 3; stroke-linecap: round; fill: none; stroke-dasharray: 0.1 200; }
+  .spiral { stroke: #C0392B; stroke-width: 1.5; fill: none; opacity: 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 40 40">
+    <path class="axes" d="M 0 20 H 40 M 20 0 V 40" />
+    <circle class="minus-one" cx="12" cy="20" r="1" />
+    
+    <!-- Contour near (-1, 0) but not enclosing it -->
+    <path class="contour" id="path" d="M 20 20 C 30 5, 40 15, 25 20 C 40 25, 30 35, 20 20" />
+    
+    <!-- Moving point on contour -->
+    <path class="point" id="tracer" d="M 20 20 C 30 5, 40 15, 25 20 C 40 25, 30 35, 20 20" />
+    
+    <!-- Spiral for instability -->
+    <path class="spiral" d="M 12 20 Q 15 15, 20 20 T 12 30 T 0 20 T 12 0 T 40 20" />
+  </svg>
+</div>
+
+<script>
+  const tracer = document.getElementById('tracer');
+  // length of contour is approx 60
+  tracer.style.strokeDasharray = "1 150";
+  
+  const tween = gsap.fromTo(tracer, 
+    { strokeDashoffset: 150 }, 
+    { strokeDashoffset: 0, duration: 2, repeat: -1, ease: "linear" }
+  );
+
+  document.getElementById('model').addEventListener('click', () => {
+    tween.kill();
+    // Contour shifts to enclose -1 point
+    gsap.to(['.contour', '.point'], {
+      attr: { d: "M 20 20 C 30 -5, 5 5, 5 20 C 5 35, 30 45, 20 20" },
+      duration: 0.5
+    });
+    
+    // Then spirals outward infinitely
+    setTimeout(() => {
+      gsap.to(['.contour', '.point'], { opacity: 0, duration: 0.3 });
+      const spiral = document.querySelector('.spiral');
+      gsap.to(spiral, { opacity: 1, duration: 0.1 });
+      gsap.to(spiral, {
+        scale: 15,
+        transformOrigin: "12px 20px",
+        rotation: 720,
+        opacity: 0,
+        duration: 2,
+        ease: "power2.in"
+      });
+    }, 600);
+  });
+</script>
+</body>
+</html>

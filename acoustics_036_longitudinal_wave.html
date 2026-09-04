@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Longitudinal Wave</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f8f9fa;
+        font-family: sans-serif;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 40px;
+        height: 20px;
+        cursor: pointer;
+    }
+    .line {
+        position: absolute;
+        width: 2px;
+        height: 20px;
+        background-color: #34495e;
+        top: 0;
+    }
+    .shockwave {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        border: 10px solid rgba(52, 73, 94, 0.8);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        opacity: 0;
+    }
+    .distorted-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(52, 73, 94, 0.1) 2px,
+            rgba(52, 73, 94, 0.1) 4px
+        );
+        opacity: 0;
+        pointer-events: none;
+    }
+</style>
+</head>
+<body>
+
+<div class="distorted-bg" id="bg"></div>
+<div id="container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    const container = document.getElementById('container');
+    const numLines = 15;
+    const lines = [];
+
+    // Create lines
+    for (let i = 0; i < numLines; i++) {
+        const line = document.createElement('div');
+        line.classList.add('line');
+        container.appendChild(line);
+        lines.push(line);
+    }
+
+    // Idle animation: Density waves traveling
+    const idleAnim = gsap.to(lines, {
+        x: (index) => {
+            return (index / numLines) * 40; // Base position
+        },
+        duration: 1,
+        repeat: -1,
+        ease: "none",
+        modifiers: {
+            x: function(x, target) {
+                const index = lines.indexOf(target);
+                const time = Date.now() / 300;
+                // Add a sine wave displacement based on position and time
+                const displacement = Math.sin((index / numLines) * Math.PI * 4 - time) * 4;
+                const basePos = (index / numLines) * 40;
+                return (basePos + displacement) + "px";
+            }
+        }
+    });
+
+    let clicked = false;
+    container.addEventListener('click', () => {
+        if (clicked) return;
+        clicked = true;
+        idleAnim.kill();
+
+        // Create shockwave element
+        const shockwave = document.createElement('div');
+        shockwave.classList.add('shockwave');
+        document.body.appendChild(shockwave);
+
+        // Animate the container collapsing and disappearing
+        gsap.to(lines, {
+            x: 20,
+            duration: 0.2,
+            ease: "power2.in",
+            onComplete: () => {
+                container.style.display = 'none';
+                
+                // Shockwave blast
+                gsap.set(shockwave, { opacity: 1 });
+                gsap.to(shockwave, {
+                    width: '300vw',
+                    height: '300vw',
+                    borderWidth: 0,
+                    duration: 1.5,
+                    ease: "expo.out"
+                });
+
+                // Screen distortion
+                const bg = document.getElementById('bg');
+                gsap.to(bg, { opacity: 1, duration: 0.1 });
+                gsap.to(bg, {
+                    scale: 1.5,
+                    opacity: 0,
+                    duration: 1.5,
+                    ease: "expo.out"
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

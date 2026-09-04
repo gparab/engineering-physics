@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heisenberg Uncertainty</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+        
+        .container { position: relative; width: 200px; height: 100px; cursor: pointer; }
+        
+        .particle-wrap { position: absolute; left: 50px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; }
+        
+        .particle {
+            width: 100%; height: 100%; background: #FF00FF; border-radius: 50%; box-shadow: 0 0 10px #FF00FF;
+            animation: toggle-p 4s infinite alternate;
+        }
+
+        .vector {
+            position: absolute; left: 100%; top: 50%; transform: translateY(-50%);
+            width: 80px; height: 4px; background: #FF00FF;
+            animation: toggle-v 4s infinite alternate;
+        }
+        .vector::after {
+            content: ''; position: absolute; right: -10px; top: -8px; border-left: 15px solid #FF00FF; border-top: 10px solid transparent; border-bottom: 10px solid transparent;
+        }
+
+        @keyframes toggle-p {
+            0%, 40% { filter: blur(0px); transform: scale(1); }
+            60%, 100% { filter: blur(15px); transform: scale(2); opacity: 0.5; }
+        }
+
+        @keyframes toggle-v {
+            0%, 40% { filter: blur(10px); opacity: 0.3; transform: translateY(-50%) translateX(10px); }
+            60%, 100% { filter: blur(0px); opacity: 1; transform: translateY(-50%) translateX(0px); }
+        }
+
+        /* Click state */
+        .impossible .particle, .impossible .vector {
+            animation: none !important;
+            filter: blur(0px) !important;
+            opacity: 1 !important;
+            transform: scale(1) translateY(-50%) !important;
+        }
+
+        .hole {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            width: 10px; height: 10px; background: #000; box-shadow: 0 0 0 2000px #fff;
+            border-radius: 50%; opacity: 0; pointer-events: none;
+        }
+
+        .tear .hole {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            animation: expand-hole 0.5s ease-out forwards;
+        }
+
+        @keyframes expand-hole {
+            to { transform: translate(-50%, -50%) scale(200); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="sys">
+        <div class="particle-wrap">
+            <div class="particle"></div>
+            <div class="vector"></div>
+        </div>
+    </div>
+    <div class="hole" id="hole"></div>
+    <script>
+        const sys = document.getElementById('sys');
+        let clicked = false;
+        sys.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+            sys.classList.add('impossible');
+            setTimeout(() => {
+                document.body.classList.add('tear');
+                sys.style.display = 'none';
+            }, 300);
+        });
+    </script>
+</body>
+</html>

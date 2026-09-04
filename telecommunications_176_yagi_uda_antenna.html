@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yagi-Uda Antenna</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #0d0d0d;
+        overflow: hidden;
+    }
+    #container {
+        position: relative;
+        width: 600px;
+        height: 400px;
+        cursor: pointer;
+    }
+    .boom {
+        position: absolute;
+        top: 200px;
+        left: 200px;
+        width: 150px;
+        height: 4px;
+        background: #888;
+        transform: translateY(-50%);
+    }
+    .element {
+        position: absolute;
+        background: #F39C12;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 2px;
+    }
+    #reflector { width: 4px; height: 120px; left: 200px; top: 200px; }
+    #driven { width: 4px; height: 100px; left: 230px; top: 200px; }
+    .director { width: 4px; height: 90px; top: 200px; }
+    #d1 { left: 260px; }
+    #d2 { left: 290px; height: 85px; }
+    #d3 { left: 320px; height: 80px; }
+    #d4 { left: 350px; height: 75px; }
+    
+    .beam {
+        position: absolute;
+        top: 200px;
+        left: 230px;
+        width: 0;
+        height: 0;
+        border-top: 100px solid transparent;
+        border-bottom: 100px solid transparent;
+        border-right: 300px solid rgba(243, 156, 18, 0.4);
+        transform: translateY(-50%);
+        border-radius: 50%;
+        opacity: 0.8;
+        transform-origin: left center;
+        filter: blur(8px);
+    }
+    
+    .omni {
+        position: absolute;
+        top: 200px;
+        left: 230px;
+        width: 20px;
+        height: 20px;
+        background: rgba(243, 156, 18, 0.4);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        filter: blur(10px);
+    }
+
+</style>
+</head>
+<body>
+<div id="container">
+    <div class="omni" id="omni"></div>
+    <div class="beam" id="beam"></div>
+    <div class="boom"></div>
+    <div class="element" id="reflector"></div>
+    <div class="element" id="driven"></div>
+    <div class="element director" id="d1"></div>
+    <div class="element director" id="d2"></div>
+    <div class="element director" id="d3"></div>
+    <div class="element director" id="d4"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    // Idle: Beam pulses
+    const idleTL = gsap.to('#beam', {
+        scaleX: 1.1,
+        opacity: 1,
+        duration: 0.8,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut"
+    });
+
+    let clicked = false;
+    document.getElementById('container').addEventListener('click', () => {
+        if(clicked) return;
+        clicked = true;
+        idleTL.kill();
+        
+        // click: directors fall off, beam snaps to omni
+        gsap.to('.director', {
+            y: "+=300",
+            rotation: () => Math.random() * 180 - 90,
+            opacity: 0,
+            duration: 1,
+            ease: "power2.in",
+            stagger: 0.1
+        });
+        
+        gsap.to('#beam', {
+            borderTopWidth: 0,
+            borderBottomWidth: 0,
+            borderRightWidth: 0,
+            opacity: 0,
+            duration: 0.3,
+            delay: 0.2
+        });
+        
+        gsap.to('#omni', {
+            width: 200,
+            height: 200,
+            opacity: 0.8,
+            duration: 0.5,
+            delay: 0.3,
+            ease: "back.out(1.5)"
+        });
+        
+        // omni pulses weakly
+        gsap.to('#omni', {
+            scale: 1.1,
+            opacity: 0.4,
+            duration: 1,
+            delay: 0.8,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut"
+        });
+    });
+</script>
+</body>
+</html>

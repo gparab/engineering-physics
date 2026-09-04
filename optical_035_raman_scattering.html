@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raman Scattering</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #1a1a1a;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    #container {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+    }
+    .molecule {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 30px; height: 10px;
+        transform: translate(-50%, -50%);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .atom {
+        width: 10px; height: 10px;
+        background: #ccc;
+        border-radius: 50%;
+        box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5);
+        animation: vibrate 0.1s infinite alternate linear;
+    }
+    .bond {
+        width: 10px; height: 2px;
+        background: #888;
+        animation: stretch 0.1s infinite alternate linear;
+    }
+    
+    @keyframes vibrate {
+        0% { transform: translateX(-1px); }
+        100% { transform: translateX(1px); }
+    }
+    @keyframes stretch {
+        0% { width: 8px; }
+        100% { width: 12px; }
+    }
+
+    .photon {
+        position: absolute;
+        width: 6px; height: 2px;
+        border-radius: 1px;
+    }
+    .p-in {
+        top: 19px; left: -20px;
+        background: #27ae60;
+        box-shadow: 0 0 4px #27ae60;
+        animation: photonIn 1.5s infinite linear;
+    }
+    .p-out {
+        top: 10px; left: 20px;
+        background: #27ae60;
+        box-shadow: 0 0 4px #27ae60;
+        transform: rotate(-30deg);
+        animation: photonOut 1.5s infinite linear;
+    }
+    
+    @keyframes photonIn {
+        0% { left: -20px; opacity: 0; }
+        10% { opacity: 1; }
+        48% { left: 10px; opacity: 1; }
+        50% { opacity: 0; left: 15px; }
+        100% { opacity: 0; left: 15px; }
+    }
+    @keyframes photonOut {
+        0%, 48% { left: 15px; opacity: 0; }
+        50% { opacity: 1; left: 20px; }
+        90% { left: 50px; opacity: 1; }
+        100% { left: 55px; opacity: 0; }
+    }
+
+    /* Click Animation Elements */
+    .stokes-photon {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 15px; height: 4px;
+        background: #e74c3c;
+        box-shadow: 0 0 10px #e74c3c, 0 0 20px #e74c3c;
+        border-radius: 2px;
+        transform: translate(-50%, -50%) rotate(45deg);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .spectrograph {
+        position: absolute;
+        bottom: 10%; left: 10vw;
+        width: 80vw; height: 30vh;
+        pointer-events: none;
+        display: none;
+    }
+    .s-path {
+        fill: none;
+        stroke: #e74c3c;
+        stroke-width: 4;
+        filter: drop-shadow(0 0 10px #e74c3c);
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+    }
+</style>
+</head>
+<body>
+
+<div id="container" onclick="triggerRaman()">
+    <div class="molecule">
+        <div class="atom"></div>
+        <div class="bond" id="bond"></div>
+        <div class="atom"></div>
+    </div>
+    <div class="photon p-in" id="pin"></div>
+    <div class="photon p-out" id="pout"></div>
+</div>
+
+<div class="stokes-photon" id="stokes"></div>
+
+<svg class="spectrograph" id="spectro" viewBox="0 0 1000 300" preserveAspectRatio="none">
+    <path class="s-path" id="sPath" d="M 0 250 L 300 250 L 350 250 L 400 50 L 450 250 L 800 250 L 1000 250" />
+</svg>
+
+<script>
+    function triggerRaman() {
+        const pin = document.getElementById('pin');
+        const pout = document.getElementById('pout');
+        const bond = document.getElementById('bond');
+        const stokes = document.getElementById('stokes');
+        const spectro = document.getElementById('spectro');
+        const sPath = document.getElementById('sPath');
+        const container = document.getElementById('container');
+        
+        // Stop idle animation
+        pin.style.display = 'none';
+        pout.style.display = 'none';
+        
+        // Increase vibrational energy (bond stretches more)
+        bond.style.animation = 'stretch 0.05s infinite alternate linear';
+        bond.style.background = '#e74c3c';
+        
+        setTimeout(() => {
+            container.style.display = 'none';
+            
+            // Shoot red Stokes photon
+            stokes.style.opacity = '1';
+            stokes.animate([
+                { transform: 'translate(-50%, -50%) rotate(45deg) translate(0, 0)' },
+                { transform: 'translate(-50%, -50%) rotate(45deg) translate(50vw, 0)' }
+            ], {
+                duration: 500,
+                easing: 'ease-out',
+                fill: 'forwards'
+            });
+            
+            // Plot spectrograph
+            setTimeout(() => {
+                spectro.style.display = 'block';
+                
+                sPath.animate([
+                    { strokeDashoffset: 2000 },
+                    { strokeDashoffset: 0 }
+                ], {
+                    duration: 1000,
+                    easing: 'ease-in-out',
+                    fill: 'forwards'
+                });
+                
+                setTimeout(() => {
+                    sPath.style.opacity = '0';
+                    sPath.style.transition = 'opacity 1s';
+                }, 1500);
+            }, 300);
+            
+        }, 300);
+    }
+</script>
+
+</body>
+</html>

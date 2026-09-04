@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit Hydrograph</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 300px;
+    height: 250px;
+    cursor: pointer;
+  }
+  .axis-x, .axis-y {
+    position: absolute;
+    background-color: #333;
+    transition: all 1s ease-in-out;
+  }
+  .axis-x {
+    bottom: 20px;
+    left: 20px;
+    width: 260px;
+    height: 2px;
+  }
+  .axis-y {
+    bottom: 20px;
+    left: 20px;
+    width: 2px;
+    height: 200px;
+  }
+  .rainfall-bar {
+    position: absolute;
+    top: 20px;
+    left: 60px;
+    width: 20px;
+    height: 30px;
+    background-color: #00008B;
+    opacity: 0.5;
+    animation: blink 2s infinite ease-in-out;
+    transition: all 1s ease;
+  }
+  .curve-path {
+    fill: none;
+    stroke: #00008B;
+    stroke-width: 3;
+    transition: d 0.5s ease-out, stroke-width 0.5s;
+  }
+  svg {
+    position: absolute;
+    bottom: 22px;
+    left: 22px;
+    width: 260px;
+    height: 200px;
+    pointer-events: none;
+    overflow: visible;
+  }
+  @keyframes blink {
+    0%, 100% { height: 10px; opacity: 0.2; }
+    50% { height: 40px; opacity: 0.8; }
+  }
+  .flood-wave {
+    position: absolute;
+    bottom: 20px;
+    left: -300px;
+    width: 600px;
+    height: 300px;
+    background-color: #00008B;
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="axis-x" id="axX"></div>
+  <div class="axis-y" id="axY"></div>
+  <div class="rainfall-bar" id="rain"></div>
+  <svg viewBox="0 0 260 200" preserveAspectRatio="none">
+    <path class="curve-path" id="curve" d="M 0 200 Q 80 200, 100 150 T 260 200" />
+  </svg>
+  <div class="flood-wave" id="flood"></div>
+</div>
+<script>
+  const container = document.getElementById('model');
+  const curve = document.getElementById('curve');
+  const axX = document.getElementById('axX');
+  const axY = document.getElementById('axY');
+  const rain = document.getElementById('rain');
+  const flood = document.getElementById('flood');
+  
+  let t = 0;
+  let idleAnimation = setInterval(() => {
+    t += 0.05;
+    const peak = 150 - Math.sin(t) * 40;
+    curve.setAttribute('d', `M 0 200 Q 80 200, 100 ${peak} T 260 200`);
+  }, 50);
+
+  container.addEventListener('click', () => {
+    clearInterval(idleAnimation);
+    rain.style.display = 'none';
+    
+    // Stretch peak infinitely
+    curve.style.transition = 'all 1.5s cubic-bezier(0.5, 0, 0.5, 1)';
+    curve.setAttribute('d', `M 0 200 Q 80 200, 100 -500 T 260 200`);
+    curve.style.strokeWidth = '10';
+
+    setTimeout(() => {
+      // Flood wave washes out axes
+      flood.style.transition = 'all 1.5s ease-in-out';
+      flood.style.opacity = '0.8';
+      flood.style.left = '-50px';
+      flood.style.bottom = '-50px';
+      
+      axX.style.transform = 'translate(100px, 50px) rotate(20deg)';
+      axX.style.opacity = '0';
+      axY.style.transform = 'translate(50px, -100px) rotate(-30deg)';
+      axY.style.opacity = '0';
+      
+      curve.style.opacity = '0';
+    }, 1000);
+    
+    setTimeout(() => {
+      flood.style.transform = 'scale(5)';
+      flood.style.opacity = '0';
+    }, 2500);
+  });
+</script>
+</body>
+</html>

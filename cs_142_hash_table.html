@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hash Table</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #111;
+    overflow: hidden;
+  }
+  #container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+  }
+  .funnel {
+    position: absolute;
+    top: 5px;
+    left: 20px;
+    width: 40px;
+    height: 20px;
+    border: 1px solid #9B59B6;
+    border-bottom: none;
+    border-radius: 50% 50% 0 0;
+    opacity: 0.6;
+  }
+  .funnel::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 15px;
+    width: 10px;
+    height: 10px;
+    border-left: 1px solid #9B59B6;
+    border-right: 1px solid #9B59B6;
+  }
+  .bucket-container {
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  .bucket {
+    width: 12px;
+    height: 15px;
+    border: 1px solid rgba(155, 89, 182, 0.5);
+    border-top: none;
+    border-radius: 0 0 3px 3px;
+    position: relative;
+  }
+  .data-item {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background-color: #9B59B6;
+    border-radius: 50%;
+    left: 38px;
+    top: 0px;
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="funnel"></div>
+  <div class="bucket-container">
+    <div class="bucket" id="b0"></div>
+    <div class="bucket" id="b1"></div>
+    <div class="bucket" id="b2"></div>
+    <div class="bucket" id="b3"></div>
+    <div class="bucket" id="b4"></div>
+  </div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const buckets = document.querySelectorAll('.bucket');
+  const bucketWidth = 12;
+  const numBuckets = 5;
+  const spacing = (80 - numBuckets * bucketWidth) / (numBuckets - 1);
+  const color = '#9B59B6';
+
+  let items = [];
+  let idleActive = true;
+  let clicked = false;
+
+  function dropItem() {
+    if (!idleActive) return;
+
+    const item = document.createElement('div');
+    item.className = 'data-item';
+    container.appendChild(item);
+    items.push(item);
+    
+    // Choose a random bucket 0-4
+    const bIdx = Math.floor(Math.random() * numBuckets);
+    const targetX = bIdx * (bucketWidth + spacing) + bucketWidth/2 - 2;
+
+    gsap.set(item, { x: 0, y: 0, opacity: 1 });
+    
+    gsap.to(item, {
+      y: 25,
+      duration: 0.3,
+      ease: "power1.in"
+    });
+    gsap.to(item, {
+      x: targetX - 38,
+      y: 65,
+      duration: 0.4,
+      delay: 0.3,
+      ease: "power1.out",
+      onComplete: () => {
+        if(idleActive) {
+          gsap.to(item, {opacity: 0, duration: 0.2, onComplete: () => {
+            if(item.parentNode) item.parentNode.removeChild(item);
+            items = items.filter(i => i !== item);
+          }});
+        }
+      }
+    });
+
+    if(idleActive) {
+      setTimeout(dropItem, 600);
+    }
+  }
+
+  dropItem();
+
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    idleActive = false;
+
+    // Clear existing
+    items.forEach(i => { if(i.parentNode) i.parentNode.removeChild(i); });
+    items = [];
+
+    // Collision animation
+    const targetBucketIdx = 2; // Middle bucket
+    const targetX = targetBucketIdx * (bucketWidth + spacing) + bucketWidth/2 - 2;
+    
+    const collisionItems = [];
+    for(let i=0; i<30; i++) {
+      const el = document.createElement('div');
+      el.className = 'data-item';
+      container.appendChild(el);
+      collisionItems.push(el);
+    }
+
+    const tl = gsap.timeline();
+    
+    collisionItems.forEach((el, i) => {
+      gsap.set(el, { x: 0, y: 0, opacity: 1 });
+      tl.to(el, {
+        y: 25,
+        duration: 0.2,
+        ease: "power1.in"
+      }, i * 0.05);
+      tl.to(el, {
+        x: targetX - 38 + (Math.random()*4-2),
+        y: 65 - (i * 1.5),
+        duration: 0.2,
+        ease: "power1.out"
+      }, i * 0.05 + 0.2);
+    });
+
+    // Burst
+    tl.to(buckets[2], {
+      scale: 1.5,
+      borderColor: '#ff0000',
+      duration: 0.2
+    }, "-=0.2");
+
+    tl.to(buckets[2], {
+      opacity: 0,
+      scale: 3,
+      duration: 0.1
+    });
+
+    // Items fly out across the screen
+    collisionItems.forEach((el, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = window.innerWidth * 0.8;
+      tl.to(el, {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        scale: Math.random() * 5 + 2,
+        opacity: 0,
+        duration: 1 + Math.random(),
+        ease: "expo.out"
+      }, tl.recent().endTime() - 0.1);
+    });
+    
+    // Fade out everything else
+    tl.to('.funnel, .bucket:not(#b2)', { opacity: 0, duration: 0.3 }, tl.recent().endTime() - 1);
+  });
+</script>
+</body>
+</html>

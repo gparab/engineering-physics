@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Drag</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+            overflow: hidden;
+        }
+        .container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container" id="model">
+        <svg width="40" height="40" viewBox="0 0 40 40" overflow="visible">
+            <path class="stream" d="M4,34 Q20,2 36,34" fill="none" stroke="#5AC8FA" stroke-width="2" stroke-dasharray="4, 6" />
+            <g class="mist" opacity="0"></g>
+        </svg>
+    </div>
+    <script>
+        gsap.to('.stream', { strokeDashoffset: -20, duration: 1, repeat: -1, ease: "none" });
+        gsap.to('.stream', { attr: { d: "M4,34 Q20,6 36,34" }, duration: 1, yoyo: true, repeat: -1, ease: "sine.inOut" });
+
+        document.getElementById('model').addEventListener('click', () => {
+            gsap.killTweensOf('*');
+            const mistGrp = document.querySelector('.mist');
+            for(let i=0; i<30; i++) {
+                let c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                c.setAttribute("cx", 4 + Math.random()*32);
+                c.setAttribute("cy", Math.random()*34);
+                c.setAttribute("r", Math.random() * 1.5);
+                c.setAttribute("fill", "#5AC8FA");
+                c.setAttribute("class", "mist-pt");
+                mistGrp.appendChild(c);
+            }
+            gsap.set('.stream', { display: 'none' });
+            gsap.set('.mist', { opacity: 1 });
+            
+            gsap.to('.mist-pt', {
+                x: window.innerWidth,
+                y: () => (Math.random() - 0.5) * 100,
+                opacity: 0,
+                duration: 0.6,
+                ease: "power2.in"
+            });
+        });
+    </script>
+</body>
+</html>

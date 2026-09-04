@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>53. Transmission Line</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0d0d0d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 300px;
+    height: 100px;
+    cursor: pointer;
+  }
+  .line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #7F8C8D;
+    left: 0;
+  }
+  .line.top { top: 30px; }
+  .line.bottom { top: 70px; }
+  
+  .lc-group {
+    position: absolute;
+    top: 30px;
+    width: 20px;
+    height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .inductor {
+    width: 16px;
+    height: 6px;
+    border: 1px solid #7F8C8D;
+    border-radius: 4px;
+    border-bottom: none;
+    margin-top: -3px;
+    background: #0d0d0d;
+  }
+  .capacitor {
+    width: 1px;
+    height: 20px;
+    background: #7F8C8D;
+    position: relative;
+  }
+  .capacitor::before, .capacitor::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    background: #7F8C8D;
+    left: -4px;
+  }
+  .capacitor::before { top: 8px; }
+  .capacitor::after { top: 12px; }
+  
+  .pulse {
+    position: absolute;
+    width: 30px;
+    height: 10px;
+    background: #3498DB;
+    border-radius: 5px;
+    top: 26px;
+    left: 0;
+    opacity: 0.8;
+    box-shadow: 0 0 10px #3498DB;
+    z-index: 2;
+  }
+  
+  .spark {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #F1C40F;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 0 8px #F1C40F;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="tline">
+  <div class="line top"></div>
+  <div class="line bottom"></div>
+  
+  <!-- Distributed L and C -->
+  <script>
+    for(let i = 0; i < 5; i++) {
+      document.write(`
+        <div class="lc-group" style="left: ${30 + i * 50}px">
+          <div class="inductor"></div>
+          <div class="capacitor"></div>
+        </div>
+      `);
+    }
+  </script>
+  
+  <div class="pulse" id="pulse"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const pulse = document.getElementById('pulse');
+  const container = document.getElementById('tline');
+  
+  // Idle Animation: wave pulse bouncing
+  const idleTl = gsap.timeline({ repeat: -1 });
+  
+  idleTl.to(pulse, {
+    x: 270,
+    duration: 1.5,
+    ease: "none"
+  })
+  .to(pulse, {
+    x: 0,
+    duration: 1.5,
+    ease: "none"
+  });
+
+  // Click Animation
+  let clicked = false;
+  
+  container.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    idleTl.kill();
+    
+    const clickTl = gsap.timeline();
+    
+    // Wave moves to the end (open circuit)
+    const currentX = gsap.getProperty(pulse, "x");
+    const durationToEnd = ((270 - currentX) / 270) * 1.5;
+    
+    clickTl.to(pulse, {
+      x: 270,
+      duration: durationToEnd || 0.1,
+      ease: "none"
+    })
+    // Reflection: double amplitude
+    .to(pulse, {
+      scaleY: 2,
+      scaleX: 0.5,
+      backgroundColor: "#E74C3C",
+      boxShadow: "0 0 20px #E74C3C",
+      duration: 0.1
+    })
+    // Shoots back incredibly fast
+    .to(pulse, {
+      x: 0,
+      duration: 0.2,
+      ease: "power2.in"
+    });
+    
+    // Blow out entire line in sparks
+    clickTl.call(() => {
+      // Create sparks along the line
+      for(let i = 0; i < 60; i++) {
+        const spark = document.createElement('div');
+        spark.className = 'spark';
+        container.appendChild(spark);
+        
+        const startX = Math.random() * 300;
+        const isTop = Math.random() > 0.5;
+        const startY = isTop ? 30 : 70;
+        
+        gsap.set(spark, { x: startX, y: startY, opacity: 1 });
+        
+        gsap.to(spark, {
+          x: startX + (Math.random() * 100 - 50),
+          y: startY + (Math.random() * 100 - 50),
+          opacity: 0,
+          scale: Math.random() * 2,
+          duration: 0.3 + Math.random() * 0.5,
+          ease: "power2.out"
+        });
+      }
+      
+      // Lines and components disappear
+      gsap.to(".line, .lc-group, .pulse", {
+        opacity: 0,
+        duration: 0.2
+      });
+    }, null, "+=0.1"); // Wait for the pulse to reach the start
+  });
+</script>
+</body>
+</html>

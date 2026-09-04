@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuclear - Half-Life</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 24px; height: 24px; cursor: pointer; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+  .isotope { width: 4px; height: 4px; border-radius: 50%; background-color: #ADFF2F; box-shadow: 0 0 4px #ADFF2F; transition: background-color 0.2s, box-shadow 0.2s; }
+  .decayed { background-color: #333 !important; box-shadow: none !important; }
+  #curve { position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 10; opacity: 0; stroke-dasharray: 2000; stroke-dashoffset: 2000; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container"></div>
+<svg id="curve" viewBox="0 0 100 100" preserveAspectRatio="none">
+  <path d="M 0 0 Q 20 80, 100 90" fill="none" stroke="#ADFF2F" stroke-width="2" />
+</svg>
+<script>
+  const container = document.getElementById('container');
+  const isotopes = [];
+  for (let i = 0; i < 16; i++) {
+    const iso = document.createElement('div');
+    iso.className = 'isotope';
+    container.appendChild(iso);
+    isotopes.push(iso);
+  }
+
+  // Idle: random popping
+  let idleInterval = setInterval(() => {
+    let idx = Math.floor(Math.random() * 16);
+    let iso = isotopes[idx];
+    iso.classList.add('decayed');
+    setTimeout(() => iso.classList.remove('decayed'), 800);
+  }, 400);
+
+  container.addEventListener('click', () => {
+    clearInterval(idleInterval);
+    
+    // Draw exponential curve across screen
+    gsap.to('#curve', {opacity: 1, duration: 0.1});
+    gsap.to('#curve path', {
+      strokeDashoffset: 0,
+      duration: 1.5,
+      ease: "power2.inOut"
+    });
+
+    // Make isotopes decay sequentially
+    gsap.to(isotopes, {
+      backgroundColor: '#333',
+      boxShadow: 'none',
+      duration: 0.2,
+      stagger: {
+        each: 0.05,
+        from: "start"
+      },
+      ease: "power1.in",
+      delay: 0.5
+    });
+    
+    gsap.to('#container', {
+      opacity: 0, scale: 0, duration: 0.5, delay: 2, ease: "back.in(2)"
+    });
+    gsap.to('#curve', {opacity: 0, duration: 1, delay: 2.5});
+  });
+</script>
+</body>
+</html>

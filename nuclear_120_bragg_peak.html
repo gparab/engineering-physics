@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuclear - Bragg Peak</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 50px; height: 30px; cursor: pointer; }
+  svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+  .proton { position: absolute; width: 4px; height: 4px; background: #FFF; border-radius: 50%; box-shadow: 0 0 5px #FFF; left: 0; top: 25px; transform: translate(-50%, -50%); opacity: 0; }
+  #blast { position: fixed; top: 50%; left: 50%; width: 10px; height: 10px; background: #DC143C; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; mix-blend-mode: screen; z-index: 10; filter: blur(5px); pointer-events: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <svg viewBox="0 0 50 30">
+    <path id="curve" d="M 0 25 L 30 25 Q 38 25, 40 5 L 42 28 Z" fill="none" stroke="#555" stroke-width="1.5" stroke-linejoin="round" />
+    <path id="curve-active" d="M 0 25 L 30 25 Q 38 25, 40 5 L 42 28 Z" fill="none" stroke="#DC143C" stroke-width="2" stroke-linejoin="round" stroke-dasharray="100" stroke-dashoffset="100" />
+  </svg>
+  <div class="proton" id="proton"></div>
+</div>
+<div id="blast"></div>
+<script>
+  gsap.registerPlugin(MotionPathPlugin);
+
+  // Idle: proton travels along curve until peak
+  const tl = gsap.timeline({repeat: -1});
+  tl.set('#proton', {opacity: 1})
+    .to('#proton', {
+      motionPath: {
+        path: "M 0 25 L 30 25 Q 38 25, 40 5",
+        align: "self",
+        alignOrigin: [0.5, 0.5]
+      },
+      duration: 1.5,
+      ease: "power1.in"
+    })
+    .to('#proton', {opacity: 0, duration: 0.1})
+    .to({}, {duration: 0.5}); // pause
+
+  document.getElementById('container').addEventListener('click', () => {
+    tl.kill();
+    gsap.set('#proton', {opacity: 0});
+    
+    // Beam target at tumor
+    gsap.to('#curve-active', {strokeDashoffset: 0, duration: 1, ease: "power2.inOut", onComplete: () => {
+      // Flash brightly at Bragg peak
+      let rect = document.getElementById('container').getBoundingClientRect();
+      let peakX = rect.left + 40; // approx 40px in
+      let peakY = rect.top + 5;   // approx 5px down
+      
+      gsap.set('#blast', {left: peakX, top: peakY, opacity: 1});
+      gsap.to('#blast', {scale: 300, opacity: 0, duration: 1.5, ease: "power3.out"});
+      
+      gsap.to('svg', {opacity: 0, duration: 0.5});
+    }});
+  });
+</script>
+</body>
+</html>

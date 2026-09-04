@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subsidence Trough</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #1f251a;
+    overflow: hidden;
+  }
+  
+  .container {
+    position: relative;
+    width: 30px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  .surface {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: #556B2F;
+    border-radius: 2px;
+    transform-origin: center center;
+  }
+
+  .cavity-roof {
+    position: absolute;
+    top: 10px;
+    left: 5px;
+    width: 20px;
+    height: 2px;
+    background-color: #556B2F;
+    border-radius: 10px 10px 0 0;
+  }
+
+  .sinkhole {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    z-index: 10;
+    pointer-events: none;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="model">
+  <div class="surface" id="surface"></div>
+  <div class="cavity-roof" id="roof"></div>
+</div>
+
+<div class="sinkhole" id="sinkhole"></div>
+
+<script>
+  // Idle: Cavity roof peels/flakes, surface bows gently
+  gsap.to("#surface", {
+    scaleY: 1.5,
+    y: 1,
+    duration: 2,
+    yoyo: true,
+    repeat: -1,
+    ease: "sine.inOut"
+  });
+
+  gsap.to("#roof", {
+    y: 1,
+    opacity: 0.6,
+    duration: 1,
+    yoyo: true,
+    repeat: -1,
+    ease: "power1.inOut"
+  });
+
+  const model = document.getElementById('model');
+
+  model.addEventListener('click', () => {
+    gsap.killTweensOf("#surface");
+    gsap.killTweensOf("#roof");
+
+    // Roof caves catastrophically
+    gsap.to("#roof", {
+      y: 20,
+      opacity: 0,
+      duration: 0.3,
+      ease: "power2.in"
+    });
+
+    // Surface pulls downward
+    gsap.to("#surface", {
+      scaleY: 4,
+      y: 10,
+      opacity: 0,
+      duration: 0.4,
+      ease: "back.in(1.5)"
+    });
+
+    // Sinkhole pulls screen downward
+    gsap.to("#sinkhole", {
+      scale: 2,
+      duration: 1,
+      delay: 0.2,
+      ease: "power3.inOut"
+    });
+  });
+</script>
+</body>
+</html>

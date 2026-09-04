@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; background: #0f172a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+  #container { position: relative; width: 60px; height: 60px; cursor: pointer; }
+  #triangle { position: absolute; left: 15px; top: 10px; width: 0; height: 0; border-top: 20px solid transparent; border-bottom: 20px solid transparent; border-left: 30px solid rgba(155, 89, 182, 0.2); border-left-color: #9B59B6; }
+  .lead { position: absolute; height: 2px; background: #9B59B6; }
+  #in-plus { width: 15px; top: 20px; left: 0; }
+  #in-minus { width: 15px; top: 40px; left: 0; }
+  #out { width: 15px; top: 30px; left: 45px; }
+  .sign { position: absolute; color: #9B59B6; font-size: 10px; left: 17px; font-weight: bold; }
+  #plus-sign { top: 14px; }
+  #minus-sign { top: 34px; }
+  .signal { position: absolute; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="triangle"></div>
+  <div class="lead" id="in-plus"></div>
+  <div class="lead" id="in-minus"></div>
+  <div class="lead" id="out"></div>
+  <div class="sign" id="plus-sign">+</div>
+  <div class="sign" id="minus-sign">-</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  
+  // Input signals
+  function createSignal(y, delay) {
+    let s = document.createElement('div');
+    s.className = 'signal';
+    s.style.top = (y - 1) + 'px';
+    container.appendChild(s);
+    gsap.fromTo(s, { x: 0, opacity: 1 }, { x: 15, opacity: 0, duration: 1, repeat: -1, delay: delay });
+  }
+  createSignal(20, 0);
+  createSignal(40, 0.5);
+
+  // Output multiplied signal
+  let outSignal = document.createElement('div');
+  outSignal.className = 'signal';
+  outSignal.style.top = '29px';
+  outSignal.style.width = '10px';
+  outSignal.style.height = '10px';
+  outSignal.style.background = '#9B59B6';
+  container.appendChild(outSignal);
+  gsap.fromTo(outSignal, { x: 45, opacity: 1, scale: 0 }, { x: 60, opacity: 0, scale: 2, duration: 1, repeat: -1, delay: 0.8 });
+
+  let clicked = false;
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    gsap.killTweensOf('.signal');
+    
+    // Clipping & Shatter
+    gsap.to('.signal', { opacity: 0, duration: 0.2 });
+    
+    let fragments = 8;
+    for(let i=0; i<fragments; i++) {
+      let frag = document.createElement('div');
+      frag.style.position = 'absolute';
+      frag.style.left = '20px';
+      frag.style.top = '20px';
+      frag.style.width = '0';
+      frag.style.height = '0';
+      frag.style.borderTop = '10px solid transparent';
+      frag.style.borderBottom = '10px solid transparent';
+      frag.style.borderLeft = '15px solid #9B59B6';
+      container.appendChild(frag);
+      
+      gsap.to(frag, {
+        x: gsap.utils.random(-400, 400),
+        y: gsap.utils.random(-400, 400),
+        rotation: gsap.utils.random(-720, 720),
+        scale: gsap.utils.random(0.5, 2),
+        opacity: 0,
+        duration: gsap.utils.random(1, 2),
+        ease: 'power3.out'
+      });
+    }
+    
+    gsap.to('#triangle, .lead, .sign', { opacity: 0, duration: 0.1 });
+  });
+</script>
+</body>
+</html>

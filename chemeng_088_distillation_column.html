@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distillation Column</title>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; cursor: pointer; overflow: hidden; }
+        #container { width: 30px; height: 60px; position: relative; }
+        .tray { position: absolute; width: 30px; height: 2px; background-color: #4682B4; left: 0; }
+        .column-wall { position: absolute; width: 100%; height: 100%; border-left: 2px solid #555; border-right: 2px solid #555; border-radius: 4px; box-sizing: border-box; }
+        .bubble { position: absolute; width: 3px; height: 3px; background-color: rgba(255, 255, 255, 0.8); border-radius: 50%; }
+        .drop { position: absolute; width: 2px; height: 4px; background-color: #4682B4; border-radius: 1px; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="column-wall" id="wall"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const wall = document.getElementById('wall');
+        const trays = [];
+        
+        for (let i = 0; i < 5; i++) {
+            let tray = document.createElement('div');
+            tray.className = 'tray';
+            tray.style.bottom = `${i * 12 + 6}px`;
+            container.appendChild(tray);
+            trays.push(tray);
+            
+            // Generate bubbles rising
+            for (let j = 0; j < 2; j++) {
+                let bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                container.appendChild(bubble);
+                gsap.set(bubble, { x: 5 + Math.random() * 20, y: 60 });
+                gsap.to(bubble, {
+                    y: 0,
+                    duration: 1.5 + Math.random(),
+                    repeat: -1,
+                    delay: Math.random() * 2,
+                    ease: "none"
+                });
+            }
+            
+            // Generate drops falling
+            for (let j = 0; j < 2; j++) {
+                let drop = document.createElement('div');
+                drop.className = 'drop';
+                container.appendChild(drop);
+                gsap.set(drop, { x: 5 + Math.random() * 20, y: 0 });
+                gsap.to(drop, {
+                    y: 60,
+                    duration: 1.5 + Math.random(),
+                    repeat: -1,
+                    delay: Math.random() * 2,
+                    ease: "none"
+                });
+            }
+        }
+
+        let clicked = false;
+        document.body.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+
+            // hide bubbles/drops and wall
+            gsap.to(['.bubble', '.drop', '.column-wall'], { opacity: 0, duration: 0.2 });
+            
+            // Trays fly apart by volatility
+            trays.forEach((tray, index) => {
+                let yOffset = (index - 2) * -100; // Top trays fly higher
+                let xOffset = (Math.random() - 0.5) * 200;
+                let rot = (Math.random() - 0.5) * 360;
+                
+                gsap.to(tray, {
+                    x: xOffset,
+                    y: yOffset,
+                    rotation: rot,
+                    opacity: 0,
+                    duration: 1.5,
+                    ease: "power3.out"
+                });
+            });
+        });
+    </script>
+</body>
+</html>

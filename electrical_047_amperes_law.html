@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ampere's Law</title>
+<style>
+  body { margin: 0; padding: 0; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { position: relative; width: 40px; height: 60px; cursor: pointer; }
+  svg { width: 100%; height: 100%; overflow: visible; position: absolute; }
+  .wire { fill: none; stroke: #555; stroke-width: 2; stroke-linecap: round; }
+  .ring { fill: none; stroke: #1ABC9C; stroke-width: 1.5; stroke-dasharray: 6 4; }
+  .electron { position: absolute; width: 4px; height: 4px; background-color: #1ABC9C; border-radius: 50%; left: 18px; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="container">
+  <svg viewBox="0 0 40 60" id="svg-layer">
+    <!-- Back part of ring -->
+    <path class="ring back-ring" d="M 5,30 A 15,6 0 0,1 35,30" stroke-opacity="0.3" />
+    <line class="wire" x1="20" y1="5" x2="20" y2="55" />
+    <!-- Front part of ring -->
+    <path class="ring front-ring" d="M 35,30 A 15,6 0 0,1 5,30" />
+  </svg>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('container');
+  let electrons = [];
+  
+  // Idle: Current flows up; magnetic ring rotates around wire
+  gsap.to('.ring', { strokeDashoffset: -20, duration: 1, repeat: -1, ease: "none" });
+
+  for (let i = 0; i < 3; i++) {
+    let e = document.createElement('div');
+    e.className = 'electron';
+    container.appendChild(e);
+    electrons.push(e);
+    gsap.fromTo(e, { y: 55, opacity: 0 }, { y: 5, opacity: 1, duration: 1.5, repeat: -1, delay: i*0.5, ease: "none" });
+  }
+
+  container.addEventListener('click', () => {
+    // Current stops; ring expands outward like ripple, fades off-screen
+    gsap.killTweensOf('.electron');
+    gsap.killTweensOf('.ring');
+    
+    gsap.to('.electron', { opacity: 0, duration: 0.2 });
+    
+    // Group the rings to scale them
+    const svgLayer = document.getElementById('svg-layer');
+    const ringBack = document.querySelector('.back-ring');
+    const ringFront = document.querySelector('.front-ring');
+    
+    // Create a new full ellipse to scale, hide the 3D-ish paths and wire
+    document.querySelector('.wire').style.opacity = 0;
+    ringBack.style.opacity = 0;
+    ringFront.style.opacity = 0;
+    
+    const ripple = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+    ripple.setAttribute("cx", "20");
+    ripple.setAttribute("cy", "30");
+    ripple.setAttribute("rx", "15");
+    ripple.setAttribute("ry", "6");
+    ripple.setAttribute("fill", "none");
+    ripple.setAttribute("stroke", "#1ABC9C");
+    ripple.setAttribute("stroke-width", "2");
+    svgLayer.appendChild(ripple);
+    
+    gsap.to(ripple, {
+      attr: { rx: 200, ry: 80 },
+      strokeWidth: 0,
+      opacity: 0,
+      duration: 1.2,
+      ease: "power2.out"
+    });
+  });
+</script>
+</body>
+</html>

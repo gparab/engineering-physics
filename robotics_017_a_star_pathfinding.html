@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A* Pathfinding</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #0b1120;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .container {
+    width: 40px;
+    height: 40px;
+    position: relative;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .grid-line { stroke: #2a3b5c; stroke-width: 0.5; }
+  .block { fill: #1c2841; }
+  .pulse {
+    stroke-dasharray: 10 50;
+    stroke: #fff;
+    stroke-width: 1.5;
+    fill: none;
+    stroke-linecap: round;
+  }
+  .flood-node {
+    fill: #4169E1;
+    opacity: 0;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<div class="container" id="icon">
+  <svg viewBox="0 0 40 40">
+    <!-- Grid -->
+    <g id="grid">
+      <line class="grid-line" x1="0" y1="10" x2="40" y2="10" />
+      <line class="grid-line" x1="0" y1="20" x2="40" y2="20" />
+      <line class="grid-line" x1="0" y1="30" x2="40" y2="30" />
+      <line class="grid-line" x1="10" y1="0" x2="10" y2="40" />
+      <line class="grid-line" x1="20" y1="0" x2="20" y2="40" />
+      <line class="grid-line" x1="30" y1="0" x2="30" y2="40" />
+    </g>
+    
+    <!-- Obstacle -->
+    <rect class="block" x="10" y="10" width="10" height="20" />
+    
+    <!-- Flood nodes container -->
+    <g id="flood-nodes"></g>
+
+    <!-- Path -->
+    <path id="path" d="M 5 35 L 5 25 L 5 15 L 5 5 L 15 5 L 25 5 L 25 15 L 25 25 L 25 35 L 35 35" stroke="#4169E1" stroke-width="1.5" fill="none" stroke-linejoin="round" />
+    <path id="pulse" class="pulse" d="M 5 35 L 5 25 L 5 15 L 5 5 L 15 5 L 25 5 L 25 15 L 25 25 L 25 35 L 35 35" stroke-linejoin="round" />
+
+    <!-- Start / End -->
+    <circle cx="5" cy="35" r="1.5" fill="#4169E1" />
+    <circle cx="35" cy="35" r="1.5" fill="#4169E1" />
+  </svg>
+</div>
+
+<script>
+  // Setup flood nodes
+  const floodNodes = document.getElementById('flood-nodes');
+  const nodes = [];
+  for (let x = 5; x < 40; x+=10) {
+    for (let y = 5; y < 40; y+=10) {
+      if (x===15 && (y===15 || y===25)) continue; // skip obstacle
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", x - 3);
+      rect.setAttribute("y", y - 3);
+      rect.setAttribute("width", 6);
+      rect.setAttribute("height", 6);
+      rect.setAttribute("class", "flood-node");
+      floodNodes.appendChild(rect);
+      nodes.push(rect);
+    }
+  }
+
+  // Idle Animation: Bright pulse travels the jagged path
+  const pathLength = 90; // Approx length
+  gsap.fromTo("#pulse", { strokeDashoffset: pathLength }, {
+    strokeDashoffset: -10,
+    duration: 2,
+    ease: "linear",
+    repeat: -1
+  });
+
+  // Click Disappearance Motion: Flood fill dead-end search nodes before dissolving entirely.
+  document.body.addEventListener('click', () => {
+    gsap.killTweensOf("#pulse");
+    
+    const clickTl = gsap.timeline();
+    
+    clickTl.to("#pulse", { opacity: 0, duration: 0.1 })
+    .to(nodes, {
+      opacity: 0.8,
+      duration: 0.05,
+      stagger: {
+        amount: 0.4,
+        from: "center"
+      },
+      ease: "power1.in"
+    })
+    .to("#icon", {
+      scale: 1.5,
+      opacity: 0,
+      duration: 0.4,
+      ease: "power2.in"
+    }, "+=0.1")
+    .to("body", {
+      backgroundColor: "#1e3a8a",
+      duration: 0.2,
+      yoyo: true,
+      repeat: 1
+    }, "-=0.3");
+  }, { once: true });
+</script>
+</body>
+</html>

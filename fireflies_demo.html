@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>True Fireflies Demo</title>
+<style>
+  :root {
+    --ink: #ededed;
+    --paper: #111;
+    --card-bg: #1a1a1a;
+  }
+  body {
+    background-color: transparent;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+  .card {
+    background: var(--card-bg);
+    padding: 30px 50px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+    transition: background-color 1.5s ease;
+    width: 300px;
+    height: 200px;
+  }
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    z-index: 10;
+  }
+
+  .interactive-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* The Orb Container */
+  .orb {
+    display: block;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    text-decoration: none;
+    outline: none;
+    z-index: 5;
+    transition: opacity 0.5s ease;
+  }
+  .orb svg { overflow: visible; width: 100%; height: 100%; }
+
+  /* Base 3 Fireflies */
+  .wisp-center { transform-origin: 22px 22px; animation: wisp-spin 6s linear infinite; }
+  .wisp { filter: drop-shadow(0 0 5px #cddc39); animation: wisp-pulse 2s infinite; }
+  .wisp.w1 { animation-delay: 0s; transform-origin: 22px 10px; }
+  .wisp.w2 { animation-delay: 0.4s; transform-origin: 12px 28px; }
+  .wisp.w3 { animation-delay: 0.8s; transform-origin: 32px 28px; }
+
+  .wisp-orb:hover .wisp-center { animation: wisp-spin 3s linear infinite; filter: drop-shadow(0 0 10px #cddc39); }
+  .wisp-orb:hover .wisp { animation: wisp-pulse-fast 0.6s infinite; }
+
+  @keyframes wisp-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes wisp-pulse { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.3); opacity: 1; } }
+  @keyframes wisp-pulse-fast { 0%, 100% { transform: scale(1.2); opacity: 0.8; } 50% { transform: scale(1.6); opacity: 1; } }
+
+  /* True Firefly Particle */
+  .real-firefly {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: #e8f5e9;
+    border-radius: 50%;
+    box-shadow: 0 0 6px 2px rgba(205, 220, 57, 0.9), 0 0 12px 4px rgba(205, 220, 57, 0.4);
+    pointer-events: none;
+    z-index: 100;
+    left: 50%; top: 50%;
+    margin-left: -2px; margin-top: -2px; /* Center perfectly */
+  }
+
+  .hint {
+    position: absolute;
+    bottom: 20px;
+    font-size: 13px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .reset-btn {
+    position: absolute; top: 15px; right: 15px;
+    background: #333; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; z-index: 10;
+  }
+  .reset-btn:hover { background: #555; }
+
+</style>
+</head>
+<body>
+
+  <div class="card" id="firefly-card">
+    <button class="reset-btn" onclick="resetFireflies()">Reset</button>
+    <h1 class="title">CV</h1>
+    
+    <div class="interactive-area" id="firefly-area">
+      <a class="orb wisp-orb" id="wisp-trigger" href="#" onclick="triggerFireflies(); return false;" title="Swarm">
+        <svg viewBox="0 0 44 44">
+          <g class="wisp-center">
+            <circle class="wisp w1" cx="22" cy="10" r="2.5" fill="#cddc39"/>
+            <circle class="wisp w2" cx="12" cy="28" r="1.5" fill="#cddc39"/>
+            <circle class="wisp w3" cx="32" cy="28" r="2" fill="#cddc39"/>
+          </g>
+        </svg>
+      </a>
+    </div>
+
+    <div class="hint">Hover to excite • Click to swarm</div>
+  </div>
+
+  <script>
+    let activeAnimations = [];
+
+    function triggerFireflies() {
+      const orb = document.getElementById('wisp-trigger');
+      const card = document.getElementById('firefly-card');
+      const area = document.getElementById('firefly-area');
+      
+      if (orb.classList.contains('scatter')) return;
+      orb.classList.add('scatter');
+      
+      // Subtly transition card background to a deep night sky
+      card.style.backgroundColor = '#020611'; 
+      
+      // Hide the initial 3 fireflies smoothly
+      orb.style.opacity = '0';
+      
+      // Generate the true firefly swarm
+      const count = 25;
+      for(let i=0; i<count; i++) {
+        let f = document.createElement('div');
+        f.className = 'real-firefly';
+        
+        let keyframes = [];
+        let baseAngle = (i / count) * Math.PI * 2; // Evenly distributed starting angles
+        let angle = baseAngle;
+        let radius = 0;
+        
+        // 5 waypoints per firefly to create a wandering pattern
+        for(let step = 0; step <= 5; step++) {
+          if (step === 0) {
+            keyframes.push({ transform: `translate(0px, 0px)`, opacity: 0, offset: 0 });
+          } else if (step === 5) {
+             radius += 20;
+             angle += (Math.random() - 0.5) * 1.5;
+             let tx = Math.cos(angle) * radius;
+             let ty = Math.sin(angle) * radius;
+             keyframes.push({ transform: `translate(${tx}px, ${ty}px)`, opacity: 0, offset: 1 }); // fade out at end
+          } else {
+             radius += 15 + Math.random() * 25; // spiral out distance
+             angle += (Math.random() - 0.5) * 2; // wander left/right randomly
+             
+             let tx = Math.cos(angle) * radius;
+             let ty = Math.sin(angle) * radius;
+             
+             // Blinking logic: Alternate between glowing and dim
+             let isDim = step % 2 === 0;
+             let op = isDim ? (0.1 + Math.random()*0.2) : (0.7 + Math.random()*0.3);
+             
+             keyframes.push({ transform: `translate(${tx}px, ${ty}px)`, opacity: op, offset: step / 5 });
+          }
+        }
+        
+        // Vary the lifespan of each firefly between 4 and 8 seconds
+        let duration = 4000 + Math.random() * 4000; 
+        
+        let animation = f.animate(keyframes, {
+          duration: duration,
+          easing: 'ease-in-out',
+          fill: 'forwards'
+        });
+        
+        activeAnimations.push(animation);
+        area.appendChild(f);
+      }
+    }
+
+    function resetFireflies() {
+      const orb = document.getElementById('wisp-trigger');
+      const card = document.getElementById('firefly-card');
+      
+      orb.classList.remove('scatter');
+      orb.style.opacity = '1';
+      card.style.backgroundColor = 'var(--card-bg)';
+      
+      // Cleanup all dynamic particles
+      document.querySelectorAll('.real-firefly').forEach(el => el.remove());
+      activeAnimations.forEach(a => a.cancel());
+      activeAnimations = [];
+    }
+  </script>
+</body>
+</html>

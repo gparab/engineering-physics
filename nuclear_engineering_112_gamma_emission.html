@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>112. Gamma Emission</title>
+<style>
+  body { margin: 0; background-color: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  #container { width: 400px; height: 400px; position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  
+  .nucleus { position: absolute; width: 60px; height: 60px; background-color: #FFFF00; border-radius: 50%; box-shadow: 0 0 30px #FFFF00, 0 0 60px #FFFF00; animation: vibrate 0.1s infinite; }
+  
+  @keyframes vibrate {
+    0% { transform: translate(2px, 2px); }
+    25% { transform: translate(-2px, -2px); }
+    50% { transform: translate(2px, -2px); }
+    75% { transform: translate(-2px, 2px); }
+    100% { transform: translate(2px, 2px); }
+  }
+
+  .ripple { position: absolute; width: 60px; height: 60px; border: 2px solid rgba(255, 255, 0, 0.5); border-radius: 50%; animation: rippleAnim 1s infinite linear; }
+  
+  @keyframes rippleAnim {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(3); opacity: 0; }
+  }
+
+  .gamma { position: absolute; width: 20px; height: 2px; background: white; box-shadow: 0 0 10px white; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="ripple" id="r1"></div>
+  <div class="ripple" style="animation-delay: 0.5s;" id="r2"></div>
+  <div class="nucleus" id="nucleus"></div>
+</div>
+<script>
+  const container = document.getElementById('container');
+  const nucleus = document.getElementById('nucleus');
+  const ripples = [document.getElementById('r1'), document.getElementById('r2')];
+  let clicked = false;
+
+  container.addEventListener('click', () => {
+    if(clicked) return;
+    clicked = true;
+    
+    nucleus.style.animation = 'none';
+    nucleus.style.boxShadow = '0 0 10px #FFFF00';
+    ripples.forEach(r => r.style.display = 'none');
+    
+    const gamma = document.createElement('div');
+    gamma.className = 'gamma';
+    container.appendChild(gamma);
+    
+    let x = 0;
+    let y = 0;
+    gamma.style.opacity = '1';
+    
+    const animateGamma = () => {
+      x += 15;
+      y = Math.sin(x * 0.1) * 20;
+      gamma.style.transform = `translate(${x}px, ${y}px) rotate(${Math.cos(x * 0.1) * 45}deg)`;
+      
+      if(x < window.innerWidth) {
+        requestAnimationFrame(animateGamma);
+      } else {
+        gamma.remove();
+      }
+    };
+    
+    animateGamma();
+  });
+</script>
+</body>
+</html>

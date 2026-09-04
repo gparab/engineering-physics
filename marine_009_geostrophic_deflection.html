@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Geostrophic Deflection</title>
+<style>
+  body { margin: 0; background: #e6f7ff; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .icon-container { position: relative; width: 60px; height: 60px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  .grid { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 1px dashed rgba(74, 144, 226, 0.3); }
+  .grid::before { content: ''; position: absolute; top: 30px; left: 0; width: 60px; height: 1px; background: rgba(74, 144, 226, 0.2); }
+  .grid::after { content: ''; position: absolute; top: 0; left: 30px; width: 1px; height: 60px; background: rgba(74, 144, 226, 0.2); }
+  .parcel-path { position: absolute; width: 60px; height: 60px; transform: rotate(0deg); }
+  .parcel { position: absolute; width: 6px; height: 6px; background: #4A90E2; border-radius: 50%; top: 10px; left: 27px; box-shadow: 0 0 4px #4A90E2; }
+  .trail { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 1.5px solid transparent; border-top-color: rgba(74,144,226,0.5); border-right-color: rgba(74,144,226,0.1); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="icon-container" id="icon">
+    <div class="grid" id="grid"></div>
+    <div class="parcel-path" id="path">
+      <div class="trail"></div>
+      <div class="parcel" id="parcel"></div>
+    </div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const path = document.getElementById('path');
+    const grid = document.getElementById('grid');
+    let isAnimating = false;
+
+    // Idle: Parcel rotates in a circular gyre (deflected right)
+    const gyre = gsap.to(path, { rotation: 360, duration: 3, repeat: -1, ease: "none" });
+    
+    // Grid rotates slowly to show spherical Earth rotation
+    const earth = gsap.to(grid, { rotation: -180, duration: 6, repeat: -1, ease: "none" });
+
+    icon.addEventListener('click', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      // Coriolis drops to zero (Earth stops)
+      gyre.kill();
+      earth.kill();
+      
+      document.querySelector('.trail').style.display = 'none';
+
+      // Parcel shoots perfectly straight off-screen
+      // We calculate its current tangent vector based on rotation
+      let currentRotation = gsap.getProperty(path, "rotation");
+      // The parcel is at top (10px, 27px) within the path container.
+      // That means its tangent is pointing directly 'right' relative to the path's local rotation.
+      
+      let angle = currentRotation * Math.PI / 180;
+      
+      // Move parcel out of path container to body for simple translation
+      const parcel = document.getElementById('parcel');
+      const rect = parcel.getBoundingClientRect();
+      document.body.appendChild(parcel);
+      gsap.set(parcel, { x: rect.left, y: rect.top, top: 0, left: 0 });
+
+      // Shoot straight line
+      gsap.to(parcel, {
+        x: `+=${Math.cos(angle) * window.innerWidth}`,
+        y: `+=${Math.sin(angle) * window.innerWidth}`,
+        duration: 1,
+        ease: "power2.in"
+      });
+      
+      // Grid fades out
+      gsap.to(grid, { opacity: 0, duration: 0.5 });
+    });
+  </script>
+</body>
+</html>

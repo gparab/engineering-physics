@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spacetime Curvature</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; perspective: 800px; }
+        .grid-container {
+            position: relative;
+            width: 400px; height: 400px;
+            transform-style: preserve-3d;
+            transform: rotateX(60deg) rotateZ(0deg);
+            cursor: pointer;
+            animation: rotateGrid 20s linear infinite;
+        }
+        @keyframes rotateGrid { to { transform: rotateX(60deg) rotateZ(360deg); } }
+        
+        .grid {
+            position: absolute;
+            width: 100%; height: 100%;
+            background: 
+                linear-gradient(rgba(106, 90, 205, 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(106, 90, 205, 0.4) 1px, transparent 1px);
+            background-size: 20px 20px;
+            border-radius: 50%;
+            box-shadow: inset 0 0 50px #111;
+        }
+
+        .well {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 100px; height: 100px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, #000, transparent);
+            border-radius: 50%;
+            box-shadow: inset 0 0 30px rgba(106, 90, 205, 0.8);
+        }
+
+        .mass {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 30px; height: 30px;
+            background: #6A5ACD;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) translateZ(-40px);
+            box-shadow: 0 0 20px #6A5ACD;
+            transition: all 0.2s;
+        }
+
+        .moon {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 10px; height: 10px;
+            background: #ccc;
+            border-radius: 50%;
+            margin-top: -5px; margin-left: -5px;
+            animation: orbit 3s linear infinite;
+        }
+
+        @keyframes orbit {
+            0% { transform: rotate(0deg) translateX(80px) translateZ(-10px); }
+            100% { transform: rotate(360deg) translateX(80px) translateZ(-10px); }
+        }
+
+        .supernova .mass {
+            transform: translate(-50%, -50%) translateZ(0) scale(30);
+            background: #fff;
+            opacity: 0;
+            transition: transform 0.5s ease-out, opacity 0.5s 0.2s;
+        }
+        
+        .supernova .grid {
+            transform: scale(1.5);
+            opacity: 0;
+            transition: transform 0.5s ease-out, opacity 0.5s;
+        }
+
+        .supernova .well { opacity: 0; transition: opacity 0.2s; }
+        
+        .supernova .moon {
+            animation: catapult 1s ease-out forwards;
+        }
+
+        @keyframes catapult {
+            to { transform: rotate(45deg) translateX(800px) translateZ(200px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-container" id="system">
+        <div class="grid"></div>
+        <div class="well"></div>
+        <div class="mass"></div>
+        <div class="moon"></div>
+    </div>
+    <script>
+        document.getElementById('system').addEventListener('click', function() {
+            this.classList.add('supernova');
+            this.style.animationPlayState = 'paused';
+        });
+    </script>
+</body>
+</html>

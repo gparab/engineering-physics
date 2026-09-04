@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Acoustic Impedance Echo</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  #container { position: relative; width: 60px; height: 80px; cursor: pointer; }
+  #transducer { position: absolute; top: 10px; left: 20px; width: 20px; height: 8px; background: #4A90E2; border-radius: 10px 10px 0 0; }
+  #boundary { position: absolute; top: 60px; left: 0px; width: 60px; height: 1px; background: rgba(74, 144, 226, 0.4); }
+  #waves { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div id="transducer"></div>
+  <div id="boundary"></div>
+  <div id="waves"></div>
+</div>
+<script>
+  let wCont = document.getElementById("waves");
+  let idleLoop;
+  function emitWave() {
+    let w = document.createElement("div");
+    w.style.position = "absolute";
+    w.style.border = "1.5px solid #4A90E2";
+    w.style.borderRadius = "50%";
+    w.style.top = "18px";
+    w.style.left = "30px";
+    w.style.width = "0px";
+    w.style.height = "0px";
+    w.style.transform = "translate(-50%, -50%)";
+    w.style.clipPath = "polygon(0 50%, 100% 50%, 100% 100%, 0 100%)";
+    wCont.appendChild(w);
+    
+    gsap.to(w, {
+      width: 80, height: 80, top: 58,
+      duration: 1, ease: "none",
+      onComplete: () => {
+        w.style.clipPath = "polygon(0 0, 100% 0, 100% 50%, 0 50%)";
+        gsap.to(w, {
+          width: 0, height: 0, top: 18, opacity: 0.1,
+          duration: 1, ease: "none", onComplete: () => w.remove()
+        });
+      }
+    });
+  }
+  idleLoop = setInterval(emitWave, 1000);
+  
+  document.getElementById("container").addEventListener("click", () => {
+    clearInterval(idleLoop);
+    let fastLoop = setInterval(() => {
+      let w = document.createElement("div");
+      w.style.position = "absolute"; w.style.border = "1px solid #4A90E2"; w.style.borderRadius = "50%";
+      w.style.top = "18px"; w.style.left = "30px"; w.style.width = "0px"; w.style.height = "0px";
+      w.style.transform = "translate(-50%, -50%)"; w.style.clipPath = "polygon(0 50%, 100% 50%, 100% 100%, 0 100%)";
+      wCont.appendChild(w);
+      gsap.to(w, { width: 80, height: 80, top: 58, duration: 0.15, ease: "none" });
+    }, 40);
+    
+    setTimeout(() => {
+      clearInterval(fastLoop);
+      gsap.to("#boundary", {opacity: 0, duration: 0.1});
+      wCont.innerHTML = "";
+      for(let i=0; i<150; i++){
+        let p = document.createElement("div");
+        p.style.cssText = "position:absolute;width:2px;height:2px;background:#4A90E2;top:60px;left:"+(Math.random()*60)+"px;";
+        document.getElementById("container").appendChild(p);
+        gsap.to(p, {
+          x: (Math.random()-0.5)*1000, y: (Math.random()-0.5)*1000,
+          rotation: Math.random()*720, opacity: 0,
+          duration: 1 + Math.random(), ease: "expo.out"
+        });
+      }
+    }, 500);
+  });
+</script>
+</body>
+</html>

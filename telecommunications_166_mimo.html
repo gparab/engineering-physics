@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d1117; color: #c9d1d9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .container { position: relative; cursor: pointer; }
+  canvas { display: block; }
+  .label { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="container" id="container">
+  <canvas id="simCanvas" width="400" height="400"></canvas>
+  <div class="label">MIMO</div>
+</div>
+<script>
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const COLOR = '#1ABC9C';
+let state = 'idle';
+let time = 0;
+let obstacles = [ {x: 200, y: 150}, {x: 200, y: 250}, {x: 150, y: 200}, {x: 250, y: 200} ];
+let explodeTime = 0;
+
+document.getElementById('container').addEventListener('click', () => {
+  if (state === 'idle') state = 'clicked';
+});
+
+function draw() {
+  ctx.clearRect(0, 0, 400, 400);
+  time += 0.05;
+  
+  ctx.fillStyle = '#8b949e';
+  ctx.fillRect(50, 160, 4, 30);
+  ctx.fillRect(50, 210, 4, 30);
+  ctx.fillRect(346, 160, 4, 30);
+  ctx.fillRect(346, 210, 4, 30);
+  
+  if (state === 'idle') {
+    ctx.fillStyle = '#444';
+    for(let o of obstacles) ctx.fillRect(o.x-10, o.y-10, 20, 20);
+    
+    ctx.strokeStyle = COLOR;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.5 + 0.5*Math.sin(time*3);
+    
+    ctx.beginPath(); ctx.moveTo(52, 175); ctx.lineTo(150, 200); ctx.lineTo(346, 175); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(52, 225); ctx.lineTo(200, 250); ctx.lineTo(346, 225); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(52, 175); ctx.lineTo(200, 150); ctx.lineTo(346, 225); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(52, 225); ctx.lineTo(250, 200); ctx.lineTo(346, 175); ctx.stroke();
+    
+    ctx.globalAlpha = 1;
+  } else {
+    explodeTime += 0.05;
+    if (explodeTime < 1) {
+      let y = 175 + (explodeTime)*25;
+      ctx.strokeStyle = COLOR;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(52, y); ctx.lineTo(346, y); ctx.stroke();
+    } else {
+      ctx.strokeStyle = COLOR;
+      let expand = (explodeTime - 1) * 200;
+      ctx.lineWidth = 2 + expand*0.1;
+      ctx.globalAlpha = Math.max(0, 1 - (explodeTime-1));
+      ctx.beginPath(); ctx.moveTo(52 - expand, 200); ctx.lineTo(346 + expand, 200); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

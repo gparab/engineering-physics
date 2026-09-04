@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hydraulic Jump</title>
+<style>
+  body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; overflow: hidden; }
+  .container { position: relative; width: 80px; height: 40px; cursor: pointer; overflow: hidden; border-bottom: 2px solid #333; }
+  
+  .upstream { position: absolute; bottom: 0; left: 0; width: 40px; height: 5px; background: #4169E1; }
+  .jump { position: absolute; bottom: 0; left: 40px; width: 10px; height: 15px; background: #4169E1; clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 80%); }
+  .downstream { position: absolute; bottom: 0; left: 50px; width: 30px; height: 15px; background: #4169E1; }
+  
+  .roller { position: absolute; bottom: 10px; left: 35px; width: 15px; height: 10px; background: rgba(255,255,255,0.8); border-radius: 50%; filter: blur(1px); }
+  .roller2 { position: absolute; bottom: 8px; left: 38px; width: 10px; height: 8px; background: rgba(65,105,225,0.5); border-radius: 50%; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="container" id="icon">
+    <div class="upstream" id="up"></div>
+    <div class="jump" id="jump"></div>
+    <div class="downstream" id="down"></div>
+    <div class="roller" id="r1"></div>
+    <div class="roller2" id="r2"></div>
+  </div>
+  <script>
+    const icon = document.getElementById('icon');
+    const r1 = document.getElementById('r1');
+    const r2 = document.getElementById('r2');
+    const jump = document.getElementById('jump');
+    
+    // Idle: constant frothy roller
+    const idle1 = gsap.to(r1, { x: 2, y: -2, scale: 1.2, rotation: 180, duration: 0.3, repeat: -1, yoyo: true });
+    const idle2 = gsap.to(r2, { x: -2, y: 1, scale: 1.1, rotation: -180, duration: 0.4, repeat: -1, yoyo: true });
+
+    icon.addEventListener('click', () => {
+      idle1.kill(); idle2.kill();
+      
+      // Roller expands as bore, sweeps upstream flow
+      gsap.to([r1, r2], { scale: 5, x: -60, duration: 1, ease: "power2.in" });
+      gsap.to(jump, { x: -60, scaleY: 2, width: 20, duration: 1, ease: "power2.in" });
+      gsap.to('#up', { x: -60, duration: 1, ease: "power2.in" });
+      gsap.to('#down', { x: -60, width: 100, duration: 1, ease: "power2.in", onComplete: () => {
+        gsap.to(icon, { opacity: 0, duration: 0.5 });
+      } });
+    });
+  </script>
+</body>
+</html>

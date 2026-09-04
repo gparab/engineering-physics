@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>29. Economic Order Quantity (EOQ)</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: monospace;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        #eoq-container {
+            width: 400px;
+            height: 400px;
+            position: relative;
+            transform-origin: bottom right;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="info">ECONOMIC ORDER QUANTITY // 029</div>
+    <div id="eoq-container">
+        <canvas id="chart"></canvas>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('chart');
+        const ctx = canvas.getContext('2d');
+        const width = 400;
+        const height = 400;
+        canvas.width = width;
+        canvas.height = height;
+
+        const mainColor = '#6B8E23';
+        const reorderY = 320;
+        const maxY = 100;
+        
+        let inventoryLevel = maxY;
+        let time = 0;
+        let crashed = false;
+        let demandRate = 2; // drop per frame
+        
+        let points = [{x: 0, y: maxY}];
+        
+        let tower = { angle: 0, scaleY: 1, offsetY: 0 };
+        const container = document.getElementById('eoq-container');
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw axis
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(40, 20); ctx.lineTo(40, 360);
+            ctx.lineTo(380, 360);
+            ctx.stroke();
+
+            // Draw reorder line
+            ctx.strokeStyle = '#444';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(40, reorderY); ctx.lineTo(380, reorderY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.save();
+            // In case of crash, we transform the context slightly or just let CSS do it
+            
+            ctx.strokeStyle = mainColor;
+            ctx.fillStyle = mainColor;
+            ctx.lineWidth = 3;
+            
+            ctx.beginPath();
+            if(points.length > 0) {
+                ctx.moveTo(points[0].x + 40, points[0].y);
+                for(let i=1; i<points.length; i++) {
+                    ctx.lineTo(points[i].x + 40, points[i].y);
+                }
+            }
+            ctx.stroke();
+            
+            // Fill under curve
+            ctx.beginPath();
+            if(points.length > 0) {
+                ctx.moveTo(points[0].x + 40, 360);
+                for(let i=0; i<points.length; i++) {
+                    ctx.lineTo(points[i].x + 40, points[i].y);
+                }
+                ctx.lineTo(points[points.length-1].x + 40, 360);
+                ctx.globalAlpha = 0.2;
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+            
+            ctx.restore();
+        }
+
+        function update() {
+            if (!crashed) {
+                inventoryLevel += demandRate;
+                time += 1;
+                
+                points.push({x: time, y: inventoryLevel});
+                
+                if (inventoryLevel >= reorderY) {
+                    // Instantly shoot up
+                    inventoryLevel = maxY;
+                    points.push({x: time, y: inventoryLevel});
+                }
+                
+                // scroll left
+                if (time > 320) {
+                    points.forEach(p => p.x -= 1);
+                    time -= 1;
+                    if(points[0].x < 0) points.shift();
+                }
+            } else {
+                // Infinitely pile high
+                inventoryLevel -= 15;
+                points.push({x: time, y: inventoryLevel});
+                // Shift all points down so it looks like it's growing up
+                points.forEach(p => p.y += 14);
+            }
+            
+            draw();
+            requestAnimationFrame(update);
+        }
+        
+        update();
+
+        window.addEventListener('click', () => {
+            if(crashed) return;
+            crashed = true;
+            
+            // Demand flatlines: it stopped dropping because crashed=true handles the logic differently.
+            // Wait, flatline means horizontal.
+            // Oh, "demand instantly flatlines, inventory stack piles infinitely high".
+            // If demand flatlines, inventory doesn't drop. Then an order comes in and it goes UP infinitely.
+            
+            inventoryLevel = points[points.length-1].y; // hold current
+            
+            gsap.delayedCall(1, () => {
+                // The tower falls over
+                gsap.to(container, {
+                    rotation: 90,
+                    y: 400,
+                    duration: 1.5,
+                    ease: "bounce.out"
+                });
+            });
+        });
+    </script>
+</body>
+</html>

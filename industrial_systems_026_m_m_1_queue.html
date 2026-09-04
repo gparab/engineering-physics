@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>26. M/M/1 Queue</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+        #queue-system {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+        }
+        #queue-line {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 300px;
+            height: 20px;
+            overflow: visible;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #F0E68C;
+            margin-right: 5px;
+            flex-shrink: 0;
+            opacity: 0;
+        }
+        #processor {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #F0E68C;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 20px;
+            border-radius: 4px;
+            position: relative;
+        }
+        .process-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #F0E68C;
+            position: absolute;
+            opacity: 0;
+        }
+        #exit-line {
+            width: 300px;
+            height: 20px;
+            position: relative;
+        }
+        .exit-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #F0E68C;
+            position: absolute;
+            top: 5px;
+            left: 0;
+        }
+        .crash-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #F0E68C;
+            font-size: 48px;
+            font-family: monospace;
+            opacity: 0;
+            white-space: nowrap;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="info">M/M/1 QUEUE // 026</div>
+    <div id="queue-system">
+        <div id="queue-line"></div>
+        <div id="processor">
+            <div class="process-dot" id="active-dot"></div>
+        </div>
+        <div id="exit-line"></div>
+    </div>
+    <div class="crash-text" id="crash-msg">SYSTEM CRASH - OUT OF MEMORY</div>
+
+    <script>
+        const queueLine = document.getElementById('queue-line');
+        const activeDot = document.getElementById('active-dot');
+        const exitLine = document.getElementById('exit-line');
+        
+        let queue = 0;
+        let isProcessing = false;
+        let arrivalRate = 800; // ms average
+        let processRate = 1000; // ms
+        let crashed = false;
+
+        function spawnArrival() {
+            if (crashed) return;
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            queueLine.appendChild(dot);
+            queue++;
+            
+            gsap.to(dot, { opacity: 1, duration: 0.2 });
+
+            if (!isProcessing) {
+                processNext();
+            }
+
+            // Poisson-like random arrival
+            const nextArrival = -Math.log(Math.random()) * arrivalRate;
+            setTimeout(spawnArrival, nextArrival);
+        }
+
+        function processNext() {
+            if (queue > 0 && !crashed) {
+                isProcessing = true;
+                queue--;
+                const firstDot = queueLine.firstChild;
+                if(firstDot) {
+                    gsap.to(firstDot, {
+                        width: 0, margin: 0, opacity: 0, duration: 0.2, onComplete: () => firstDot.remove()
+                    });
+                }
+
+                gsap.fromTo(activeDot, 
+                    { opacity: 1, scale: 0.5 }, 
+                    { scale: 1.5, opacity: 0, duration: processRate/1000, ease: "power1.out", onComplete: () => {
+                        spawnExit();
+                        processNext();
+                    }}
+                );
+            } else {
+                isProcessing = false;
+            }
+        }
+
+        function spawnExit() {
+            if (crashed) return;
+            const exitDot = document.createElement('div');
+            exitDot.className = 'exit-dot';
+            exitLine.appendChild(exitDot);
+            
+            gsap.to(exitDot, {
+                x: 300,
+                opacity: 0,
+                duration: 2,
+                ease: "none",
+                onComplete: () => exitDot.remove()
+            });
+        }
+
+        // Start arrivals
+        setTimeout(spawnArrival, 500);
+
+        // Click Disappearance Motion
+        window.addEventListener('click', () => {
+            if(crashed) return;
+            crashed = true;
+            
+            // Arrival rate explodes
+            gsap.killTweensOf(activeDot);
+            
+            let count = 0;
+            const overloadInterval = setInterval(() => {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.opacity = '1';
+                queueLine.prepend(dot);
+                count++;
+                if (count > 200) {
+                    clearInterval(overloadInterval);
+                    // Crash
+                    document.body.style.backgroundColor = "#F0E68C";
+                    document.getElementById('queue-system').style.display = "none";
+                    document.body.innerHTML = "";
+                    document.body.style.backgroundColor = "#000";
+                    setTimeout(() => {
+                        const msg = document.createElement('div');
+                        msg.innerText = "FATAL ERROR: BUFFER OVERFLOW";
+                        msg.style.color = "#F0E68C";
+                        msg.style.position = "absolute";
+                        msg.style.top = "50%";
+                        msg.style.left = "50%";
+                        msg.style.transform = "translate(-50%, -50%)";
+                        msg.style.fontFamily = "monospace";
+                        document.body.appendChild(msg);
+                    }, 100);
+                }
+            }, 10);
+        });
+    </script>
+</body>
+</html>

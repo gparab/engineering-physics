@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Adder</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    width: 250px;
+    height: 200px;
+    cursor: pointer;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  .arrow {
+    fill: none;
+    stroke: #3498DB;
+    stroke-width: 3;
+    marker-end: url(#arrowhead);
+  }
+  .block {
+    fill: none;
+    stroke: #3498DB;
+    stroke-width: 3;
+  }
+  .sigma {
+    fill: #3498DB;
+    font-family: sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .carry-line {
+    fill: none;
+    stroke: #3498DB;
+    stroke-width: 3;
+    stroke-dasharray: 4;
+  }
+  .carry-glow {
+    fill: #3498DB;
+    opacity: 0;
+    filter: drop-shadow(0 0 8px #3498DB);
+  }
+  .orb {
+    fill: #3498DB;
+    opacity: 0;
+    filter: drop-shadow(0 0 15px #3498DB);
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 150 100" id="svg-element">
+    <defs>
+      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <polygon points="0 0, 6 3, 0 6" fill="#3498DB" />
+      </marker>
+    </defs>
+    
+    <g id="adder-group">
+      <path class="arrow" d="M10,30 L40,30" id="in-a" />
+      <path class="arrow" d="M10,50 L40,50" id="in-b" />
+      <path class="arrow" d="M10,70 L40,70" id="in-cin" />
+      
+      <rect class="block" x="45" y="20" width="40" height="60" />
+      <text class="sigma" x="55" y="60">Σ</text>
+      
+      <path class="arrow" d="M85,40 L115,40" />
+      <text x="120" y="44" fill="#3498DB" font-size="10" font-family="monospace">S</text>
+      
+      <path class="arrow" d="M85,60 L115,60" id="carry-out" />
+      <text x="120" y="64" fill="#3498DB" font-size="10" font-family="monospace">Cout</text>
+      
+      <circle class="carry-glow" cx="100" cy="60" r="10" id="glow" />
+    </g>
+    
+    <circle class="orb" cx="65" cy="50" r="5" id="big-orb" />
+  </svg>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const tl = gsap.timeline({ repeat: -1 });
+  
+  tl.to("#glow", { opacity: 0.8, duration: 0.5, scale: 1.2, ease: "power1.inOut" })
+    .to("#glow", { opacity: 0, duration: 0.5, scale: 1, ease: "power1.inOut" }, "+=0.5");
+
+  const model = document.getElementById('model');
+  model.addEventListener('click', () => {
+    tl.kill();
+    
+    const clickTl = gsap.timeline();
+    // Inputs sum into massive orb
+    clickTl.to("#adder-group", { opacity: 0, duration: 0.3 })
+           .set("#big-orb", { opacity: 1 })
+           .to("#big-orb", { r: 30, duration: 0.5, ease: "back.out(1.7)" })
+           .to("#big-orb", { x: 200, scale: 0.5, opacity: 0, duration: 0.8, ease: "power2.in" });
+  });
+</script>
+</body>
+</html>

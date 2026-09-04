@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>31. Nash Equilibrium</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: -apple-system, sans-serif;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        #matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 4px;
+            width: 200px;
+            height: 200px;
+            position: relative;
+        }
+        .cell {
+            background-color: #1a1c23;
+            border: 2px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #555;
+            font-size: 24px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .cell span {
+            display: inline-block;
+        }
+        .stable {
+            border-color: #9370DB;
+            color: #9370DB;
+            box-shadow: 0 0 15px rgba(147, 112, 219, 0.4) inset;
+        }
+        .particle {
+            position: absolute;
+            background-color: #9370DB;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="info">NASH EQUILIBRIUM // 031</div>
+    
+    <div id="matrix">
+        <div class="cell" id="c1"><span>3, 3</span></div>
+        <div class="cell" id="c2"><span>0, 5</span></div>
+        <div class="cell" id="c3"><span>5, 0</span></div>
+        <div class="cell stable" id="c4"><span>1, 1</span></div>
+    </div>
+
+    <script>
+        const cells = [
+            document.getElementById('c1'),
+            document.getElementById('c2'),
+            document.getElementById('c3'),
+            document.getElementById('c4')
+        ];
+        
+        let crashed = false;
+
+        // Idle Animation
+        function flicker() {
+            if(crashed) return;
+            const targetIndex = Math.floor(Math.random() * 3); // 0, 1, 2
+            
+            gsap.to(cells[targetIndex], {
+                backgroundColor: "#2a2c35",
+                borderColor: "#666",
+                color: "#888",
+                duration: 0.2,
+                yoyo: true,
+                repeat: 1,
+                onComplete: () => {
+                    setTimeout(flicker, 800 + Math.random() * 1000);
+                }
+            });
+        }
+        
+        // Start flicker after a delay
+        setTimeout(flicker, 1000);
+
+        window.addEventListener('click', () => {
+            if(crashed) return;
+            crashed = true;
+            
+            const matrix = document.getElementById('matrix');
+            
+            // Spin rapidly
+            gsap.to(matrix, {
+                rotation: 1080,
+                scale: 0.1,
+                duration: 1.5,
+                ease: "power2.in"
+            });
+            
+            // Dissolve into chaotic noise
+            for(let i=0; i<100; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                document.body.appendChild(p);
+                
+                // Start from center
+                gsap.set(p, {
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2,
+                    opacity: 1
+                });
+                
+                gsap.to(p, {
+                    x: window.innerWidth / 2 + (Math.random() - 0.5) * window.innerWidth,
+                    y: window.innerHeight / 2 + (Math.random() - 0.5) * window.innerHeight,
+                    opacity: 0,
+                    duration: 1 + Math.random() * 2,
+                    ease: "power4.out",
+                    delay: 1.2
+                });
+            }
+            
+            gsap.to(cells, { opacity: 0, duration: 0.2, delay: 1.3 });
+        });
+    </script>
+</body>
+</html>

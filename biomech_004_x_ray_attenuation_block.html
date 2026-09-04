@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>X-Ray Attenuation Block</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  #container { cursor: pointer; position: relative; width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; }
+  .cube { position: relative; width: 24px; height: 24px; transform-style: preserve-3d; transform: rotateX(-30deg) rotateY(45deg); }
+  .face { position: absolute; width: 24px; height: 24px; background: rgba(255, 255, 255, 0.2); border: 1px solid #FFFFFF; box-sizing: border-box; }
+  .front  { transform: translateZ(12px); }
+  .back   { transform: rotateY(180deg) translateZ(12px); }
+  .right  { transform: rotateY(90deg) translateZ(12px); }
+  .left   { transform: rotateY(-90deg) translateZ(12px); }
+  .top    { transform: rotateX(90deg) translateZ(12px); }
+  .bottom { transform: rotateX(-90deg) translateZ(12px); }
+  .photon { position: absolute; height: 1px; background: #FFF; box-shadow: 0 0 2px #FFF; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="cube" id="cube">
+    <div class="face front"></div><div class="face back"></div>
+    <div class="face right"></div><div class="face left"></div>
+    <div class="face top"></div><div class="face bottom"></div>
+  </div>
+  <div id="photons" style="position:absolute; width:100%; height:100%; pointer-events:none;"></div>
+</div>
+<script>
+  const pCont = document.getElementById("photons");
+  function shootPhoton() {
+     let p = document.createElement("div");
+     p.className = "photon";
+     p.style.width = "20px";
+     p.style.top = (35 + Math.random() * 30) + "px";
+     p.style.left = "0px";
+     pCont.appendChild(p);
+     gsap.fromTo(p, {x: 0, opacity: 1}, {x: 100, opacity: 0.1, duration: 1.5, ease: "linear", onComplete: () => p.remove()});
+  }
+  let pInterval = setInterval(shootPhoton, 150);
+  
+  document.getElementById("container").addEventListener("click", () => {
+    clearInterval(pInterval);
+    gsap.to(".face", { background: "#000", borderColor: "#000", duration: 0.2 });
+    gsap.to(".photon", { opacity: 0, duration: 0.1 });
+    gsap.to("#cube", { 
+      scale: 0.001, rotationX: "+=1080", rotationY: "+=1080", 
+      duration: 1, ease: "power4.in", delay: 0.2,
+      onComplete: () => {
+        gsap.to("#container", {boxShadow: "0 0 150px 100px #FFF", backgroundColor: "#FFF", duration: 0.1, yoyo: true, repeat: 1, onComplete: () => {
+            document.getElementById("cube").style.display = "none";
+        }});
+      }
+    });
+  });
+</script>
+</body>
+</html>

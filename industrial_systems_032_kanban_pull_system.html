@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>32. Kanban Pull System</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0d0f12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: -apple-system, sans-serif;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #555;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        #board {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: #1a1c23;
+            border-radius: 8px;
+            position: relative;
+        }
+        .col {
+            width: 100px;
+            height: 300px;
+            background: #111318;
+            border: 2px solid #333;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .col-title {
+            color: #888;
+            font-size: 10px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .card {
+            width: 80%;
+            height: 20px;
+            background: #FFA500;
+            border-radius: 2px;
+            margin-bottom: 8px;
+            position: absolute; /* Animated via GSAP */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="info">KANBAN PULL SYSTEM // 032</div>
+    
+    <div id="board">
+        <div class="col" id="col-todo">
+            <div class="col-title">To Do</div>
+        </div>
+        <div class="col" id="col-doing">
+            <div class="col-title">Doing</div>
+        </div>
+        <div class="col" id="col-done">
+            <div class="col-title">Done</div>
+        </div>
+    </div>
+
+    <script>
+        const todo = document.getElementById('col-todo');
+        const doing = document.getElementById('col-doing');
+        const done = document.getElementById('col-done');
+        
+        // Define logical state
+        const state = {
+            todo: [0, 1, 2, 3], // card ids
+            doing: [4],
+            done: []
+        };
+        
+        let cardId = 5;
+        let crashed = false;
+
+        function createCard(id, colIndex, posIndex) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = 'card-' + id;
+            document.getElementById('board').appendChild(card);
+            
+            // set initial pos
+            gsap.set(card, {
+                x: colIndex * 120 + 20, // 20px padding + 100px width + 20px gap
+                y: posIndex * 28 + 40
+            });
+            return card;
+        }
+
+        // Initialize cards
+        state.todo.forEach((id, i) => createCard(id, 0, i));
+        state.doing.forEach((id, i) => createCard(id, 1, i));
+
+        function getCardEl(id) {
+            return document.getElementById('card-' + id);
+        }
+
+        function updatePositions(colId, colIndex) {
+            state[colId].forEach((id, i) => {
+                gsap.to(getCardEl(id), {
+                    x: colIndex * 120 + 20,
+                    y: i * 28 + 40,
+                    duration: 0.5,
+                    ease: "power2.inOut"
+                });
+            });
+        }
+
+        // Idle Pull Logic
+        function step() {
+            if(crashed) return;
+
+            // Pull doing -> done if done < 5
+            if(state.done.length < 5 && state.doing.length > 0) {
+                const id = state.doing.shift();
+                state.done.push(id);
+                updatePositions('doing', 1);
+                updatePositions('done', 2);
+            } 
+            // Pull todo -> doing if doing < 2
+            else if (state.doing.length < 2 && state.todo.length > 0) {
+                const id = state.todo.shift();
+                state.doing.push(id);
+                updatePositions('todo', 0);
+                updatePositions('doing', 1);
+            }
+            // Add to todo if empty
+            else if (state.todo.length < 4) {
+                const newId = cardId++;
+                state.todo.push(newId);
+                createCard(newId, 0, state.todo.length - 1);
+                gsap.from(getCardEl(newId), { opacity: 0, duration: 0.5 });
+            }
+            // clear done if full
+            else if (state.done.length >= 5) {
+                const id = state.done.shift();
+                const el = getCardEl(id);
+                gsap.to(el, { opacity: 0, duration: 0.5, onComplete: () => el.remove() });
+                updatePositions('done', 2);
+            }
+
+            setTimeout(step, 1000);
+        }
+
+        setTimeout(step, 1000);
+
+        window.addEventListener('click', () => {
+            if(crashed) return;
+            crashed = true;
+            
+            // Flood "doing" column
+            let count = 0;
+            const floodInt = setInterval(() => {
+                const newId = cardId++;
+                const card = createCard(newId, 1, state.doing.length);
+                state.doing.push(newId);
+                
+                // Add some chaotic jiggle
+                gsap.set(card, {
+                    x: 1 * 120 + 20 + (Math.random()-0.5)*10,
+                    y: (state.doing.length-1) * 10 + 40 + (Math.random()-0.5)*10
+                });
+
+                count++;
+                if(count > 40) {
+                    clearInterval(floodInt);
+                    
+                    // EXPLODE
+                    state.doing.forEach(id => {
+                        const el = getCardEl(id);
+                        if(el) {
+                            gsap.to(el, {
+                                x: (Math.random() - 0.5) * window.innerWidth,
+                                y: (Math.random() - 0.5) * window.innerHeight,
+                                rotation: (Math.random() - 0.5) * 720,
+                                opacity: 0,
+                                duration: 1 + Math.random(),
+                                ease: "power4.out"
+                            });
+                        }
+                    });
+                    
+                    gsap.to(doing, {
+                        borderColor: "#f00",
+                        scale: 1.2,
+                        opacity: 0,
+                        duration: 0.5
+                    });
+                }
+            }, 50);
+        });
+    </script>
+</body>
+</html>

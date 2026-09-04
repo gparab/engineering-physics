@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photolithography Exposure</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    font-family: sans-serif;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    cursor: pointer;
+    width: 60px;
+    height: 30px;
+  }
+  .wafer {
+    position: absolute;
+    bottom: 0; width: 100%; height: 6px;
+    background: #7f8c8d;
+  }
+  .photoresist {
+    position: absolute;
+    bottom: 6px; width: 100%; height: 4px;
+    background: #e67e22;
+  }
+  .mask {
+    position: absolute;
+    top: 5px; width: 100%; height: 4px;
+    background: #2c3e50;
+    display: flex;
+    justify-content: space-evenly;
+  }
+  .slit {
+    width: 8px; height: 100%;
+    background: transparent;
+  }
+  .uv-light {
+    position: absolute;
+    top: -20px; width: 100%; height: 25px;
+    background: linear-gradient(to bottom, rgba(241, 196, 15, 0.5), transparent);
+  }
+  .pop {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0;
+  }
+  .developer-wash {
+    position: fixed;
+    top: 0; left: -100vw;
+    width: 100vw; height: 100vh;
+    background: rgba(41, 128, 185, 0.5);
+    z-index: 5;
+  }
+  .nano-circuit {
+    position: fixed;
+    top: 50%; left: 50%;
+    width: 300px; height: 300px;
+    transform: translate(-50%, -50%) scale(0);
+    background: 
+      linear-gradient(90deg, #34495e 2px, transparent 2px) 0 0 / 20px 20px,
+      linear-gradient(0deg, #34495e 2px, transparent 2px) 0 0 / 20px 20px;
+    opacity: 0;
+    z-index: 4;
+  }
+</style>
+</head>
+<body>
+<div class="developer-wash" id="wash"></div>
+<div class="nano-circuit" id="circuit"></div>
+<div class="container" id="model">
+  <div class="uv-light"></div>
+  <div class="mask">
+    <div class="slit"></div>
+    <div class="slit"></div>
+  </div>
+  <div class="wafer"></div>
+  <div class="photoresist" id="resist"></div>
+</div>
+<script>
+  const model = document.getElementById('model');
+  const resist = document.getElementById('resist');
+
+  // Idle Animation: tiny pops where slits are
+  function createPop() {
+    const pop = document.createElement('div');
+    pop.className = 'pop';
+    // Slits are approx at 20% and 60% width
+    const x = Math.random() > 0.5 ? 12 + Math.random()*8 : 40 + Math.random()*8;
+    pop.style.left = x + 'px';
+    pop.style.top = '20px';
+    model.appendChild(pop);
+    
+    gsap.to(pop, {
+      y: -5,
+      scale: 3,
+      opacity: 1,
+      duration: 0.1,
+      yoyo: true,
+      repeat: 1,
+      onComplete: () => pop.remove()
+    });
+  }
+  const idleInterval = setInterval(createPop, 300);
+
+  let isAnimating = false;
+  model.addEventListener('click', () => {
+    if (isAnimating) return;
+    isAnimating = true;
+    clearInterval(idleInterval);
+    
+    const tl = gsap.timeline();
+    // Developer wash
+    tl.to('#wash', { x: 0, duration: 0.8, ease: "power2.out" })
+      // Resist dissolves
+      .to('#resist', { opacity: 0, duration: 0.5 }, 0.5)
+      .to('#model', { opacity: 0, duration: 0.2 }, 0.8)
+      // Circuit reveals and etches
+      .to('#circuit', { scale: 5, opacity: 1, duration: 1.5, ease: "power3.inOut" }, 0.8)
+      .to('#wash', { opacity: 0, duration: 0.5 }, 1.5)
+      // Circuit fades
+      .to('#circuit', { opacity: 0, scale: 6, duration: 0.5, ease: "power2.in" }, 2.5);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reverse Osmosis Membrane</title>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #1a1a1a; cursor: pointer; overflow: hidden; }
+        #container { width: 80px; height: 60px; position: relative; }
+        .membrane { position: absolute; left: 38px; top: 0; width: 4px; height: 100%; background: repeating-linear-gradient(0deg, #00FA9A, #00FA9A 4px, transparent 4px, transparent 8px); }
+        .particle { position: absolute; border-radius: 50%; }
+        .solvent { width: 4px; height: 4px; background-color: #00BFFF; }
+        .solute { width: 8px; height: 8px; background-color: #FF6347; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="membrane" id="membrane"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const membrane = document.getElementById('membrane');
+        const solvents = [];
+        const solutes = [];
+
+        // Generate solvents (small, go through)
+        for (let i = 0; i < 10; i++) {
+            let s = document.createElement('div');
+            s.className = 'particle solvent';
+            container.appendChild(s);
+            solvents.push(s);
+            animateSolvent(s, i);
+        }
+
+        // Generate solutes (large, bounce off)
+        for (let i = 0; i < 6; i++) {
+            let s = document.createElement('div');
+            s.className = 'particle solute';
+            container.appendChild(s);
+            solutes.push(s);
+            animateSolute(s, i);
+        }
+
+        function animateSolvent(el, i) {
+            gsap.set(el, { x: Math.random() * 20, y: Math.random() * 56 });
+            gsap.to(el, {
+                x: 80,
+                duration: 2 + Math.random(),
+                repeat: -1,
+                delay: Math.random() * 2,
+                ease: "none",
+                onRepeat: () => { gsap.set(el, { x: -10, y: Math.random() * 56 }); }
+            });
+        }
+
+        function animateSolute(el, i) {
+            gsap.set(el, { x: Math.random() * 20, y: Math.random() * 52 });
+            let tl = gsap.timeline({ repeat: -1, delay: Math.random() });
+            tl.to(el, { x: 30, duration: 1, ease: "power1.in" })
+              .to(el, { x: Math.random() * 20, y: Math.random() * 52, duration: 1, ease: "power1.out" });
+        }
+
+        let clicked = false;
+        document.body.addEventListener('click', () => {
+            if (clicked) return;
+            clicked = true;
+
+            // Kill current animations
+            solvents.forEach(s => gsap.killTweensOf(s));
+            solutes.forEach(s => gsap.killTweensOf(s));
+            
+            // Membrane breaks
+            gsap.to(membrane, {
+                scaleY: 1.5,
+                opacity: 0,
+                filter: "blur(5px)",
+                duration: 0.5,
+                ease: "power2.in"
+            });
+
+            // Particles mix and dissipate in turbulent cloud
+            let allParticles = [...solvents, ...solutes];
+            allParticles.forEach(p => {
+                gsap.to(p, {
+                    x: (Math.random() - 0.5) * window.innerWidth,
+                    y: (Math.random() - 0.5) * window.innerHeight,
+                    opacity: 0,
+                    scale: 2,
+                    duration: 1.5,
+                    ease: "power3.out"
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fickian Drug Diffusion</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #111; overflow: hidden; }
+  #container { cursor: pointer; position: relative; width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; }
+  #core { width:12px; height:12px; background:#50E3C2; border-radius:50%; box-shadow: 0 0 10px #50E3C2; position:absolute; z-index: 10; }
+  #particles { position:absolute; width:100%; height:100%; top:0; left:0; pointer-events:none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div id="core"></div>
+  <div id="particles"></div>
+</div>
+<script>
+  gsap.to("#core", {scale: 1.2, duration: 1.2, repeat: -1, yoyo: true, ease: "sine.inOut"});
+  let pCont = document.getElementById("particles");
+  let activeParticles = [];
+  let emitting = true;
+  
+  function emitParticle() {
+    if(!emitting) return;
+    let p = document.createElement("div");
+    p.style.cssText = "position:absolute; width:2px; height:2px; background:#50E3C2; border-radius:50%; left:49px; top:49px;";
+    pCont.appendChild(p);
+    activeParticles.push(p);
+    
+    let angle = Math.random() * Math.PI * 2;
+    let dist = 30 + Math.random() * 20;
+    gsap.to(p, {
+      x: Math.cos(angle) * dist,
+      y: Math.sin(angle) * dist,
+      opacity: 0.1,
+      duration: 4,
+      ease: "power1.out",
+      onUpdate: function() {
+         if(emitting) {
+             gsap.set(p, {
+               x: "+=" + (Math.random()-0.5)*1.5,
+               y: "+=" + (Math.random()-0.5)*1.5
+             });
+         }
+      }
+    });
+  }
+  setInterval(emitParticle, 150);
+
+  document.getElementById("container").addEventListener("click", () => {
+    emitting = false;
+    gsap.killTweensOf("#core");
+    activeParticles.forEach(p => {
+      gsap.killTweensOf(p);
+      gsap.to(p, {
+        x: 0, y: 0, opacity: 1, duration: 0.6, ease: "power3.in"
+      });
+    });
+    setTimeout(() => {
+      pCont.innerHTML = "";
+      gsap.to("#core", {scale: 0, opacity: 0, duration: 0.3, ease: "back.in(4)"});
+    }, 600);
+  });
+</script>
+</body>
+</html>

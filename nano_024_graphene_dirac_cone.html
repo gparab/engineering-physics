@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graphene Dirac Cone</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    font-family: sans-serif;
+    overflow: hidden;
+    perspective: 800px;
+  }
+  .container {
+    position: relative;
+    cursor: pointer;
+    width: 60px;
+    height: 80px;
+    transform-style: preserve-3d;
+  }
+  .cone {
+    position: absolute;
+    left: 10px;
+    width: 0; height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    opacity: 0.7;
+  }
+  .cone-top {
+    top: 0;
+    border-top: 40px solid #9b59b6;
+  }
+  .cone-bottom {
+    top: 40px;
+    border-bottom: 40px solid #9b59b6;
+  }
+  .lattice {
+    position: absolute;
+    top: 40px; left: -20px;
+    width: 100px; height: 10px;
+    background: repeating-linear-gradient(60deg, rgba(155, 89, 182, 0.5) 0, rgba(155, 89, 182, 0.5) 1px, transparent 1px, transparent 10px),
+                repeating-linear-gradient(-60deg, rgba(155, 89, 182, 0.5) 0, rgba(155, 89, 182, 0.5) 1px, transparent 1px, transparent 10px);
+    transform: rotateX(75deg);
+    transform-style: preserve-3d;
+  }
+  .electron {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: #00ffff;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #00ffff;
+    top: 38px;
+  }
+  .buckyball {
+    position: absolute;
+    top: 20px; left: 10px;
+    width: 40px; height: 40px;
+    background: radial-gradient(circle at 30% 30%, #d2b4de, #9b59b6);
+    border-radius: 50%;
+    opacity: 0;
+    box-shadow: inset -5px -5px 10px rgba(0,0,0,0.5);
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <div class="lattice" id="lattice"></div>
+  <div class="cone cone-top" id="coneTop"></div>
+  <div class="cone cone-bottom" id="coneBottom"></div>
+  <div class="buckyball" id="buckyball"></div>
+</div>
+<script>
+  const model = document.getElementById('model');
+  const electrons = [];
+
+  function spawnElectron() {
+    if(isAnimating) return;
+    const el = document.createElement('div');
+    el.className = 'electron';
+    el.style.left = '-20px';
+    model.appendChild(el);
+    electrons.push(el);
+    
+    gsap.to(el, {
+      x: 100,
+      duration: 0.8,
+      ease: "none",
+      onComplete: () => {
+        el.remove();
+        electrons.splice(electrons.indexOf(el), 1);
+      }
+    });
+  }
+
+  const idleInterval = setInterval(spawnElectron, 200);
+
+  let isAnimating = false;
+  model.addEventListener('click', () => {
+    if (isAnimating) return;
+    isAnimating = true;
+    
+    const tl = gsap.timeline();
+    // Stop electrons instantly
+    electrons.forEach(el => gsap.killTweensOf(el));
+    
+    // Cones flatten out
+    tl.to(['#coneTop', '#coneBottom'], { scaleY: 0, opacity: 0, duration: 0.5, ease: "power2.in" })
+      // Electrons fade
+      .to('.electron', { opacity: 0, duration: 0.2 }, 0.5)
+      // Lattice rolls up into buckyball
+      .to('#lattice', { scale: 0, opacity: 0, duration: 0.5 }, 0.8)
+      .to('#buckyball', { opacity: 1, scale: 1, duration: 0.5 }, 0.8)
+      // Bounces away
+      .to('#buckyball', {
+        y: -150, x: 200, rotation: 360,
+        duration: 1.5,
+        ease: "power1.out"
+      }, 1.3)
+      .to('#buckyball', { opacity: 0, duration: 0.2 }, 2.6);
+  });
+</script>
+</body>
+</html>

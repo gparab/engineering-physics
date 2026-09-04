@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Completely Abstract Concept Demo</title>
+<style>
+  :root {
+    --ink: #fff;
+    --paper: #000;
+    --card-bg: #0a0a0c;
+  }
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    overflow-x: hidden;
+  }
+  .header-text {
+    text-align: center;
+    max-width: 600px;
+    margin-bottom: 20px;
+  }
+  .showcase-card {
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 600px;
+    height: 350px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    border: 1px solid #1a1a24;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #1a1a24;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+  }
+  .card-header h2 { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 10px;}
+  .card-header span { font-size: 12px; font-weight: 400; color: #555; }
+  .reset-btn {
+    background: #222; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .reset-btn:hover { background: #444; }
+
+  .interactive-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .orb {
+    display: block; width: 60px; height: 60px;
+    cursor: pointer; outline: none; z-index: 5;
+    transform-origin: 50% 50%;
+  }
+  .orb svg { overflow: visible; width: 100%; height: 100%; }
+
+  /* =======================================================================
+     1. THE FOLD (Home)
+     ======================================================================= */
+  .fold-group { transform-origin: 30px 30px; animation: fold-idle 6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+  .fold-poly { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), fill 0.4s; }
+  
+  .orb:hover .fold-poly.top { transform: translateY(-4px); fill: #e2e8f0; }
+  .orb:hover .fold-poly.left { transform: translate(-4px, 2px); fill: #a0aec0; }
+  .orb:hover .fold-poly.right { transform: translate(4px, 2px); fill: #718096; }
+
+  .orb.active-fold { pointer-events: none; }
+  .orb.active-fold .fold-group { animation: fold-collapse 0.8s cubic-bezier(0.5, 0, 0.2, 1) forwards; }
+  .orb.active-fold .fold-flash { animation: fold-flash 0.8s ease-out forwards; }
+
+  @keyframes fold-idle { 
+    0%, 100% { transform: scale(1) rotate(0deg); } 
+    50% { transform: scale(0.9) rotate(180deg); } 
+  }
+  @keyframes fold-collapse {
+    0% { transform: scale(1) rotate(0deg); }
+    30% { transform: scale(1.2) rotate(-45deg); }
+    100% { transform: scale(0) rotate(360deg); opacity: 0; }
+  }
+  @keyframes fold-flash {
+    0%, 40% { opacity: 0; transform: scale(0); }
+    50% { opacity: 1; transform: scale(2); stroke-width: 2px; }
+    100% { opacity: 0; transform: scale(8); stroke-width: 0px; }
+  }
+
+  /* =======================================================================
+     2. THE FREQUENCY (Writing)
+     ======================================================================= */
+  .freq-wave { 
+    transform-origin: 30px 30px; 
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s;
+    animation: freq-idle 3s ease-in-out infinite alternate;
+  }
+  .freq-wave.w2 { animation-delay: -1.5s; opacity: 0.5; }
+  .freq-wave.w3 { animation-delay: -0.75s; opacity: 0.2; }
+
+  .orb:hover .freq-wave.w1 { transform: scaleY(1.5); stroke: #fff; }
+  .orb:hover .freq-wave.w2 { transform: scaleY(0.5) translateY(-5px); stroke: #63b3ed; }
+  .orb:hover .freq-wave.w3 { transform: scaleY(-1) translateY(10px); stroke: #3182ce; }
+
+  .orb.active-freq { pointer-events: none; }
+  .orb.active-freq .freq-wave { animation: freq-flatline 0.6s cubic-bezier(0.5, 0, 0.2, 1) forwards; }
+  .orb.active-freq .freq-pulse { animation: freq-pulse 0.8s ease-out forwards; }
+
+  @keyframes freq-idle { 0% { transform: scaleY(0.8); } 100% { transform: scaleY(1.2); } }
+  @keyframes freq-flatline {
+    0% { transform: scaleY(1); opacity: 1; stroke-dasharray: 60; stroke-dashoffset: 0; }
+    40% { transform: scaleY(0); opacity: 1; stroke-dasharray: 60; stroke-dashoffset: 0; }
+    100% { transform: scaleY(0); opacity: 0; stroke-dasharray: 60; stroke-dashoffset: 120; }
+  }
+  @keyframes freq-pulse {
+    0%, 30% { transform: scaleX(0); opacity: 0; }
+    40% { transform: scaleX(1); opacity: 1; }
+    100% { transform: scaleX(5); opacity: 0; }
+  }
+
+  /* =======================================================================
+     3. THE NEXUS (CV)
+     ======================================================================= */
+  .nexus-group { transform-origin: 30px 30px; animation: nexus-spin 10s linear infinite; }
+  .nexus-node, .nexus-edge { transition: all 0.4s ease; transform-origin: 30px 30px; }
+  
+  .orb:hover .nexus-group { animation: nexus-spin 3s linear infinite; }
+  .orb:hover .nexus-node { transform: scale(1.5); fill: #f6e05e; filter: drop-shadow(0 0 5px #f6e05e); }
+  .orb:hover .nexus-edge { stroke: rgba(246, 224, 94, 0.8); stroke-width: 2px; }
+  .orb:hover .nexus-node.center { transform: scale(2); }
+
+  .orb.active-nexus { pointer-events: none; }
+  .orb.active-nexus .nexus-node.outer { animation: nexus-collapse-node 0.4s ease-in forwards; }
+  .orb.active-nexus .nexus-edge { animation: nexus-collapse-edge 0.4s ease-in forwards; }
+  .orb.active-nexus .nexus-node.center { animation: nexus-explode 0.6s ease-out 0.4s forwards; }
+
+  @keyframes nexus-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes nexus-collapse-node { 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+  @keyframes nexus-collapse-edge { 100% { stroke-dashoffset: 30; opacity: 0; } }
+  @keyframes nexus-explode { 0% { transform: scale(2); } 30% { transform: scale(0.5); } 100% { transform: scale(20); opacity: 0; } }
+
+  /* =======================================================================
+     4. THE RECURSION (Sitemap)
+     ======================================================================= */
+  .rec { transform-origin: 30px 30px; fill: none; stroke: #68d391; stroke-width: 1.5; transition: transform 0.5s ease; }
+  .rec.r1 { animation: rec-spin 8s linear infinite; }
+  .rec.r2 { animation: rec-spin 6s linear infinite reverse; }
+  .rec.r3 { animation: rec-spin 4s linear infinite; }
+
+  .orb:hover .rec.r1 { transform: scale(1.2) rotate(45deg); stroke-width: 2; }
+  .orb:hover .rec.r2 { transform: scale(0.8) rotate(-45deg); stroke-width: 2; }
+  .orb:hover .rec.r3 { transform: scale(0.4) rotate(45deg); stroke-width: 2; fill: #68d391; }
+
+  .orb.active-rec { pointer-events: none; }
+  .orb.active-rec .rec { animation: rec-zoom 1s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+  .orb.active-rec .rec.r2 { animation-delay: 0.1s; }
+  .orb.active-rec .rec.r3 { animation-delay: 0.2s; }
+
+  @keyframes rec-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes rec-zoom { 0% { transform: scale(1) rotate(0deg); opacity: 1; } 100% { transform: scale(15) rotate(90deg); opacity: 0; stroke-width: 0.1; } }
+
+  /* =======================================================================
+     5. THE SINGULARITY (Dive)
+     ======================================================================= */
+  .sing { transform-origin: 30px 30px; fill: none; stroke: #b794f4; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+  .sing.s1 { stroke-dasharray: 100; animation: sing-dash 10s linear infinite; }
+  .sing.s2 { stroke-dasharray: 60; animation: sing-dash 7s linear infinite reverse; }
+  .sing.s3 { stroke-dasharray: 30; animation: sing-dash 4s linear infinite; }
+
+  .orb:hover .sing { stroke: #d6bcfa; filter: drop-shadow(0 0 5px #b794f4); }
+  .orb:hover .sing.s1 { transform: scale(1.1); stroke-width: 3; }
+  .orb:hover .sing.s2 { transform: scale(0.7); stroke-width: 4; }
+  .orb:hover .sing.s3 { transform: scale(0.2); stroke-width: 8; fill: #b794f4; }
+
+  .orb.active-sing { pointer-events: none; }
+  .orb.active-sing .sing { animation: sing-collapse 0.8s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
+  .orb.active-sing .sing-shockwave { animation: sing-shock 1s ease-out 0.7s forwards; }
+
+  @keyframes sing-dash { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 200; } }
+  @keyframes sing-collapse { 
+    0% { transform: scale(1); opacity: 1; }
+    40% { transform: scale(1.2); opacity: 1; stroke-width: 1px; }
+    100% { transform: scale(0); opacity: 0; stroke-width: 20px; }
+  }
+  @keyframes sing-shock {
+    0% { transform: scale(0); opacity: 1; stroke-width: 10px; }
+    100% { transform: scale(10); opacity: 0; stroke-width: 0px; }
+  }
+
+  .hint { position: absolute; bottom: 20px; right: 25px; font-size: 11px; color: #444; letter-spacing: 2px; text-transform: uppercase; pointer-events: none; }
+</style>
+</head>
+<body>
+
+  <div class="header-text">
+    <h1 style="margin:0 0 10px 0; font-weight: 400; letter-spacing: 4px;">THE ABSTRACTS</h1>
+    <p style="margin:0; color:#666; font-size:14px; letter-spacing: 1px;">Non-representational geometry and physics.</p>
+  </div>
+
+  <!-- 1. THE FOLD -->
+  <div class="showcase-card">
+    <div class="card-header">
+      <h2>The Fold <span>(Home)</span></h2>
+      <button class="reset-btn" onclick="resetOrb(this, 'active-fold')">Reset</button>
+    </div>
+    <div class="interactive-area">
+      <a class="orb" href="#" onclick="this.classList.add('active-fold'); return false;" title="Collapse">
+        <svg viewBox="0 0 60 60">
+          <g class="fold-group">
+            <polygon class="fold-poly top" points="30,12 48,22 30,32 12,22" fill="#718096"/>
+            <polygon class="fold-poly left" points="12,22 30,32 30,52 12,42" fill="#4a5568"/>
+            <polygon class="fold-poly right" points="48,22 30,32 30,52 48,42" fill="#2d3748"/>
+          </g>
+          <circle class="fold-flash" cx="30" cy="30" r="10" fill="none" stroke="#e2e8f0" stroke-width="0" opacity="0"/>
+        </svg>
+      </a>
+    </div>
+    <div class="hint">Interact</div>
+  </div>
+
+  <!-- 2. THE FREQUENCY -->
+  <div class="showcase-card">
+    <div class="card-header">
+      <h2>The Frequency <span>(Writing)</span></h2>
+      <button class="reset-btn" onclick="resetOrb(this, 'active-freq')">Reset</button>
+    </div>
+    <div class="interactive-area">
+      <a class="orb" href="#" onclick="this.classList.add('active-freq'); return false;" title="Flatline" style="width: 100px;">
+        <svg viewBox="0 0 60 60">
+          <path class="freq-wave w3" d="M 0,30 Q 15,0 30,30 T 60,30" fill="none" stroke="#2b6cb0" stroke-width="1.5"/>
+          <path class="freq-wave w2" d="M 0,30 Q 15,10 30,30 T 60,30" fill="none" stroke="#4299e1" stroke-width="2"/>
+          <path class="freq-wave w1" d="M 0,30 Q 15,20 30,30 T 60,30" fill="none" stroke="#bee3f8" stroke-width="3"/>
+          <line class="freq-pulse" x1="0" y1="30" x2="60" y2="30" stroke="#fff" stroke-width="2" opacity="0" />
+        </svg>
+      </a>
+    </div>
+    <div class="hint">Interact</div>
+  </div>
+
+  <!-- 3. THE NEXUS -->
+  <div class="showcase-card">
+    <div class="card-header">
+      <h2>The Nexus <span>(CV)</span></h2>
+      <button class="reset-btn" onclick="resetOrb(this, 'active-nexus')">Reset</button>
+    </div>
+    <div class="interactive-area">
+      <a class="orb" href="#" onclick="this.classList.add('active-nexus'); return false;" title="Absorb">
+        <svg viewBox="0 0 60 60">
+          <g class="nexus-group">
+            <line class="nexus-edge" x1="30" y1="30" x2="15" y2="15" stroke="#b7791f" stroke-dasharray="30" />
+            <line class="nexus-edge" x1="30" y1="30" x2="48" y2="18" stroke="#b7791f" stroke-dasharray="30" />
+            <line class="nexus-edge" x1="30" y1="30" x2="35" y2="50" stroke="#b7791f" stroke-dasharray="30" />
+            <line class="nexus-edge" x1="30" y1="30" x2="12" y2="40" stroke="#b7791f" stroke-dasharray="30" />
+            
+            <circle class="nexus-node outer" cx="15" cy="15" r="3" fill="#d69e2e" style="--tx: 15px; --ty: 15px;"/>
+            <circle class="nexus-node outer" cx="48" cy="18" r="4" fill="#d69e2e" style="--tx: -18px; --ty: 12px;"/>
+            <circle class="nexus-node outer" cx="35" cy="50" r="2.5" fill="#d69e2e" style="--tx: -5px; --ty: -20px;"/>
+            <circle class="nexus-node outer" cx="12" cy="40" r="3.5" fill="#d69e2e" style="--tx: 18px; --ty: -10px;"/>
+            
+            <circle class="nexus-node center" cx="30" cy="30" r="5" fill="#ecc94b" />
+          </g>
+        </svg>
+      </a>
+    </div>
+    <div class="hint">Interact</div>
+  </div>
+
+  <!-- 4. THE RECURSION -->
+  <div class="showcase-card">
+    <div class="card-header">
+      <h2>The Recursion <span>(Sitemap)</span></h2>
+      <button class="reset-btn" onclick="resetOrb(this, 'active-rec')">Reset</button>
+    </div>
+    <div class="interactive-area">
+      <a class="orb" href="#" onclick="this.classList.add('active-rec'); return false;" title="Infinite Zoom">
+        <svg viewBox="0 0 60 60">
+          <rect class="rec r1" x="10" y="10" width="40" height="40" />
+          <rect class="rec r2" x="18" y="18" width="24" height="24" />
+          <rect class="rec r3" x="26" y="26" width="8" height="8" />
+        </svg>
+      </a>
+    </div>
+    <div class="hint">Interact</div>
+  </div>
+
+  <!-- 5. THE SINGULARITY -->
+  <div class="showcase-card">
+    <div class="card-header">
+      <h2>The Singularity <span>(Dive)</span></h2>
+      <button class="reset-btn" onclick="resetOrb(this, 'active-sing')">Reset</button>
+    </div>
+    <div class="interactive-area">
+      <a class="orb" href="#" onclick="this.classList.add('active-sing'); return false;" title="Collapse">
+        <svg viewBox="0 0 60 60">
+          <circle class="sing s1" cx="30" cy="30" r="24" stroke-width="1.5" />
+          <circle class="sing s2" cx="30" cy="30" r="16" stroke-width="1.5" />
+          <circle class="sing s3" cx="30" cy="30" r="8" stroke-width="1.5" />
+          <circle class="sing-shockwave" cx="30" cy="30" r="10" fill="none" stroke="#d6bcfa" stroke-width="0" opacity="0"/>
+        </svg>
+      </a>
+    </div>
+    <div class="hint">Interact</div>
+  </div>
+
+  <script>
+    function resetOrb(btn, activeClass) {
+      // Find the orb within this card
+      const card = btn.closest('.showcase-card');
+      const orb = card.querySelector('.orb');
+      
+      // Temporarily remove animation by forcing a reflow
+      orb.classList.remove(activeClass);
+      
+      // Hack to restart animations immediately if needed, 
+      // but simply removing the class works for CSS forwards
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VLSI CMOS Inverter</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; background: #0d0d0d; display: flex; justify-content: center; align-items: center; overflow: hidden; font-family: monospace; }
+        #container { position: relative; width: 200px; height: 300px; cursor: pointer; }
+        
+        .line { position: absolute; background: #555; }
+        
+        /* VDD & GND */
+        .rail { width: 40px; height: 4px; left: 80px; }
+        .vdd { top: 20px; background: #E74C3C; }
+        .gnd { bottom: 20px; background: #3498DB; }
+        
+        /* Vertical wires */
+        .v-wire { width: 4px; left: 98px; }
+        .w1 { top: 24px; height: 40px; }
+        .w2 { top: 114px; height: 72px; }
+        .w3 { top: 236px; height: 40px; }
+        
+        /* PMOS */
+        .pmos { position: absolute; top: 64px; left: 70px; width: 60px; height: 50px; }
+        .p-gate { position: absolute; width: 4px; height: 30px; left: 10px; top: 10px; background: #fff; }
+        .p-bubble { position: absolute; width: 8px; height: 8px; border: 2px solid #fff; border-radius: 50%; left: -2px; top: 19px; background: #0d0d0d; }
+        .p-channel { position: absolute; width: 4px; height: 30px; left: 20px; top: 10px; background: #fff; }
+        .p-s { position: absolute; width: 20px; height: 4px; left: 20px; top: 10px; background: #fff; }
+        .p-d { position: absolute; width: 20px; height: 4px; left: 20px; top: 36px; background: #fff; }
+        .p-vert { position: absolute; width: 4px; height: 50px; left: 36px; top: 0; background: #fff; }
+
+        /* NMOS */
+        .nmos { position: absolute; top: 186px; left: 70px; width: 60px; height: 50px; }
+        .n-gate { position: absolute; width: 4px; height: 30px; left: 10px; top: 10px; background: #fff; }
+        .n-channel { position: absolute; width: 4px; height: 30px; left: 20px; top: 10px; background: #fff; }
+        .n-d { position: absolute; width: 20px; height: 4px; left: 20px; top: 10px; background: #fff; }
+        .n-s { position: absolute; width: 20px; height: 4px; left: 20px; top: 36px; background: #fff; }
+        .n-vert { position: absolute; width: 4px; height: 50px; left: 36px; top: 0; background: #fff; }
+
+        /* Input / Output */
+        .in-wire { position: absolute; width: 30px; height: 4px; left: 52px; top: 150px; background: #555; }
+        .in-split { position: absolute; width: 4px; height: 122px; left: 78px; top: 93px; background: #555; }
+        .out-wire { position: absolute; width: 30px; height: 4px; left: 102px; top: 150px; background: #555; }
+
+        .active { background: #F39C12 !important; box-shadow: 0 0 10px #F39C12; border-color: #F39C12 !important; }
+
+        #meltOverlay {
+            position: absolute; top: 0; left: 0; width: 200px; height: 300px; background: #F39C12; mix-blend-mode: color; opacity: 0; pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="line rail vdd"></div>
+        <div class="line v-wire w1"></div>
+        
+        <div class="pmos" id="pmos">
+            <div class="p-gate c-p"></div>
+            <div class="p-bubble c-p"></div>
+            <div class="p-channel c-p-on"></div>
+            <div class="p-s c-p-on"></div>
+            <div class="p-d c-p-on"></div>
+            <div class="p-vert c-p-on"></div>
+        </div>
+        
+        <div class="line v-wire w2 out-node"></div>
+        <div class="line out-wire out-node"></div>
+        
+        <div class="nmos" id="nmos">
+            <div class="n-gate c-n"></div>
+            <div class="n-channel c-n-on"></div>
+            <div class="n-d c-n-on"></div>
+            <div class="n-s c-n-on"></div>
+            <div class="n-vert c-n-on"></div>
+        </div>
+        
+        <div class="line v-wire w3"></div>
+        <div class="line rail gnd"></div>
+
+        <div class="line in-wire in-node"></div>
+        <div class="line in-split in-node"></div>
+
+        <div id="meltOverlay"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        
+        let state = 0; // 0 or 1
+        let isDestroyed = false;
+        
+        function updateState() {
+            if (isDestroyed) return;
+            
+            const inNodes = document.querySelectorAll('.in-node, .c-p, .c-n');
+            const pOnNodes = document.querySelectorAll('.c-p-on');
+            const nOnNodes = document.querySelectorAll('.c-n-on');
+            const outNodes = document.querySelectorAll('.out-node');
+            
+            if (state === 0) {
+                // In is 0, PMOS is ON, NMOS is OFF, Out is 1
+                inNodes.forEach(n => n.classList.remove('active'));
+                pOnNodes.forEach(n => n.classList.add('active'));
+                nOnNodes.forEach(n => n.classList.remove('active'));
+                outNodes.forEach(n => n.classList.add('active'));
+            } else {
+                // In is 1, PMOS is OFF, NMOS is ON, Out is 0
+                inNodes.forEach(n => n.classList.add('active'));
+                pOnNodes.forEach(n => n.classList.remove('active'));
+                nOnNodes.forEach(n => n.classList.add('active'));
+                outNodes.forEach(n => n.classList.remove('active'));
+            }
+            
+            state = 1 - state;
+            setTimeout(updateState, 1000);
+        }
+        
+        updateState();
+
+        container.addEventListener('click', () => {
+            if (isDestroyed) return;
+            isDestroyed = true;
+            
+            // Both ON (Shoot-through)
+            document.querySelectorAll('div').forEach(n => n.classList.add('active'));
+            
+            gsap.to('#meltOverlay', { opacity: 1, duration: 0.5 });
+            
+            // Melt effect
+            gsap.to(container, {
+                scaleY: 0.2,
+                scaleX: 1.5,
+                y: 100,
+                opacity: 0,
+                duration: 2,
+                ease: 'power4.in',
+                delay: 0.5
+            });
+        });
+    </script>
+</body>
+</html>

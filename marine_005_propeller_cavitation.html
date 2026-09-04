@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Propeller Cavitation</title>
+<style>
+  body { margin: 0; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+  .icon-container { position: relative; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+  .foil { position: absolute; width: 24px; height: 6px; background: #9B9B9B; border-radius: 12px 3px 3px 12px; transform-origin: center; }
+  .bubble { position: absolute; background: rgba(255,255,255,0.8); border: 1px solid #777; border-radius: 50%; opacity: 0; pointer-events: none; }
+  .shockwave { position: absolute; width: 0; height: 0; border: 2px solid #9B9B9B; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <div class="icon-container" id="icon">
+    <div class="foil" id="foil"></div>
+  </div>
+  <script>
+    const foil = document.getElementById('foil');
+    const icon = document.getElementById('icon');
+    let isAnimating = false;
+
+    const spin = gsap.to(foil, { rotation: 360, duration: 1, repeat: -1, ease: "none" });
+    
+    let bubbleInterval = setInterval(() => {
+      if(isAnimating) return;
+      let b = document.createElement('div');
+      b.className = 'bubble';
+      let size = Math.random() * 3 + 1;
+      b.style.width = size + 'px'; b.style.height = size + 'px';
+      
+      icon.appendChild(b);
+      let angle = gsap.getProperty(foil, "rotation") * Math.PI / 180;
+      let r = 12;
+      gsap.set(b, { x: Math.cos(angle) * r, y: Math.sin(angle) * r, opacity: 1 });
+      gsap.to(b, { scale: 0, opacity: 0, duration: 0.3, onComplete: () => b.remove() });
+    }, 100);
+
+    icon.addEventListener('click', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+      clearInterval(bubbleInterval);
+
+      gsap.to(spin, { timeScale: 15, duration: 0.5, ease: "power2.in" });
+
+      let giantBubble = document.createElement('div');
+      giantBubble.className = 'bubble';
+      giantBubble.style.border = '2px solid #555';
+      icon.appendChild(giantBubble);
+      
+      gsap.fromTo(giantBubble, 
+        { width: 0, height: 0, opacity: 0.8, x: 0, y: 0 }, 
+        { width: 60, height: 60, x: -30, y: -30, duration: 0.5, delay: 0.5 }
+      );
+
+      setTimeout(() => {
+        gsap.to(giantBubble, { width: 0, height: 0, x: 0, y: 0, opacity: 0, duration: 0.1 });
+        foil.style.display = 'none';
+        
+        let sw = document.createElement('div');
+        sw.className = 'shockwave';
+        document.body.appendChild(sw);
+        
+        const rect = icon.getBoundingClientRect();
+        gsap.set(sw, { top: rect.top + 20, left: rect.left + 20 });
+        
+        gsap.to(sw, {
+          width: window.innerWidth * 2, height: window.innerWidth * 2,
+          opacity: 1, borderWidth: 20, duration: 0.5, ease: "power2.out",
+          onComplete: () => gsap.to(sw, { opacity: 0, duration: 0.3 })
+        });
+        
+        for(let i=0; i<8; i++) {
+          let shard = document.createElement('div');
+          shard.style.position = 'absolute'; shard.style.background = '#9B9B9B';
+          shard.style.width = '6px'; shard.style.height = '2px';
+          document.body.appendChild(shard);
+          gsap.set(shard, { top: rect.top + 20, left: rect.left + 20 });
+          
+          let a = (Math.PI * 2 / 8) * i;
+          gsap.to(shard, {
+            x: Math.cos(a) * window.innerWidth, y: Math.sin(a) * window.innerWidth,
+            rotation: Math.random()*720, duration: 1, ease: "power2.out"
+          });
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

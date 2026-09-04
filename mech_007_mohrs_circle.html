@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mohr's Circle</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #1a1a1a; overflow: hidden; }
+  .container { position: relative; width: 30px; height: 30px; cursor: pointer; }
+  .axes { position: absolute; width: 100%; height: 100%; }
+  .axis-x { position: absolute; top: 15px; width: 30px; height: 1px; background: #555; }
+  .axis-y { position: absolute; left: 15px; height: 30px; width: 1px; background: #555; }
+  .circle-wrapper { position: absolute; top: 3px; left: 7px; width: 24px; height: 24px; }
+  .circle { width: 100%; height: 100%; border: 1.5px solid #8E44AD; border-radius: 50%; box-sizing: border-box; position: absolute; }
+  .plane-line { position: absolute; top: 11px; left: 0; width: 24px; height: 1px; background: #8E44AD; }
+  .half-top { clip-path: polygon(-50% -50%, 150% -50%, 150% 50%, -50% 50%); }
+  .half-bottom { clip-path: polygon(-50% 50%, 150% 50%, 150% 150%, -50% 150%); }
+</style>
+</head>
+<body>
+<div class="container" id="mohr">
+  <div class="axes">
+    <div class="axis-x"></div>
+    <div class="axis-y"></div>
+  </div>
+  <div class="circle-wrapper" id="cw">
+    <div class="circle half-top" id="ct">
+      <div class="plane-line"></div>
+    </div>
+    <div class="circle half-bottom" id="cb">
+      <div class="plane-line"></div>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('mohr');
+  const cw = document.getElementById('cw');
+  const ct = document.getElementById('ct');
+  const cb = document.getElementById('cb');
+  const idle = gsap.to(cw, { rotation: 360, duration: 4, repeat: -1, ease: "linear" });
+  container.addEventListener('click', () => {
+    idle.kill();
+    gsap.to(cw, {
+      rotation: "+=45",
+      duration: 0.2,
+      onComplete: () => {
+        gsap.to(".axes", { opacity: 0, duration: 0.2 });
+        gsap.to(ct, { x: 500, y: -500, rotation: 180, duration: 1, ease: "power2.in" });
+        gsap.to(cb, { x: -500, y: 500, rotation: -180, duration: 1, ease: "power2.in", onComplete: () => container.remove() });
+      }
+    });
+  });
+</script>
+</body>
+</html>

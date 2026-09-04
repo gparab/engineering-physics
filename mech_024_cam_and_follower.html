@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cam and Follower</title>
+<style>
+  body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; cursor: pointer; }
+  #container { position: relative; width: 60px; height: 100px; }
+  .follower { position: absolute; left: 28px; top: 10px; width: 4px; height: 40px; background: #fff; border-radius: 2px; }
+  .follower::after { content:''; position: absolute; bottom: 0; left: -4px; width: 12px; height: 4px; background: #fff; border-radius: 2px; }
+  .cam-container { position: absolute; left: 15px; top: 60px; width: 30px; height: 30px; transform-origin: 15px 15px; }
+  .cam { position: absolute; left: 0; top: -10px; width: 30px; height: 40px; background: #8E44AD; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+  .pivot { position: absolute; left: 13px; top: 13px; width: 4px; height: 4px; background: #000; border-radius: 50%; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="container">
+  <div class="follower"></div>
+  <div class="cam-container">
+    <div class="cam"></div>
+    <div class="pivot"></div>
+  </div>
+</div>
+<script>
+  const camContainer = document.querySelector('.cam-container');
+  const follower = document.querySelector('.follower');
+  
+  let time = 0;
+  let rpm = 1;
+  let clicked = false;
+
+  let idleAnim = gsap.ticker.add(() => {
+    time += 0.05 * rpm;
+    let angle = time % (Math.PI * 2);
+    // basic cam lift formula (simplification)
+    let lift = Math.max(0, Math.cos(angle) * 10); 
+    
+    gsap.set(camContainer, { rotation: angle * (180/Math.PI) });
+    if(!clicked) {
+      gsap.set(follower, { y: -lift });
+    }
+  });
+
+  document.body.addEventListener('click', () => {
+    if (clicked) return;
+    clicked = true;
+    
+    // Speed up rapidly
+    gsap.to({r: 1}, {
+      r: 20,
+      duration: 1,
+      ease: "power2.in",
+      onUpdate: function() {
+        rpm = this.targets()[0].r;
+      },
+      onComplete: () => {
+        // Follower rockets off-screen
+        gsap.to(follower, {
+          y: -window.innerHeight,
+          duration: 0.5,
+          ease: "power2.in"
+        });
+        
+        // Cam explodes or fades
+        gsap.to('.cam-container', {
+          scale: 0,
+          opacity: 0,
+          rotation: "+=720",
+          duration: 0.5
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>

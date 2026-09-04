@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Pendulum</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #1a1a1a; overflow: hidden; }
+  .container { position: relative; width: 30px; height: 30px; cursor: pointer; }
+  .pivot { position: absolute; width: 4px; height: 4px; background: #3498DB; border-radius: 50%; top: 0; left: 13px; z-index: 2; }
+  .pendulum { position: absolute; top: 2px; left: 14.5px; transform-origin: top center; display: flex; flex-direction: column; align-items: center; }
+  .string { width: 1px; height: 20px; background: #3498DB; }
+  .bob { width: 6px; height: 6px; background: #3498DB; border-radius: 50%; }
+</style>
+</head>
+<body>
+<div class="container" id="pendulum-container">
+  <div class="pivot"></div>
+  <div class="pendulum" id="pendulum">
+    <div class="string" id="string"></div>
+    <div class="bob" id="bob"></div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const container = document.getElementById('pendulum-container');
+  const pendulum = document.getElementById('pendulum');
+  gsap.set(pendulum, { rotation: 30 });
+  const idle = gsap.to(pendulum, { rotation: -30, duration: 1, ease: "sine.inOut", repeat: -1, yoyo: true });
+  container.addEventListener('click', () => {
+    idle.kill();
+    const currentRot = gsap.getProperty(pendulum, "rotation");
+    const rad = currentRot * Math.PI / 180;
+    const vx = -Math.cos(rad) * 15 * (currentRot > 0 ? 1 : -1);
+    gsap.to(".string", { opacity: 0, duration: 0.1 });
+    gsap.to(".pivot", { opacity: 0, duration: 0.2 });
+    gsap.to(pendulum, {
+      x: vx * 50,
+      y: window.innerHeight,
+      rotation: currentRot + (vx * 10),
+      duration: 1.5,
+      ease: "power1.in",
+      onComplete: () => container.remove()
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AND Gate (Hardware)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    cursor: pointer;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  .wire {
+    fill: none;
+    stroke: #334155;
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  .gate {
+    fill: none;
+    stroke: #2ECC71;
+    stroke-width: 4;
+  }
+  .pulse {
+    fill: #2ECC71;
+    opacity: 0;
+  }
+  .output-light {
+    fill: #2ECC71;
+    opacity: 0;
+    filter: drop-shadow(0 0 10px #2ECC71);
+  }
+</style>
+</head>
+<body>
+<div class="container" id="model">
+  <svg viewBox="0 0 100 100" id="svg-element">
+    <path class="wire" d="M10,30 L30,30" id="in1" />
+    <path class="wire" d="M10,70 L30,70" id="in2" />
+    <path class="wire" d="M70,50 L90,50" id="out" />
+    
+    <path class="gate" d="M30,20 v60 h20 a30,30 0 0,0 0,-60 z" id="d-shape" />
+    
+    <circle class="pulse" cx="15" cy="30" r="3" id="p1" />
+    <circle class="pulse" cx="15" cy="70" r="3" id="p2" />
+    <circle class="output-light" cx="80" cy="50" r="4" id="pOut" />
+  </svg>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+  const tl = gsap.timeline({ repeat: -1 });
+  
+  // Idle animation
+  tl.to(["#p1", "#p2"], { opacity: 1, duration: 0.2 })
+    .to(["#p1", "#p2"], { cx: 28, duration: 0.6, ease: "power1.in" })
+    .to(["#p1", "#p2"], { opacity: 0, duration: 0.1 })
+    .to("#pOut", { opacity: 1, duration: 0.2 }, "+=0.1")
+    .to("#pOut", { cx: 90, duration: 0.5, ease: "power1.out" })
+    .to("#pOut", { opacity: 0, duration: 0.2 });
+
+  const model = document.getElementById('model');
+  model.addEventListener('click', () => {
+    tl.kill();
+    gsap.killTweensOf("*");
+    
+    const clickTl = gsap.timeline();
+    gsap.set(["#p1", "#p2", "#pOut", "#in1", "#in2", "#out"], { opacity: 0 });
+    
+    clickTl.to("#d-shape", {
+      attr: { d: "M50,20 v60 h0 a30,30 0 0,0 0,-60 z" },
+      duration: 0.4,
+      ease: "power2.in"
+    })
+    .to("#d-shape", {
+      attr: { d: "M70,50 v0 h0 a0,0 0 0,0 0,0 z" }, // collapses to a point
+      duration: 0.3,
+      ease: "power2.out"
+    })
+    .to("#svg-element", {
+      scale: 0,
+      opacity: 0,
+      filter: "drop-shadow(0 0 40px #2ECC71)",
+      duration: 0.3,
+      ease: "back.in(2)"
+    });
+  });
+</script>
+</body>
+</html>

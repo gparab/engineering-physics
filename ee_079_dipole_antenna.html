@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dipole Antenna</title>
+    <style>
+        body { margin: 0; padding: 0; background: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #container { position: relative; width: 300px; height: 300px; cursor: pointer; }
+        canvas { position: absolute; top: 0; left: 0; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="dipoleCanvas" width="300" height="300"></canvas>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        const container = document.getElementById('container');
+        const canvas = document.getElementById('dipoleCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = 300, height = 300;
+        const cx = width / 2, cy = height / 2;
+        const color = '#E84393';
+        
+        let ripples = [];
+        let isDestroyed = false;
+        let powerReflecting = false;
+        let particles = [];
+        let time = 0;
+
+        function addRipple() {
+            if (!isDestroyed && !powerReflecting) {
+                ripples.push({ r: 20, alpha: 1, w: 2 });
+            }
+        }
+        setInterval(addRipple, 400);
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            if (!isDestroyed) {
+                time += 0.1;
+                // Draw ripples
+                for (let i = ripples.length - 1; i >= 0; i--) {
+                    let r = ripples[i];
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, r.r, r.r * 1.5, 0, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(232, 67, 147, ${r.alpha})`;
+                    ctx.lineWidth = r.w;
+                    ctx.stroke();
+                    
+                    if (powerReflecting) {
+                        r.r -= 2;
+                        r.alpha += 0.05;
+                        r.w += 0.2;
+                        if (r.r <= 0) {
+                            ripples.splice(i, 1);
+                            explode();
+                        }
+                    } else {
+                        r.r += 1.5;
+                        r.alpha -= 0.01;
+                        if (r.alpha <= 0) ripples.splice(i, 1);
+                    }
+                }
+                
+                // Draw rods
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - 5);
+                ctx.lineTo(cx, cy - 60);
+                ctx.moveTo(cx, cy + 5);
+                ctx.lineTo(cx, cy + 60);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                
+                // Draw oscillating current
+                ctx.beginPath();
+                let currentPos = Math.sin(time) * 40;
+                ctx.arc(cx, cy + currentPos + (currentPos > 0 ? 10 : -10), 3, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+                
+            } else {
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha -= 0.02;
+                    ctx.globalAlpha = Math.max(0, p.alpha);
+                });
+                ctx.globalAlpha = 1;
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        function explode() {
+            if (isDestroyed) return;
+            isDestroyed = true;
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: cx, y: cy + (Math.random() - 0.5) * 120,
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: (Math.random() - 0.5) * 15,
+                    size: Math.random() * 4 + 1,
+                    color: Math.random() > 0.5 ? color : '#fff',
+                    alpha: 1
+                });
+            }
+            gsap.to(container, { opacity: 0, duration: 1.5, delay: 0.5 });
+        }
+
+        container.addEventListener('click', () => {
+            if (powerReflecting || isDestroyed) return;
+            powerReflecting = true;
+        });
+    </script>
+</body>
+</html>
