@@ -1,5 +1,6 @@
 <div align="center">
   <h1>🔬 Engineering Physics UI Component Library</h1>
+  <p>🌐 <strong>Live Demo: <a href="https://gparab.github.io/engineering-physics/">gparab.github.io/engineering-physics</a></strong></p>
   <p><strong>348 Enterprise-Grade Micro-Scientific Interactive Models Across 24 Engineering Disciplines</strong></p>
 </div>
 
