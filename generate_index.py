@@ -512,12 +512,12 @@ def generate_dashboard():
             meta = extract_model_meta(f)
             model_name = meta["title"]
             rating_score = ratings.get(f.name)
-            rating_badge = f'<span class="card-rating-badge">{rating_score:.1f} ★</span>' if rating_score else ''
+            rating_badge = ""
 
             html += f"""        <a href="{rel_path}" target="_blank" class="model-card" data-title="{model_name.lower()}">
           <div class="card-top">
             <span class="card-title">{model_name}</span>
-            {rating_badge}
+            
           </div>
           <div class="card-meta">
             <span class="card-id">{f.stem}</span>
