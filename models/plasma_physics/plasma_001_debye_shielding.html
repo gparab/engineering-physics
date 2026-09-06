@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debye Shielding & Sheath Formation — Plasma Physics</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block */
+      --block-bg: #e0d4fc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #e0d4fc;
+      --block-text: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    main canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Debye Shielding & Sheath Formation</h1>
+      <div class="discipline-badge">Plasma Physics</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Debye shielding is the fundamental process by which a quasi-neutral plasma shields localized electrostatic potentials. Fast, highly mobile electrons respond to an inserted positive test charge by forming a screening cloud that causes the potential to decay exponentially rather than following a 1/r Coulomb drop. The characteristic screening length, known as the Debye length, defines the spatial boundary between individual particle interactions and collective plasma behavior.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        Φ(r) = (q / (4π ε₀ r)) · exp(-r / λ_D) ,  λ_D = √(ε₀ k_B T_e / (n_e e²))
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Debye Shielding & Sheath Formation
+     * Discipline: Plasma Physics
+     *
+     * 1. Physical Phenomenon:
+     *    Quasi-neutral plasma screening of an electrostatic test charge. Thermal electrons
+     *    gravitate towards positive test charges while heavy ions provide an inert neutralizing background.
+     * 2. Governing Equations:
+     *    Debye screened potential: Phi(r) = (q / 4pi eps0 r) * exp(-r / lambda_D)
+     *    Debye length: lambda_D = sqrt(eps0 * k_B * T_e / (n_e * e^2))
+     * 3. Parameters and Velocity:
+     *    Simulation integrates electron acceleration towards origin balanced by random thermal velocity.
+     *
+     * Numerical Integration & State Representation:
+     * - Continuous time step physics integration loop maintaining dynamic state.
+     * - Velocity and position coordinates mapped to dynamic high-DPI canvas pixels.
+     * - Force calculations, particle acceleration, and field equations updated per frame.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Theme palette definition
+    const theme = {
+      bg: '#121526',
+      text: '#ffffff',
+      grid: 'rgba(255, 255, 255, 0.08)',
+      axis: 'rgba(255, 255, 255, 0.25)',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      purple: '#c084fc'
+    };
+
+    function updateThemePalette() {
+      const computed = getComputedStyle(document.documentElement);
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      theme.bg = isLight ? '#ffffff' : '#121526';
+      theme.text = isLight ? '#000000' : '#ffffff';
+      theme.grid = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+      theme.axis = isLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
+      theme.blue = isLight ? '#0277bd' : '#38bdf8';
+      theme.teal = isLight ? '#00897b' : '#2dd4bf';
+      theme.amber = isLight ? '#d97706' : '#fbbf24';
+      theme.red = isLight ? '#c62828' : '#f87171';
+      theme.purple = isLight ? '#6a1b9a' : '#c084fc';
+    }
+    window.addEventListener('themechange', updateThemePalette);
+    updateThemePalette();
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    const numElectrons = 140;
+    const numIons = 70;
+    const electrons = [];
+    const ions = [];
+    const lambdaD = 85;
+    let time = 0;
+
+    for (let i = 0; i < numElectrons; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const r = 25 + Math.random() * 260;
+      electrons.push({
+        x: Math.cos(angle) * r,
+        y: Math.sin(angle) * r,
+        vx: (Math.random() - 0.5) * 2.2,
+        vy: (Math.random() - 0.5) * 2.2
+      });
+    }
+
+    for (let i = 0; i < numIons; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const r = 40 + Math.random() * 260;
+      ions.push({
+        x: Math.cos(angle) * r,
+        y: Math.sin(angle) * r,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4
+      });
+    }
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION LOOP ---
+    function animate() {
+      updateThemePalette();
+      time += 0.016;
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      const cx = width * 0.5;
+      const cy = height * 0.5;
+
+      // Draw background coordinate grid
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      const gridSize = 40;
+      for (let x = 0; x < width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0); ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y); ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      // Draw Debye length sphere boundary
+      ctx.beginPath();
+      ctx.arc(cx, cy, lambdaD, 0, Math.PI * 2);
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([6, 6]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Fill Debye sphere with subtle halo
+      const haloGrad = ctx.createRadialGradient(cx, cy, 5, cx, cy, lambdaD * 1.5);
+      haloGrad.addColorStop(0, 'rgba(56, 189, 248, 0.22)');
+      haloGrad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+      ctx.fillStyle = haloGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, lambdaD * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw central positive test charge
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx.fillStyle = theme.red;
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Plus sign on test charge
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - 6, cy); ctx.lineTo(cx + 6, cy);
+      ctx.moveTo(cx, cy - 6); ctx.lineTo(cx, cy + 6);
+      ctx.stroke();
+
+      // Update and draw ions (slow heavy background)
+      ctx.fillStyle = theme.purple;
+      for (let ion of ions) {
+        ion.x += ion.vx;
+        ion.y += ion.vy;
+        const d = Math.sqrt(ion.x * ion.x + ion.y * ion.y);
+        if (d > 280) { ion.x *= 0.95; ion.y *= 0.95; ion.vx *= -1; ion.vy *= -1; }
+        if (d < 30) { ion.vx += (ion.x / d) * 0.5; ion.vy += (ion.y / d) * 0.5; }
+
+        ctx.beginPath();
+        ctx.arc(cx + ion.x, cy + ion.y, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Update and draw electrons (thermal + screened attraction)
+      for (let e of electrons) {
+        const d = Math.sqrt(e.x * e.x + e.y * e.y);
+        const force = (500 / (d * d + 400)) * Math.exp(-d / lambdaD);
+        e.vx -= (e.x / d) * force * 0.35;
+        e.vy -= (e.y / d) * force * 0.35;
+
+        // Thermal agitation
+        e.vx += (Math.random() - 0.5) * 0.4;
+        e.vy += (Math.random() - 0.5) * 0.4;
+        e.vx *= 0.985;
+        e.vy *= 0.985;
+
+        e.x += e.vx;
+        e.y += e.vy;
+
+        if (d < 18) {
+          e.x = (e.x / d) * 22;
+          e.y = (e.y / d) * 22;
+          e.vx = (Math.random() - 0.5) * 2;
+          e.vy = (Math.random() - 0.5) * 2;
+        }
+        if (d > 300) { e.x *= 0.95; e.y *= 0.95; e.vx *= -1; e.vy *= -1; }
+
+        ctx.beginPath();
+        ctx.arc(cx + e.x, cy + e.y, 2.8, 0, Math.PI * 2);
+        ctx.fillStyle = theme.blue;
+        ctx.fill();
+      }
+
+      // Potential curve graph in bottom left corner
+      const plotX = 24, plotY = height - 90, plotW = 180, plotH = 65;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.fillRect(plotX, plotY, plotW, plotH);
+      ctx.strokeStyle = theme.axis;
+      ctx.strokeRect(plotX, plotY, plotW, plotH);
+
+      ctx.beginPath();
+      for (let px = 0; px < plotW - 10; px += 2) {
+        const rNorm = (px + 10) / 35;
+        const screenedV = (1 / rNorm) * Math.exp(-rNorm);
+        const py = plotY + plotH - 8 - Math.min(plotH - 16, screenedV * 28);
+        if (px === 0) ctx.moveTo(plotX + px + 5, py);
+        else ctx.lineTo(plotX + px + 5, py);
+      }
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Telemetry HUD
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText('DEBEY SHIELDING TELEMETRY', 24, 30);
+      ctx.fillText(`λ_D: ${lambdaD.toFixed(1)} px`, 24, 46);
+      ctx.fillText(`T_e: 2.50 eV (Electrons: ${numElectrons})`, 24, 62);
+      ctx.fillText(`Screening Factor: ${(Math.exp(-1)).toFixed(3)} at r=λ_D`, 24, 78);
+      ctx.fillText('Screened Potential Φ(r)', plotX + 6, plotY + 14);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

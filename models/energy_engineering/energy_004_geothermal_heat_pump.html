@@ -43,6 +43,25 @@
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* Geometry & Spacing */
       --rounded-card: 24px;
       --rounded-pill: 50px;
@@ -56,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #f5f5f5;
       --surface: #fafafa;
@@ -202,7 +240,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -353,20 +393,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      if (variableName === '--text' || variableName === '--text-muted') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      }
-      if (variableName === '--surface-border') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#7c2d12';
-      }
-      if (variableName === '--surface') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#ffd6cc';
-      }
-      if (variableName === '--accent') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#7c2d12';
-      }
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     function getCssColor(varName, fallback) {
@@ -389,92 +483,284 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* redraw triggers automatically on next frame */ });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
-    // Core physical parameters, oscillation frequencies, and position states
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
     let time = 0;
+    const Tground = 12.0; // °C
+    const Tin = 4.2;      // °C (entering ground)
+    const Tout = 8.6;     // °C (leaving ground)
+    const mDot = 0.85;    // kg/s
+    const cp = 4.184;     // kJ/(kg·K)
+    const Qdot = mDot * cp * (Tout - Tin); // kW ~ 15.6 kW
+    const COP = 4.65;
+    const Wcomp = Qdot / (COP - 1); // compressor work kW
+
+    // Closed-loop circulating fluid particles
+    const PARTICLE_COUNT = 90;
+    const particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        s: (i / PARTICLE_COUNT), // 0 to 1 along closed circuit loop
+        speed: 0.0035 + Math.random() * 0.0005,
+        offset: (Math.random() - 0.5) * 3,
+        size: 2.2 + Math.random() * 1.2
+      });
+    }
+
+    // Radial heat flux arrows from earth to borehole
+    const fluxArrows = [];
+    for (let i = 0; i < 18; i++) {
+      fluxArrows.push({
+        depthFrac: 0.15 + 0.75 * (i / 18),
+        side: i % 2 === 0 ? -1 : 1,
+        dist: 45 + (i % 3) * 15,
+        phase: (i * 0.4) % (Math.PI * 2)
+      });
+    }
 
     // --- 4. CONTINUOUS ANIMATION LOOP & NUMERICAL INTEGRATION ---
-    // Propagates dynamics each animation frame via time integration step
     function animate() {
-      // Clear canvas (transparent ground lets pastel color block show through)
-      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      // --- 5. RENDERING PIPELINE ---
-      // Sequentially draws background grids, body geometry, vector fields, and readouts
-      const blue = getThemeColor('--sim-blue');
-            const text = getThemeColor('--text');
-            const textMuted = getThemeColor('--text-muted');
-            const amber = getThemeColor('--sim-amber');
-            const red = getThemeColor('--sim-red');
-            const teal = getThemeColor('--sim-teal');
-            const border = getThemeColor('--surface-border');
-      
-            time += 0.02;
-            const uX = width * 0.55;
-            const surfY = height * 0.35;
-            const boreDepth = height * 0.52;
-      
-            // Surface ground line
-            ctx.strokeStyle = border;
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(width * 0.1, surfY);
-            ctx.lineTo(width * 0.9, surfY);
-            ctx.stroke();
-      
-            // Stratified Earth (Geothermal heat sink/source)
-            ctx.fillStyle = 'rgba(205, 92, 92, 0.12)';
-            ctx.fillRect(width * 0.1, surfY, width * 0.8, boreDepth + 15);
-      
-            // Building on surface (Left)
-            ctx.fillStyle = border;
-            ctx.strokeStyle = textMuted;
-            ctx.lineWidth = 2;
-            ctx.strokeRect(width * 0.18, surfY - 70, 90, 70);
-      
-            // Heat Pump Unit
-            ctx.fillStyle = teal;
-            ctx.fillRect(width * 0.28, surfY - 35, 40, 35);
-            ctx.fillStyle = text;
-            ctx.font = '10px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('GSHP', width * 0.28 + 20, surfY - 14);
-      
-            // Borehole U-Tube Loop
-            ctx.lineWidth = 4;
-            // Down leg (Cold fluid: Blue)
-            ctx.strokeStyle = blue;
-            ctx.beginPath();
-            ctx.moveTo(uX - 16, surfY);
-            ctx.lineTo(uX - 16, surfY + boreDepth);
-            ctx.stroke();
-      
-            // Bottom U-turn
-            ctx.beginPath();
-            ctx.arc(uX, surfY + boreDepth, 16, Math.PI, 0, true);
-            ctx.stroke();
-      
-            // Up leg (Warmed fluid: Red/Amber)
-            ctx.strokeStyle = red;
-            ctx.beginPath();
-            ctx.moveTo(uX + 16, surfY + boreDepth);
-            ctx.lineTo(uX + 16, surfY);
-            ctx.stroke();
-      
-            ctx.fillStyle = text;
-            ctx.font = '13px Inter, sans-serif';
-            ctx.textAlign = 'left';
-            ctx.fillText('Ground Temperature T_ground = 12°C (Constant Year-Round)', 24, 30);
-            ctx.fillText('Coefficient of Performance COP_heating = 4.65 | Borehole Depth: 120 m', 24, 52);
-      
-            requestAnimationFrame(animate);
-          }
-          requestAnimationFrame(animate);
+      time += 0.025;
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      const surfY = height * 0.32;
+      const boreDepth = height * 0.58;
+      const uX = width * 0.65;
+      const legSpacing = 26;
+      const hpX = width * 0.28;
+      const hpY = surfY - 45;
+
+      // 1. Surface Ground Line & Stratified Geothermal Soil
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(40, surfY);
+      ctx.lineTo(width - 40, surfY);
+      ctx.stroke();
+
+      // Stratified thermal ground backdrop
+      const groundGrad = ctx.createLinearGradient(0, surfY, 0, surfY + boreDepth);
+      groundGrad.addColorStop(0, 'rgba(251, 191, 36, 0.06)'); // shallow warm
+      groundGrad.addColorStop(0.5, 'rgba(248, 113, 113, 0.12)'); // geothermal heat layer
+      groundGrad.addColorStop(1, 'rgba(205, 92, 92, 0.20)');   // deep earth
+      ctx.fillStyle = groundGrad;
+      ctx.fillRect(40, surfY, width - 80, boreDepth + 20);
+
+      // Subsurface Isotherm Rings around borehole
+      for (let r = 1; r <= 3; r++) {
+        const ringRad = r * 38;
+        ctx.strokeStyle = `rgba(248, 113, 113, ${0.18 - r * 0.04})`;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(uX - ringRad, surfY + 30, ringRad * 2, boreDepth - 20);
+      }
+      ctx.setLineDash([]);
+
+      // 2. Surface Building & GSHP Unit
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(width * 0.12, surfY - 85, 120, 85);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(width * 0.12, surfY - 85, 120, 85);
+
+      // Building Roof pitch
+      ctx.beginPath();
+      ctx.moveTo(width * 0.12 - 5, surfY - 85);
+      ctx.lineTo(width * 0.12 + 60, surfY - 118);
+      ctx.lineTo(width * 0.12 + 125, surfY - 85);
+      ctx.closePath();
+      ctx.fillStyle = theme.border;
+      ctx.fill();
+
+      // GSHP Heat Pump Cabinet
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hpX - 25, hpY - 20, 50, 40);
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(hpX - 25, hpY - 20, 50, 40);
+
+      ctx.fillStyle = theme.teal;
+      ctx.font = '600 10px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillText('GSHP', hpX, hpY - 4);
+      ctx.fillText('COP 4.65', hpX, hpY + 12);
+
+      // Building heating radiator distribution
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(hpX - 25, hpY - 10);
+      ctx.lineTo(width * 0.16, hpY - 10);
+      ctx.lineTo(width * 0.16, surfY - 60);
+      ctx.stroke();
+
+      // 3. Borehole Grouting & U-Tube Casings
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.15)';
+      ctx.fillRect(uX - legSpacing - 12, surfY, legSpacing * 2 + 24, boreDepth + 18);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(uX - legSpacing - 12, surfY, legSpacing * 2 + 24, boreDepth + 18);
+
+      // U-tube physical channels
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      // Down leg
+      ctx.moveTo(hpX + 25, hpY + 10);
+      ctx.lineTo(uX - legSpacing, hpY + 10);
+      ctx.lineTo(uX - legSpacing, surfY + boreDepth);
+      // Bottom bend
+      ctx.arc(uX, surfY + boreDepth, legSpacing, Math.PI, 0, true);
+      // Up leg
+      ctx.lineTo(uX + legSpacing, hpY - 10);
+      ctx.lineTo(hpX + 25, hpY - 10);
+      ctx.stroke();
+
+      // 4. Closed Circuit Path Parametrization & Fluid Particles
+      // Total circuit length calculation
+      const downLegX = uX - legSpacing;
+      const upLegX = uX + legSpacing;
+      const topY = hpY + 10;
+      const bottomY = surfY + boreDepth;
+
+      function getCircuitPoint(s) {
+        // Parametric path:
+        // Segment 1 (0 to 0.10): Header from HP to down leg (hpX+25, topY) -> (downLegX, topY)
+        // Segment 2 (0.10 to 0.45): Down leg (downLegX, topY) -> (downLegX, bottomY)
+        // Segment 3 (0.45 to 0.55): Bottom U-turn arc from downLegX to upLegX
+        // Segment 4 (0.55 to 0.90): Up leg (upLegX, bottomY) -> (upLegX, hpY - 10)
+        // Segment 5 (0.90 to 1.00): Return header (upLegX, hpY - 10) -> (hpX + 25, hpY - 10)
+        let x, y, tempFrac; // 0 = coldest (Tin), 1 = warmest (Tout)
+
+        if (s < 0.10) {
+          const t = s / 0.10;
+          x = (hpX + 25) + (downLegX - (hpX + 25)) * t;
+          y = topY;
+          tempFrac = 0.0;
+        } else if (s < 0.45) {
+          const t = (s - 0.10) / 0.35;
+          x = downLegX;
+          y = topY + (bottomY - topY) * t;
+          tempFrac = t * 0.45; // absorbing heat progressively
+        } else if (s < 0.55) {
+          const t = (s - 0.45) / 0.10;
+          const ang = Math.PI + t * Math.PI;
+          x = uX + legSpacing * Math.cos(ang);
+          y = bottomY - legSpacing * Math.sin(ang);
+          tempFrac = 0.45 + t * 0.10;
+        } else if (s < 0.90) {
+          const t = (s - 0.55) / 0.35;
+          x = upLegX;
+          y = bottomY - (bottomY - (hpY - 10)) * t;
+          tempFrac = 0.55 + t * 0.45;
+        } else {
+          const t = (s - 0.90) / 0.10;
+          x = upLegX - (upLegX - (hpX + 25)) * t;
+          y = hpY - 10;
+          tempFrac = 1.0;
+        }
+        return { x, y, tempFrac };
+      }
+
+      particles.forEach(p => {
+        p.s = (p.s + p.speed) % 1.0;
+        const pt = getCircuitPoint(p.s);
+        const curX = pt.x + p.offset;
+        const curY = pt.y;
+
+        // Color grading from cold (blue, 4.2°C) to warm (red/amber, 8.6°C)
+        let col = theme.blue;
+        if (pt.tempFrac > 0.7) col = theme.red;
+        else if (pt.tempFrac > 0.4) col = theme.amber;
+        else if (pt.tempFrac > 0.15) col = theme.teal;
+
+        ctx.beginPath();
+        ctx.arc(curX, curY, p.size * 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = (pt.tempFrac > 0.5) ? 'rgba(248, 113, 113, 0.25)' : 'rgba(56, 189, 248, 0.25)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(curX, curY, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = col;
+        ctx.fill();
+      });
+
+      // 5. Radial Geothermal Heat Flux Vectors
+      fluxArrows.forEach(fa => {
+        const arrowY = surfY + boreDepth * fa.depthFrac;
+        const startX = uX + fa.side * fa.dist;
+        const targetX = uX + fa.side * (legSpacing + 12);
+        const pulse = Math.sin(time * 3 + fa.phase) * 6;
+
+        ctx.strokeStyle = theme.amber;
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(startX + pulse * fa.side, arrowY);
+        ctx.lineTo(targetX, arrowY);
+        ctx.stroke();
+
+        // Arrowhead pointing inward to borehole
+        ctx.fillStyle = theme.amber;
+        ctx.beginPath();
+        ctx.moveTo(targetX, arrowY);
+        ctx.lineTo(targetX + fa.side * 6, arrowY - 4);
+        ctx.lineTo(targetX + fa.side * 6, arrowY + 4);
+        ctx.closePath();
+        ctx.fill();
+      });
+
+      // Annotations
+      ctx.fillStyle = theme.text;
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillText('Ground Loop Down (Cold: 4.2°C) ↓', downLegX - 180, surfY + 35);
+      ctx.fillText('↑ Return Up (Warmed: 8.6°C)', upLegX + 25, surfY + 35);
+      ctx.fillText('Radial Heat Flux q″ →', uX - 150, surfY + boreDepth * 0.5);
+
+      // 6. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 245;
+      const hudH = 138;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('GROUND SOURCE HEAT PUMP (GSHP)', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Ground Far-Field Temp T_g: ${Tground.toFixed(1)}°C`, hudX + 10, hudY + 36);
+      ctx.fillText(`Loop Inlet / Outlet: ${Tin.toFixed(1)}°C → ${Tout.toFixed(1)}°C (ΔT = ${(Tout - Tin).toFixed(1)} K)`, hudX + 10, hudY + 52);
+      ctx.fillText(`Circulating Mass Flow ṁ: ${mDot.toFixed(2)} kg/s`, hudX + 10, hudY + 68);
+      ctx.fillText(`Geothermal Heat Absorbed Q̇: ${Qdot.toFixed(1)} kW`, hudX + 10, hudY + 84);
+      ctx.fillText(`Compressor Electric Input: ${Wcomp.toFixed(1)} kW`, hudX + 10, hudY + 100);
+      ctx.fillText(`Heating COP: ${COP.toFixed(2)} (High Efficiency)`, hudX + 10, hudY + 116);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
   </script>
 </body>
 </html>

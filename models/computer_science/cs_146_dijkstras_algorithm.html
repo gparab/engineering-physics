@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -385,20 +489,24 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => {});
+    
     resize();
 
 
+    // Continuous Dynamic Simulation Engine for Dijkstra's Algorithm
     let time = 0;
+    let stepTimer = 0;
+
     const gNodes = [
-      { id: 'A', x: -160, y: 0, dist: 0 },
-      { id: 'B', x: -60, y: -70, dist: 4 },
-      { id: 'C', x: -60, y: 70, dist: 2 },
-      { id: 'D', x: 60, y: -70, dist: 7 },
-      { id: 'E', x: 60, y: 70, dist: 5 },
-      { id: 'F', x: 160, y: 0, dist: 9 }
+      { id: 'A', x: -160, y: 0, dist: 0, state: 'SETTLED', pi: -1 },
+      { id: 'B', x: -60, y: -70, dist: 4, state: 'UNVISITED', pi: 0 },
+      { id: 'C', x: -60, y: 70, dist: 2, state: 'UNVISITED', pi: 0 },
+      { id: 'D', x: 60, y: -70, dist: 7, state: 'UNVISITED', pi: 1 },
+      { id: 'E', x: 60, y: 70, dist: 5, state: 'UNVISITED', pi: 2 },
+      { id: 'F', x: 160, y: 0, dist: 8, state: 'UNVISITED', pi: 4 }
     ];
 
     const edges = [
@@ -412,82 +520,252 @@
       { u: 3, v: 4, w: 1 }
     ];
 
-    // Optimal Path: A(0) -> C(2) -> E(5) -> D(6) -> F(8)
-    const optPath = [0, 2, 4, 3, 5];
+    // Travelling relaxation wavefront particles
+    const waveParticles = [];
 
     function animate() {
       requestAnimationFrame(animate);
-      ctx.clearRect(0, 0, width, height);
+      updateThemePalette();
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
       time += 0.016;
-      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-      const textColor = "#000000";
-      const mutedColor = "#334155";
-      const accentColor = "#0f172a";
-      const pathColor = '#ffb74d';
-      const visitedColor = '#26a69a';
+      stepTimer += 0.016;
 
-      const cx = width * 0.5;
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const accentColor = theme.primary;
+      const highColor = theme.secondary || theme.green;
+      const goldColor = theme.amber;
+      const alertColor = theme.alert || theme.red;
+      const wireColor = theme.border;
+      const surfaceColor = theme.surface;
+
+      const cx = width * 0.46;
       const cy = height * 0.44;
+      const scale = Math.min(width / 750, height / 500);
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // Discrete step sequence: 6 steps (settling nodes in order A, C, B, E, D, F)
+      // Cycle duration = 7.2s (1.2s per step)
+      const cycleTime = stepTimer % 7.2;
+      const activeStep = Math.floor(cycleTime / 1.2);
+      const stepFrac = (cycleTime % 1.2) / 1.2;
+
+      // Settlement progression:
+      // Step 0: Settle A(0). Relax edges to B(4) and C(2).
+      // Step 1: Settle C(2). Relax edges to E(2+3=5).
+      // Step 2: Settle B(4). Relax edges to D(4+5=9).
+      // Step 3: Settle E(5). Relax edges to D(5+1=6, better than 9!) and F(5+4=9).
+      // Step 4: Settle D(6). Relax edge to F(6+2=8, better than 9!).
+      // Step 5: Settle F(8). Goal reached! Golden beam illuminates optimal path A->C->E->D->F.
+
+      const settledOrder = [0, 2, 1, 4, 3, 5];
+      const activeNodeIdx = settledOrder[Math.min(activeStep, settledOrder.length - 1)];
+
+      // Dynamic distance map according to activeStep
+      const currentDists = [
+        0,
+        activeStep >= 0 ? 4 : Infinity,
+        activeStep >= 0 ? 2 : Infinity,
+        activeStep >= 4 ? 6 : (activeStep >= 2 ? 9 : Infinity),
+        activeStep >= 1 ? 5 : Infinity,
+        activeStep >= 5 ? 8 : (activeStep >= 3 ? 9 : Infinity)
+      ];
+
+      // Spawn active wavefront particles along outgoing edges of active node
+      if (Math.random() < 0.25) {
+        const outEdges = edges.filter(e => e.u === activeNodeIdx || e.v === activeNodeIdx);
+        if (outEdges.length > 0) {
+          const randE = outEdges[Math.floor(Math.random() * outEdges.length)];
+          const from = (randE.u === activeNodeIdx) ? randE.u : randE.v;
+          const to = (from === randE.u) ? randE.v : randE.u;
+          waveParticles.push({ from, to, progress: 0, speed: 0.03 + Math.random() * 0.02 });
+        }
+      }
+
+      // Title Banner
+      ctx.font = '600 13px Inter, sans-serif';
+      ctx.fillStyle = accentColor;
+      ctx.textAlign = 'center';
+      const statusTitle = (activeStep === 5)
+        ? `Target F Reached! Optimal Path: A → C → E → D → F (Total Weight: 8)`
+        : `Dijkstra Wavefront: Step ${activeStep + 1}/6: Settling Node ${gNodes[activeNodeIdx].id} (dist = ${currentDists[activeNodeIdx]})`;
+      ctx.fillText(statusTitle, cx, 28);
 
       // Draw Graph Edges
       edges.forEach(e => {
         const u = gNodes[e.u];
         const v = gNodes[e.v];
-        ctx.strokeStyle = isDark ? '#4a4a68' : '#b0bec5';
+        const ux = cx + u.x * scale;
+        const uy = cy + u.y * scale;
+        const vx = cx + v.x * scale;
+        const vy = cy + v.y * scale;
+
+        ctx.strokeStyle = wireColor;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(cx + u.x, cy + u.y);
-        ctx.lineTo(cx + v.x, cy + v.y);
+        ctx.moveTo(ux, uy);
+        ctx.lineTo(vx, vy);
         ctx.stroke();
 
-        // Edge Weight
-        ctx.font = '600 11px monospace';
+        // Edge Weight badge
+        const mx = (ux + vx) * 0.5;
+        const my = (uy + vy) * 0.5;
+        ctx.fillStyle = surfaceColor;
+        ctx.beginPath();
+        ctx.arc(mx, my - 2, 9 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = wireColor;
+        ctx.stroke();
+
+        ctx.font = '600 10px monospace';
         ctx.fillStyle = mutedColor;
         ctx.textAlign = 'center';
-        ctx.fillText(`${e.w}`, cx + (u.x + v.x) * 0.5, cy + (u.y + v.y) * 0.5 - 6);
+        ctx.fillText(`${e.w}`, mx, my + 1.5);
       });
 
-      // Highlight Optimal Shortest Path
-      ctx.strokeStyle = pathColor;
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      for (let i = 0; i < optPath.length; i++) {
-        const nd = gNodes[optPath[i]];
-        if (i === 0) ctx.moveTo(cx + nd.x, cy + nd.y);
-        else ctx.lineTo(cx + nd.x, cy + nd.y);
-      }
-      ctx.stroke();
-
-      // Draw Nodes
-      gNodes.forEach((nd, idx) => {
-        const nx = cx + nd.x;
-        const ny = cy + nd.y;
-        const isPath = optPath.includes(idx);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = isPath ? pathColor : visitedColor;
-        ctx.lineWidth = isPath ? 3 : 2;
+      // Animate travelling relaxation particles
+      ctx.fillStyle = highColor;
+      for (let i = waveParticles.length - 1; i >= 0; i--) {
+        const p = waveParticles[i];
+        p.progress += p.speed;
+        const u = gNodes[p.from];
+        const v = gNodes[p.to];
+        const px = cx + (u.x + (v.x - u.x) * p.progress) * scale;
+        const py = cy + (u.y + (v.y - u.y) * p.progress) * scale;
         ctx.beginPath();
-        ctx.arc(nx, ny, 20, 0, Math.PI * 2);
+        ctx.arc(px, py, 3.5 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        if (p.progress >= 1.0) waveParticles.splice(i, 1);
+      }
+
+      // Golden Beam on Optimal Shortest Path when goal is reached or step >= 5
+      if (activeStep >= 4) {
+        const optPath = [0, 2, 4, 3, 5];
+        ctx.strokeStyle = goldColor;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        for (let i = 0; i < optPath.length; i++) {
+          const nd = gNodes[optPath[i]];
+          const nx = cx + nd.x * scale;
+          const ny = cy + nd.y * scale;
+          if (i === 0) ctx.moveTo(nx, ny);
+          else ctx.lineTo(nx, ny);
+        }
+        ctx.stroke();
+
+        // Traveling gold photon along optimal path
+        const laserProg = (time * 1.5) % (optPath.length - 1);
+        const segIdx = Math.floor(laserProg);
+        const segFrac = laserProg - segIdx;
+        const n1 = gNodes[optPath[segIdx]];
+        const n2 = gNodes[optPath[segIdx + 1]];
+        const lx = cx + (n1.x + (n2.x - n1.x) * segFrac) * scale;
+        const ly = cy + (n1.y + (n2.y - n1.y) * segFrac) * scale;
+
+        ctx.fillStyle = goldColor;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 6 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw Graph Nodes
+      gNodes.forEach((nd, idx) => {
+        const nx = cx + nd.x * scale;
+        const ny = cy + nd.y * scale;
+        const isSettled = settledOrder.slice(0, activeStep + 1).includes(idx);
+        const isActive = (idx === activeNodeIdx);
+        const isTarget = (idx === 5);
+
+        // Node Circle Background
+        ctx.fillStyle = isActive ? accentColor : (isSettled ? surfaceColor : theme.bg);
+        ctx.strokeStyle = isActive ? highColor : (isSettled ? accentColor : wireColor);
+        ctx.lineWidth = isActive ? 3 : (isSettled ? 2.5 : 1.5);
+
+        ctx.beginPath();
+        ctx.arc(nx, ny, 21 * scale, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        ctx.font = '700 12px Inter, sans-serif';
-        ctx.fillStyle = isPath ? pathColor : textColor;
-        ctx.textAlign = 'center';
-        ctx.fillText(nd.id, nx, ny - 2);
+        // Active node pulse ring
+        if (isActive) {
+          const pulseR = (24 + Math.sin(time * 10) * 4) * scale;
+          ctx.strokeStyle = highColor;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(nx, ny, pulseR, 0, Math.PI * 2);
+          ctx.stroke();
+        }
 
-        ctx.font = '9px monospace';
-        ctx.fillStyle = mutedColor;
-        ctx.fillText(`d=${nd.dist}`, nx, ny + 10);
+        // Node ID text
+        ctx.font = '700 13px Inter, sans-serif';
+        ctx.fillStyle = isActive ? theme.bg : textColor;
+        ctx.textAlign = 'center';
+        ctx.fillText(nd.id, nx, ny - 1);
+
+        // Distance label
+        const distStr = currentDists[idx] === Infinity ? '∞' : `${currentDists[idx]}`;
+        ctx.font = '600 9px monospace';
+        ctx.fillStyle = isSettled ? highColor : mutedColor;
+        ctx.fillText(`d=${distStr}`, nx, ny + 11 * scale);
       });
 
-      const ty = height - 40;
-      ctx.font = '13px Inter, sans-serif';
+      // Left Panel: Priority Queue (Min-Heap) Status HUD
+      const pqX = 24;
+      const pqY = height - 150 * scale;
+      const pqW = 190 * scale;
+      const pqH = 110 * scale;
+
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1;
+      ctx.fillRect(pqX, pqY, pqW, pqH);
+      ctx.strokeRect(pqX, pqY, pqW, pqH);
+
+      ctx.font = '600 10px Inter, sans-serif';
       ctx.fillStyle = textColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('Priority Queue (Min-Heap)', pqX + 8, pqY + 16);
+
+      // List frontier nodes sorted by distance
+      const frontierNodes = gNodes
+        .map((n, i) => ({ id: n.id, dist: currentDists[i], idx: i }))
+        .filter(n => !settledOrder.slice(0, activeStep + 1).includes(n.idx) && n.dist < Infinity)
+        .sort((a, b) => a.dist - b.dist);
+
+      ctx.font = '500 9px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText(`Settled: [${settledOrder.slice(0, activeStep + 1).map(i => gNodes[i].id).join(', ')}]`, pqX + 8, pqY + 34);
+
+      ctx.fillStyle = highColor;
+      if (frontierNodes.length > 0) {
+        ctx.fillText(`Extract-Min: ${frontierNodes[0].id} (d=${frontierNodes[0].dist})`, pqX + 8, pqY + 52);
+        ctx.fillStyle = mutedColor;
+        ctx.fillText(`Frontier: ${frontierNodes.map(f => `${f.id}:${f.dist}`).join(' | ')}`, pqX + 8, pqY + 70);
+      } else {
+        ctx.fillText('Frontier: Empty (Complete)', pqX + 8, pqY + 52);
+      }
+      ctx.fillStyle = goldColor;
+      ctx.fillText(`Optimal Cost: ${currentDists[5]} units`, pqX + 8, pqY + 90);
+
+      // Bottom Telemetry Footer
+      const ty = height - 20;
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
       ctx.textAlign = 'center';
-      ctx.fillText('Shortest Path Search (A → F): Minimum Cost Traversed via Priority Queue Relaxation', cx, ty);
+      ctx.fillText(`Dijkstra Relaxation Invariant: d(v) = min(d(v), d(u) + w(u,v)) | Edge Evaluated: (${gNodes[activeNodeIdx].id} → neighbors) | Shortest Distance: ${currentDists[5]}`, cx, ty);
     }
     requestAnimationFrame(animate);
   </script>

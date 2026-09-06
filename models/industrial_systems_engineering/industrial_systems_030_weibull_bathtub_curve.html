@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -384,68 +488,260 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     resize();
 
+    // --- 3. PHYSICAL STATE VARIABLES & WEIBULL RELIABILITY ENGINE ---
     let time = 0;
+    const eta = 10000; // Characteristic life hours
+    const maxTime = 16000; // max timeline hours
+    let sweepHours = 0;
+
+    // Bathtub Hazard Rate Formula:
+    // Infant mortality (0 to 3000 hr): beta ~ 0.6
+    // Useful life (3000 to 11000 hr): beta ~ 1.0 (constant random failures)
+    // Wearout (11000 to 16000 hr): beta ~ 3.5
+    function hazardRate(t) {
+      const nx = t / maxTime;
+      const hInfant = 0.08 / (Math.pow(nx * 4 + 0.15, 0.7));
+      const hUseful = 0.045;
+      const hWearout = Math.pow(Math.max(0, nx - 0.65) * 3.5, 3.2) * 0.45;
+      return (hInfant + hUseful + hWearout) * 1.8; // failures per 1000 hrs
+    }
+
+    // Cumulative Weibull Survival Function R(t)
+    function survivalRate(t) {
+      const nx = t / maxTime;
+      if (nx < 0.20) return 1.0 - 0.12 * Math.pow(nx / 0.20, 0.6);
+      if (nx < 0.70) return 0.88 - 0.18 * ((nx - 0.20) / 0.50);
+      const wFrac = (nx - 0.70) / 0.30;
+      return 0.70 * Math.exp(-Math.pow(wFrac * 1.8, 2.5));
+    }
+
+    // Population of 70 components monitored
+    const FLEET_SIZE = 70;
+    const fleet = [];
+    for (let i = 0; i < FLEET_SIZE; i++) {
+      fleet.push({
+        id: i,
+        // Individual failure threshold
+        failTime: (Math.random() < 0.12)
+          ? 500 + Math.random() * 2500 // infant mortality
+          : (Math.random() < 0.30 ? 3000 + Math.random() * 8000 : 11000 + Math.random() * 4500),
+        status: 'alive'
+      });
+    }
+
+    // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
     function animate() {
-      ctx.clearRect(0, 0, width, height);
-      const blue = getThemeColor('--sim-blue');
-      const text = getThemeColor('--text');
-      const textMuted = getThemeColor('--text-muted');
-      const amber = getThemeColor('--sim-amber');
-      const red = getThemeColor('--sim-red');
-      const border = getThemeColor('--surface-border');
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      time += 0.02;
-      const chartX = width * 0.15;
-      const chartY = height * 0.72;
-      const chartW = width * 0.72;
-      const chartH = height * 0.45;
+      time += 0.025;
+      sweepHours = (sweepHours + 35) % maxTime;
 
-      // Bathtub Curve Formula: early decay + constant flat + wearout growth
-      ctx.strokeStyle = blue;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      for (let x = 0; x <= chartW; x += 4) {
-        const nx = x / chartW;
-        // infant mortality ~ 1/(nx+0.1), wearout ~ nx^3
-        const hazard = 0.25 / (nx * 3 + 0.3) + 0.18 + Math.pow(nx, 4) * 0.7;
-        const py = chartY - hazard * (chartH * 0.75);
-        if (x === 0) ctx.moveTo(chartX + x, py);
-        else ctx.lineTo(chartX + x, py);
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
       }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // Update fleet component states
+      let activeAlive = 0;
+      fleet.forEach(c => {
+        if (sweepHours >= c.failTime) c.status = 'failed';
+        else {
+          c.status = 'alive';
+          activeAlive++;
+        }
+      });
+
+      const chartX = width * 0.14;
+      const chartW = width * 0.72;
+      const chartY = height * 0.68;
+      const chartH = height * 0.42;
+
+      function timeToX(t) {
+        return chartX + (t / maxTime) * chartW;
+      }
+      function hazardToY(h) {
+        return chartY - Math.min(chartH, (h / 0.85) * chartH);
+      }
+
+      // 1. Chart Background & Zone Boundaries
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(chartX, chartY);
+      ctx.lineTo(chartX + chartW, chartY);
+      ctx.moveTo(chartX, chartY);
+      ctx.lineTo(chartX, chartY - chartH);
       ctx.stroke();
 
-      // 3 Zones Delineation
-      ctx.strokeStyle = border;
-      ctx.lineWidth = 1;
+      // Zone Dividers: Infant Mortality (0-3500 hr), Useful Life (3500-11000 hr), Wear-out (>11000 hr)
+      const xInfantEnd = timeToX(3500);
+      const xUsefulEnd = timeToX(11000);
+
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1.2;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(chartX + chartW * 0.28, chartY);
-      ctx.lineTo(chartX + chartW * 0.28, chartY - chartH);
-      ctx.moveTo(chartX + chartW * 0.72, chartY);
-      ctx.lineTo(chartX + chartW * 0.72, chartY - chartH);
+      ctx.moveTo(xInfantEnd, chartY);
+      ctx.lineTo(xInfantEnd, chartY - chartH);
+      ctx.moveTo(xUsefulEnd, chartY);
+      ctx.lineTo(xUsefulEnd, chartY - chartH);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = textMuted;
-      ctx.font = '11px Inter, sans-serif';
+      // Zone Shading
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.05)';
+      ctx.fillRect(chartX, chartY - chartH, xInfantEnd - chartX, chartH);
+      ctx.fillStyle = 'rgba(45, 212, 191, 0.05)';
+      ctx.fillRect(xInfantEnd, chartY - chartH, xUsefulEnd - xInfantEnd, chartH);
+      ctx.fillStyle = 'rgba(248, 113, 113, 0.05)';
+      ctx.fillRect(xUsefulEnd, chartY - chartH, chartX + chartW - xUsefulEnd, chartH);
+
+      // Zone Labels
+      ctx.fillStyle = theme.amber;
+      ctx.font = '600 10px var(--font-mono)';
       ctx.textAlign = 'center';
-      ctx.fillText('Infant Mortality (β < 1)', chartX + chartW * 0.14, chartY + 22);
-      ctx.fillText('Useful Life (β = 1, Constant)', chartX + chartW * 0.5, chartY + 22);
-      ctx.fillText('Wear-Out (β > 1)', chartX + chartW * 0.86, chartY + 22);
+      ctx.fillText('ZONE I: INFANT MORTALITY', (chartX + xInfantEnd) * 0.5, chartY + 20);
+      ctx.fillText('(β < 1, DFR)', (chartX + xInfantEnd) * 0.5, chartY + 34);
 
-      ctx.fillStyle = text;
-      ctx.font = '13px Inter, sans-serif';
+      ctx.fillStyle = theme.teal;
+      ctx.fillText('ZONE II: USEFUL LIFE', (xInfantEnd + xUsefulEnd) * 0.5, chartY + 20);
+      ctx.fillText('(β = 1, Constant CFR λ)', (xInfantEnd + xUsefulEnd) * 0.5, chartY + 34);
+
+      ctx.fillStyle = theme.red;
+      ctx.fillText('ZONE III: WEAR-OUT', (xUsefulEnd + chartX + chartW) * 0.5, chartY + 20);
+      ctx.fillText('(β > 1, IFR)', (xUsefulEnd + chartX + chartW) * 0.5, chartY + 34);
+
+      // 2. Bathtub Hazard Curve Plot h(t)
+      ctx.strokeStyle = theme.blue;
+      ctx.lineWidth = 3.0;
+      ctx.beginPath();
+      for (let t = 0; t <= maxTime; t += 100) {
+        const h = hazardRate(t);
+        const px = timeToX(t);
+        const py = hazardToY(h);
+        if (t === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // 3. Co-Located Reliability Survival Curve R(t)
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 2.0;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      for (let t = 0; t <= maxTime; t += 100) {
+        const r = survivalRate(t);
+        const px = timeToX(t);
+        const py = chartY - r * (chartH * 0.85);
+        if (t === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 4. Sweeping Temporal Cursor & Active Tracking Dot
+      const curX = timeToX(sweepHours);
+      const curH = hazardRate(sweepHours);
+      const curY = hazardToY(curH);
+
+      // Vertical cursor line
+      ctx.strokeStyle = theme.primary;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(curX, chartY);
+      ctx.lineTo(curX, chartY - chartH);
+      ctx.stroke();
+
+      // Pulsing tracker ring on hazard curve
+      ctx.beginPath();
+      ctx.arc(curX, curY, 6 + Math.sin(time * 6) * 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(curX, curY, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = theme.primary;
+      ctx.fill();
+
+      // Active hazard value banner at cursor
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(curX - 45, curY - 24, 90, 18);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(curX - 45, curY - 24, 90, 18);
+
+      ctx.fillStyle = theme.primary;
+      ctx.font = '600 9px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillText(`h(t): ${curH.toFixed(3)} /khr`, curX, curY - 12);
+
+      // 5. Component Fleet Health Strip (Bottom)
+      const fleetY = height * 0.88;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(chartX, fleetY - 8, chartW, 16);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(chartX, fleetY - 8, chartW, 16);
+
+      const fleetStep = chartW / FLEET_SIZE;
+      fleet.forEach((c, idx) => {
+        const fx = chartX + idx * fleetStep + fleetStep / 2;
+        ctx.beginPath();
+        ctx.arc(fx, fleetY, 3, 0, Math.PI * 2);
+        ctx.fillStyle = c.status === 'alive' ? theme.green : theme.red;
+        ctx.fill();
+      });
+
+      // Curve Legends
+      ctx.fillStyle = theme.blue;
+      ctx.font = '600 10px var(--font-mono)';
       ctx.textAlign = 'left';
-      ctx.fillText('Component Reliability Hazard Function h(t)', 24, 30);
-      ctx.fillText('Characteristic Life η = 10,000 hrs | MTTF = 8,860 hrs', 24, 52);
+      ctx.fillText('— Hazard Function h(t)', chartX + 12, chartY - chartH + 16);
+      ctx.fillStyle = theme.teal;
+      ctx.fillText('--- Survival Function R(t)', chartX + 12, chartY - chartH + 30);
 
+      // 6. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 255;
+      const hudH = 142;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      const activeRegime = sweepHours < 3500 ? 'INFANT MORTALITY (DFR)' :
+                          (sweepHours < 11000 ? 'USEFUL LIFE (CFR)' : 'WEAR-OUT REGIME (IFR)');
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('WEIBULL HAZARD BATHTUB CURVE', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Operating Time t: ${Math.round(sweepHours)} hrs / ${maxTime} hrs`, hudX + 10, hudY + 36);
+      ctx.fillText(`Instantaneous Hazard h(t): ${curH.toFixed(3)} failures/khr`, hudX + 10, hudY + 52);
+      ctx.fillText(`Population Survival R(t): ${(survivalRate(sweepHours)*100).toFixed(1)}% (${activeAlive}/${FLEET_SIZE})`, hudX + 10, hudY + 68);
+      ctx.fillText(`Characteristic Life η: ${eta.toLocaleString()} hrs | MTTF: 8,860 hrs`, hudX + 10, hudY + 84);
+
+      ctx.fillStyle = sweepHours < 3500 ? theme.amber : (sweepHours < 11000 ? theme.teal : theme.red);
+      ctx.fillText(`Shape Parameter β: ${sweepHours < 3500 ? '0.62 (<1)' : (sweepHours < 11000 ? '1.00 (=1)' : '3.45 (>1)')}`, hudX + 10, hudY + 118);
       requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    animate();
   </script>
 </body>
 </html>

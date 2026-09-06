@@ -43,6 +43,25 @@
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* Geometry & Spacing */
       --rounded-card: 24px;
       --rounded-pill: 50px;
@@ -56,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #f5f5f5;
       --surface: #fafafa;
@@ -202,7 +240,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -353,20 +393,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      if (variableName === '--text' || variableName === '--text-muted') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      }
-      if (variableName === '--surface-border') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#7c2d12';
-      }
-      if (variableName === '--surface') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#ffd6cc';
-      }
-      if (variableName === '--accent') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#7c2d12';
-      }
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     function getCssColor(varName, fallback) {
@@ -389,94 +483,264 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* redraw triggers automatically on next frame */ });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
-    // Core physical parameters, oscillation frequencies, and position states
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
     let time = 0;
+    const v1 = 95.0; // jet speed m/s
+    const u = 47.5;  // bucket speed m/s
+    const betaDeg = 165; // deflection angle deg
+    const beta = betaDeg * Math.PI / 180;
+    const kf = 0.95; // friction factor
+    const mDot = 45.0; // mass flow rate kg/s
+    const Ft = mDot * (v1 - u) * (1 - kf * Math.cos(beta)); // Tangential force (N)
+    const power = (Ft * u) / 1000; // Power (kW)
+    const eta = (2 * u * (v1 - u) * (1 - kf * Math.cos(beta))) / (v1 * v1) * 100; // %
 
-    // --- 4. CONTINUOUS ANIMATION LOOP & NUMERICAL INTEGRATION ---
-    // Propagates dynamics each animation frame via time integration step
+    // Dense stream of high-velocity fluid particles
+    const PARTICLE_COUNT = 130;
+    const particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        phase: Math.random() * 3.0, // 0..1 jet, 1..2 cup, 2..3 exit
+        branch: Math.random() > 0.5 ? 1 : -1, // +1 upper cup, -1 lower cup
+        speed: 0.022 + Math.random() * 0.012,
+        lateralOffset: (Math.random() - 0.5) * 8,
+        size: 1.8 + Math.random() * 1.6
+      });
+    }
+
+    // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
     function animate() {
-      // Clear canvas (transparent ground lets pastel color block show through)
-      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      // --- 5. RENDERING PIPELINE ---
-      // Sequentially draws background grids, body geometry, vector fields, and readouts
-      const blue = getThemeColor('--sim-blue');
-            const text = getThemeColor('--text');
-            const textMuted = getThemeColor('--text-muted');
-            const amber = getThemeColor('--sim-amber');
-            const teal = getThemeColor('--sim-teal');
-            const border = getThemeColor('--surface-border');
-      
-            time += 0.03;
-            const bX = width * 0.58;
-            const bY = height * 0.5;
-      
-            // High-Velocity Jet Nozzle on Left
-            ctx.fillStyle = textMuted;
-            ctx.fillRect(width * 0.12, bY - 14, 50, 28);
-            ctx.beginPath();
-            ctx.moveTo(width * 0.12 + 50, bY - 14);
-            ctx.lineTo(width * 0.12 + 75, bY - 6);
-            ctx.lineTo(width * 0.12 + 75, bY + 6);
-            ctx.lineTo(width * 0.12 + 50, bY + 14);
-            ctx.closePath();
-            ctx.fill();
-      
-            // High-Velocity Water Jet Stream
-            ctx.fillStyle = blue;
-            ctx.fillRect(width * 0.12 + 75, bY - 6, bX - (width * 0.12 + 75) - 30, 12);
-      
-            // Pelton Double Bucket (Two semi-hemispherical cups)
-            ctx.save();
-            ctx.translate(bX, bY);
-            ctx.strokeStyle = amber;
-            ctx.lineWidth = 4;
-      
-            // Upper cup
-            ctx.beginPath();
-            ctx.arc(0, -22, 22, -Math.PI / 2, Math.PI / 2, true);
-            ctx.stroke();
-      
-            // Lower cup
-            ctx.beginPath();
-            ctx.arc(0, 22, 22, -Math.PI / 2, Math.PI / 2, false);
-            ctx.stroke();
-      
-            // Central Splitter Ridge
-            ctx.fillStyle = text;
-            ctx.beginPath();
-            ctx.moveTo(-22, 0);
-            ctx.lineTo(-4, -6);
-            ctx.lineTo(-4, 6);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-      
-            // Discharged Deflected Jets (U-turn 165 degrees)
-            ctx.strokeStyle = teal;
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(bX - 10, bY - 22);
-            ctx.lineTo(bX - 60, bY - 55);
-            ctx.moveTo(bX - 10, bY + 22);
-            ctx.lineTo(bX - 60, bY + 55);
-            ctx.stroke();
-      
-            ctx.fillStyle = text;
-            ctx.font = '13px Inter, sans-serif';
-            ctx.textAlign = 'left';
-            ctx.fillText('Water Jet Velocity v_jet = 95 m/s | Bucket Speed u = 47.5 m/s (u/v = 0.5)', 24, 30);
-            ctx.fillText('Deflection Angle β = 165° | Hydraulic Efficiency η = 94.2%', 24, 52);
-      
-            requestAnimationFrame(animate);
-          }
-          requestAnimationFrame(animate);
+      time += 0.025;
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      const nozzleX = width * 0.12;
+      const nozzleW = 70;
+      const jetY = height * 0.50;
+      const bucketBaseX = width * 0.62;
+      // Tangential velocity cycle of runner wheel
+      const bucketSurgeY = Math.sin(time * 3.5) * 12;
+      const bucketY = jetY + bucketSurgeY;
+
+      // 1. Draw High-Pressure Injector Nozzle & Needle Spear
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(nozzleX, jetY - 22, nozzleW, 44);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(nozzleX, jetY - 22, nozzleW, 44);
+
+      // Tapered Nozzle Tip
+      ctx.beginPath();
+      ctx.moveTo(nozzleX + nozzleW, jetY - 22);
+      ctx.lineTo(nozzleX + nozzleW + 35, jetY - 8);
+      ctx.lineTo(nozzleX + nozzleW + 35, jetY + 8);
+      ctx.lineTo(nozzleX + nozzleW, jetY + 22);
+      ctx.closePath();
+      ctx.fillStyle = theme.border;
+      ctx.fill();
+      ctx.stroke();
+
+      // Needle Spear inside nozzle
+      ctx.beginPath();
+      ctx.moveTo(nozzleX + nozzleW + 28, jetY);
+      ctx.lineTo(nozzleX + nozzleW + 8, jetY - 6);
+      ctx.lineTo(nozzleX + nozzleW + 8, jetY + 6);
+      ctx.closePath();
+      ctx.fillStyle = theme.amber;
+      ctx.fill();
+
+      // 2. Runner Wheel Rim & Adjacent Bucket Indicators
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(bucketBaseX + 180, bucketY, 190, Math.PI * 0.8, Math.PI * 1.2);
+      ctx.stroke();
+
+      // Rotor hub arm
+      ctx.strokeStyle = theme.textMuted;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(bucketBaseX + 180, bucketY);
+      ctx.lineTo(bucketBaseX + 30, bucketY);
+      ctx.stroke();
+
+      // 3. Pelton Double Bucket Cups (Upper & Lower Hemispherical Profiles)
+      const cupR = 34;
+      ctx.save();
+      ctx.translate(bucketBaseX, bucketY);
+
+      // Bucket backing body
+      ctx.fillStyle = theme.surface;
+      ctx.beginPath();
+      ctx.arc(0, -cupR, cupR + 6, -Math.PI / 2, Math.PI / 2, true);
+      ctx.lineTo(25, 0);
+      ctx.arc(0, cupR, cupR + 6, -Math.PI / 2, Math.PI / 2, false);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Upper cup inner contour
+      ctx.beginPath();
+      ctx.arc(0, -cupR, cupR, -Math.PI / 2, Math.PI / 2, true);
+      ctx.strokeStyle = theme.primary;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Lower cup inner contour
+      ctx.beginPath();
+      ctx.arc(0, cupR, cupR, -Math.PI / 2, Math.PI / 2, false);
+      ctx.stroke();
+
+      // Sharp central splitter knife-edge
+      ctx.beginPath();
+      ctx.moveTo(-cupR, 0);
+      ctx.lineTo(-6, -10);
+      ctx.lineTo(14, 0);
+      ctx.lineTo(-6, 10);
+      ctx.closePath();
+      ctx.fillStyle = theme.amber;
+      ctx.fill();
+      ctx.strokeStyle = theme.surface;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.restore();
+
+      // 4. Update and Render High-Velocity Fluid Particles
+      const jetStartX = nozzleX + nozzleW + 35;
+      const splitterX = bucketBaseX - cupR;
+
+      particles.forEach(p => {
+        p.phase += p.speed;
+        if (p.phase >= 3.0) {
+          p.phase = 0;
+          p.lateralOffset = (Math.random() - 0.5) * 8;
+          p.branch = Math.random() > 0.5 ? 1 : -1;
+        }
+
+        let px, py, pColor = theme.blue;
+
+        if (p.phase < 1.0) {
+          // Stage 1: Linear jet traveling at speed v1
+          const t1 = p.phase;
+          px = jetStartX + (splitterX - jetStartX) * t1;
+          py = jetY + p.lateralOffset;
+          pColor = theme.blue;
+        } else if (p.phase < 2.0) {
+          // Stage 2: Bifurcating inside double bucket cup, reversing 165 degrees
+          const t2 = p.phase - 1.0;
+          const cupAngle = (p.branch === 1)
+            ? (Math.PI - t2 * (Math.PI * 0.92)) // Upper cup curving up and back
+            : (Math.PI + t2 * (Math.PI * 0.92)); // Lower cup curving down and back
+          const centerCupY = bucketY + p.branch * cupR;
+          px = bucketBaseX + cupR * Math.cos(cupAngle);
+          py = centerCupY + cupR * Math.sin(cupAngle) + p.lateralOffset * 0.4;
+          pColor = theme.teal;
+        } else {
+          // Stage 3: Discharged exit stream exiting at angle beta (165 deg backward)
+          const t3 = p.phase - 2.0;
+          const exitAngle = (p.branch === 1) ? (Math.PI * 0.92) : (-Math.PI * 0.92);
+          const startExitX = bucketBaseX + cupR * Math.cos(exitAngle);
+          const startExitY = bucketY + p.branch * cupR + cupR * Math.sin(exitAngle);
+          const exitVx = -Math.cos(beta - Math.PI) * 110;
+          const exitVy = p.branch * Math.sin(beta - Math.PI) * 110;
+          px = startExitX - t3 * 90;
+          py = startExitY + (p.branch * t3 * 65);
+          pColor = theme.secondary;
+        }
+
+        ctx.beginPath();
+        ctx.arc(px, py, p.size * 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = pColor === theme.blue ? 'rgba(56, 189, 248, 0.25)' : 'rgba(45, 212, 191, 0.25)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(px, py, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = pColor;
+        ctx.fill();
+      });
+
+      // 5. Dynamic Force & Velocity Vectors
+      // Tangential force vector Ft (driving rotation downward)
+      const forceLen = 45 + Math.sin(time * 5) * 6;
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(bucketBaseX, bucketY);
+      ctx.lineTo(bucketBaseX, bucketY + forceLen);
+      ctx.stroke();
+
+      // Arrowhead for Ft
+      ctx.fillStyle = theme.red;
+      ctx.beginPath();
+      ctx.moveTo(bucketBaseX, bucketY + forceLen);
+      ctx.lineTo(bucketBaseX - 5, bucketY + forceLen - 9);
+      ctx.lineTo(bucketBaseX + 5, bucketY + forceLen - 9);
+      ctx.closePath();
+      ctx.fill();
+
+      // Normal impulse force Fn vector (horizontal thrust)
+      ctx.strokeStyle = theme.amber;
+      ctx.beginPath();
+      ctx.moveTo(splitterX, bucketY);
+      ctx.lineTo(splitterX + 35, bucketY);
+      ctx.stroke();
+
+      // Force Labels
+      ctx.fillStyle = theme.text;
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillText(`F_t = ${(Ft/1000).toFixed(2)} kN (Torque Force)`, bucketBaseX + 8, bucketY + forceLen - 6);
+      ctx.fillText('Splitter Edge', splitterX - 85, bucketY - 10);
+      ctx.fillText('Jet v₁ = 95 m/s →', jetStartX + 20, jetY - 14);
+      ctx.fillText('Deflected w₂ (165°)', splitterX - 100, bucketY + 60);
+
+      // 6. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 240;
+      const hudH = 138;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('PELTON TURBINE IMPULSE DYNAMICS', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Jet Velocity v₁: ${v1.toFixed(1)} m/s`, hudX + 10, hudY + 36);
+      ctx.fillText(`Bucket Tangential Speed u: ${u.toFixed(1)} m/s`, hudX + 10, hudY + 52);
+      ctx.fillText(`Speed Ratio φ = u/v₁: ${(u/v1).toFixed(2)} (Optimal = 0.50)`, hudX + 10, hudY + 68);
+      ctx.fillText(`Deflection Angle β: ${betaDeg}° (Flow Reversal)`, hudX + 10, hudY + 84);
+      ctx.fillText(`Hydrodynamic Force F_t: ${(Ft/1000).toFixed(2)} kN`, hudX + 10, hudY + 100);
+      ctx.fillText(`Shaft Power P: ${power.toFixed(1)} kW | η: ${eta.toFixed(1)}%`, hudX + 10, hudY + 116);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
   </script>
 </body>
 </html>

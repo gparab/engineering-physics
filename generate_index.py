@@ -54,6 +54,13 @@ DISCIPLINE_PALETTES = {
     "robotics_engineering": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Robotics Engineering", "name": "Mint"},
     "telecommunications_engineering": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Telecommunications Engineering", "name": "Cream"},
 
+    # Expansion engineering disciplines (Milestone 3)
+    "plasma_physics": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Plasma Physics", "name": "Lilac"},
+    "astrodynamics": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Astrodynamics", "name": "Mint"},
+    "geophysical_engineering": {"bg": "#ffd6cc", "border": "#fecdd3", "label": "Geophysical Engineering", "name": "Coral"},
+    "cryogenic_engineering": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Cryogenic Engineering", "name": "Lilac"},
+    "quantum_engineering": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Quantum Engineering", "name": "Cream"},
+
     # Legacy aliases (for backward compatibility if needed)
     "acoustics": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Acoustics", "name": "Lilac"},
     "aerospace": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Aerospace Engineering", "name": "Mint"},

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hahn Spin Echo & Decoherence Refocusing — Quantum Engineering</title>
+  <style>
+
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block (Cream / Amber) */
+      --block-bg: #fff5ea;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #fff5ea;
+      --block-text: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    main canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Hahn Spin Echo & Decoherence Refocusing</h1>
+      <div class="discipline-badge">Quantum Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Static magnetic field inhomogeneity causes transverse magnetic moments in an ensemble of spins to dephase rapidly with characteristic decay time T₂* < T₂. Erwin Hahn discovered that applying a resonant π refocusing pulse at delay time τ flips the relative phase of each precessing spin packet. Because faster and slower spins continue precessing in the same direction, they re-converge at time 2τ, creating a coherent spin echo revival.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        M_xy(2τ) = M₀ · exp(-2τ / T₂) · |∑_k exp(i Δω_k (2τ - 2τ))| = M₀ · exp(-2τ / T₂)
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Hahn Spin Echo & Decoherence Refocusing
+     * Discipline: Quantum Engineering
+     *
+     * 1. Physical Phenomenon:
+     *    Coherent quantum mechanics, Hilbert space state vectors, and unitary transformations.
+     *    Superconducting circuits, quantum optics, and fault-tolerant error correction.
+     * 2. Governing Equations:
+     *    Unitary evolution: i * hbar * d|psi>/dt = H |psi>
+     *    Projective measurement: P(m) = <psi| M_m^dagger M_m |psi>
+     * 3. Numerical Integration & State Representation:
+     *    Continuous phase space tracking, rotating frame coordinates, and density matrices.
+     *    Real-time state vector precession, coherent superposition, and decoherence envelopes.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Theme palette definition
+    const theme = {
+      bg: '#121526',
+      text: '#ffffff',
+      grid: 'rgba(255, 255, 255, 0.08)',
+      axis: 'rgba(255, 255, 255, 0.25)',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      purple: '#c084fc'
+    };
+
+    function updateThemePalette() {
+      const computed = getComputedStyle(document.documentElement);
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      theme.bg = isLight ? '#ffffff' : '#121526';
+      theme.text = isLight ? '#000000' : '#ffffff';
+      theme.grid = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+      theme.axis = isLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
+      theme.blue = isLight ? '#0277bd' : '#38bdf8';
+      theme.teal = isLight ? '#00897b' : '#2dd4bf';
+      theme.amber = isLight ? '#d97706' : '#fbbf24';
+      theme.red = isLight ? '#c62828' : '#f87171';
+      theme.purple = isLight ? '#6a1b9a' : '#c084fc';
+    }
+    window.addEventListener('themechange', updateThemePalette);
+    updateThemePalette();
+
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let time = 0;
+    const tau = 2.5; // Refocusing delay in seconds
+    const numSpins = 24;
+    const spinDetunings = [];
+    for (let i = 0; i < numSpins; i++) {
+      spinDetunings.push((i - (numSpins - 1) * 0.5) * 0.4);
+    }
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION LOOP ---
+    function animate() {
+      updateThemePalette();
+      time += 0.016;
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      const period = tau * 2.8;
+      const t = (time % period);
+
+      // Determine phase of spins
+      // Phase 1 (0 to tau): dephasing
+      // Phase 2 (tau to 2*tau): refocusing after pi pulse
+      // Phase 3 (2*tau to period): dephasing again
+      let netMx = 0, netMy = 0;
+      const spinAngles = [];
+
+      for (let i = 0; i < numSpins; i++) {
+        const dw = spinDetunings[i];
+        let phi = 0;
+        if (t <= tau) {
+          phi = dw * t;
+        } else {
+          // Pi pulse around y-axis at t = tau mirrors angle across y-axis
+          const phiAtTau = dw * tau;
+          phi = Math.PI - phiAtTau + dw * (t - tau);
+        }
+        spinAngles.push(phi);
+        netMx += Math.cos(phi);
+        netMy += Math.sin(phi);
+      }
+      netMx /= numSpins;
+      netMy /= numSpins;
+      const netM = Math.sqrt(netMx * netMx + netMy * netMy);
+
+      // Layout: Left (Rotating Frame Vectors) & Right (RF Pulse / Echo Scope)
+      const leftW = Math.min(width * 0.44, 320);
+      const rightX = leftW + 24;
+      const rightW = width - rightX - 24;
+
+      // === LEFT PANEL: ROTATING FRAME SPIN ENSEMBLE ===
+      const cx = leftW * 0.5;
+      const cy = height * 0.52;
+      const R = Math.min(leftW * 0.36, height * 0.28);
+
+      // Reference circle
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Axes
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - R - 10, cy); ctx.lineTo(cx + R + 10, cy);
+      ctx.moveTo(cx, cy - R - 10); ctx.lineTo(cx, cy + R + 10);
+      ctx.stroke();
+
+      ctx.fillStyle = theme.text;
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText('+x', cx + R + 12, cy + 3);
+      ctx.fillText('+y', cx - 6, cy - R - 12);
+
+      // Spin isochromats
+      for (let i = 0; i < numSpins; i++) {
+        const a = spinAngles[i];
+        const sx = cx + R * Math.cos(a);
+        const sy = cy - R * Math.sin(a);
+
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(sx, sy);
+        ctx.stroke();
+
+        ctx.fillStyle = theme.blue;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Net Macroscopic Magnetization M_xy
+      const netX = cx + R * netMx;
+      const netY = cy - R * netMy;
+
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(netX, netY);
+      ctx.stroke();
+
+      ctx.fillStyle = theme.red;
+      ctx.beginPath();
+      ctx.arc(netX, netY, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // === RIGHT PANEL: RF PULSE & SPIN ECHO SIGNAL ===
+      const scopeY = height * 0.22;
+      const scopeH = height * 0.54;
+
+      // Pulse sequence timeline tracks
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(rightX, scopeY + scopeH * 0.35);
+      ctx.lineTo(rightX + rightW, scopeY + scopeH * 0.35);
+      ctx.moveTo(rightX, scopeY + scopeH);
+      ctx.lineTo(rightX + rightW, scopeY + scopeH);
+      ctx.stroke();
+
+      // RF Pulses: pi/2 pulse at t = 0 and pi pulse at t = tau
+      const x0 = rightX;
+      const xTau = rightX + (tau / period) * rightW;
+      const x2Tau = rightX + (2 * tau / period) * rightW;
+
+      // pi/2 pulse rectangle
+      ctx.fillStyle = theme.teal;
+      ctx.fillRect(x0, scopeY + scopeH * 0.15, 12, scopeH * 0.20);
+      ctx.fillStyle = theme.text;
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText('(π/2)_x', x0, scopeY + scopeH * 0.10);
+
+      // pi pulse rectangle
+      ctx.fillStyle = theme.red;
+      ctx.fillRect(xTau - 8, scopeY + scopeH * 0.05, 16, scopeH * 0.30);
+      ctx.fillText('π_y Pulse', xTau - 18, scopeY);
+
+      // Macroscopic Echo Signal Curve |M_xy(t)|
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let px = 0; px <= rightW; px += 2) {
+        const ptTime = (px / rightW) * period;
+        let signal = 0;
+        // FID decay after t=0
+        if (ptTime < tau) {
+          signal = Math.exp(-ptTime * 2.2);
+        } else {
+          // Echo peak centered at 2*tau
+          signal = Math.exp(-Math.abs(ptTime - 2 * tau) * 2.2) * 0.85;
+        }
+        const py = scopeY + scopeH - signal * (scopeH * 0.55);
+        if (px === 0) ctx.moveTo(rightX + px, py);
+        else ctx.lineTo(rightX + px, py);
+      }
+      ctx.stroke();
+
+      // Echo Peak Label
+      ctx.fillStyle = theme.amber;
+      ctx.fillText('Echo Peak (2τ)', x2Tau - 35, scopeY + scopeH * 0.50);
+
+      // Timeline tracking cursor
+      const curX = rightX + (t / period) * rightW;
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(curX, scopeY);
+      ctx.lineTo(curX, scopeY + scopeH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Telemetry HUD
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText('HAHN SPIN ECHO DEPHASING & REFOCUSING DYNAMICS', 24, 28);
+      ctx.fillText(`Sequence Delay τ: ${tau.toFixed(1)} s | Rephasing Time 2τ: ${(2*tau).toFixed(1)} s`, 24, 46);
+      ctx.fillText(`Net Transverse Magnetization |M_xy|: ${(netM * 100).toFixed(1)}%`, 24, height - 25);
+      ctx.fillText('Reversal of Inhomogeneous Dephasing T₂* via π Refocusing Rotation', 24, height - 10);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
+</body>
+</html>

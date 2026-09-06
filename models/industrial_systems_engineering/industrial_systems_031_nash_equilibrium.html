@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -384,66 +488,299 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     resize();
 
+    // --- 3. PHYSICAL STATE VARIABLES & REPLICATOR DYNAMICS ENGINE ---
     let time = 0;
+    // Payoff Matrix A for Player 1, B for Player 2
+    // S1 = Cooperate, S2 = Defect (or Matching Pennies / Coordination game with interior/boundary Nash)
+    // Payoffs: [ [A11, A12], [A21, A22] ]
+    const A = [ [3, 0], [5, 1] ]; // Player 1 (Row): defect dominant
+    const B = [ [3, 5], [0, 1] ]; // Player 2 (Col)
+    // Unique Nash Equilibrium: (Defect, Defect) -> x* = 0, y* = 0 with Payoff (1, 1)
+
+    // Replicator Dynamic ODE:
+    // u1(S1) = y*A11 + (1-y)*A12; u1(S2) = y*A21 + (1-y)*A22; u1_bar = x*u1(S1) + (1-x)*u1(S2)
+    // dx/dt = x * (1 - x) * (u1(S1) - u1(S2))
+    function calcVel(x, y) {
+      const u1_S1 = y * A[0][0] + (1 - y) * A[0][1];
+      const u1_S2 = y * A[1][0] + (1 - y) * A[1][1];
+      const dx = x * (1 - x) * (u1_S1 - u1_S2) * 0.4;
+
+      const u2_S1 = x * B[0][0] + (1 - x) * B[1][0];
+      const u2_S2 = x * B[0][1] + (1 - x) * B[1][1];
+      const dy = y * (1 - y) * (u2_S1 - u2_S2) * 0.4;
+
+      return { dx, dy };
+    }
+
+    // Swarm of trajectory particles in the [0, 1] x [0, 1] strategy space
+    const PARTICLE_COUNT = 35;
+    const strategyParticles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      strategyParticles.push({
+        x: 0.10 + Math.random() * 0.85,
+        y: 0.10 + Math.random() * 0.85,
+        trail: [],
+        life: Math.random() * 1.0
+      });
+    }
+
+    // Main tracking state (representative population mixed strategy)
+    let leadX = 0.85;
+    let leadY = 0.80;
+
+    // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
     function animate() {
-      ctx.clearRect(0, 0, width, height);
-      const blue = getThemeColor('--sim-blue');
-      const text = getThemeColor('--text');
-      const textMuted = getThemeColor('--text-muted');
-      const amber = getThemeColor('--sim-amber');
-      const teal = getThemeColor('--sim-teal');
-      const border = getThemeColor('--surface-border');
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      time += 0.02;
-      const matX = width / 2;
-      const matY = height * 0.52;
-      const cellW = 110;
-      const cellH = 75;
+      time += 0.025;
 
-      // 2x2 Matrix Cells
-      const payoffs = [
-        [ { p1: 3, p2: 3, label: '(Confess, Confess)' }, { p1: 0, p2: 5, label: '(Confess, Silent)' } ],
-        [ { p1: 5, p2: 0, label: '(Silent, Confess)' }, { p1: 1, p2: 1, label: '(Silent, Silent)' } ]
-      ];
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
-      for (let r = 0; r < 2; r++) {
-        for (let c = 0; c < 2; c++) {
-          const cx = matX + (c - 1) * cellW;
-          const cy = matY + (r - 1) * cellH;
+      // Update lead mixed strategy trajectory
+      const leadVel = calcVel(leadX, leadY);
+      leadX += leadVel.dx;
+      leadY += leadVel.dy;
 
-          const isNash = (r === 0 && c === 0);
-          ctx.fillStyle = isNash ? 'rgba(77, 182, 172, 0.25)' : 'rgba(255, 255, 255, 0.04)';
-          ctx.strokeStyle = isNash ? teal : border;
-          ctx.lineWidth = isNash ? 3 : 1;
-          ctx.strokeRect(cx, cy, cellW, cellH);
-          ctx.fillRect(cx, cy, cellW, cellH);
+      // Reset when close to Nash equilibrium
+      if (leadX < 0.04 && leadY < 0.04) {
+        leadX = 0.88 + Math.random() * 0.08;
+        leadY = 0.85 + Math.random() * 0.10;
+      }
 
-          ctx.fillStyle = text;
-          ctx.font = '14px Inter, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(`(${payoffs[r][c].p1}, ${payoffs[r][c].p2})`, cx + cellW / 2, cy + cellH / 2 + 5);
+      // Update particle swarm
+      strategyParticles.forEach(p => {
+        const vel = calcVel(p.x, p.y);
+        p.x += vel.dx;
+        p.y += vel.dy;
 
-          if (isNash) {
-            ctx.fillStyle = amber;
-            ctx.font = '11px Inter, sans-serif';
-            ctx.fillText('★ Nash Equilibrium', cx + cellW / 2, cy + cellH / 2 + 24);
+        // Record history trail
+        p.trail.push({ x: p.x, y: p.y });
+        if (p.trail.length > 14) p.trail.shift();
+
+        // Respawn if converged
+        if (p.x < 0.03 && p.y < 0.03) {
+          p.x = 0.20 + Math.random() * 0.78;
+          p.y = 0.20 + Math.random() * 0.78;
+          p.trail = [];
+        }
+      });
+
+      // Layout: Left 48% = 2D Phase Plane Unit Square, Right 52% = Payoff Matrix
+      const phaseX = width * 0.10;
+      const phaseY = height * 0.30;
+      const phaseSize = Math.min(width * 0.38, height * 0.54);
+
+      function stratToCanvas(sx, sy) {
+        return {
+          x: phaseX + sx * phaseSize,
+          y: phaseY + (1 - sy) * phaseSize // flip Y so 1 is top
+        };
+      }
+
+      // 1. Draw 2D Strategy Unit Square Phase Plane
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(phaseX, phaseY, phaseSize, phaseSize);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(phaseX, phaseY, phaseSize, phaseSize);
+
+      // Phase-plane Vector Field Grid
+      const gridDivs = 7;
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      for (let i = 1; i < gridDivs; i++) {
+        for (let j = 1; j < gridDivs; j++) {
+          const gx = i / gridDivs;
+          const gy = j / gridDivs;
+          const v = calcVel(gx, gy);
+          const pt = stratToCanvas(gx, gy);
+
+          const len = Math.sqrt(v.dx * v.dx + v.dy * v.dy);
+          if (len > 0.0001) {
+            const arrowLen = 14;
+            const dirX = (v.dx / len) * arrowLen;
+            const dirY = -(v.dy / len) * arrowLen; // screen Y is inverted
+
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+            ctx.beginPath();
+            ctx.moveTo(pt.x, pt.y);
+            ctx.lineTo(pt.x + dirX, pt.y + dirY);
+            ctx.stroke();
           }
         }
       }
 
-      ctx.fillStyle = text;
-      ctx.font = '13px Inter, sans-serif';
+      // Phase Plane Axes Labels
+      ctx.fillStyle = theme.textMuted;
+      ctx.font = '10px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Player 1 Strategy x = Pr(Cooperate) →', phaseX + phaseSize / 2, phaseY + phaseSize + 22);
+      ctx.save();
+      ctx.translate(phaseX - 18, phaseY + phaseSize / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('Player 2 Strategy y = Pr(Cooperate) →', 0, 0);
+      ctx.restore();
+
+      // Nash Equilibrium Attractor Point Marker at (0, 0)
+      const nashPt = stratToCanvas(0, 0);
+      ctx.beginPath();
+      ctx.arc(nashPt.x, nashPt.y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = theme.red;
+      ctx.fill();
+      ctx.strokeStyle = theme.surface;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = theme.red;
+      ctx.font = '600 10px var(--font-mono)';
       ctx.textAlign = 'left';
-      ctx.fillText("Prisoner's Dilemma Normal-Form Payoff Matrix", 24, 30);
-      ctx.fillText('Dominant Strategy Equilibrium: (Confess, Confess) with Payoff (3, 3)', 24, 52);
+      ctx.fillText('★ Nash Eq (0, 0)', nashPt.x + 12, nashPt.y - 6);
+
+      // 2. Render Particle Streamlines Converging to Nash Attractor
+      strategyParticles.forEach(p => {
+        if (p.trail.length > 1) {
+          ctx.strokeStyle = 'rgba(45, 212, 191, 0.25)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          p.trail.forEach((tPt, idx) => {
+            const cpt = stratToCanvas(tPt.x, tPt.y);
+            if (idx === 0) ctx.moveTo(cpt.x, cpt.y);
+            else ctx.lineTo(cpt.x, cpt.y);
+          });
+          ctx.stroke();
+        }
+
+        const cpt = stratToCanvas(p.x, p.y);
+        ctx.beginPath();
+        ctx.arc(cpt.x, cpt.y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = theme.teal;
+        ctx.fill();
+      });
+
+      // Lead Trajectory marker
+      const leadPt = stratToCanvas(leadX, leadY);
+      ctx.beginPath();
+      ctx.arc(leadPt.x, leadPt.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = theme.amber;
+      ctx.fill();
+      ctx.strokeStyle = theme.surface;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 3. Right-Hand Side: Dynamic Normal-Form Payoff Matrix Heatmap
+      const matX = width * 0.56;
+      const matY = phaseY + 30;
+      const cellW = (width * 0.36) / 2;
+      const cellH = (phaseSize - 40) / 2;
+
+      // Probability weights from current (leadX, leadY):
+      // Cell (0,0): Cooperate, Cooperate -> w = leadX * leadY
+      // Cell (0,1): Cooperate, Defect -> w = leadX * (1 - leadY)
+      // Cell (1,0): Defect, Cooperate -> w = (1 - leadX) * leadY
+      // Cell (1,1): Defect, Defect (Nash) -> w = (1 - leadX) * (1 - leadY)
+      const weights = [
+        [ leadX * leadY, leadX * (1 - leadY) ],
+        [ (1 - leadX) * leadY, (1 - leadX) * (1 - leadY) ]
+      ];
+
+      const rowNames = ['Cooperate', 'Defect'];
+      const colNames = ['Cooperate', 'Defect'];
+
+      // Row / Col Headers
+      ctx.fillStyle = theme.text;
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Player 2: Cooperate', matX + cellW * 0.5, matY - 10);
+      ctx.fillText('Player 2: Defect', matX + cellW * 1.5, matY - 10);
+
+      for (let r = 0; r < 2; r++) {
+        for (let c = 0; c < 2; c++) {
+          const cx = matX + c * cellW;
+          const cy = matY + r * cellH;
+          const w = weights[r][c];
+          const isNash = (r === 1 && c === 1);
+
+          // Heatmap cell background glow based on instantaneous probability weight
+          ctx.fillStyle = isNash
+            ? `rgba(248, 113, 113, ${0.12 + w * 0.45})`
+            : `rgba(45, 212, 191, ${0.05 + w * 0.35})`;
+          ctx.fillRect(cx, cy, cellW, cellH);
+
+          ctx.strokeStyle = isNash ? theme.red : theme.border;
+          ctx.lineWidth = isNash ? 2.5 : 1.2;
+          ctx.strokeRect(cx, cy, cellW, cellH);
+
+          // Payoff numbers
+          const p1Payoff = A[r][c];
+          const p2Payoff = B[r][c];
+
+          ctx.fillStyle = theme.text;
+          ctx.font = '600 14px var(--font-mono)';
+          ctx.textAlign = 'center';
+          ctx.fillText(`(${p1Payoff}, ${p2Payoff})`, cx + cellW / 2, cy + cellH / 2 - 2);
+
+          // Cell Probability weight text
+          ctx.fillStyle = theme.textMuted;
+          ctx.font = '9px var(--font-mono)';
+          ctx.fillText(`Pr: ${(w * 100).toFixed(1)}%`, cx + cellW / 2, cy + cellH / 2 + 16);
+
+          if (isNash) {
+            ctx.fillStyle = theme.red;
+            ctx.font = '600 9px var(--font-mono)';
+            ctx.fillText('★ NASH EQUILIBRIUM', cx + cellW / 2, cy + cellH - 8);
+          }
+        }
+      }
+
+      // Expected Payoffs
+      const E_U1 = leadX * (leadY * A[0][0] + (1 - leadY) * A[0][1]) + (1 - leadX) * (leadY * A[1][0] + (1 - leadY) * A[1][1]);
+      const E_U2 = leadY * (leadX * B[0][0] + (1 - leadX) * B[1][0]) + (1 - leadY) * (leadX * B[0][1] + (1 - leadX) * B[1][1]);
+      const distToNash = Math.sqrt(leadX * leadX + leadY * leadY);
+
+      // 4. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 255;
+      const hudH = 142;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('EVOLUTIONARY REPLICATOR DYNAMICS', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`P1 Strategy x = Pr(Coop): ${leadX.toFixed(3)}`, hudX + 10, hudY + 36);
+      ctx.fillText(`P2 Strategy y = Pr(Coop): ${leadY.toFixed(3)}`, hudX + 10, hudY + 52);
+      ctx.fillText(`Expected Payoffs: E[U₁] = ${E_U1.toFixed(2)}, E[U₂] = ${E_U2.toFixed(2)}`, hudX + 10, hudY + 68);
+      ctx.fillText(`Distance to Nash Attractor: ${distToNash.toFixed(3)}`, hudX + 10, hudY + 84);
+      ctx.fillText(`Convergence Rate ||v||: ${(Math.sqrt(leadVel.dx*leadVel.dx + leadVel.dy*leadVel.dy)).toFixed(4)}`, hudX + 10, hudY + 100);
+
+      ctx.fillStyle = distToNash < 0.15 ? theme.red : theme.teal;
+      ctx.fillText(`Equilibrium State: ${distToNash < 0.15 ? 'NASH CONVERGED (DEFECT, DEFECT)' : 'REPLICATOR FLOW TOWARDS ATTRACTOR'}`, hudX + 10, hudY + 118);
 
       requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    animate();
   </script>
 </body>
 </html>

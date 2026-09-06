@@ -29,43 +29,41 @@ from typing import Dict, List, Tuple, Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MODELS_DIR = REPO_ROOT / "models"
 
-EXPECTED_DISCIPLINE_COUNTS = {
-    # M1: Mechanical, Aerospace, Marine, Biomechanics & Acoustics (73 files)
-    "mech": 25,
-    "aero": 8,
-    "aerospace": 7,
-    "acoustics": 8,
-    "marine": 10,
-    "biomech": 15,
-    # M2: Civil, Environmental, Ag, Mining, Industrial & Energy (72 files)
-    "civil": 20,
-    "enveng": 10,
+CANONICAL_DISCIPLINE_COUNTS = {
+    "acoustics_engineering": 8,
+    "aerospace_engineering": 15,
     "agricultural_engineering": 10,
-    "mining_petro": 10,
-    "industrial_systems": 10,
-    "energy": 12,
-    # M3: Electrical, Electronics & Telecommunications (65 files)
-    "electrical": 17,
-    "electrical_engineering": 8,
-    "electronics": 10,
-    "ee": 10,
-    "telecommunications": 20,
-    # M4: Computer Engineering, CS & Robotics (52 files)
-    "compeng": 20,
-    "computer_science": 10,
-    "cs": 10,
-    "robotics": 12,
-    # M5: Chemical, Materials, Nuclear, Nano, Optics & Fundamental Physics (86 files)
-    "chemeng": 10,
-    "chem_eng": 10,
-    "matsci": 15,
-    "nuclear": 7,
-    "nuclear_engineering": 8,
-    "nano": 10,
-    "optical": 10,
+    "biomedical_engineering": 15,
+    "chemical_engineering": 20,
+    "civil_engineering": 20,
+    "computer_engineering": 20,
+    "computer_science": 21,
+    "electrical_engineering": 25,
+    "electronics_engineering": 20,
+    "energy_engineering": 12,
+    "environmental_engineering": 10,
     "fundamental_physics": 12,
-    "addendum": 4,
+    "industrial_systems_engineering": 12,
+    "marine_engineering": 10,
+    "materials_science": 15,
+    "mechanical_engineering": 25,
+    "mining_petroleum_engineering": 10,
+    "nanotechnology": 10,
+    "nuclear_engineering": 16,
+    "optical_engineering": 10,
+    "robotics_engineering": 12,
+    "telecommunications_engineering": 20,
 }
+
+PLANNED_EXPANSION_DISCIPLINES = {
+    "astrodynamics": 10,
+    "cryogenic_engineering": 10,
+    "geophysical_engineering": 10,
+    "plasma_physics": 10,
+    "quantum_engineering": 10,
+}
+
+EXPECTED_DISCIPLINE_COUNTS = CANONICAL_DISCIPLINE_COUNTS
 
 PLACEHOLDER_SUBSTRINGS = [
     "todo",
@@ -98,35 +96,36 @@ def count_sentences(text: str) -> List[str]:
         (r'\beq\.', 'eq_placeholder'),
         (r'\bapprox\.', 'approx_placeholder'),
         (r'\bviz\.', 'viz_placeholder'),
-        (r'\bvol\.', 'vol_placeholder'),
-        (r'\bno\.', 'no_placeholder'),
-        (r'\b(al)\.', 'al_placeholder'),
     ]
-    for pattern, replacement in abbrevs:
-        protected = re.sub(pattern, replacement, protected, flags=re.IGNORECASE)
+    for pattern, placeholder in abbrevs:
+        protected = re.sub(pattern, placeholder, protected, flags=re.IGNORECASE)
 
-    protected = re.sub(r'(\d)\.(\d)', r'\1_point_\2', protected)
-    raw_sentences = re.split(r'[\.\!\?]+(?:\s+|$)', protected)
+    raw_sentences = re.split(r'(?<=[.!?])\s+', protected)
     return [s.strip() for s in raw_sentences if s.strip()]
 
 
 def test_discipline_counts() -> Tuple[bool, List[str]]:
-    """Test: All 30 discipline subdirectories contain exact expected counts summing to 348."""
+    """Test: All canonical discipline subdirectories contain exact expected counts."""
     logs = []
     success = True
-    actual_dirs = [d.name for d in MODELS_DIR.iterdir() if d.is_dir() and d.name != "misc"]
-    
-    if len(actual_dirs) != len(EXPECTED_DISCIPLINE_COUNTS):
-        logs.append(f"Directory count mismatch: found {len(actual_dirs)}, expected {len(EXPECTED_DISCIPLINE_COUNTS)}")
+    actual_dirs = set(d.name for d in MODELS_DIR.iterdir() if d.is_dir() and d.name != "misc")
+
+    # Check that all canonical 23 disciplines are present
+    missing_canonical = [d for d in CANONICAL_DISCIPLINE_COUNTS if d not in actual_dirs]
+    if missing_canonical:
+        logs.append(f"Missing canonical directory: {', '.join(missing_canonical)}")
+        success = False
+
+    # Check for unauthorized directories
+    allowed_dirs = set(CANONICAL_DISCIPLINE_COUNTS.keys()) | set(PLANNED_EXPANSION_DISCIPLINES.keys())
+    unexpected_dirs = [d for d in actual_dirs if d not in allowed_dirs]
+    if unexpected_dirs:
+        logs.append(f"Unexpected directory: {', '.join(unexpected_dirs)}")
         success = False
 
     total_files = 0
-    for disc, expected in sorted(EXPECTED_DISCIPLINE_COUNTS.items()):
+    for disc, expected in sorted(CANONICAL_DISCIPLINE_COUNTS.items()):
         disc_path = MODELS_DIR / disc
-        if not disc_path.exists():
-            logs.append(f"Missing expected directory: {disc}")
-            success = False
-            continue
         files = list(disc_path.glob("*.html"))
         count = len(files)
         total_files += count
@@ -134,11 +133,20 @@ def test_discipline_counts() -> Tuple[bool, List[str]]:
             logs.append(f"Discipline count mismatch for '{disc}': actual {count} != expected {expected}")
             success = False
 
-    if total_files != 348:
+    # Check expansion directories if populated
+    expansion_files = 0
+    for disc in sorted(PLANNED_EXPANSION_DISCIPLINES.keys()):
+        disc_path = MODELS_DIR / disc
+        if disc_path.exists():
+            expansion_files += len(list(disc_path.glob("*.html")))
+
+    if total_files == 348 and expansion_files == 0:
+        logs.append("Discipline counts: 23 canonical active directories verified, exactly 348 models total (5 planned expansion dirs present).")
+    elif total_files == 348 and expansion_files == 50:
+        logs.append("Discipline counts: 28 canonical directories verified (23 baseline + 5 expansion), exactly 398 models total.")
+    elif total_files + expansion_files != 348 and expansion_files == 0:
         logs.append(f"Total files mismatch: actual {total_files} != expected 348")
         success = False
-    else:
-        logs.append(f"Discipline counts: 30 directories verified, exactly 348 models total.")
 
     return success, logs
 

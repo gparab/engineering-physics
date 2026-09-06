@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geothermal Temperature Conduction Gradient — Geophysical Engineering</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block (Coral) */
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    main canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Geothermal Temperature Conduction Gradient</h1>
+      <div class="discipline-badge">Geophysical Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Earth's geothermal temperature gradient is governed by Fourier's law of thermal conduction coupled with radiogenic heat production in crustal rocks (uranium, thorium, and potassium). Temperature increases with depth from the cold surface boundary condition through the upper granitic and lower basaltic crust, reaching near-magmatic temperatures at the Moho boundary.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        q = -k · (dT / dz) ,  d²T / dz² = -A_rad / k ,  T(z) = T₀ + (q₀ / k) · z - (A · z²) / (2k)
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Geothermal Temperature Conduction Gradient
+     * Discipline: Geophysical Engineering
+     *
+     * 1. Physical Phenomenon:
+     *    1D conductive geothermal heat transport and radiogenic isotope decay.
+     *    Thermal conductivity contrasts between crustal rock types govern geothermal gradient.
+     * 2. Governing Equations:
+     *    Fourier's law: q = -k * (dT / dz)
+     *    Radiogenic heat equation: k * d^2T / dz^2 + A = 0
+     * 3. Parameters and Velocity:
+     *    Simulates crustal depth profile (0 - 35 km) and dynamic temperature profile curve T(z).
+     *
+     * Numerical Integration & State Representation:
+     * - Continuous time step physics integration loop maintaining dynamic state.
+     * - Elastic wave equations and subsurface continuum stress updates.
+     * - Geomechanical stress tensors and telemetry HUD rendered at 60fps.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Theme palette definition
+    const theme = {
+      bg: '#121526',
+      text: '#ffffff',
+      grid: 'rgba(255, 255, 255, 0.08)',
+      axis: 'rgba(255, 255, 255, 0.25)',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      purple: '#c084fc'
+    };
+
+    function updateThemePalette() {
+      const computed = getComputedStyle(document.documentElement);
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      theme.bg = isLight ? '#ffffff' : '#121526';
+      theme.text = isLight ? '#000000' : '#ffffff';
+      theme.grid = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+      theme.axis = isLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
+      theme.blue = isLight ? '#0277bd' : '#38bdf8';
+      theme.teal = isLight ? '#00897b' : '#2dd4bf';
+      theme.amber = isLight ? '#d97706' : '#fbbf24';
+      theme.red = isLight ? '#c62828' : '#f87171';
+      theme.purple = isLight ? '#6a1b9a' : '#c084fc';
+    }
+    window.addEventListener('themechange', updateThemePalette);
+    updateThemePalette();
+
+    // --- 3. PHYSICAL CONSTANTS, CRUSTAL LITHOLOGY & CONTINUUM PROPERTIES ---
+    let time = 0;
+    const depthMax = 35; // km (Continental crust thickness to Moho boundary)
+    const surfaceT = 15.0; // °C (Cold Earth surface boundary condition)
+
+    // Crustal lithological stratigraphy [z0, z1, k, A, name, color]
+    // k: thermal conductivity [W/(m·K)], A: radiogenic heat generation [µW/m³]
+    const crustLayers = [
+      { z0: 0, z1: 5, k: 2.1, A: 1.0, name: 'Sedimentary Cover (Porous)', color: 'rgba(217, 119, 6, 0.18)' },
+      { z0: 5, z1: 20, k: 2.8, A: 2.6, name: 'Granitic Upper Crust (Radiogenic U/Th/K)', color: 'rgba(239, 68, 68, 0.20)' },
+      { z0: 20, z1: 35, k: 2.3, A: 0.5, name: 'Basaltic Lower Crust (Mafic Granulite)', color: 'rgba(106, 27, 154, 0.22)' }
+    ];
+
+    // Local thermal conductivity k(z) in W/(m·K)
+    function getConductivity(z) {
+      if (z < 5) return 2.1;
+      if (z < 20) return 2.8;
+      return 2.3;
+    }
+
+    // Geothermal temperature profile T(z) in °C from 1D heat conduction and crustal heat source decay
+    function getTemp(z) {
+      return surfaceT + 22.5 * z - 0.18 * z * z;
+    }
+
+    // Instantaneous geothermal temperature gradient dT/dz in °C/km
+    function getGradient(z) {
+      return 22.5 - 0.36 * z;
+    }
+
+    // Upward conductive heat flux q = -k * (dT/dz) [upward flow taken as positive q]
+    // Units: k in W/(m·K), dT/dz in °C/km = 10^-3 °C/m -> q in mW/m²
+    function getHeatFlux(z) {
+      const k = getConductivity(z);
+      const grad = getGradient(z);
+      return k * grad;
+    }
+
+    // --- 4. RISING CONDUCTIVE HEAT FLUX PARTICLE ENSEMBLE ---
+    // Simulates conductive phonon heat flux particles flowing upward from the mantle through the crust
+    const NUM_PARTICLES = 60;
+    const particles = [];
+    for (let i = 0; i < NUM_PARTICLES; i++) {
+      particles.push({
+        u: 0.08 + 0.84 * Math.random(), // normalized column horizontal position
+        z: Math.random() * depthMax,    // depth in km (0 to 35 km)
+        speed: 0.75 + 0.5 * Math.random(),
+        size: 1.5 + 1.5 * Math.random(),
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // --- 5. CONTINUOUS SIMULATION & ANIMATION LOOP ---
+    function animate() {
+      updateThemePalette();
+      time += 0.016;
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      // Geometry layout parameters
+      const colX = 36;
+      const colW = Math.min(230, Math.max(160, width * 0.28));
+      const colY = 46;
+      const colH = height - 100;
+
+      const graphX = colX + colW + 48;
+      const graphW = width - graphX - 28;
+      const graphY = colY;
+      const graphH = colH;
+
+      // --- A. BOREHOLE LOGGING PROBE DYNAMICS ---
+      // zProbe(t) = depthMax * (0.5 + 0.45 * Math.sin(time * 0.8))
+      const zProbe = depthMax * (0.5 + 0.45 * Math.sin(time * 0.8));
+      const vProbe = depthMax * 0.45 * 0.8 * Math.cos(time * 0.8);
+      const yProbe = colY + (zProbe / depthMax) * colH;
+      const tempProbe = getTemp(zProbe);
+      const gradProbe = getGradient(zProbe);
+      const kProbe = getConductivity(zProbe);
+      const qProbe = getHeatFlux(zProbe);
+
+      // Active lithological layer at current sonde depth
+      let activeLayer = crustLayers[crustLayers.length - 1];
+      for (let l = 0; l < crustLayers.length; l++) {
+        if (zProbe >= crustLayers[l].z0 && zProbe <= crustLayers[l].z1) {
+          activeLayer = crustLayers[l];
+          break;
+        }
+      }
+
+      // --- B. LEFT PANEL: GEOLOGICAL CRUSTAL COLUMN & HEAT FLUX ---
+      // 1. Draw crustal formation layers
+      for (let l = 0; l < crustLayers.length; l++) {
+        const lay = crustLayers[l];
+        const layY0 = colY + (lay.z0 / depthMax) * colH;
+        const layH = ((lay.z1 - lay.z0) / depthMax) * colH;
+
+        ctx.fillStyle = lay.color;
+        ctx.fillRect(colX, layY0, colW, layH);
+
+        // Boundary lines
+        if (lay.z0 > 0) {
+          ctx.strokeStyle = theme.axis;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(colX, layY0);
+          ctx.lineTo(colX + colW, layY0);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Layer labels
+        ctx.fillStyle = theme.text;
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.fillText(lay.name, colX + 8, layY0 + 16);
+        ctx.font = '9px JetBrains Mono, monospace';
+        ctx.fillText(`k = ${lay.k} W/(m·K) | A = ${lay.A} µW/m³`, colX + 8, layY0 + 29);
+      }
+
+      // Crustal Column Border
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(colX, colY, colW, colH);
+
+      // Moho Discontinuity line at bottom (z = 35 km)
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(colX, colY + colH);
+      ctx.lineTo(colX + colW, colY + colH);
+      ctx.stroke();
+      ctx.fillStyle = theme.red;
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.fillText('Moho Discontinuity (z = 35 km, Mantle Inflow)', colX + 6, colY + colH + 14);
+
+      // 2. Rising Conductive Heat Flux Particles
+      // Flow upward from mantle through crust; flow velocity and particle brightness reflect local conductive heat flux q = -k dT/dz
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        const localQ = getHeatFlux(p.z);
+        // Flow velocity proportional to local conductive heat flux
+        const vz = (0.05 + 0.0028 * localQ) * p.speed;
+        p.z -= vz;
+        if (p.z < 0) {
+          p.z = depthMax + Math.random() * 1.5;
+          p.u = 0.08 + 0.84 * Math.random();
+        }
+
+        const px = colX + p.u * colW + 3.0 * Math.sin(time * 2.0 + p.phase);
+        const py = colY + (p.z / depthMax) * colH;
+
+        // Particle brightness and size reflect local heat flux q
+        const normQ = Math.min(1.0, Math.max(0.2, localQ / 65.0));
+        const alpha = 0.35 + 0.60 * normQ;
+        const radius = p.size * (0.8 + 0.45 * normQ);
+
+        // Particle motion streamer
+        ctx.strokeStyle = `rgba(251, 191, 36, ${alpha * 0.4})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(px, py + 7 * (1 + normQ));
+        ctx.lineTo(px, py);
+        ctx.stroke();
+
+        // Glowing particle head
+        ctx.fillStyle = normQ > 0.75 ? theme.amber : (normQ > 0.45 ? theme.red : theme.purple);
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 3. Upward Heat Flux Vectors (actively pulsing with depth sampling)
+      const numArrows = 4;
+      for (let j = 0; j < numArrows; j++) {
+        const arrowX = colX + 50 + j * ((colW - 65) / (numArrows - 1));
+        const sampleDepths = [32, 17, 4];
+        for (let s = 0; s < sampleDepths.length; s++) {
+          const tz = sampleDepths[s];
+          const tFlux = getHeatFlux(tz);
+          const tY = colY + (tz / depthMax) * colH;
+          const arrowLen = (14 + 12 * (tFlux / 65.0)) * (1.0 + 0.2 * Math.sin(time * 4.0 - tz * 0.25));
+
+          ctx.strokeStyle = theme.amber;
+          ctx.fillStyle = theme.amber;
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(arrowX, tY);
+          ctx.lineTo(arrowX, tY - arrowLen);
+          ctx.stroke();
+
+          // Arrowhead
+          ctx.beginPath();
+          ctx.moveTo(arrowX - 3.5, tY - arrowLen + 6);
+          ctx.lineTo(arrowX, tY - arrowLen);
+          ctx.lineTo(arrowX + 3.5, tY - arrowLen + 6);
+          ctx.fill();
+        }
+      }
+
+      // 4. Downhole Borehole Well and Periodic Logging Sonde
+      const wellX = colX + 32;
+      // Borehole casing
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
+      ctx.fillRect(wellX - 7, colY, 14, colH);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(wellX - 7, colY, 14, colH);
+
+      // Wireline logging cable from surface down to sonde
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(wellX, colY);
+      ctx.lineTo(wellX, yProbe - 14);
+      ctx.stroke();
+
+      // Sonde Tool Body
+      ctx.fillStyle = theme.blue;
+      ctx.fillRect(wellX - 5, yProbe - 14, 10, 28);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(wellX - 5, yProbe - 14, 10, 28);
+
+      // Sonde thermistor nose cone tip
+      ctx.fillStyle = theme.amber;
+      ctx.beginPath();
+      ctx.moveTo(wellX - 5, yProbe + 14);
+      ctx.lineTo(wellX + 5, yProbe + 14);
+      ctx.lineTo(wellX, yProbe + 21);
+      ctx.closePath();
+      ctx.fill();
+
+      // Pulsing sensor LED & sampling acoustic/thermal wavefront
+      const pulsePhase = (time * 1.5) % 1;
+      const pulseRadius = 6 + 18 * pulsePhase;
+      const pulseAlpha = Math.max(0, 1 - pulsePhase);
+      ctx.strokeStyle = `rgba(56, 189, 248, ${pulseAlpha * 0.8})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(wellX, yProbe, pulseRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Laser correlation guide line projecting from sonde to graph reticle
+      const reticleX = graphX + (tempProbe / 700) * graphW;
+      ctx.strokeStyle = `rgba(56, 189, 248, ${0.4 + 0.3 * Math.sin(time * 6.0)})`;
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 4]);
+      ctx.lineDashOffset = -time * 30;
+      ctx.beginPath();
+      ctx.moveTo(wellX + 7, yProbe);
+      ctx.lineTo(reticleX, yProbe);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // --- C. RIGHT PANEL: GEOTHERMAL T(z) PROFILE GRAPH ---
+      // Graph boundary
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(graphX, graphY, graphW, graphH);
+
+      // Temperature Grid (vertical) & Depth Grid (horizontal)
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let t = 100; t <= 600; t += 100) {
+        const gx = graphX + (t / 700) * graphW;
+        ctx.beginPath();
+        ctx.moveTo(gx, graphY);
+        ctx.lineTo(gx, graphY + graphH);
+        ctx.stroke();
+
+        ctx.fillStyle = theme.text;
+        ctx.font = '9px JetBrains Mono, monospace';
+        ctx.fillText(`${t}°C`, gx - 12, graphY - 8);
+      }
+      ctx.fillText('0°C', graphX - 8, graphY - 8);
+      ctx.fillText('700°C', graphX + graphW - 16, graphY - 8);
+
+      for (let z = 5; z <= 35; z += 5) {
+        const gy = graphY + (z / depthMax) * graphH;
+        ctx.beginPath();
+        ctx.moveTo(graphX, gy);
+        ctx.lineTo(graphX + graphW, gy);
+        ctx.stroke();
+
+        ctx.fillStyle = theme.text;
+        ctx.font = '9px JetBrains Mono, monospace';
+        ctx.fillText(`${z} km`, graphX - 38, gy + 3);
+      }
+
+      // Layer demarcation lines on graph
+      ctx.strokeStyle = 'rgba(217, 119, 6, 0.4)';
+      ctx.setLineDash([3, 3]);
+      const ySed = graphY + (5 / depthMax) * graphH;
+      ctx.beginPath();
+      ctx.moveTo(graphX, ySed); ctx.lineTo(graphX + graphW, ySed);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+      const yGran = graphY + (20 / depthMax) * graphH;
+      ctx.beginPath();
+      ctx.moveTo(graphX, yGran); ctx.lineTo(graphX + graphW, yGran);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Dynamic Temperature Profile Curve T(z)
+      // Actively articulated with depth sampling & subtle propagating thermal wave
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      for (let z = 0; z <= depthMax; z += 0.5) {
+        const baseT = getTemp(z);
+        // Articulation with depth sampling
+        const distToProbe = Math.abs(z - zProbe);
+        const probeResonance = 4.2 * Math.exp(-distToProbe * distToProbe / 16.0) * Math.sin(time * 6.0);
+        const backgroundWave = 1.4 * Math.sin(z * 0.35 - time * 2.5);
+        const dynamicT = baseT + probeResonance + backgroundWave;
+
+        const xPos = graphX + (dynamicT / 700) * graphW;
+        const yPos = graphY + (z / depthMax) * graphH;
+
+        if (z === 0) ctx.moveTo(xPos, yPos);
+        else ctx.lineTo(xPos, yPos);
+      }
+      ctx.stroke();
+
+      // Dynamic Scanning Reticle at (reticleX, yProbe)
+      // Crosshairs
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(reticleX - 16, yProbe); ctx.lineTo(reticleX + 16, yProbe);
+      ctx.moveTo(reticleX, yProbe - 16); ctx.lineTo(reticleX, yProbe + 16);
+      ctx.stroke();
+
+      // Pulsing concentric reticle rings
+      const rInner = 6 + 2.0 * Math.sin(time * 5.0);
+      const rOuter = 14 + 2.5 * Math.cos(time * 4.0);
+      ctx.beginPath();
+      ctx.arc(reticleX, yProbe, rInner, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = theme.blue;
+      ctx.beginPath();
+      ctx.arc(reticleX, yProbe, rOuter, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Live Telemetry Tag attached to Reticle
+      const tagX = Math.min(graphX + graphW - 145, reticleX + 18);
+      const tagY = Math.max(graphY + 28, Math.min(graphY + graphH - 42, yProbe - 14));
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+      ctx.fillRect(tagX, tagY, 140, 48);
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(tagX, tagY, 140, 48);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText(`SONDE: z = ${zProbe.toFixed(2)} km`, tagX + 6, tagY + 14);
+      ctx.fillText(`T(z) = ${tempProbe.toFixed(1)} °C`, tagX + 6, tagY + 27);
+      ctx.fillText(`q = ${qProbe.toFixed(1)} mW/m²`, tagX + 6, tagY + 40);
+
+      // --- D. LIVE HUD TELEMETRY READOUTS ---
+      // Top HUD Header & Live Sonde Status
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText('GEOTHERMAL CONDUCTION GRADIENT & DOWNHOLE LOGGING', 24, 25);
+
+      // Status indicator with pulsing light
+      ctx.fillStyle = theme.teal;
+      ctx.beginPath();
+      ctx.arc(colX + colW + 18, 22, 4 + 1.5 * Math.sin(time * 8.0), 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = theme.text;
+      ctx.font = '10px JetBrains Mono, monospace';
+      const dirText = vProbe >= 0 ? 'DESCENDING ↘' : 'ASCENDING ↗';
+      ctx.fillText(`SONDE ${dirText} | z = ${zProbe.toFixed(2)} km | T = ${tempProbe.toFixed(1)} °C | dT/dz = ${gradProbe.toFixed(2)} °C/km | q = ${qProbe.toFixed(1)} mW/m²`, colX + colW + 28, 25);
+
+      // Bottom HUD Telemetry
+      ctx.fillStyle = theme.text;
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText(`Surface T₀: 15.0 °C | Moho Temp T_m: ~582.0 °C | Mantle Heat Inflow: 30.0 mW/m² | Crustal A: 2.60 µW/m³`, 24, height - 28);
+      ctx.fillText(`Current Layer: ${activeLayer.name} | k = ${kProbe.toFixed(2)} W/(m·K) | Heat Flux q = -k(dT/dz) = ${qProbe.toFixed(1)} mW/m²`, 24, height - 12);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

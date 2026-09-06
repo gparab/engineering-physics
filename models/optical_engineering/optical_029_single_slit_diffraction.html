@@ -43,6 +43,25 @@
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* Geometry & Spacing */
       --rounded-card: 24px;
       --rounded-pill: 50px;
@@ -56,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #f5f5f5;
       --surface: #fafafa;
@@ -202,7 +240,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -353,20 +393,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      if (variableName === '--text' || variableName === '--text-muted') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      }
-      if (variableName === '--surface-border') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#3b0764';
-      }
-      if (variableName === '--surface') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#e0d4fc';
-      }
-      if (variableName === '--accent') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#3b0764';
-      }
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     function getCssColor(varName, fallback) {
@@ -389,87 +483,205 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* redraw triggers automatically on next frame */ });
     resize();
 
     // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
-    // Core physical parameters, oscillation frequencies, and position states
     let time = 0;
+    const slitWidthA = 32; // a
+    const wavelength = 16;  // lambda
+    const numWaveletSources = 12;
+    let selectedAngle = 0; // theta in radians
 
     // --- 4. CONTINUOUS ANIMATION LOOP & NUMERICAL INTEGRATION ---
-    // Propagates dynamics each animation frame via time integration step
     function animate() {
-      time += 0.02;
-      // Clear canvas (transparent ground lets pastel color block show through)
-      ctx.clearRect(0, 0, width, height);
+      requestAnimationFrame(animate);
+      updateThemePalette();
+      time += 0.025;
 
-      // --- 5. RENDERING PIPELINE ---
-      // Sequentially draws background grids, body geometry, vector fields, and readouts
-      const cx = width / 2;
-            const cy = height / 2 - 20;
-            const blue = getThemeColor('--sim-blue') || '#4fc3f7';
-            const amber = getThemeColor('--sim-amber') || '#ffb74d';
-            const text = getThemeColor('--text') || '#e0e0e0';
-            const border = getThemeColor('--surface-border') || '#33334d';
-      
-            // Aperture barrier with single central slit
-            const slitX = cx - 100;
-            const slitW = 24;
-            ctx.fillStyle = border;
-            ctx.fillRect(slitX, cy - 110, 8, 110 - slitW / 2);
-            ctx.fillRect(slitX, cy + slitW / 2, 8, 110 - slitW / 2);
-      
-            // Incident plane waves on left
-            ctx.strokeStyle = blue;
-            ctx.lineWidth = 1.5;
-            for (let x = slitX - 60; x < slitX; x += 15) {
-              ctx.beginPath();
-              ctx.moveTo(x, cy - 60);
-              ctx.lineTo(x, cy + 60);
-              ctx.stroke();
-            }
-      
-            // Curved diffracted wave fronts emerging from slit
-            ctx.strokeStyle = 'rgba(79, 195, 247, 0.4)';
-            for (let r = 20; r <= 100; r += 20) {
-              ctx.beginPath();
-              ctx.arc(slitX + 8, cy, r, -Math.PI / 3, Math.PI / 3);
-              ctx.stroke();
-            }
-      
-            // Intensity distribution curve I(y) on detector screen (right)
-            const screenX = cx + 80;
-            ctx.strokeStyle = text;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(screenX, cy - 100);
-            ctx.lineTo(screenX, cy + 100);
-            ctx.stroke();
-      
-            // Sinc²(y) profile
-            ctx.strokeStyle = amber;
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            for (let y = -95; y <= 95; y += 2) {
-              const beta = (y / 15);
-              const sinc = beta === 0 ? 1 : Math.sin(beta) / beta;
-              const intensity = sinc * sinc;
-              const px = screenX + intensity * 60;
-              if (y === -95) ctx.moveTo(px, cy + y);
-              else ctx.lineTo(px, cy + y);
-            }
-            ctx.stroke();
-      
-            ctx.fillStyle = text;
-            ctx.font = '12px var(--font-mono)';
-            ctx.fillText('Aperture (Slit a)', slitX - 65, cy - 120);
-            ctx.fillText('Diffraction Pattern I(θ) ∝ Sinc²(β)', screenX - 50, cy + 125);
-      
-            requestAnimationFrame(animate);
-          }
-          animate();
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      const cx = width * 0.44;
+      const cy = height * 0.50;
+      const slitX = cx - 110;
+      const screenX = cx + 90;
+
+      // Coordinate Grid
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 30); ctx.lineTo(x, height - 30); ctx.stroke();
+      }
+      for (let y = 30; y < height - 30; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // 1. Incident Plane Wavefronts (x < slitX)
+      ctx.strokeStyle = theme.blue;
+      ctx.lineWidth = 1.5;
+      const planePhase = (time * 36) % wavelength;
+      for (let x = slitX - 110 + planePhase; x < slitX; x += wavelength) {
+        if (x > slitX - 120) {
+          ctx.beginPath();
+          ctx.moveTo(x, cy - 80);
+          ctx.lineTo(x, cy + 80);
+          ctx.stroke();
+        }
+      }
+
+      // 2. Aperture Barrier
+      ctx.fillStyle = theme.border;
+      ctx.fillRect(slitX - 4, cy - 110, 8, 110 - slitWidthA / 2);
+      ctx.fillRect(slitX - 4, cy + slitWidthA / 2, 8, 110 - slitWidthA / 2);
+
+      // Slit Aperture Opening
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+      ctx.fillRect(slitX - 4, cy - slitWidthA / 2, 8, slitWidthA);
+
+      // 3. Huygens-Fresnel Discrete Secondary Wavelet Emitters
+      const maxR = screenX - slitX + 25;
+      const wavePhase = (time * 36) % wavelength;
+      for (let s = 0; s < numWaveletSources; s++) {
+        const sy = cy - slitWidthA / 2 + (s + 0.5) * (slitWidthA / numWaveletSources);
+
+        // Draw secondary wavelet source emitter
+        ctx.fillStyle = theme.teal;
+        ctx.beginPath();
+        ctx.arc(slitX, sy, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Radiating circular wavelets
+        ctx.strokeStyle = 'rgba(45, 212, 191, 0.18)';
+        ctx.lineWidth = 1;
+        for (let r = wavePhase; r < maxR; r += wavelength) {
+          ctx.beginPath();
+          ctx.arc(slitX, sy, r, -Math.PI * 0.40, Math.PI * 0.40);
+          ctx.stroke();
+        }
+      }
+
+      // 4. Detection Screen
+      ctx.strokeStyle = theme.text;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(screenX, cy - 100);
+      ctx.lineTo(screenX, cy + 100);
+      ctx.stroke();
+
+      // Dynamically sweep observation angle theta
+      selectedAngle = Math.sin(time * 0.8) * 0.35; // +/- 0.35 radians
+      const currentScreenY = cy + (screenX - slitX) * Math.tan(selectedAngle);
+
+      // Ray connecting slit center to current observation point
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(slitX, cy);
+      ctx.lineTo(screenX, currentScreenY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 5. Fraunhofer Sinc² Intensity Curve on Screen
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      const maxIntensityW = 60;
+      for (let y = -95; y <= 95; y += 2) {
+        const theta = Math.atan2(y, screenX - slitX);
+        const beta = (Math.PI * slitWidthA * Math.sin(theta)) / wavelength;
+        const sinc = beta === 0 ? 1 : Math.sin(beta) / beta;
+        const intensity = sinc * sinc;
+        const px = screenX + 4 + intensity * maxIntensityW;
+        if (y === -95) ctx.moveTo(px, cy + y);
+        else ctx.lineTo(px, cy + y);
+      }
+      ctx.stroke();
+
+      // Current intensity marker dot
+      const curBeta = (Math.PI * slitWidthA * Math.sin(selectedAngle)) / wavelength;
+      const curSinc = curBeta === 0 ? 1 : Math.sin(curBeta) / curBeta;
+      const curI = curSinc * curSinc;
+      ctx.fillStyle = theme.red;
+      ctx.beginPath();
+      ctx.arc(screenX + 4 + curI * maxIntensityW, currentScreenY, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 6. Dedicated Electric Field Phasor Scope (Right Side Panel)
+      const phCX = width - 110;
+      const phCY = height * 0.48;
+      const phRadius = 55;
+
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(phCX - 75, phCY - 75, 150, 150);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(phCX - 75, phCY - 75, 150, 150);
+
+      ctx.font = '600 10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.textAlign = 'center';
+      ctx.fillText('E-FIELD PHASOR ARC', phCX, phCY - 60);
+
+      // Draw rotating phasor chain
+      const dPhi = (2 * Math.PI * slitWidthA * Math.sin(selectedAngle)) / (wavelength * numWaveletSources);
+      const segLen = phRadius / numWaveletSources * 2.2;
+      let curPhX = phCX - 25;
+      let curPhY = phCY + 25;
+      const rotPhase = time * 3.0; // Dynamic rotation frequency omega
+
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = theme.teal;
+      ctx.beginPath();
+      ctx.moveTo(curPhX, curPhY);
+
+      for (let s = 0; s < numWaveletSources; s++) {
+        const phi = rotPhase + s * dPhi;
+        curPhX += Math.cos(phi) * segLen;
+        curPhY += Math.sin(phi) * segLen;
+        ctx.lineTo(curPhX, curPhY);
+      }
+      ctx.stroke();
+
+      // Resultant Chord Vector E_total
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(phCX - 25, phCY + 25);
+      ctx.lineTo(curPhX, curPhY);
+      ctx.stroke();
+
+      // 7. Telemetry HUD
+      const hudX = 24, hudY = 24, hudW = 250, hudH = 100;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('SINGLE-SLIT DIFFRACTION & PHASOR', hudX + 10, hudY + 18);
+      ctx.font = '400 11px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Slit Width a: ${slitWidthA} μm | λ: ${wavelength} nm`, hudX + 10, hudY + 36);
+      ctx.fillText(`Diffraction Angle θ: ${(selectedAngle * 180 / Math.PI).toFixed(1)}°`, hudX + 10, hudY + 52);
+      ctx.fillText(`Phase Param β: ${curBeta.toFixed(2)} rad`, hudX + 10, hudY + 68);
+      ctx.fillStyle = theme.amber;
+      ctx.fillText(`Intensity I(θ)/I₀: ${curI.toFixed(3)} (${(curI * 100).toFixed(1)}%)`, hudX + 10, hudY + 86);
+
+      // Bottom Status
+      ctx.fillStyle = theme.textMuted;
+      ctx.font = '500 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Fraunhofer Diffraction: I(θ) = I₀ [sin(β)/β]² where β = (π a / λ) sin(θ) | Huygens Wavelets Active`, width / 2, height - 16);
+    }
+    animate();
   </script>
 </body>
 </html>

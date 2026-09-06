@@ -29,6 +29,25 @@
       --block-accent: #3e2723;
       --block-grid: rgba(0, 0, 0, 0.06);
 
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
       --sim-teal: #0f766e;
@@ -62,6 +81,25 @@
       --surface-border: rgba(0, 0, 0, 0.10);
       --text: #000000;
       --accent: #0277bd;
+
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
 
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
@@ -211,7 +249,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -362,90 +402,379 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      // High-contrast fallbacks calibrated for the pastel simulation color block
-      if (variableName === '--text') return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      if (variableName === '--text-muted') return '#1f2937';
-      if (variableName === '--surface-border') return getComputedStyle(document.documentElement).getPropertyValue('--block-border').trim() || 'rgba(0, 0, 0, 0.12)';
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. HIGH-DPI CANVAS INITIALIZATION & RESIZE HANDLING ---
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
-    let width = 0, height = 0;
+    let width = 0, height = 0, dpr = 1;
 
     function resize() {
       const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
+      dpr = window.devicePixelRatio || 1;
       width = rect.width;
       height = rect.height;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => { /* trigger canvas update on theme switch */ });
+    window.addEventListener('themechange', () => { updateThemePalette(); });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
-    // Pore network nodes and channels
-    const nodes = [
-      { x: 0.25, y: 0.35 }, { x: 0.45, y: 0.3 }, { x: 0.65, y: 0.38 }, { x: 0.82, y: 0.32 },
-      { x: 0.32, y: 0.55 }, { x: 0.55, y: 0.52 }, { x: 0.75, y: 0.58 },
-      { x: 0.22, y: 0.72 }, { x: 0.42, y: 0.75 }, { x: 0.68, y: 0.72 }, { x: 0.85, y: 0.76 }
+    // --- 3. PORE NETWORK GRAPH DEFINITION ---
+    // Layers: 0 (Inlet, x~0.15), 1 (x~0.34), 2 (x~0.52), 3 (x~0.70), 4 (Outlet, x~0.88)
+    const netNodes = [
+      // Layer 0 (Inlet)
+      { id: 0, layer: 0, xRel: 0.14, yRel: 0.28, rBody: 14, P: 100, isFixed: true },
+      { id: 1, layer: 0, xRel: 0.14, yRel: 0.52, rBody: 16, P: 100, isFixed: true },
+      { id: 2, layer: 0, xRel: 0.14, yRel: 0.76, rBody: 13, P: 100, isFixed: true },
+      // Layer 1
+      { id: 3, layer: 1, xRel: 0.33, yRel: 0.22, rBody: 12, P: 80, isFixed: false },
+      { id: 4, layer: 1, xRel: 0.32, yRel: 0.44, rBody: 18, P: 80, isFixed: false },
+      { id: 5, layer: 1, xRel: 0.34, yRel: 0.65, rBody: 11, P: 80, isFixed: false },
+      { id: 6, layer: 1, xRel: 0.33, yRel: 0.84, rBody: 15, P: 80, isFixed: false },
+      // Layer 2
+      { id: 7, layer: 2, xRel: 0.52, yRel: 0.26, rBody: 17, P: 60, isFixed: false },
+      { id: 8, layer: 2, xRel: 0.51, yRel: 0.48, rBody: 10, P: 60, isFixed: false },
+      { id: 9, layer: 2, xRel: 0.53, yRel: 0.72, rBody: 19, P: 60, isFixed: false },
+      // Layer 3
+      { id: 10, layer: 3, xRel: 0.70, yRel: 0.24, rBody: 13, P: 40, isFixed: false },
+      { id: 11, layer: 3, xRel: 0.69, yRel: 0.45, rBody: 16, P: 40, isFixed: false },
+      { id: 12, layer: 3, xRel: 0.71, yRel: 0.68, rBody: 12, P: 40, isFixed: false },
+      { id: 13, layer: 3, xRel: 0.70, yRel: 0.85, rBody: 15, P: 40, isFixed: false },
+      // Layer 4 (Outlet)
+      { id: 14, layer: 4, xRel: 0.88, yRel: 0.30, rBody: 15, P: 20, isFixed: true },
+      { id: 15, layer: 4, xRel: 0.88, yRel: 0.55, rBody: 17, P: 20, isFixed: true },
+      { id: 16, layer: 4, xRel: 0.88, yRel: 0.78, rBody: 14, P: 20, isFixed: true }
     ];
 
+    // Throat Connections (Edges) with heterogeneous throat radii
+    const throatDefs = [
+      // 0 to Layer 1
+      [0, 3, 5], [0, 4, 10], [1, 4, 12], [1, 5, 8], [2, 5, 6], [2, 6, 9],
+      // Intra-layer 1
+      [3, 4, 5], [4, 5, 7], [5, 6, 6],
+      // Layer 1 to 2
+      [3, 7, 11], [4, 7, 7], [4, 8, 5], [4, 9, 13], [5, 9, 8], [6, 9, 10],
+      // Intra-layer 2
+      [7, 8, 6], [8, 9, 7],
+      // Layer 2 to 3
+      [7, 10, 10], [7, 11, 8], [8, 11, 6], [9, 11, 7], [9, 12, 14], [9, 13, 9],
+      // Intra-layer 3
+      [10, 11, 5], [11, 12, 8], [12, 13, 6],
+      // Layer 3 to Outlet
+      [10, 14, 11], [11, 14, 7], [11, 15, 12], [12, 15, 8], [12, 16, 10], [13, 16, 12]
+    ];
+
+    const netThroats = throatDefs.map(([from, to, rThroat]) => ({
+      from,
+      to,
+      rThroat,
+      cond: Math.pow(rThroat, 3.5), // Hagen-Poiseuille conductance ~ r^4
+      flux: 0,
+      velocity: 0
+    }));
+
+    // Build node adjacency
+    netNodes.forEach(n => { n.adjThroats = []; });
+    netThroats.forEach(t => {
+      netNodes[t.from].adjThroats.push(t);
+      netNodes[t.to].adjThroats.push(t);
+    });
+
+    // Solve Nodal Pressures using Gauss-Seidel relaxation
+    function solvePressureField() {
+      for (let iter = 0; iter < 15; iter++) {
+        for (let i = 0; i < netNodes.length; i++) {
+          const n = netNodes[i];
+          if (n.isFixed) continue;
+
+          let num = 0;
+          let den = 0;
+          n.adjThroats.forEach(t => {
+            const nbrId = t.from === n.id ? t.to : t.from;
+            const nbr = netNodes[nbrId];
+            num += t.cond * nbr.P;
+            den += t.cond;
+          });
+          if (den > 0) {
+            n.P = num / den;
+          }
+        }
+      }
+
+      // Compute fluxes & velocities
+      netThroats.forEach(t => {
+        const p1 = netNodes[t.from].P;
+        const p2 = netNodes[t.to].P;
+        t.flux = (p1 - p2) * t.cond; // positive if flow from -> to
+        t.velocity = t.flux / Math.max(1, Math.PI * t.rThroat * t.rThroat);
+      });
+    }
+    solvePressureField();
+
+    // Hydrodynamic Fluid Tracer Particles
+    const NUM_TRACERS = 55;
+    const tracers = [];
+    for (let i = 0; i < NUM_TRACERS; i++) {
+      tracers.push(spawnTracer());
+    }
+
+    function spawnTracer() {
+      // Pick random throat connected to inlet
+      const inletThroats = netThroats.filter(t => netNodes[t.from].layer === 0 && t.flux > 0);
+      const chosenT = inletThroats[Math.floor(Math.random() * inletThroats.length)] || netThroats[0];
+      return {
+        throat: chosenT,
+        progress: Math.random(),
+        speed: 0.4 + Math.random() * 0.4
+      };
+    }
+
     let time = 0;
+    let lastTime = Date.now();
 
     // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
     function animate() {
-      ctx.clearRect(0, 0, width, height);
-      const blue = getThemeColor('--sim-blue');
-      const text = getThemeColor('--text');
-      const textMuted = getThemeColor('--text-muted');
-      const amber = getThemeColor('--sim-amber');
-      const teal = getThemeColor('--sim-teal');
+      const now = Date.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      time += dt;
 
-      time += 0.02;
+      // Dynamic inlet pressure fluctuation
+      const Pin = 100 + 12 * Math.sin(time * 1.5);
+      const Pout = 20;
+      netNodes.forEach(n => {
+        if (n.layer === 0) n.P = Pin;
+        if (n.layer === 4) n.P = Pout;
+      });
+      solvePressureField();
 
-      // Pore Throats (connecting channels)
-      ctx.strokeStyle = 'rgba(79, 195, 247, 0.25)';
-      ctx.lineWidth = 10;
-      for (let i = 0; i < nodes.length - 1; i++) {
-        ctx.beginPath();
-        ctx.moveTo(width * nodes[i].x, height * nodes[i].y);
-        ctx.lineTo(width * nodes[i + 1].x, height * nodes[i + 1].y);
-        ctx.stroke();
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
       }
 
-      // Flowing fluid pulses inside throats
-      ctx.strokeStyle = teal;
-      ctx.lineWidth = 3;
-      ctx.setLineDash([8, 12]);
-      ctx.lineDashOffset = -time * 30;
-      for (let i = 0; i < nodes.length - 1; i++) {
-        ctx.beginPath();
-        ctx.moveTo(width * nodes[i].x, height * nodes[i].y);
-        ctx.lineTo(width * nodes[i + 1].x, height * nodes[i + 1].y);
-        ctx.stroke();
-      }
-      ctx.setLineDash([]);
+      const blue = theme.blue;
+      const amber = theme.amber;
+      const text = theme.text;
+      const border = theme.border;
 
-      // Pore Bodies (Spheres)
-      nodes.forEach(n => {
-        ctx.fillStyle = amber;
+      // 1. Draw Pore Throats (Cylinders colored by flow velocity)
+      netThroats.forEach(t => {
+        const n1 = netNodes[t.from];
+        const n2 = netNodes[t.to];
+        const x1 = width * n1.xRel;
+        const y1 = height * n1.yRel;
+        const x2 = width * n2.xRel;
+        const y2 = height * n2.yRel;
+
+        // Color based on velocity intensity
+        const absVel = Math.abs(t.velocity);
+        const velRatio = Math.min(1.0, absVel / 1.5);
+        ctx.strokeStyle = `rgba(14, 165, 233, ${0.18 + 0.45 * velRatio})`;
+        ctx.lineWidth = t.rThroat * 1.3;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.arc(width * n.x, height * n.y, 14, 0, Math.PI * 2);
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        // High velocity flow core
+        if (t.rThroat >= 9) {
+          ctx.strokeStyle = 'rgba(52, 211, 153, 0.4)';
+          ctx.lineWidth = t.rThroat * 0.45;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      });
+
+      // 2. Hydrodynamic Tracer Particles Navigating Network
+      ctx.fillStyle = '#ffffff';
+      tracers.forEach(tr => {
+        const t = tr.throat;
+        const flowDir = t.flux >= 0 ? 1 : -1;
+        const nStart = flowDir === 1 ? netNodes[t.from] : netNodes[t.to];
+        const nEnd = flowDir === 1 ? netNodes[t.to] : netNodes[t.from];
+
+        // Velocity along throat scales with Hagen-Poiseuille flux
+        const throatSpeed = Math.max(0.2, Math.abs(t.velocity) * 0.65);
+        tr.progress += throatSpeed * dt * tr.speed;
+
+        if (tr.progress >= 1.0) {
+          // Reached destination node nEnd
+          if (nEnd.layer === 4) {
+            // Outlet reached, respawn at inlet
+            Object.assign(tr, spawnTracer());
+            tr.progress = 0;
+          } else {
+            // Choose next throat downstream
+            const outgoing = nEnd.adjThroats.filter(th => {
+              const forward = (th.from === nEnd.id && th.flux > 0) || (th.to === nEnd.id && th.flux < 0);
+              return forward;
+            });
+            if (outgoing.length > 0) {
+              tr.throat = outgoing[Math.floor(Math.random() * outgoing.length)];
+              tr.progress = 0;
+            } else {
+              Object.assign(tr, spawnTracer());
+              tr.progress = 0;
+            }
+          }
+        }
+
+        const curN1 = flowDir === 1 ? netNodes[t.from] : netNodes[t.to];
+        const curN2 = flowDir === 1 ? netNodes[t.to] : netNodes[t.from];
+        const px = width * (curN1.xRel + (curN2.xRel - curN1.xRel) * tr.progress);
+        const py = height * (curN1.yRel + (curN2.yRel - curN1.yRel) * tr.progress);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 2.2, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      ctx.fillStyle = text;
-      ctx.font = '13px Inter, sans-serif';
+      // 3. Draw Pore Bodies (Spheres colored by nodal pressure P_i)
+      netNodes.forEach(n => {
+        const nx = width * n.xRel;
+        const ny = height * n.yRel;
+
+        // Pressure color mapping: 100 (Red/Amber) down to 20 (Cyan/Blue)
+        const pNorm = Math.max(0, Math.min(1, (n.P - 20) / (Pin - 20)));
+        const rColor = Math.floor(239 * pNorm + 14 * (1 - pNorm));
+        const gColor = Math.floor(100 * pNorm + 165 * (1 - pNorm));
+        const bColor = Math.floor(68 * pNorm + 233 * (1 - pNorm));
+
+        ctx.fillStyle = `rgb(${rColor}, ${gColor}, ${bColor})`;
+        ctx.beginPath();
+        ctx.arc(nx, ny, n.rBody, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Pressure text inside pore
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '9px var(--font-mono)';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${n.P.toFixed(0)}`, nx, ny + 3);
+      });
+
+      // 4. Boundary Flow Inflow & Outflow Banners
+      ctx.font = '11px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = theme.alert;
+      ctx.fillText(`INLET P_in = ${Pin.toFixed(0)} kPa →`, width * 0.14, height * 0.16);
+      ctx.fillStyle = theme.primary;
+      ctx.fillText(`→ OUTLET P_out = ${Pout} kPa`, width * 0.88, height * 0.16);
+
+      // 5. Scientific Telemetry HUD Overlay (Top Left)
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 240;
+      const hudH = 124;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      const deltaP = (Pin - Pout).toFixed(1);
+      const k_perm_mD = (340 * (deltaP / 80)).toFixed(0);
+
       ctx.textAlign = 'left';
-      ctx.fillText('Kozeny-Carman Constant c · τ² = 5.0 | Specific Surface S_v = 1.8 × 10⁴ m⁻¹', 24, 30);
-      ctx.fillText('Interconnected Porosity ϕ = 22.5% | Permeability k = 340 mD', 24, 52);
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('KOZENY-CARMAN NETWORK', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Pressure Drop ΔP: ${deltaP} kPa`, hudX + 10, hudY + 36);
+      ctx.fillText(`Interconnected Porosity ϕ: 24.5%`, hudX + 10, hudY + 52);
+      ctx.fillText(`Permeability k: ${k_perm_mD} mD`, hudX + 10, hudY + 68);
+      ctx.fillText(`Tortuosity Index τ: 1.38`, hudX + 10, hudY + 84);
+      ctx.fillText(`Hagen-Poiseuille Flux Q: 4.82 mL/s`, hudX + 10, hudY + 100);
 
       requestAnimationFrame(animate);
     }

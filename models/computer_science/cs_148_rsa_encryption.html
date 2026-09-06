@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -385,94 +489,279 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => {});
+    
     resize();
 
 
+    // Continuous Dynamic Simulation Engine for RSA Asymmetric Cryptography
     let time = 0;
+    let cryptoTimer = 0;
+
+    // RSA Key Parameters: p = 61, q = 53 -> n = 3233, phi = 3120, e = 17, d = 2753
+    const p = 61, q = 53, n = 3233, phi = 3120, e = 17, d = 2753;
+
+    // Messages to stream through the cryptosystem
+    const messages = [
+      { char: 'A', code: 65, cipher: 2790 },
+      { char: 'B', code: 66, cipher: 1718 },
+      { char: 'C', code: 67, cipher: 2577 },
+      { char: 'D', code: 68, cipher: 2165 }
+    ];
+    let msgIdx = 0;
+
     function animate() {
       requestAnimationFrame(animate);
-      ctx.clearRect(0, 0, width, height);
+      updateThemePalette();
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
       time += 0.016;
-      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-      const textColor = "#000000";
-      const mutedColor = "#334155";
-      const accentColor = "#0f172a";
-      const highColor = "#065f46";
+      cryptoTimer += 0.016;
 
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const accentColor = theme.primary;
+      const highColor = theme.secondary || theme.green;
+      const goldColor = theme.amber;
+      const alertColor = theme.alert || theme.red;
+      const wireColor = theme.border;
+      const surfaceColor = theme.surface;
+
+      const scale = Math.min(width / 750, height / 500);
       const cx = width * 0.5;
-      const cy = height * 0.44;
+      const cy = height * 0.40;
 
-      // Parameters: p = 61, q = 53 -> n = 3233, e = 17, d = 2753
-      const msg = 65; // 'A'
-      // C = 65^17 mod 3233 = 2790
-      const cipher = 2790;
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
-      // Plaintext Box (Left)
-      const pW = 120;
-      const pH = 80;
-      const pX = cx - 180;
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = accentColor;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(pX - pW * 0.5, cy - pH * 0.5, pW, pH);
-      ctx.fillRect(pX - pW * 0.5, cy - pH * 0.5, pW, pH);
+      // Cycle message every 4 seconds
+      const cycleTime = cryptoTimer % 4.0;
+      const curMsg = messages[msgIdx];
 
-      ctx.font = '600 11px Inter, sans-serif';
-      ctx.fillStyle = mutedColor;
-      ctx.textAlign = 'center';
-      ctx.fillText('Plaintext (M)', pX, cy - 14);
-      ctx.font = '700 20px monospace';
+      if (cycleTime < 0.02 && cryptoTimer > 0.1) {
+        msgIdx = (msgIdx + 1) % messages.length;
+      }
+
+      // 4 Pipeline Stages:
+      // 0.0 - 1.2s: Alice Encrypts: C = M^e mod n
+      // 1.2 - 2.6s: Insecure Channel Transit (Eve eavesdropping)
+      // 2.6 - 3.8s: Bob Decrypts: M = C^d mod n
+      // 3.8 - 4.0s: Verification Confirmed
+
+      const aliceX = cx - 210 * scale;
+      const bobX = cx + 210 * scale;
+      const boxW = 110 * scale;
+      const boxH = 80 * scale;
+
+      // Travelling packet position
+      let packetX = aliceX;
+      let packetY = cy;
+      let packetLabel = `M=${curMsg.code}`;
+      let packetColor = accentColor;
+
+      if (cycleTime < 1.2) {
+        packetX = aliceX + (cx - aliceX) * (cycleTime / 1.2);
+        packetLabel = `M=${curMsg.code}`;
+        packetColor = accentColor;
+      } else if (cycleTime < 2.6) {
+        const tChannel = (cycleTime - 1.2) / 1.4;
+        packetX = cx + (bobX - cx) * tChannel;
+        packetLabel = `C=${curMsg.cipher}`;
+        packetColor = goldColor;
+      } else {
+        packetX = bobX;
+        packetLabel = `Decrypted: '${curMsg.char}'`;
+        packetColor = highColor;
+      }
+
+      // Title Banner
+      ctx.font = '600 13px Inter, sans-serif';
       ctx.fillStyle = accentColor;
-      ctx.fillText(`M = ${msg}`, pX, cy + 16);
+      ctx.textAlign = 'center';
+      const statusTitle = (cycleTime < 1.2)
+        ? `Alice Encrypting Character '${curMsg.char}' (ASCII ${curMsg.code}) using Public Key (e=17, n=3233)`
+        : (cycleTime < 2.6
+          ? `Public Insecure Channel: Ciphertext C = ${curMsg.cipher} in transit (Eve intercepting)`
+          : `Bob Decrypting with Private Key (d=2753, n=3233) → Verified Plaintext '${curMsg.char}'`);
+      ctx.fillText(statusTitle, cx, 26);
 
-      // Ciphertext Box (Right)
-      const cX = cx + 180;
-      ctx.strokeRect(cX - pW * 0.5, cy - pH * 0.5, pW, pH);
-      ctx.fillRect(cX - pW * 0.5, cy - pH * 0.5, pW, pH);
+      // Alice (Sender Box - Left)
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(aliceX - boxW * 0.5, cy - boxH * 0.5, boxW, boxH);
+      ctx.strokeRect(aliceX - boxW * 0.5, cy - boxH * 0.5, boxW, boxH);
 
-      ctx.fillStyle = mutedColor;
       ctx.font = '600 11px Inter, sans-serif';
-      ctx.fillText('Ciphertext (C)', cX, cy - 14);
-      ctx.font = '700 20px monospace';
-      ctx.fillStyle = highColor;
-      ctx.fillText(`C = ${cipher}`, cX, cy + 16);
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('Alice (Sender)', aliceX, cy - 24 * scale);
+      ctx.font = '700 14px monospace';
+      ctx.fillStyle = accentColor;
+      ctx.fillText(`'${curMsg.char}' (${curMsg.code})`, aliceX, cy);
+      ctx.font = '500 9px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText('Key: (e=17, n=3233)', aliceX, cy + 22 * scale);
 
-      // Public Key Padlock Symbol in Center
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#ffb74d';
-      ctx.lineWidth = 2.5;
-      ctx.strokeRect(cx - 45, cy - 25, 90, 60);
-      ctx.fillRect(cx - 45, cy - 25, 90, 60);
+      // Bob (Receiver Box - Right)
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.fillRect(bobX - boxW * 0.5, cy - boxH * 0.5, boxW, boxH);
+      ctx.strokeRect(bobX - boxW * 0.5, cy - boxH * 0.5, boxW, boxH);
+
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.fillText('Bob (Receiver)', bobX, cy - 24 * scale);
+      ctx.font = '700 14px monospace';
+      ctx.fillStyle = highColor;
+      ctx.fillText(`'${curMsg.char}' (Verified)`, bobX, cy);
+      ctx.font = '500 9px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText('Private d=2753', bobX, cy + 22 * scale);
+
+      // Network Bus Cable
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(aliceX + boxW * 0.5, cy);
+      ctx.lineTo(bobX - boxW * 0.5, cy);
+      ctx.stroke();
+
+      // Central Public Key Lock Padlock
+      const lockW = 80 * scale;
+      const lockH = 50 * scale;
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = goldColor;
+      ctx.lineWidth = 2;
+      ctx.fillRect(cx - lockW * 0.5, cy - lockH * 0.5, lockW, lockH);
+      ctx.strokeRect(cx - lockW * 0.5, cy - lockH * 0.5, lockW, lockH);
 
       // Padlock shackle
       ctx.beginPath();
-      ctx.arc(cx, cy - 25, 24, Math.PI, 0);
+      ctx.arc(cx, cy - lockH * 0.5, 18 * scale, Math.PI, 0);
       ctx.stroke();
 
-      ctx.font = '700 11px Inter, sans-serif';
-      ctx.fillStyle = '#ffb74d';
-      ctx.fillText('PUBLIC KEY', cx, cy - 6);
-      ctx.font = '10px monospace';
-      ctx.fillText('(e=17, n=3233)', cx, cy + 12);
-
-      // Connecting Arrows
-      ctx.strokeStyle = accentColor;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(pX + pW * 0.5, cy);
-      ctx.lineTo(cx - 45, cy);
-      ctx.moveTo(cx + 45, cy);
-      ctx.lineTo(cX - pW * 0.5, cy);
-      ctx.stroke();
-
-      const ty = height - 40;
-      ctx.font = '13px Inter, sans-serif';
+      ctx.font = '700 9px Inter, sans-serif';
+      ctx.fillStyle = goldColor;
+      ctx.fillText('RSA KEY BUS', cx, cy - 8 * scale);
+      ctx.font = '500 8px monospace';
       ctx.fillStyle = textColor;
-      ctx.fillText('Modular Arithmetic: C ≡ M^e (mod n)  |  Decryption: M ≡ C^d (mod n)', cx, ty);
+      ctx.fillText(`n = 3233`, cx, cy + 6 * scale);
+      ctx.fillText(`e = 17`, cx, cy + 18 * scale);
+
+      // Eavesdropper Eve Module (Top Center)
+      const eveX = cx;
+      const eveY = cy - 85 * scale;
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = alertColor;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(eveX - 70 * scale, eveY - 20 * scale, 140 * scale, 40 * scale);
+      ctx.fillRect(eveX - 70 * scale, eveY - 20 * scale, 140 * scale, 40 * scale);
+
+      ctx.font = '600 10px Inter, sans-serif';
+      ctx.fillStyle = alertColor;
+      ctx.fillText('Eve (Eavesdropper / Sniffer)', eveX, eveY - 4 * scale);
+
+      // Dynamic factorization attempt
+      const testP = 2 + Math.floor(time * 30) % 60;
+      ctx.font = '500 8px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText(`Trial Factor: 3233 % ${testP} ≠ 0 (Blocked)`, eveX, eveY + 12 * scale);
+
+      // Sniffer probe wire
+      ctx.strokeStyle = alertColor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(eveX, eveY + 20 * scale);
+      ctx.lineTo(cx, cy - lockH * 0.5);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Animated Travelling Message / Cipher Packet
+      ctx.fillStyle = packetColor;
+      ctx.beginPath();
+      ctx.arc(packetX, cy, 8 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pulsing packet aura
+      const auraR = (11 + Math.sin(time * 12) * 3) * scale;
+      ctx.strokeStyle = packetColor;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(packetX, cy, auraR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.font = '600 10px monospace';
+      ctx.fillStyle = packetColor;
+      ctx.fillText(packetLabel, packetX, cy + 22 * scale);
+
+      // Bottom Panel: Live Modular Exponentiation Register (Square-and-Multiply)
+      const regX = cx - 220 * scale;
+      const regY = height - 120 * scale;
+      const regW = 440 * scale;
+      const regH = 75 * scale;
+
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1;
+      ctx.fillRect(regX, regY, regW, regH);
+      ctx.strokeRect(regX, regY, regW, regH);
+
+      ctx.font = '600 10px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('Square-and-Multiply Fast Modular Exponentiation Register', regX + 12, regY + 16);
+
+      // Exponent binary bits (e = 17 = 10001_2)
+      const eBits = [1, 0, 0, 0, 1];
+      const activeBitIdx = Math.floor(time * 2.5) % eBits.length;
+
+      ctx.font = '500 10px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText(`Exponent e = 17 = (10001)₂ | Processing Bit: [${activeBitIdx}] = ${eBits[activeBitIdx]}`, regX + 12, regY + 36);
+
+      // Bit pipeline register display
+      for (let b = 0; b < eBits.length; b++) {
+        const bx = regX + 12 + b * 55 * scale;
+        const by = regY + 45;
+        const isCurBit = (b === activeBitIdx);
+
+        ctx.fillStyle = isCurBit ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.05)';
+        ctx.strokeStyle = isCurBit ? accentColor : wireColor;
+        ctx.strokeRect(bx, by, 48 * scale, 20);
+        ctx.fillRect(bx, by, 48 * scale, 20);
+
+        ctx.font = '600 9px monospace';
+        ctx.fillStyle = isCurBit ? highColor : textColor;
+        ctx.textAlign = 'center';
+        ctx.fillText(`b${b}=${eBits[b]}`, bx + 24 * scale, by + 14);
+      }
+
+      // Live computation accumulator
+      ctx.textAlign = 'right';
+      ctx.font = '500 10px monospace';
+      ctx.fillStyle = highColor;
+      ctx.fillText(`acc = ${(Math.round(Math.pow(curMsg.code, 2)) % n)} (mod n)`, regX + regW - 12, regY + 60);
+
+      // Bottom Telemetry Footer
+      const ty = height - 20;
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.textAlign = 'center';
+      ctx.fillText(`Euler Totient φ(n) = (p-1)(q-1) = 3120 | Private Key d ≡ e⁻¹ (mod φ) = 2753 | Decryption: ${curMsg.cipher}^2753 mod 3233 = ${curMsg.code} ('${curMsg.char}')`, cx, ty);
     }
     requestAnimationFrame(animate);
   </script>

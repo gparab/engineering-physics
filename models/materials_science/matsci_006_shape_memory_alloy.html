@@ -26,6 +26,25 @@
       --block-accent: #1f2937;
       --block-grid: rgba(0, 0, 0, 0.06);
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
       --sim-teal: #0d9488;
@@ -51,6 +70,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #f5f5f5;
       --surface: #fafafa;
@@ -202,7 +240,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px; /* Explicit 24px rounded.lg corners */
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -361,20 +401,74 @@ const themeToggleBtn = document.getElementById('theme-toggle');
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      if (variableName === '--text' || variableName === '--text-muted') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      }
-      if (variableName === '--surface-border') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#1f2937';
-      }
-      if (variableName === '--surface') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#fff5ea';
-      }
-      if (variableName === '--sim-grid') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-grid').trim() || 'rgba(0, 0, 0, 0.06)';
-      }
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -390,6 +484,7 @@ const themeToggleBtn = document.getElementById('theme-toggle');
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
@@ -399,13 +494,24 @@ const themeToggleBtn = document.getElementById('theme-toggle');
 
     function animate() {
       time += 0.025;
-      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
       const cx = width / 2;
       const cy = height / 2 - 20;
-      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
-      const amber = getThemeColor('--sim-amber') || '#ffb74d';
-      const text = getThemeColor('--text') || '#e0e0e0';
+      const blue = theme.blue;
+      const amber = theme.amber;
+      const text = theme.text;
 
       // Shear transformation oscillation
       const shear = Math.sin(time) * 25;
@@ -453,6 +559,31 @@ const themeToggleBtn = document.getElementById('theme-toggle');
       ctx.font = '12px var(--font-mono)';
       ctx.fillText(isAustenite ? 'Austenite (Cubic, High T)' : 'Twinned Martensite (Sheared, Low T)', cx - 110, cy + 110);
       ctx.fillText('Reversible Diffusionless Shear Transformation', cx - 130, cy - 90);
+
+            // Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 220;
+      const hudH = 124;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('SMA PHASE TRANSFORMATION', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Austenite Finish A_f: 65.0 °C`, hudX + 10, hudY + 36);
+      ctx.fillText(`Martensite Finish M_f: 25.0 °C`, hudX + 10, hudY + 52);
+      ctx.fillText(`Recoverable Strain: 8.2%`, hudX + 10, hudY + 68);
+      ctx.fillText(`Crystal System: B2 ↔ B19'`, hudX + 10, hudY + 84);
+      ctx.fillText(`Transformation: Twinning`, hudX + 10, hudY + 100);
+
 
       requestAnimationFrame(animate);
     }

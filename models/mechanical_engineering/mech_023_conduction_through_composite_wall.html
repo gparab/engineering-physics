@@ -30,6 +30,25 @@
       --block-accent: #7c2d12;
       --block-grid: rgba(0, 0, 0, 0.06);
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0277bd;
       --sim-teal: #00897b;
@@ -57,6 +76,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #ffffff;
@@ -199,7 +237,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -345,114 +385,399 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
-    let width = 0, height = 0;
+    let width, height, dpr;
 
     function resize() {
       const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
+      dpr = window.devicePixelRatio || 1;
       width = rect.width;
       height = rect.height;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => {});
+    window.addEventListener('themechange', () => { updateThemePalette(); });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
-    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
-    let heatPulse = 0;
+    // Thermal layer properties (SI units)
+    const L1 = 0.05; // m (Steel)
+    const k1 = 50.0; // W/mK
+    const R1 = L1 / k1; // 0.001 m^2K/W
 
-    // --- 4. CONTINUOUS SIMULATION & ANIMATION INTEGRATION LOOP ---
+    const L2 = 0.08; // m (Aerogel Insulation)
+    const k2 = 0.035; // W/mK
+    const R2 = L2 / k2; // 2.286 m^2K/W
+
+    const L3 = 0.10; // m (Refractory Brick)
+    const k3 = 0.80; // W/mK
+    const R3 = L3 / k3; // 0.125 m^2K/W
+
+    const R_total = R1 + R2 + R3; // ~ 2.412 m^2K/W
+
+    // Flowing heat flux packets
+    const NUM_HEAT_PACKETS = 45;
+    const heatPackets = [];
+    for (let i = 0; i < NUM_HEAT_PACKETS; i++) {
+      heatPackets.push({
+        xNorm: Math.random(),
+        yNorm: 0.15 + Math.random() * 0.70,
+        size: 2.2 + Math.random() * 1.5
+      });
+    }
+
+    let time = 0;
+    let lastTime = Date.now();
+
     function animate() {
-      // --- 5. GRAPHICAL RENDERING PIPELINE ---
-      ctx.clearRect(0, 0, width, height);
+      const now = Date.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      time += dt;
 
-      const cx = width * 0.5;
-      const cy = height * 0.48;
-      const wallH = 160;
-      heatPulse += 0.035;
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      // Three Wall Layers: Layer 1 (Steel), Layer 2 (Insulation), Layer 3 (Brick)
-      const l1W = 80, l2W = 120, l3W = 90;
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // Dynamic Boundary Temperatures
+      const T1 = 480 + 70 * Math.sin(time * 0.5); // °C (Hot interior)
+      const T4 = 25 + 15 * Math.cos(time * 0.4);  // °C (Cold exterior)
+
+      // Steady heat flux: q'' = (T1 - T4) / R_total
+      const q_flux = (T1 - T4) / R_total; // W/m^2
+
+      // Interface temperatures
+      const T2 = T1 - q_flux * R1;
+      const T3 = T2 - q_flux * R2;
+
+      // Wall Geometry
+      const cx = width * 0.48;
+      const cy = height * 0.38;
+      const wallH = Math.min(170, height * 0.38);
+
+      const l1W = Math.max(70, Math.min(95, width * 0.12));
+      const l2W = Math.max(120, Math.min(180, width * 0.22));
+      const l3W = Math.max(85, Math.min(125, width * 0.15));
       const totalW = l1W + l2W + l3W;
       const startX = cx - totalW / 2;
 
-      // Layer 1: High conductivity steel (k1 = 50 W/mK)
-      ctx.fillStyle = "rgba(79, 195, 247, 0.15)";
+      const blue = theme.blue;
+      const amber = theme.amber;
+      const text = theme.text;
+      const border = theme.border;
+
+      // 1. Layer Fills with Temperature Color Gradients
+      // Layer 1 (Steel): T1 -> T2
+      const grad1 = ctx.createLinearGradient(startX, cy, startX + l1W, cy);
+      grad1.addColorStop(0, 'rgba(239, 68, 68, 0.45)');
+      grad1.addColorStop(1, 'rgba(239, 68, 68, 0.38)');
+      ctx.fillStyle = grad1;
       ctx.fillRect(startX, cy - wallH / 2, l1W, wallH);
-      ctx.strokeStyle = getThemeColor('--sim-blue');
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1.5;
       ctx.strokeRect(startX, cy - wallH / 2, l1W, wallH);
 
-      // Layer 2: Low conductivity insulation (k2 = 0.04 W/mK - steep drop)
-      ctx.fillStyle = "rgba(255, 183, 77, 0.15)";
+      // Layer 2 (Insulation): T2 -> T3 (Steep drop)
+      const grad2 = ctx.createLinearGradient(startX + l1W, cy, startX + l1W + l2W, cy);
+      grad2.addColorStop(0, 'rgba(245, 158, 11, 0.35)');
+      grad2.addColorStop(1, 'rgba(56, 189, 248, 0.25)');
+      ctx.fillStyle = grad2;
       ctx.fillRect(startX + l1W, cy - wallH / 2, l2W, wallH);
-      ctx.strokeStyle = getThemeColor('--sim-amber');
       ctx.strokeRect(startX + l1W, cy - wallH / 2, l2W, wallH);
 
-      // Layer 3: Medium conductivity brick (k3 = 0.8 W/mK)
-      ctx.fillStyle = "rgba(239, 83, 80, 0.15)";
+      // Layer 3 (Brick): T3 -> T4
+      const grad3 = ctx.createLinearGradient(startX + l1W + l2W, cy, startX + totalW, cy);
+      grad3.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
+      grad3.addColorStop(1, 'rgba(56, 189, 248, 0.12)');
+      ctx.fillStyle = grad3;
       ctx.fillRect(startX + l1W + l2W, cy - wallH / 2, l3W, wallH);
-      ctx.strokeStyle = getThemeColor('--sim-red');
       ctx.strokeRect(startX + l1W + l2W, cy - wallH / 2, l3W, wallH);
 
-      // Piecewise Linear Temperature Profile T(x)
-      const t1 = cy - wallH * 0.38; // T1 Hot
-      const t2 = cy - wallH * 0.32; // T2
-      const t3 = cy + wallH * 0.28; // T3 (Steep drop through insulation)
-      const t4 = cy + wallH * 0.38; // T4 Cold
+      // 2. Atomistic Thermal Phonon Jitter Gradient
+      const numAtomsX = 24;
+      const numAtomsY = 8;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
 
-      ctx.beginPath();
-      ctx.moveTo(startX, t1);
-      ctx.lineTo(startX + l1W, t2);
-      ctx.lineTo(startX + l1W + l2W, t3);
-      ctx.lineTo(startX + totalW, t4);
-      ctx.strokeStyle = getThemeColor('--text');
-      ctx.lineWidth = 3.5;
-      ctx.stroke();
+      for (let i = 0; i <= numAtomsX; i++) {
+        const xFrac = i / numAtomsX;
+        const curPxX = startX + xFrac * totalW;
 
-      // Nodes on temperature curve
-      const tNodes = [
-        {x: startX, y: t1},
-        {x: startX + l1W, y: t2},
-        {x: startX + l1W + l2W, y: t3},
-        {x: startX + totalW, y: t4}
-      ];
-      for (let node of tNodes) {
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = getThemeColor('--sim-amber');
-        ctx.fill();
+        // Local temperature interpolation
+        let localT = T1;
+        if (curPxX <= startX + l1W) {
+          localT = T1 - (T1 - T2) * ((curPxX - startX) / l1W);
+        } else if (curPxX <= startX + l1W + l2W) {
+          localT = T2 - (T2 - T3) * ((curPxX - (startX + l1W)) / l2W);
+        } else {
+          localT = T3 - (T3 - T4) * ((curPxX - (startX + l1W + l2W)) / l3W);
+        }
+
+        const jitAmp = 0.4 + 2.5 * Math.sqrt(Math.max(10, localT) / 500);
+
+        for (let j = 1; j < numAtomsY; j++) {
+          const curPxY = cy - wallH / 2 + (j / numAtomsY) * wallH;
+          const jx = jitAmp * Math.sin(time * 20 + i * 2.1 + j);
+          const jy = jitAmp * Math.cos(time * 18 + j * 2.7 + i);
+
+          ctx.beginPath();
+          ctx.arc(curPxX + jx, curPxY + jy, 1.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
-      // Heat Flux Arrow Q
+      // 3. Flowing Conductive Heat Flux Packets
+      const packetSpeed = 0.25 * (q_flux / 180);
+      heatPackets.forEach(p => {
+        p.xNorm += packetSpeed * dt;
+        if (p.xNorm > 1.0) p.xNorm -= 1.0;
+
+        const px = startX + p.xNorm * totalW;
+        const py = cy - wallH / 2 + p.yNorm * wallH;
+
+        // Color shifts from hot yellow/red on left to cooler cyan on right
+        ctx.fillStyle = p.xNorm < 0.3 ? theme.alert : (p.xNorm < 0.7 ? theme.amber : theme.primary);
+        ctx.beginPath();
+        ctx.arc(px, py, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Small directional arrow head
+        ctx.strokeStyle = ctx.fillStyle;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + 4, py);
+        ctx.stroke();
+      });
+
+      // 4. Piecewise Linear Temperature Profile T(x)
+      // Mapped vertically over the wall height
+      function mapTempY(temp) {
+        return cy + wallH / 2 - ((temp - 0) / 580) * (wallH - 20) - 10;
+      }
+
+      const y1 = mapTempY(T1);
+      const y2 = mapTempY(T2);
+      const y3 = mapTempY(T3);
+      const y4 = mapTempY(T4);
+
+      // Temperature curve line
+      ctx.strokeStyle = theme.text;
+      ctx.lineWidth = 3.2;
       ctx.beginPath();
-      ctx.moveTo(startX - 50, cy);
-      ctx.lineTo(startX - 10, cy);
-      ctx.strokeStyle = getThemeColor('--sim-red');
-      ctx.lineWidth = 4;
+      ctx.moveTo(startX, y1);
+      ctx.lineTo(startX + l1W, y2);
+      ctx.lineTo(startX + l1W + l2W, y3);
+      ctx.lineTo(startX + totalW, y4);
       ctx.stroke();
 
-      // Labels
-      ctx.fillStyle = getThemeColor('--text');
-      ctx.font = "11px var(--font-sans)";
-      ctx.fillText("Layer 1 (Steel: k₁)", startX + 10, cy - wallH / 2 - 12);
-      ctx.fillText("Layer 2 (Insulation: k₂ ≪ k₁)", startX + l1W + 10, cy - wallH / 2 - 12);
-      ctx.fillText("Layer 3 (Brick: k₃)", startX + l1W + l2W + 10, cy - wallH / 2 - 12);
-      ctx.fillText("Heat Flux Q̇ (Series Thermal Resistance R_th)", startX + 40, cy + wallH / 2 + 28);
+      // Temperature node circles and callouts
+      const nodes = [
+        { x: startX, y: y1, t: T1, label: `T₁ = ${T1.toFixed(0)}°C` },
+        { x: startX + l1W, y: y2, t: T2, label: `T₂ = ${T2.toFixed(0)}°C` },
+        { x: startX + l1W + l2W, y: y3, t: T3, label: `T₃ = ${T3.toFixed(0)}°C` },
+        { x: startX + totalW, y: y4, t: T4, label: `T₄ = ${T4.toFixed(0)}°C` }
+      ];
+
+      ctx.font = '10px var(--font-mono)';
+      nodes.forEach((n, idx) => {
+        ctx.fillStyle = theme.accent;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = theme.text;
+        ctx.textAlign = idx === 0 ? 'right' : (idx === 3 ? 'left' : 'center');
+        const xOff = idx === 0 ? -8 : (idx === 3 ? 8 : 0);
+        ctx.fillText(n.label, n.x + xOff, n.y - 10);
+      });
+
+      // 5. Heat Flux Vectors at Boundaries
+      ctx.strokeStyle = theme.alert;
+      ctx.lineWidth = 3;
+      // Inflow arrow
+      ctx.beginPath();
+      ctx.moveTo(startX - 55, cy);
+      ctx.lineTo(startX - 10, cy);
+      ctx.lineTo(startX - 22, cy - 6);
+      ctx.moveTo(startX - 10, cy);
+      ctx.lineTo(startX - 22, cy + 6);
+      ctx.stroke();
+
+      // Outflow arrow
+      ctx.beginPath();
+      ctx.moveTo(startX + totalW + 10, cy);
+      ctx.lineTo(startX + totalW + 55, cy);
+      ctx.lineTo(startX + totalW + 43, cy - 6);
+      ctx.moveTo(startX + totalW + 55, cy);
+      ctx.lineTo(startX + totalW + 43, cy + 6);
+      ctx.stroke();
+
+      ctx.font = '11px var(--font-mono)';
+      ctx.fillStyle = theme.alert;
+      ctx.textAlign = 'right';
+      ctx.fillText(`q'' = ${q_flux.toFixed(0)} W/m²`, startX - 12, cy - 12);
+      ctx.textAlign = 'left';
+      ctx.fillText(`q''`, startX + totalW + 15, cy - 12);
+
+      // Layer Header Labels
+      ctx.fillStyle = theme.text;
+      ctx.textAlign = 'center';
+      ctx.fillText(`Steel (k₁ = 50 W/mK)`, startX + l1W / 2, cy - wallH / 2 - 14);
+      ctx.fillText(`Aerogel (k₂ = 0.035 W/mK)`, startX + l1W + l2W / 2, cy - wallH / 2 - 14);
+      ctx.fillText(`Brick (k₃ = 0.8 W/mK)`, startX + l1W + l2W + l3W / 2, cy - wallH / 2 - 14);
+
+      // 6. Electrical Thermal Resistance Circuit Analogy (Bottom Schematic)
+      const cktY = cy + wallH / 2 + 52;
+      ctx.strokeStyle = theme.primary;
+      ctx.lineWidth = 1.8;
+
+      // Wire line
+      ctx.beginPath();
+      ctx.moveTo(startX - 30, cktY);
+      ctx.lineTo(startX, cktY);
+
+      // Resistor 1
+      drawResistor(ctx, startX, startX + l1W, cktY);
+      // Resistor 2
+      drawResistor(ctx, startX + l1W, startX + l1W + l2W, cktY);
+      // Resistor 3
+      drawResistor(ctx, startX + l1W + l2W, startX + totalW, cktY);
+
+      ctx.lineTo(startX + totalW + 30, cktY);
+      ctx.stroke();
+
+      // Resistor labels
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.textAlign = 'center';
+      ctx.fillText(`R₁ = ${R1.toFixed(3)}`, startX + l1W / 2, cktY + 20);
+      ctx.fillText(`R₂ = ${R2.toFixed(3)}`, startX + l1W + l2W / 2, cktY + 20);
+      ctx.fillText(`R₃ = ${R3.toFixed(3)}`, startX + l1W + l2W + l3W / 2, cktY + 20);
+      ctx.fillText(`(m²K/W)`, startX + totalW / 2, cktY + 34);
+
+      // 7. Scientific Telemetry HUD Overlay (Bottom)
+      const hudX = 24;
+      const hudY = height - 56;
+      const hudW = width - 48;
+      const hudH = 42;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.textAlign = 'left';
+
+      const colW = hudW / 4;
+      ctx.fillText(`Hot Face T₁: ${T1.toFixed(1)}°C`, hudX + 12, hudY + 25);
+      ctx.fillText(`ΔT_insulation: ${(T2 - T3).toFixed(1)}°C (${(((T2 - T3)/(T1 - T4))*100).toFixed(0)}%)`, hudX + colW + 10, hudY + 25);
+      ctx.fillText(`Heat Flux q'': ${q_flux.toFixed(1)} W/m²`, hudX + colW * 2 + 10, hudY + 25);
+      ctx.fillText(`Total Resistance R_th: ${R_total.toFixed(3)} m²K/W`, hudX + colW * 3 + 10, hudY + 25);
 
       requestAnimationFrame(animate);
     }
-    animate();
+
+    function drawResistor(ctx, x1, x2, y) {
+      const segW = (x2 - x1) / 6;
+      ctx.lineTo(x1, y);
+      ctx.lineTo(x1 + segW * 1, y - 8);
+      ctx.lineTo(x1 + segW * 2, y + 8);
+      ctx.lineTo(x1 + segW * 3, y - 8);
+      ctx.lineTo(x1 + segW * 4, y + 8);
+      ctx.lineTo(x1 + segW * 5, y - 8);
+      ctx.lineTo(x2, y);
+    }
+
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>

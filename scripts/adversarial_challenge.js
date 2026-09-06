@@ -303,7 +303,9 @@ function probeScriptIntegrity(content, relPath) {
       // Step D: Execute initial animation frames
       for (let f = 0; f < 3; f++) {
         const t = 1000 + f * 16.6;
-        for (const cb of rafCallbacks) {
+        const currentCbs = rafCallbacks.slice();
+        rafCallbacks.length = 0;
+        for (const cb of currentCbs) {
           cb(t);
         }
       }

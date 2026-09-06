@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -385,154 +489,434 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => {});
+    
     resize();
 
 
+    // Continuous Dynamic Simulation Engine for 6T SRAM Cell
     let time = 0;
+    let simTime = 0;
+    let V_Q = 1.2;
+    let V_Qbar = 0.0;
+    let V_BL = 1.2;
+    let V_BLbar = 1.2;
+    let V_WL = 0.0;
+
+    // Electron particle swarm for active charge carrier visualization
+    const electronCount = 45;
+    const electrons = [];
+    for (let i = 0; i < electronCount; i++) {
+      electrons.push({
+        path: i % 4, // 0: BL -> Access M5, 1: BLbar -> Access M6, 2: Inv1 loop, 3: Inv2 loop
+        progress: Math.random(),
+        speed: 0.2 + Math.random() * 0.3
+      });
+    }
+
+    // Rolling scope buffer for live waveform trace
+    const scopeBuffer = [];
+    const maxScopePoints = 140;
+
     function animate() {
       requestAnimationFrame(animate);
-      ctx.clearRect(0, 0, width, height);
+      updateThemePalette();
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
       time += 0.016;
-      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-      const textColor = "#000000";
-      const mutedColor = "#334155";
-      const accentColor = "#0f172a";
-      const highColor = "#065f46";
-      const lowColor = "#991b1b";
-      const wireColor = "rgba(0, 0, 0, 0.35)";
+      simTime += 0.016;
 
-      // Cycle between Read, Hold, and Write every 3 seconds
-      const phase = Math.floor(time / 3.0) % 3;
-      const wlActive = phase !== 1; // WL high during Read and Write
-      const storedBit = Math.floor(time / 6.0) % 2; // Toggles every 6s
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const accentColor = theme.primary;
+      const highColor = theme.secondary || theme.green;
+      const lowColor = theme.alert || theme.red;
+      const wireColor = theme.border;
+      const surfaceColor = theme.surface;
 
-      const cx = width * 0.5;
-      const cy = height * 0.45;
-      const scale = Math.min(width / 600, height / 450);
+      // Dynamic State Machine: Precharge -> Read -> Hold -> Write 0 -> Hold -> Write 1 -> Hold
+      // Total sequence period = 12 seconds
+      const cycleTime = simTime % 12.0;
+      let opMode = 'HOLD';
+      let targetWL = 0.0;
+      let targetBL = 1.2;
+      let targetBLbar = 1.2;
 
-      // Title Banner of Current Mode
+      if (cycleTime < 2.0) {
+        opMode = 'PRECHARGE (BL=1.2V, BL̄=1.2V, WL=0V)';
+        targetWL = 0.0;
+        targetBL = 1.2;
+        targetBLbar = 1.2;
+      } else if (cycleTime < 4.5) {
+        opMode = 'READ CYCLE (WL=1.2V, Sense Amp Sensing ΔV)';
+        targetWL = 1.2;
+        targetBL = 1.2;
+        targetBLbar = 1.2;
+      } else if (cycleTime < 6.0) {
+        opMode = 'RETENTION / HOLD (WL=0V, Bi-Stable Latch)';
+        targetWL = 0.0;
+      } else if (cycleTime < 8.5) {
+        opMode = 'WRITE BIT 0 (BL=0.0V, BL̄=1.2V, Overwriting Q)';
+        targetWL = 1.2;
+        targetBL = 0.0;
+        targetBLbar = 1.2;
+      } else if (cycleTime < 10.0) {
+        opMode = 'RETENTION / HOLD (WL=0V, Latched Q=0)';
+        targetWL = 0.0;
+      } else {
+        opMode = 'WRITE BIT 1 (BL=1.2V, BL̄=0.0V, Overwriting Q)';
+        targetWL = 1.2;
+        targetBL = 1.2;
+        targetBLbar = 0.0;
+      }
+
+      // Smooth Wordline drive ramp
+      V_WL += (targetWL - V_WL) * 0.25;
+
+      // MOSFET Behavioral Equations (Forward Euler integration sub-stepping)
+      const subSteps = 4;
+      const dtSub = 0.016 / subSteps;
+      const V_th = 0.35;
+      const beta_n = 2.4;
+      const beta_p = 1.2;
+      const C_cell = 0.8;
+
+      for (let s = 0; s < subSteps; s++) {
+        // Inverter 1 pull-down NMOS and pull-up PMOS
+        const I_n1 = beta_n * Math.pow(Math.max(0, V_Qbar - V_th), 2);
+        const I_p1 = beta_p * Math.pow(Math.max(0, (1.2 - V_Qbar) - V_th), 2);
+
+        // Inverter 2 pull-down NMOS and pull-up PMOS
+        const I_n2 = beta_n * Math.pow(Math.max(0, V_Q - V_th), 2);
+        const I_p2 = beta_p * Math.pow(Math.max(0, (1.2 - V_Q) - V_th), 2);
+
+        // Access transistors M5 and M6 conduction
+        const V_gs5 = Math.max(0, V_WL - Math.min(V_BL, V_Q) - V_th);
+        const I_acc5 = (V_gs5 > 0) ? 3.0 * (V_BL - V_Q) : 0;
+
+        const V_gs6 = Math.max(0, V_WL - Math.min(V_BLbar, V_Qbar) - V_th);
+        const I_acc6 = (V_gs6 > 0) ? 3.0 * (V_BLbar - V_Qbar) : 0;
+
+        // Differential ODE state updates: C * dV/dt = sum(I)
+        const dV_Q = (I_p1 - I_n1 + I_acc5) / C_cell;
+        const dV_Qbar = (I_p2 - I_n2 + I_acc6) / C_cell;
+
+        V_Q = Math.max(0.0, Math.min(1.2, V_Q + dV_Q * dtSub));
+        V_Qbar = Math.max(0.0, Math.min(1.2, V_Qbar + dV_Qbar * dtSub));
+
+        // Bitline capacitance discharge during Read
+        if (cycleTime >= 2.0 && cycleTime < 4.5) {
+          if (V_Q < 0.5) V_BL = Math.max(0.7, V_BL - 0.15 * dtSub);
+          if (V_Qbar < 0.5) V_BLbar = Math.max(0.7, V_BLbar - 0.15 * dtSub);
+        } else {
+          V_BL += (targetBL - V_BL) * 0.2;
+          V_BLbar += (targetBLbar - V_BLbar) * 0.2;
+        }
+      }
+
+      // Record to scrolling scope
+      if (scopeBuffer.length >= maxScopePoints) scopeBuffer.shift();
+      scopeBuffer.push({
+        vq: V_Q,
+        vqb: V_Qbar,
+        vwl: V_WL,
+        vbl: V_BL,
+        vblb: V_BLbar
+      });
+
+      const cx = width * 0.44;
+      const cy = height * 0.42;
+      const scale = Math.min(width / 700, height / 480);
+
+      // Top Status Banner
       ctx.font = '600 13px Inter, sans-serif';
       ctx.fillStyle = accentColor;
       ctx.textAlign = 'center';
-      const modeNames = ['SRAM READ OPERATION (WL=1, BL Precharged)', 'SRAM DATA RETENTION (WL=0, Bi-Stable Latch)', 'SRAM WRITE OPERATION (WL=1, BL Driven)'];
-      ctx.fillText(modeNames[phase], cx, 30);
+      ctx.fillText(opMode, cx, 26);
 
-      // Draw 6T Schematic
-      // Two inverters in cross-coupled configuration
-      const invW = 70 * scale;
-      const invH = 60 * scale;
-      const inv1X = cx - 100 * scale;
+      // 6T SRAM Transistor Schematic Layout
+      const invW = 75 * scale;
+      const invH = 65 * scale;
+      const inv1X = cx - 105 * scale;
       const inv2X = cx + 30 * scale;
-      const invY = cy - 30 * scale;
+      const invY = cy - 32 * scale;
 
-      // Inverter 1 (Left)
-      ctx.fillStyle = '#ffffff';
+      // Inverter 1 Box (clean surface background, no text obliteration)
+      ctx.fillStyle = surfaceColor;
       ctx.strokeStyle = accentColor;
       ctx.lineWidth = 2;
       ctx.strokeRect(inv1X, invY, invW, invH);
       ctx.fillRect(inv1X, invY, invW, invH);
       ctx.fillStyle = textColor;
-      ctx.font = '600 12px Inter, sans-serif';
-      ctx.fillText('INV 1', inv1X + invW * 0.5, invY + invH * 0.5 + 4);
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillText('INV 1 (M1,M2)', inv1X + invW * 0.5, invY + 24 * scale);
+      ctx.font = '500 10px monospace';
+      ctx.fillStyle = V_Q > 0.6 ? highColor : lowColor;
+      ctx.fillText(`Out=${V_Q.toFixed(2)}V`, inv1X + invW * 0.5, invY + 44 * scale);
 
-      // Inverter 2 (Right)
+      // Inverter 2 Box
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = accentColor;
       ctx.strokeRect(inv2X, invY, invW, invH);
       ctx.fillRect(inv2X, invY, invW, invH);
-      ctx.fillText('INV 2', inv2X + invW * 0.5, invY + invH * 0.5 + 4);
+      ctx.fillStyle = textColor;
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillText('INV 2 (M3,M4)', inv2X + invW * 0.5, invY + 24 * scale);
+      ctx.font = '500 10px monospace';
+      ctx.fillStyle = V_Qbar > 0.6 ? highColor : lowColor;
+      ctx.fillText(`Out=${V_Qbar.toFixed(2)}V`, inv2X + invW * 0.5, invY + 44 * scale);
 
       // Cross-coupled wires
       ctx.lineWidth = 2.5;
       ctx.strokeStyle = wireColor;
 
-      // Q Node (between Inv1 and Inv2)
-      const qVal = storedBit;
-      const qbVal = storedBit ? 0 : 1;
-
-      // Cross lines
+      // Q feedback trace
       ctx.beginPath();
-      ctx.moveTo(inv1X + invW, invY + invH * 0.3);
-      ctx.lineTo(cx, invY + invH * 0.3);
-      ctx.lineTo(cx, invY + invH * 0.7);
-      ctx.lineTo(inv2X, invY + invH * 0.7);
-      ctx.strokeStyle = qVal ? highColor : lowColor;
+      ctx.moveTo(inv1X + invW, invY + invH * 0.35);
+      ctx.lineTo(cx, invY + invH * 0.35);
+      ctx.lineTo(cx, invY + invH * 0.65);
+      ctx.lineTo(inv2X, invY + invH * 0.65);
+      ctx.strokeStyle = V_Q > 0.6 ? highColor : lowColor;
       ctx.stroke();
 
+      // Qbar feedback trace
       ctx.beginPath();
-      ctx.moveTo(inv2X + invW, invY + invH * 0.3);
-      ctx.lineTo(inv2X + invW + 20 * scale, invY + invH * 0.3);
-      ctx.lineTo(inv2X + invW + 20 * scale, invY - 20 * scale);
-      ctx.lineTo(inv1X - 20 * scale, invY - 20 * scale);
-      ctx.lineTo(inv1X - 20 * scale, invY + invH * 0.7);
-      ctx.lineTo(inv1X, invY + invH * 0.7);
-      ctx.strokeStyle = qbVal ? highColor : lowColor;
+      ctx.moveTo(inv2X + invW, invY + invH * 0.35);
+      ctx.lineTo(inv2X + invW + 18 * scale, invY + invH * 0.35);
+      ctx.lineTo(inv2X + invW + 18 * scale, invY - 18 * scale);
+      ctx.lineTo(inv1X - 18 * scale, invY - 18 * scale);
+      ctx.lineTo(inv1X - 18 * scale, invY + invH * 0.65);
+      ctx.lineTo(inv1X, invY + invH * 0.65);
+      ctx.strokeStyle = V_Qbar > 0.6 ? highColor : lowColor;
       ctx.stroke();
 
       // Access Transistors (Pass Gates M5 and M6)
-      const m5X = inv1X - 60 * scale;
-      const m6X = inv2X + invW + 20 * scale;
+      const m5X = inv1X - 55 * scale;
+      const m6X = inv2X + invW + 25 * scale;
+      const passY = invY + invH * 0.35;
 
-      // Wordline (horizontal bar at top)
-      const wlY = cy - 90 * scale;
-      ctx.strokeStyle = wlActive ? accentColor : wireColor;
-      ctx.lineWidth = 4;
+      // Pass Gate M5
+      ctx.strokeStyle = V_WL > 0.6 ? highColor : wireColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(m5X - 12 * scale, passY - 12 * scale, 24 * scale, 24 * scale);
+      ctx.fillStyle = surfaceColor;
+      ctx.fillRect(m5X - 12 * scale, passY - 12 * scale, 24 * scale, 24 * scale);
+      ctx.fillStyle = textColor;
+      ctx.font = '600 9px monospace';
+      ctx.fillText('M5', m5X, passY + 3);
+
+      // Pass Gate M6
+      ctx.strokeRect(m6X - 12 * scale, passY - 12 * scale, 24 * scale, 24 * scale);
+      ctx.fillRect(m6X - 12 * scale, passY - 12 * scale, 24 * scale, 24 * scale);
+      ctx.fillStyle = textColor;
+      ctx.fillText('M6', m6X, passY + 3);
+
+      // Wordline (horizontal line at top)
+      const wlY = cy - 80 * scale;
+      ctx.strokeStyle = V_WL > 0.6 ? accentColor : wireColor;
+      ctx.lineWidth = 3.5;
       ctx.beginPath();
-      ctx.moveTo(cx - 220 * scale, wlY);
-      ctx.lineTo(cx + 220 * scale, wlY);
+      ctx.moveTo(cx - 200 * scale, wlY);
+      ctx.lineTo(cx + 200 * scale, wlY);
       ctx.stroke();
       ctx.fillStyle = textColor;
-      ctx.font = '600 12px Inter, sans-serif';
+      ctx.font = '600 11px Inter, sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText(`Wordline (WL) = ${wlActive ? 1 : 0}`, cx - 230 * scale, wlY + 4);
+      ctx.fillText(`WL: ${V_WL.toFixed(2)}V`, cx - 205 * scale, wlY + 4);
+
+      // Gate control lines from WL to M5 and M6
+      ctx.beginPath();
+      ctx.moveTo(m5X, wlY);
+      ctx.lineTo(m5X, passY - 12 * scale);
+      ctx.moveTo(m6X, wlY);
+      ctx.lineTo(m6X, passY - 12 * scale);
+      ctx.stroke();
 
       // Bitlines (vertical lines)
-      const blX = cx - 180 * scale;
-      const blbX = cx + 180 * scale;
+      const blX = cx - 170 * scale;
+      const blbX = cx + 170 * scale;
       ctx.strokeStyle = wireColor;
       ctx.lineWidth = 3;
 
       // Bitline BL
       ctx.beginPath();
-      ctx.moveTo(blX, cy - 130 * scale);
-      ctx.lineTo(blX, cy + 120 * scale);
+      ctx.moveTo(blX, cy - 110 * scale);
+      ctx.lineTo(blX, cy + 90 * scale);
       ctx.stroke();
 
       // Bitline BL_bar
       ctx.beginPath();
-      ctx.moveTo(blbX, cy - 130 * scale);
-      ctx.lineTo(blbX, cy + 120 * scale);
+      ctx.moveTo(blbX, cy - 110 * scale);
+      ctx.lineTo(blbX, cy + 90 * scale);
       ctx.stroke();
 
-      ctx.font = '600 12px Inter, sans-serif';
+      // Connecting wires from BL to M5, and M6 to BLbar
+      ctx.beginPath();
+      ctx.moveTo(blX, passY);
+      ctx.lineTo(m5X - 12 * scale, passY);
+      ctx.moveTo(m5X + 12 * scale, passY);
+      ctx.lineTo(inv1X, passY);
+      ctx.moveTo(inv2X + invW, passY);
+      ctx.lineTo(m6X - 12 * scale, passY);
+      ctx.moveTo(m6X + 12 * scale, passY);
+      ctx.lineTo(blbX, passY);
+      ctx.stroke();
+
+      ctx.font = '600 11px monospace';
       ctx.textAlign = 'center';
       ctx.fillStyle = textColor;
-      ctx.fillText('BL', blX, cy + 138 * scale);
-      ctx.fillText('BL̄', blbX, cy + 138 * scale);
+      ctx.fillText(`BL: ${V_BL.toFixed(2)}V`, blX, cy + 105 * scale);
+      ctx.fillText(`BL̄: ${V_BLbar.toFixed(2)}V`, blbX, cy + 105 * scale);
 
-      // Internal Node Badges Q and QBar
-      ctx.fillStyle = qVal ? highColor : lowColor;
+      // Dynamic Node Badges for Q and Qbar
+      ctx.fillStyle = V_Q > 0.6 ? highColor : lowColor;
       ctx.beginPath();
-      ctx.arc(cx - 15 * scale, invY + invH * 0.3, 10, 0, Math.PI * 2);
+      ctx.arc(cx - 15 * scale, invY + invH * 0.35, 12, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '700 11px monospace';
-      ctx.fillText(`Q=${qVal}`, cx - 15 * scale, invY + invH * 0.3 + 4);
+      ctx.fillStyle = theme.bg;
+      ctx.font = '700 10px monospace';
+      ctx.fillText(V_Q > 0.6 ? '1' : '0', cx - 15 * scale, invY + invH * 0.35 + 3.5);
 
-      ctx.fillStyle = qbVal ? highColor : lowColor;
+      ctx.fillStyle = V_Qbar > 0.6 ? highColor : lowColor;
       ctx.beginPath();
-      ctx.arc(cx + 15 * scale, invY + invH * 0.7, 10, 0, Math.PI * 2);
+      ctx.arc(cx + 15 * scale, invY + invH * 0.65, 12, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(`Q̄=${qbVal}`, cx + 15 * scale, invY + invH * 0.7 + 4);
+      ctx.fillStyle = theme.bg;
+      ctx.fillText(V_Qbar > 0.6 ? '1' : '0', cx + 15 * scale, invY + invH * 0.65 + 3.5);
 
-      // Live Voltage Status Table at Bottom
-      const ty = height - 45;
-      ctx.font = '12px Inter, sans-serif';
+      // Active Electron Drift Swarm
+      ctx.fillStyle = accentColor;
+      for (const e of electrons) {
+        e.progress = (e.progress + e.speed * 0.02) % 1.0;
+        let px = 0, py = 0;
+        if (e.path === 0) {
+          // BL to M5
+          px = blX + (m5X - blX) * e.progress;
+          py = passY + Math.sin(time * 8 + e.progress * 6) * 1.5;
+        } else if (e.path === 1) {
+          // M6 to BLbar
+          px = m6X + (blbX - m6X) * e.progress;
+          py = passY + Math.cos(time * 8 + e.progress * 6) * 1.5;
+        } else if (e.path === 2) {
+          // Q feedback loop
+          px = inv1X + invW + (inv2X - (inv1X + invW)) * e.progress;
+          py = invY + invH * 0.35 + (invH * 0.3) * e.progress;
+        } else {
+          // Qbar feedback loop
+          px = cx + Math.cos(time * 4 + e.progress * Math.PI * 2) * 20 * scale;
+          py = cy + Math.sin(time * 4 + e.progress * Math.PI * 2) * 12 * scale;
+        }
+        ctx.beginPath();
+        ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Inset 1: Real-time Oscilloscope (Bottom-Left)
+      const oscX = cx - 190 * scale;
+      const oscY = height - 100 * scale;
+      const oscW = 200 * scale;
+      const oscH = 70 * scale;
+
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1;
+      ctx.fillRect(oscX, oscY, oscW, oscH);
+      ctx.strokeRect(oscX, oscY, oscW, oscH);
+
+      ctx.font = '500 9px monospace';
       ctx.fillStyle = mutedColor;
-      ctx.fillText(`Cell Voltages: V_Q = ${qVal ? '1.20V (V_DD)' : '0.00V (GND)'}  |  V_Q̄ = ${qbVal ? '1.20V' : '0.00V'}  |  Access: ${wlActive ? 'Conducting' : 'High-Z Isolated'}`, cx, ty);
+      ctx.textAlign = 'left';
+      ctx.fillText('Dynamic Waveforms: V_Q (green), V_WL (blue)', oscX + 6, oscY + 12);
+
+      // Render scrolling waveform traces
+      if (scopeBuffer.length > 1) {
+        // V_WL trace
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < scopeBuffer.length; i++) {
+          const sx = oscX + (i / maxScopePoints) * oscW;
+          const sy = oscY + oscH - (scopeBuffer[i].vwl / 1.2) * (oscH - 20) - 8;
+          if (i === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+
+        // V_Q trace
+        ctx.strokeStyle = highColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < scopeBuffer.length; i++) {
+          const sx = oscX + (i / maxScopePoints) * oscW;
+          const sy = oscY + oscH - (scopeBuffer[i].vq / 1.2) * (oscH - 20) - 8;
+          if (i === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+      }
+
+      // Inset 2: Static Noise Margin (SNM) Butterfly Curve (Bottom-Right)
+      const bflyX = cx + 40 * scale;
+      const bflyY = height - 100 * scale;
+      const bflySize = 70 * scale;
+
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1;
+      ctx.fillRect(bflyX, bflyY, bflySize, bflySize);
+      ctx.strokeRect(bflyX, bflyY, bflySize, bflySize);
+
+      ctx.fillStyle = mutedColor;
+      ctx.font = '500 9px monospace';
+      ctx.fillText('SNM Butterfly Curve', bflyX + 6, bflyY + 12);
+
+      // Draw VTC1 and VTC2 curves
+      ctx.strokeStyle = mutedColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      // VTC1: Vout1 = f(Vin1)
+      for (let v = 0; v <= bflySize - 16; v += 2) {
+        const vin = (v / (bflySize - 16)) * 1.2;
+        const vout = 1.2 / (1.0 + Math.pow(vin / 0.55, 6));
+        const bx = bflyX + 8 + v;
+        const by = bflyY + bflySize - 8 - (vout / 1.2) * (bflySize - 20);
+        if (v === 0) ctx.moveTo(bx, by);
+        else ctx.lineTo(bx, by);
+      }
+      ctx.stroke();
+
+      // VTC2 (Mirrored): Vin2 = f(Vout2)
+      ctx.beginPath();
+      for (let v = 0; v <= bflySize - 16; v += 2) {
+        const vout = (v / (bflySize - 16)) * 1.2;
+        const vin = 1.2 / (1.0 + Math.pow(vout / 0.55, 6));
+        const bx = bflyX + 8 + (vin / 1.2) * (bflySize - 20);
+        const by = bflyY + bflySize - 8 - v;
+        if (v === 0) ctx.moveTo(bx, by);
+        else ctx.lineTo(bx, by);
+      }
+      ctx.stroke();
+
+      // Dynamic Operating Point Cursor
+      const opX = bflyX + 8 + (V_Q / 1.2) * (bflySize - 20);
+      const opY = bflyY + bflySize - 8 - (V_Qbar / 1.2) * (bflySize - 20);
+      ctx.fillStyle = highColor;
+      ctx.beginPath();
+      ctx.arc(opX, opY, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Live Telemetry Footer
+      const ty = height - 12;
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.textAlign = 'center';
+      const deltaV = Math.abs(V_BL - V_BLbar);
+      ctx.fillText(`Differential ΔV_BL: ${(deltaV * 1000).toFixed(1)}mV | Dynamic Power: ${(0.8 * (V_WL > 0.5 ? 1.4 : 0.05)).toFixed(2)}μW | Bit: ${V_Q > 0.6 ? '1' : '0'}`, cx, ty);
     }
     requestAnimationFrame(animate);
   </script>

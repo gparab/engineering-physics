@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -385,92 +489,266 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => {});
+    
     resize();
 
 
+    // Continuous Dynamic Simulation Engine for Hash Table with Collision Resolution
     let time = 0;
-    const buckets = [
-      ['data'],
-      ['apple', 'table'],
-      [],
-      ['hash'],
-      ['byte'],
-      [],
-      ['code', 'key'],
-      []
-    ];
+    let simTimer = 0;
+
+    // Keys to stream through the hash engine
+    const sampleKeys = ['alpha', 'beta', 'gamma', 'delta', 'omega', 'sigma', 'tau', 'lambda'];
+    let keyIdx = 0;
+
+    // Hash table buckets (M = 8)
+    const M = 8;
+    const tableSlots = Array.from({ length: M }, () => []);
+
+    // Active key packet traveling through pipeline
+    let keyPacket = {
+      key: sampleKeys[0],
+      hashVal: 0,
+      targetBucket: 0,
+      progress: 0,
+      phase: 'HASHING', // 'HASHING', 'PROBING', 'INSERTED'
+      probeStep: 0,
+      chainIdx: 0
+    };
+
+    function computeHash(str, mod) {
+      let h = 0;
+      for (let i = 0; i < str.length; i++) {
+        h = (h * 31 + str.charCodeAt(i)) % mod;
+      }
+      return h;
+    }
 
     function animate() {
       requestAnimationFrame(animate);
-      ctx.clearRect(0, 0, width, height);
+      updateThemePalette();
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
       time += 0.016;
-      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-      const textColor = "#000000";
-      const mutedColor = "#334155";
-      const accentColor = "#0f172a";
-      const highColor = "#065f46";
+      simTimer += 0.016;
 
-      const cx = width * 0.4;
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const accentColor = theme.primary;
+      const highColor = theme.secondary || theme.green;
+      const goldColor = theme.amber;
+      const alertColor = theme.alert || theme.red;
+      const wireColor = theme.border;
+      const surfaceColor = theme.surface;
+
+      const scale = Math.min(width / 750, height / 500);
+      const cx = width * 0.46;
       const cy = height * 0.44;
-      const bW = 65;
-      const bH = 28;
-      const numBuckets = buckets.length;
-      const startY = cy - (numBuckets * (bH + 6)) * 0.5;
+      const bW = 60 * scale;
+      const bH = 26 * scale;
+      const startY = cy - (M * (bH + 5 * scale)) * 0.5;
 
-      const activeBucket = Math.floor(time * 0.8) % numBuckets;
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
+      // Dynamic insertion cycle: every 2.4 seconds, insert a new key
+      const cycleTime = simTimer % 2.4;
+      const curKeyStr = sampleKeys[keyIdx];
+      const targetB = computeHash(curKeyStr, M);
+
+      // Packet animation
+      const hashEngineX = 80 * scale;
+      const hashEngineY = cy;
+      const bucketSlotX = cx - 70 * scale;
+      const bucketSlotY = startY + targetB * (bH + 5 * scale) + bH * 0.5;
+
+      let packetX = 0, packetY = 0;
+      let isColliding = false;
+
+      if (cycleTime < 0.8) {
+        // Stage 1: Hashing in engine
+        keyPacket.phase = 'HASHING';
+        packetX = hashEngineX + Math.sin(time * 12) * 2;
+        packetY = hashEngineY + Math.cos(time * 12) * 2;
+      } else if (cycleTime < 1.8) {
+        // Stage 2: Probe traveling to bucket
+        keyPacket.phase = 'PROBING';
+        const tTravel = (cycleTime - 0.8) / 1.0;
+        packetX = hashEngineX + (bucketSlotX - hashEngineX) * tTravel;
+        packetY = hashEngineY + (bucketSlotY - hashEngineY) * tTravel;
+
+        // Check if existing items in target bucket
+        if (tTravel > 0.8 && tableSlots[targetB].length > 0) {
+          isColliding = true;
+        }
+      } else {
+        // Stage 3: Docked in bucket chain
+        keyPacket.phase = 'INSERTED';
+        const chainPos = tableSlots[targetB].indexOf(curKeyStr);
+        const slotOffset = (chainPos >= 0 ? chainPos : tableSlots[targetB].length) * 65 * scale;
+        packetX = bucketSlotX + bW + 25 * scale + slotOffset;
+        packetY = bucketSlotY;
+
+        // Add to bucket once per cycle
+        if (!tableSlots[targetB].includes(curKeyStr)) {
+          tableSlots[targetB].push(curKeyStr);
+        }
+      }
+
+      // Switch to next key on cycle boundary
+      if (cycleTime < 0.02 && simTimer > 0.1) {
+        keyIdx = (keyIdx + 1) % sampleKeys.length;
+        if (keyIdx === 0) {
+          // Reset table after full rotation
+          for (let b = 0; b < M; b++) tableSlots[b] = [];
+        }
+      }
+
+      // Title Banner
       ctx.font = '600 13px Inter, sans-serif';
       ctx.fillStyle = accentColor;
-      ctx.textAlign = 'left';
-      ctx.fillText('Hash Table Buckets (M = 8) with Chained Overflow', cx - 110, startY - 14);
+      ctx.textAlign = 'center';
+      ctx.fillText(`Hash Table Ingestion Engine: Key "${curKeyStr}" → hash("${curKeyStr}") = ${targetB} (M = 8)`, cx, 28);
 
-      for (let b = 0; b < numBuckets; b++) {
-        const by = startY + b * (bH + 6);
-        const isActive = (b === activeBucket);
+      // Left Panel: Hash Computation Engine Block
+      const heW = 100 * scale;
+      const heH = 75 * scale;
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(hashEngineX - heW * 0.5, hashEngineY - heH * 0.5, heW, heH);
+      ctx.strokeRect(hashEngineX - heW * 0.5, hashEngineY - heH * 0.5, heW, heH);
+
+      ctx.font = '600 10px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.fillText('HASH ENGINE', hashEngineX, hashEngineY - 18 * scale);
+      ctx.font = '500 9px monospace';
+      ctx.fillStyle = goldColor;
+      ctx.fillText(`key: "${curKeyStr}"`, hashEngineX, hashEngineY);
+      ctx.fillStyle = highColor;
+      ctx.fillText(`h(k) = ${targetB}`, hashEngineX, hashEngineY + 18 * scale);
+
+      // Arrow from Hash Engine to target bucket
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(hashEngineX + heW * 0.5, hashEngineY);
+      ctx.lineTo(bucketSlotX, bucketSlotY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw Hash Table Buckets & Linked List Chains
+      let totalInserted = 0;
+      for (let b = 0; b < M; b++) {
+        const by = startY + b * (bH + 5 * scale);
+        const isTargetB = (b === targetB);
+        totalInserted += tableSlots[b].length;
 
         // Bucket Array Slot
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = isActive ? accentColor : ('rgba(0, 0, 0, 0.2)');
-        ctx.lineWidth = isActive ? 2 : 1;
-        ctx.strokeRect(cx - 100, by, bW, bH);
-        ctx.fillRect(cx - 100, by, bW, bH);
+        ctx.fillStyle = isTargetB ? 'rgba(56, 189, 248, 0.25)' : surfaceColor;
+        ctx.strokeStyle = isTargetB ? accentColor : wireColor;
+        ctx.lineWidth = isTargetB ? 2 : 1;
+        ctx.fillRect(bucketSlotX, by, bW, bH);
+        ctx.strokeRect(bucketSlotX, by, bW, bH);
 
         ctx.font = '600 11px monospace';
-        ctx.fillStyle = isActive ? accentColor : mutedColor;
+        ctx.fillStyle = isTargetB ? accentColor : mutedColor;
         ctx.textAlign = 'center';
-        ctx.fillText(`[${b}]`, cx - 100 + bW * 0.5, by + 18);
+        ctx.fillText(`[${b}]`, bucketSlotX + bW * 0.5, by + 17 * scale);
 
-        // Chained linked nodes
-        const chain = buckets[b];
+        // Chained linked nodes in this bucket
+        const chain = tableSlots[b];
         chain.forEach((item, cIdx) => {
-          const nodeX = cx - 100 + bW + 30 + cIdx * 75;
-          ctx.strokeStyle = isDark ? '#4a4a68' : '#b0bec5';
+          const nodeX = bucketSlotX + bW + 20 * scale + cIdx * 65 * scale;
+          // Chain pointer link
+          ctx.strokeStyle = wireColor;
           ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.moveTo(nodeX - 25, by + bH * 0.5);
+          ctx.moveTo(nodeX - 16 * scale, by + bH * 0.5);
           ctx.lineTo(nodeX, by + bH * 0.5);
           ctx.stroke();
 
-          ctx.fillStyle = isActive ? (isDark ? 'rgba(79, 195, 247, 0.25)' : 'rgba(2, 119, 189, 0.15)') : ('#ffffff');
-          ctx.strokeStyle = isActive ? highColor : accentColor;
-          ctx.strokeRect(nodeX, by + 2, 65, bH - 4);
-          ctx.fillRect(nodeX, by + 2, 65, bH - 4);
+          // Link node box
+          ctx.fillStyle = (item === curKeyStr) ? 'rgba(52, 211, 153, 0.25)' : surfaceColor;
+          ctx.strokeStyle = (item === curKeyStr) ? highColor : wireColor;
+          ctx.fillRect(nodeX, by + 2, 55 * scale, bH - 4);
+          ctx.strokeRect(nodeX, by + 2, 55 * scale, bH - 4);
 
-          ctx.font = '11px monospace';
-          ctx.fillStyle = isActive ? highColor : textColor;
-          ctx.fillText(`"${item}"`, nodeX + 32, by + 18);
+          ctx.font = '500 10px monospace';
+          ctx.fillStyle = (item === curKeyStr) ? highColor : textColor;
+          ctx.fillText(`"${item}"`, nodeX + 27 * scale, by + 17 * scale);
         });
       }
 
-      const ty = height - 40;
-      ctx.font = '13px Inter, sans-serif';
+      // Animated Travelling Key Packet
+      ctx.fillStyle = isColliding ? alertColor : goldColor;
+      ctx.beginPath();
+      ctx.arc(packetX, packetY, 5 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Traveling label
+      ctx.font = '600 9px monospace';
+      ctx.fillStyle = isColliding ? alertColor : goldColor;
+      ctx.fillText(`"${curKeyStr}"`, packetX, packetY - 8 * scale);
+
+      // Collision Warning ripple if collision occurs
+      if (isColliding) {
+        const rippleR = (8 + Math.sin(time * 16) * 4) * scale;
+        ctx.strokeStyle = alertColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(packetX, packetY, rippleR, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Right Panel: Hash Table Telemetry & Load Factor Gauge
+      const rightX = width - 180 * scale;
+      const rightY = cy - 60 * scale;
+      const rightW = 160 * scale;
+      const rightH = 120 * scale;
+
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1;
+      ctx.fillRect(rightX, rightY, rightW, rightH);
+      ctx.strokeRect(rightX, rightY, rightW, rightH);
+
+      ctx.font = '600 10px Inter, sans-serif';
       ctx.fillStyle = textColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('Hash Table Statistics', rightX + 8, rightY + 16);
+
+      const loadFactor = totalInserted / M;
+      ctx.font = '500 9px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText(`Capacity M: ${M} slots`, rightX + 8, rightY + 34);
+      ctx.fillText(`Stored Keys N: ${totalInserted}`, rightX + 8, rightY + 50);
+      ctx.fillText(`Load Factor α: ${loadFactor.toFixed(2)}`, rightX + 8, rightY + 66);
+      ctx.fillText(`Collisions: ${Math.max(0, totalInserted - 4)}`, rightX + 8, rightY + 82);
+      ctx.fillStyle = loadFactor > 0.75 ? alertColor : highColor;
+      ctx.fillText(loadFactor > 0.75 ? 'Rehash Needed (α > 0.75)' : 'Table Nominal', rightX + 8, rightY + 102);
+
+      // Bottom Telemetry Footer
+      const ty = height - 20;
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
       ctx.textAlign = 'center';
-      ctx.fillText('Constant-Time O(1) Average Access: Collision Resolution via Separate Chaining Lists', width * 0.5, ty);
+      ctx.fillText(`Average Complexity: O(1) Search | Worst-Case: O(N) Chain Traversal | Polynomial Hash h(k) = (Σ c_i · 31^(L-1-i)) mod 8`, cx, ty);
     }
     requestAnimationFrame(animate);
   </script>

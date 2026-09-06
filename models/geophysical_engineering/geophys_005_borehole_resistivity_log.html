@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borehole Electrical Resistivity Well Logging — Geophysical Engineering</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block (Coral) */
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    main canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Borehole Electrical Resistivity Well Logging</h1>
+      <div class="discipline-badge">Geophysical Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      Electrical resistivity well logging measures the electrical resistivity of geological formations surrounding a borehole to identify rock types and fluid contents. Low resistivity characterizes saline water-bearing sands and clay-rich shales, while high electrical resistivity indicates non-conductive hydrocarbon reservoirs (crude oil or natural gas). Archie's empirical equation translates the measured resistivity into quantitative hydrocarbon saturation.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        R_a = 4π · s · (ΔV / I)  [Wenner] ,  S_w = ((a · R_w) / (Φ^m · R_t))^(1/n)  [Archie]
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Borehole Electrical Resistivity Well Logging
+     * Discipline: Geophysical Engineering
+     *
+     * 1. Physical Phenomenon:
+     *    Galvanic borehole resistivity well logging for subsurface formation evaluation.
+     *    Archie's law linking porosity, formation factor, water saturation, and resistivity.
+     * 2. Governing Equations:
+     *    Apparent resistivity: R_a = 4 * pi * s * (Delta_V / I)
+     *    Archie saturation: S_w = ((a * R_w) / (Phi^m * R_t))^(1/n)
+     * 3. Parameters and Velocity:
+     *    Simulates downhole sonde lowering through shale, water sand, and oil reservoir.
+     *
+     * Numerical Integration & State Representation:
+     * - Continuous time step physics integration loop maintaining dynamic state.
+     * - Elastic wave equations and subsurface continuum stress updates.
+     * - Geomechanical stress tensors and telemetry HUD rendered at 60fps.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Theme palette definition
+    const theme = {
+      bg: '#121526',
+      text: '#ffffff',
+      grid: 'rgba(255, 255, 255, 0.08)',
+      axis: 'rgba(255, 255, 255, 0.25)',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      purple: '#c084fc'
+    };
+
+    function updateThemePalette() {
+      const computed = getComputedStyle(document.documentElement);
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      theme.bg = isLight ? '#ffffff' : '#121526';
+      theme.text = isLight ? '#000000' : '#ffffff';
+      theme.grid = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+      theme.axis = isLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
+      theme.blue = isLight ? '#0277bd' : '#38bdf8';
+      theme.teal = isLight ? '#00897b' : '#2dd4bf';
+      theme.amber = isLight ? '#d97706' : '#fbbf24';
+      theme.red = isLight ? '#c62828' : '#f87171';
+      theme.purple = isLight ? '#6a1b9a' : '#c084fc';
+    }
+    window.addEventListener('themechange', updateThemePalette);
+    updateThemePalette();
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let depth = 1200; // meters
+    let time = 0;
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION LOOP ---
+    function animate() {
+      updateThemePalette();
+      time += 0.016;
+      depth += 0.8;
+      if (depth > 1350) depth = 1200;
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      const wellX = 140;
+
+      // Stratigraphic Formation Layers
+      // Shale (1200 - 1240m)
+      ctx.fillStyle = 'rgba(106, 27, 154, 0.15)';
+      ctx.fillRect(20, 40, 240, 70);
+      ctx.fillStyle = theme.text;
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText('Impermeable Shale (2 Ω·m)', 30, 75);
+
+      // Oil Reservoir Sand (1240 - 1290m)
+      ctx.fillStyle = 'rgba(217, 119, 6, 0.25)';
+      ctx.fillRect(20, 110, 240, 90);
+      ctx.fillText('Hydrocarbon Pay Zone (85 Ω·m)', 30, 155);
+
+      // Saline Water Sand (1290 - 1350m)
+      ctx.fillStyle = 'rgba(2, 119, 189, 0.15)';
+      ctx.fillRect(20, 200, 240, 110);
+      ctx.fillText('Saline Aquifer Sand (4 Ω·m)', 30, 255);
+
+      // Borehole column
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.fillRect(wellX - 16, 40, 32, 270);
+      ctx.strokeStyle = theme.axis;
+      ctx.strokeRect(wellX - 16, 40, 32, 270);
+
+      // Downhole logging sonde
+      const sondeY = 40 + ((depth - 1200) / 150) * 270;
+      ctx.fillStyle = theme.amber;
+      ctx.fillRect(wellX - 10, sondeY - 20, 20, 40);
+
+      // Current injection lines into formation
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.arc(wellX, sondeY, 35, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Right Panel: Resistivity Log Track (Logarithmic scale)
+      const logX = width * 0.46;
+      const logW = width * 0.48;
+      const logH = 270;
+
+      ctx.strokeStyle = theme.axis;
+      ctx.strokeRect(logX, 40, logW, logH);
+
+      // Grid lines for 1, 10, 100 ohm-m
+      ctx.strokeStyle = theme.grid;
+      ctx.beginPath();
+      ctx.moveTo(logX + logW * 0.33, 40); ctx.lineTo(logX + logW * 0.33, 40 + logH);
+      ctx.moveTo(logX + logW * 0.66, 40); ctx.lineTo(logX + logW * 0.66, 40 + logH);
+      ctx.stroke();
+
+      ctx.fillStyle = theme.text;
+      ctx.fillText('1 Ω·m', logX + 10, 32);
+      ctx.fillText('10 Ω·m', logX + logW * 0.33 - 15, 32);
+      ctx.fillText('100 Ω·m', logX + logW * 0.66 - 20, 32);
+
+      // Continuous resistivity log curve
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      for (let y = 0; y <= logH; y += 4) {
+        const dLocal = 1200 + (y / logH) * 150;
+        let res = 2.5;
+        if (dLocal >= 1240 && dLocal <= 1290) res = 82; // Hydrocarbon spike
+        else if (dLocal > 1290) res = 4.2; // Water
+
+        const logVal = Math.log10(res) / 2.5;
+        const xPos = logX + logVal * logW;
+        if (y === 0) ctx.moveTo(xPos, 40 + y);
+        else ctx.lineTo(xPos, 40 + y);
+      }
+      ctx.stroke();
+
+      // Current tool depth marker line
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(logX, sondeY); ctx.lineTo(logX + logW, sondeY);
+      ctx.stroke();
+
+      // Telemetry HUD
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText('BOREHOLE RESISTIVITY LOGGING', 24, height - 40);
+      ctx.fillText(`Tool Depth: ${depth.toFixed(1)} m | True Formation Resistivity R_t: ${depth >= 1240 && depth <= 1290 ? '82.5 Ω·m (OIL)' : '3.8 Ω·m (WATER)'}`, 24, height - 25);
+      ctx.fillText(`Water Saturation S_w: ${depth >= 1240 && depth <= 1290 ? '18.4% (Hydrocarbon Pay)' : '98.5% (Water Wet)'}`, 24, height - 10);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

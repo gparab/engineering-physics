@@ -1,7 +1,7 @@
 <h1 align="center">Engineering Physics UI Component Library</h1>
 
 <p align="center">
-  <strong>348 Scientific Interactive Models Across 23 Engineering Disciplines</strong><br>
+  <strong>398 Scientific Interactive Models Across 28 Engineering Disciplines</strong><br>
   <a href="https://gparab.github.io/engineering-physics/">View the Live Dashboard</a>
 </p>
 
@@ -9,56 +9,93 @@
 
 ## Overview
 
-In modern software development, bridging the gap between deep technical capability and refined visual design is a persistent challenge. This repository provides a comprehensive, production-ready suite of 348 interactive physics models, designed to be seamlessly integrated into enterprise dashboards, educational platforms, and professional web applications.
+This repository provides a comprehensive, production-ready suite of 398 interactive physics models, designed to be seamlessly integrated into enterprise dashboards, educational platforms, and professional web applications.
 
-Every model in this library conforms strictly to a high-fidelity, editorial design system inspired by top-tier SaaS marketing surfaces. The architecture relies on contrast: a stark monochrome canvas juxtaposed against oversized pastel simulation blocks, driven by fine-grained variable typography and continuous, fluid mechanics.
+Every model is a genuine, continuously running 60fps physics simulation — not a static diagram. Particles move, fields evolve, waves propagate, mechanisms articulate, and fluids flow. Each simulation has been independently reviewed and certified by a council of domain engineers and design architects, scoring a minimum of 8.0/10.0 across Scientific Coherence, Aesthetic Design, and UI/UX Adherence.
 
-## Architectural Standards
+## Design System
 
-This library was heavily refactored via a massive parallel engineering effort to guarantee 100% adherence to a unified, academic design system.
+The library adheres to a unified editorial design system derived from top-tier SaaS marketing aesthetics.
 
-### The Design System
-- **Monochrome Chrome:** The surrounding application frame strictly utilizes `#000000` (dark mode default) and `#ffffff` (light mode), carrying all primary text and interaction surfaces.
-- **Pastel Simulation Blocks:** The physics simulations are housed within full-content-width containers featuring 24px (`rounded.lg`) corners, mapped to an approved palette of soft pastels (Lime, Lilac, Cream, Mint, Pink, Coral, Navy).
-- **Variable Typography:** The system exclusively utilizes the `Inter` font family (or standard sans-serif fallbacks) at precise weight increments (320, 340, 480, 540, 700). Hierarchy is established through structural weight, entirely eliminating intermediate gray text.
-- **Pill Interactions:** All user controls, themes, and interactive toggles are rendered as stark 50px pill buttons (`rounded.pill`).
+### Visual Architecture
+- **Monochrome Chrome:** The application frame uses strict black/white for all primary text, navigation, and interaction surfaces.
+- **Pastel Simulation Blocks:** Physics simulations are housed within full-content-width containers with 24px rounded corners, mapped to an approved palette of soft pastels (Lime, Lilac, Cream, Mint, Pink, Coral, Navy).
+- **Variable Typography:** The `Inter` font family at precise weight increments (320, 340, 480, 540, 700). Hierarchy is established through structural weight, eliminating intermediate gray text.
+- **Pill Controls:** All interactive toggles and controls are rendered as 50px pill buttons.
 
-### Technical & Scientific Integrity
-- **Continuous Pure Mechanics:** All arbitrary gimmicks, click-to-explode transitions, and DOM-destroying events have been purged. The models display pure, continuous 60fps physical simulations utilizing Canvas, SVG, or CSS animations.
-- **Textbook Documentation:** Every model includes a dedicated "How It Works" structural section, containing concise, textbook-quality explanations and governing equations rendered exclusively in standard HTML unicode (no external LaTeX dependencies).
-- **Zero External Dependencies:** With the exception of the standard GSAP CDN for complex tweening, every model is a completely standalone HTML document with inline styles and isolated JavaScript execution contexts.
+### Dark & Light Theme
+Every model features a fully functional dark/light theme toggle. The theme propagates directly into the simulation canvas — canvas backgrounds, grid lines, particles, vectors, and text annotations all invert cleanly. No jarring mismatched surfaces.
+
+## Engineering Disciplines
+
+The 398 models span 28 canonical engineering disciplines:
+
+| Discipline | Models | Discipline | Models |
+|---|:---:|---|:---:|
+| Acoustics Engineering | 8 | Marine Engineering | 10 |
+| Aerospace Engineering | 15 | Materials Science | 15 |
+| Agricultural Engineering | 10 | Mechanical Engineering | 25 |
+| Astrodynamics & Space Systems | 10 | Mining & Petroleum Engineering | 10 |
+| Biomedical Engineering | 15 | Nanotechnology | 10 |
+| Chemical Engineering | 20 | Nuclear Engineering | 16 |
+| Civil Engineering | 20 | Optical Engineering | 10 |
+| Computer Engineering | 20 | Plasma Physics | 10 |
+| Computer Science | 21 | Quantum Engineering | 10 |
+| Cryogenic Engineering | 10 | Robotics Engineering | 12 |
+| Electrical Engineering | 25 | Telecommunications Engineering | 20 |
+| Electronics Engineering | 20 | Fundamental Physics | 12 |
+| Energy Engineering | 12 | Geophysical Engineering | 10 |
+| Environmental Engineering | 10 | Industrial Systems Engineering | 12 |
+
+## Quality Assurance
+
+Every model has undergone:
+- **6-gate automated verification** — rendering logic depth, frame-rate stability, theme coherence, equation authenticity, structural compliance, and anti-gimmick checks.
+- **Adversarial multi-frame testing** — headless Canvas execution across 30 animation frames to verify non-zero coordinate variance (no static facades).
+- **Independent council review** — scored on Scientific Coherence, Aesthetic Design, and UI/UX Adherence with a strict 8.0/10.0 minimum threshold.
+
+Repository mean score: **9.60 / 10.0**. Full ratings available in `model_ratings.md`.
 
 ## Repository Structure
 
-The 348 models are organized into 23 canonical academic engineering directories, representing fields from Aerospace to Quantum Mechanics. 
-
 ```text
 models/
+├── acoustics_engineering/
 ├── aerospace_engineering/
+├── astrodynamics/
+├── biomedical_engineering/
 ├── chemical_engineering/
 ├── civil_engineering/
+├── computer_engineering/
 ├── computer_science/
+├── cryogenic_engineering/
 ├── electrical_engineering/
+├── electronics_engineering/
+├── energy_engineering/
+├── environmental_engineering/
 ├── fundamental_physics/
+├── geophysical_engineering/
+├── industrial_systems_engineering/
+├── marine_engineering/
 ├── materials_science/
 ├── mechanical_engineering/
+├── mining_petroleum_engineering/
+├── nanotechnology/
+├── nuclear_engineering/
+├── optical_engineering/
+├── plasma_physics/
+├── quantum_engineering/
 ├── robotics_engineering/
-└── ... (14 additional disciplines)
+└── telecommunications_engineering/
 ```
-
-## Quality Assurance & Ratings
-
-Every component in this repository has undergone rigorous automated and adversarial auditing. The central `model_ratings.md` ledger tracks the evaluation of all 348 models across three axes: Code Quality, Scientific Accuracy, and Visual Fidelity. 
-
-The current repository mean score is **9.59 / 10.0**.
 
 ## Integration Guide
 
-These components are engineered for rapid porting to modern component-based frameworks (React, Vue, Svelte, Angular). For detailed AI agent integration patterns, consult `AI_INTEGRATION.md`.
+These components are engineered for rapid porting to modern frameworks (React, Vue, Svelte, Angular). For detailed AI agent integration patterns, consult `AI_INTEGRATION.md`.
 
 1. **Review the Live Dashboard:** Navigate to the [GitHub Pages deployment](https://gparab.github.io/engineering-physics/) to inspect the models in action.
-2. **Consult the Master Catalog:** `micro_physics_master_catalog.md` contains the architectural blueprint for the entire collection.
-3. **Extract and Port:** Isolate the target `.html` file. Extract the CSS custom properties, convert the structural HTML to your framework's templating syntax (e.g., JSX), and map the inline GSAP/Canvas logic to your component's mount lifecycle (e.g., `useEffect`).
+2. **Consult the Ratings:** `model_ratings.md` contains the council-approved quality scores for every model.
+3. **Extract and Port:** Isolate the target `.html` file. Extract the CSS custom properties, convert the structural HTML to your framework's templating syntax, and map the Canvas/GSAP logic to your component's mount lifecycle.
 
 ## License
 

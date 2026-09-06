@@ -29,6 +29,25 @@
       --block-accent: #065f46;
       --block-grid: rgba(0, 0, 0, 0.06);
 
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
       --sim-teal: #0f766e;
@@ -62,6 +81,25 @@
       --surface-border: rgba(0, 0, 0, 0.10);
       --text: #000000;
       --accent: #0277bd;
+
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
 
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
@@ -211,7 +249,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -362,12 +402,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      // High-contrast fallbacks calibrated for the pastel simulation color block
-      if (variableName === '--text') return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      if (variableName === '--text-muted') return '#1f2937';
-      if (variableName === '--surface-border') return getComputedStyle(document.documentElement).getPropertyValue('--block-border').trim() || 'rgba(0, 0, 0, 0.12)';
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. HIGH-DPI CANVAS INITIALIZATION & RESIZE HANDLING ---
@@ -384,6 +486,7 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* trigger canvas update on theme switch */ });
@@ -391,58 +494,192 @@
 
     // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
     let time = 0;
+    const sats = [
+      { xRatio: 0.20, yRatio: 0.16, name: 'GPS SV-12', freq: 1.575 },
+      { xRatio: 0.50, yRatio: 0.12, name: 'GLO SV-04', freq: 1.602 },
+      { xRatio: 0.80, yRatio: 0.18, name: 'GAL E-19',  freq: 1.575 }
+    ];
 
     // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
     function animate() {
-      ctx.clearRect(0, 0, width, height);
-      const blue = getThemeColor('--sim-blue');
-      const text = getThemeColor('--text');
-      const textMuted = getThemeColor('--text-muted');
-      const amber = getThemeColor('--sim-amber');
-      const teal = getThemeColor('--sim-teal');
-
+      requestAnimationFrame(animate);
+      updateThemePalette();
       time += 0.02;
-      const targetX = width / 2;
-      const targetY = height * 0.58;
 
-      // 3 Satellites
-      const sats = [
-        { x: width * 0.22, y: height * 0.22, name: 'SAT 1' },
-        { x: width * 0.5, y: height * 0.16, name: 'SAT 2' },
-        { x: width * 0.78, y: height * 0.24, name: 'SAT 3' }
-      ];
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      sats.forEach(s => {
-        const dist = Math.hypot(targetX - s.x, targetY - s.y);
-        ctx.strokeStyle = 'rgba(79, 195, 247, 0.35)';
-        ctx.lineWidth = 1.5;
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // 1. Kinematic Tractor Trajectory
+      const pathScaleX = width * 0.25;
+      const pathScaleY = height * 0.12;
+      const midX = width * 0.50;
+      const midY = height * 0.65;
+      
+      const prevX = midX + Math.cos((time - 0.02) * 0.6) * pathScaleX;
+      const prevY = midY + Math.sin((time - 0.02) * 1.2) * pathScaleY;
+      const targetX = midX + Math.cos(time * 0.6) * pathScaleX;
+      const targetY = midY + Math.sin(time * 1.2) * pathScaleY;
+      const heading = Math.atan2(targetY - prevY, targetX - prevX);
+
+      // Draw agricultural guidance path trail (furrows)
+      ctx.strokeStyle = 'rgba(45, 212, 191, 0.20)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      for (let tau = 0; tau < Math.PI * 2; tau += 0.1) {
+        const fx = midX + Math.cos(tau) * pathScaleX;
+        const fy = midY + Math.sin(tau * 2) * pathScaleY;
+        if (tau === 0) ctx.moveTo(fx, fy);
+        else ctx.lineTo(fx, fy);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 2. Satellites and Expanding RF Wavefront Pulses
+      const activeSats = sats.map(s => ({
+        x: width * s.xRatio + Math.sin(time * 0.2 + s.xRatio * 5) * 15,
+        y: height * s.yRatio,
+        name: s.name
+      }));
+
+      for (let s of activeSats) {
+        const rho = Math.hypot(targetX - s.x, targetY - s.y);
+
+        // Expanding RF microwave wavefront pulses from satellite
+        const waveSpeed = 120; // px/sec
+        const waveSpacing = 40;
+        ctx.lineWidth = 1.2;
+        for (let w = 0; w < 4; w++) {
+          const r = ((time * waveSpeed + w * waveSpacing) % rho);
+          const alpha = Math.max(0.05, 0.4 * (1.0 - r / rho));
+          ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // True Pseudorange Circle (intersects at tractor)
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.arc(s.x, s.y, dist, 0, Math.PI * 2);
+        ctx.arc(s.x, s.y, rho, 0, Math.PI * 2);
         ctx.stroke();
 
-        ctx.fillStyle = amber;
-        ctx.fillRect(s.x - 8, s.y - 8, 16, 16);
-        ctx.fillStyle = textMuted;
-        ctx.font = '11px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(s.name, s.x, s.y - 12);
-      });
+        // Line of Sight Vector
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(targetX, targetY);
+        ctx.stroke();
+        ctx.setLineDash([]);
 
-      // Target Fix (Tractor RTK GPS)
-      ctx.fillStyle = teal;
+        // Satellite Body Icon
+        ctx.fillStyle = theme.surface;
+        ctx.fillRect(s.x - 12, s.y - 8, 24, 16);
+        ctx.strokeStyle = theme.teal;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(s.x - 12, s.y - 8, 24, 16);
+
+        // Solar panels
+        ctx.fillStyle = theme.primary;
+        ctx.fillRect(s.x - 22, s.y - 6, 8, 12);
+        ctx.fillRect(s.x + 14, s.y - 6, 8, 12);
+
+        // Satellite label
+        ctx.fillStyle = theme.textMuted;
+        ctx.font = '600 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(s.name, s.x, s.y - 14);
+        ctx.fillText(`ρ: ${(rho * 0.25).toFixed(1)} km`, s.x, s.y + 22);
+      }
+
+      // 3. Dynamic GDOP Covariance Error Ellipse
+      const gdopMajor = 18 + Math.abs(Math.sin(time * 0.8)) * 8;
+      const gdopMinor = 10 + Math.abs(Math.cos(time * 0.8)) * 4;
+      const gdopAngle = time * 0.4;
+
+      ctx.fillStyle = 'rgba(45, 212, 191, 0.15)';
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(targetX, targetY, 7, 0, Math.PI * 2);
+      ctx.ellipse(targetX, targetY, gdopMajor, gdopMinor, gdopAngle, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 4. Kinematic Autonomous Tractor Body
+      ctx.save();
+      ctx.translate(targetX, targetY);
+      ctx.rotate(heading);
+
+      // Chassis
+      ctx.fillStyle = theme.amber;
+      ctx.fillRect(-14, -8, 28, 16);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-14, -8, 28, 16);
+
+      // Cab
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(-6, -6, 12, 12);
+      ctx.strokeRect(-6, -6, 12, 12);
+
+      // RTK Antenna dome
+      ctx.fillStyle = theme.teal;
+      ctx.beginPath();
+      ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = text;
-      ctx.font = '13px Inter, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('RTK-GNSS Autonomous Steering Fix: HDOP = 0.8', 24, 30);
-      ctx.fillText('Positioning Uncertainty: 2.1 cm CEP | Ephemeris Lock: 12 Sats', 24, 52);
+      // Wheels
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(-12, -11, 8, 4);
+      ctx.fillRect(-12, 7, 8, 4);
+      ctx.fillRect(6, -10, 6, 3);
+      ctx.fillRect(6, 7, 6, 3);
+      ctx.restore();
 
-      requestAnimationFrame(animate);
+      // 5. Scientific Telemetry HUD Overlay
+      const hudX = 24, hudY = 24, hudW = 260, hudH = 114;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('PRECISION AG TRILATERATION & RTK', hudX + 10, hudY + 18);
+      ctx.font = '400 10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Constellation: GPS/GLO/GAL (3 SV Fix)`, hudX + 10, hudY + 36);
+      ctx.fillText(`HDOP Metric: 0.82 (Centimetric RTK)`, hudX + 10, hudY + 52);
+      ctx.fillText(`Carrier Phase Residual: 3.2 mm`, hudX + 10, hudY + 68);
+      ctx.fillStyle = theme.teal;
+      ctx.fillText(`Fix Status: RTK FIXED (CEP ± 1.4 cm)`, hudX + 10, hudY + 86);
+      ctx.fillStyle = theme.primary;
+      ctx.fillText(`Autonomous Guidance Active`, hudX + 10, hudY + 102);
+
+      // Bottom Status
+      ctx.fillStyle = theme.textMuted;
+      ctx.font = '500 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Trilateration: ρᵢ = ||x_sⁱ - x_t|| + c·δt | Non-Linear Least Squares RTK Solution`, width / 2, height - 16);
     }
-    requestAnimationFrame(animate);
+    animate();
   </script>
 </body>
 </html>

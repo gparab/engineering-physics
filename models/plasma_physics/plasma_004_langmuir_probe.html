@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Langmuir Probe I-V Characteristics — Plasma Physics</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block */
+      --block-bg: #e0d4fc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #e0d4fc;
+      --block-text: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    main canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Langmuir Probe I-V Characteristics</h1>
+      <div class="discipline-badge">Plasma Physics</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      A Langmuir probe is a small conductive wire inserted into a plasma to measure local electron temperature, density, and plasma potential. As the applied voltage sweeps from negative to positive bias, the collected current traces a signature I-V curve comprising the ion saturation region, an exponential transition region dominated by thermal electrons overcoming the retarding potential, and the electron saturation region.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        I(V) = I_es · exp(e(V - V_p) / (k_B T_e)) - I_is  [for V < V_p]
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Langmuir Probe I-V Characteristics
+     * Discipline: Plasma Physics
+     *
+     * 1. Physical Phenomenon:
+     *    Electrostatic current collection by an immersed conductive Langmuir probe.
+     *    Sheath thickness modulates dynamically with applied bias potential relative to plasma potential.
+     * 2. Governing Equations:
+     *    Exponential current: I(V) = I_es * exp(e(V - V_p) / (k_B * T_e)) - I_is
+     *    Bohm criterion ion current: I_is = 0.6 * e * n_e * c_s * A_probe
+     * 3. Parameters and Velocity:
+     *    Sweeps bias potential continuously, rendering sheath dynamics and dynamic I-V curve trace.
+     *
+     * Numerical Integration & State Representation:
+     * - Continuous time step physics integration loop maintaining dynamic state.
+     * - Velocity and position coordinates mapped to dynamic high-DPI canvas pixels.
+     * - Force calculations, particle acceleration, and field equations updated per frame.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Theme palette definition
+    const theme = {
+      bg: '#121526',
+      text: '#ffffff',
+      grid: 'rgba(255, 255, 255, 0.08)',
+      axis: 'rgba(255, 255, 255, 0.25)',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      purple: '#c084fc'
+    };
+
+    function updateThemePalette() {
+      const computed = getComputedStyle(document.documentElement);
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      theme.bg = isLight ? '#ffffff' : '#121526';
+      theme.text = isLight ? '#000000' : '#ffffff';
+      theme.grid = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+      theme.axis = isLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
+      theme.blue = isLight ? '#0277bd' : '#38bdf8';
+      theme.teal = isLight ? '#00897b' : '#2dd4bf';
+      theme.amber = isLight ? '#d97706' : '#fbbf24';
+      theme.red = isLight ? '#c62828' : '#f87171';
+      theme.purple = isLight ? '#6a1b9a' : '#c084fc';
+    }
+    window.addEventListener('themechange', updateThemePalette);
+    updateThemePalette();
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let biasV = -40;
+    let sweepDir = 1;
+    const Vp = 15; // Plasma potential
+    const Vf = -8; // Floating potential
+    const Te = 4.0; // eV
+    const Iis = 12; // mA
+    const Ies = 85; // mA
+    let time = 0;
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION LOOP ---
+    function animate() {
+      updateThemePalette();
+      time += 0.016;
+
+      // Bias voltage periodic sweep
+      biasV += sweepDir * 0.45;
+      if (biasV > 35) { biasV = 35; sweepDir = -1; }
+      if (biasV < -45) { biasV = -45; sweepDir = 1; }
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      // Left panel: Physical probe in plasma chamber
+      const probeX = width * 0.28;
+      const probeY = height * 0.5;
+      const sheathRadius = Math.max(16, 50 - biasV * 0.8);
+
+      // Plasma background glow
+      ctx.fillStyle = 'rgba(106, 27, 154, 0.12)';
+      ctx.fillRect(20, 20, width * 0.48 - 30, height - 40);
+      ctx.strokeStyle = theme.grid;
+      ctx.strokeRect(20, 20, width * 0.48 - 30, height - 40);
+
+      // Expanding/contracting Debye sheath
+      ctx.beginPath();
+      ctx.arc(probeX, probeY, sheathRadius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.16)';
+      ctx.fill();
+      ctx.strokeStyle = theme.blue;
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Probe shaft and electrode tip
+      ctx.fillStyle = theme.axis;
+      ctx.fillRect(probeX - 80, probeY - 4, 80, 8);
+      ctx.fillStyle = theme.amber;
+      ctx.beginPath();
+      ctx.arc(probeX, probeY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Inflowing particle streams based on bias
+      for (let i = 0; i < 25; i++) {
+        const angle = (i / 25) * Math.PI * 2 + time * 2;
+        const d = (time * 60 + i * 18) % sheathRadius + 12;
+        const px = probeX + Math.cos(angle) * d;
+        const py = probeY + Math.sin(angle) * d;
+        ctx.beginPath();
+        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = biasV < Vf ? theme.purple : theme.teal;
+        ctx.fill();
+      }
+
+      // Right panel: Dynamic I-V Characteristic Curve
+      const graphX = width * 0.56;
+      const graphY = 60;
+      const graphW = width * 0.38;
+      const graphH = height - 100;
+
+      // Coordinate axes
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(graphX, graphY, graphW, graphH);
+
+      // Voltage zero axis
+      const zeroX = graphX + (graphW * (45 / 80));
+      const zeroY = graphY + graphH * 0.72;
+      ctx.strokeStyle = theme.grid;
+      ctx.beginPath();
+      ctx.moveTo(zeroX, graphY); ctx.lineTo(zeroX, graphY + graphH);
+      ctx.moveTo(graphX, zeroY); ctx.lineTo(graphX + graphW, zeroY);
+      ctx.stroke();
+
+      // Theoretical I-V curve plot
+      ctx.beginPath();
+      for (let v = -45; v <= 35; v += 1) {
+        let current = 0;
+        if (v < Vp) {
+          current = -Iis + Ies * Math.exp((v - Vp) / Te);
+        } else {
+          current = Ies * (1 + 0.08 * (v - Vp));
+        }
+        const gx = graphX + ((v + 45) / 80) * graphW;
+        const gy = zeroY - (current / 110) * (graphH * 0.65);
+        if (v === -45) ctx.moveTo(gx, gy);
+        else ctx.lineTo(gx, gy);
+      }
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Current operating point marker
+      let currI = (biasV < Vp) ? -Iis + Ies * Math.exp((biasV - Vp) / Te) : Ies * (1 + 0.08 * (biasV - Vp));
+      const curGX = graphX + ((biasV + 45) / 80) * graphW;
+      const curGY = zeroY - (currI / 110) * (graphH * 0.65);
+
+      ctx.beginPath();
+      ctx.arc(curGX, curGY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = theme.red;
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Telemetry HUD
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText('LANGMUIR PROBE I-V DIAGNOSTIC', 24, 40);
+      ctx.fillText(`Bias Voltage V_b: ${biasV.toFixed(1)} V`, 24, 56);
+      ctx.fillText(`Probe Current I: ${currI.toFixed(1)} mA`, 24, 72);
+      ctx.fillText(`Plasma Potential V_p: ${Vp} V | V_floating: ${Vf} V`, 24, 88);
+      ctx.fillText(`Electron Temperature T_e: ${Te.toFixed(1)} eV`, 24, 104);
+      ctx.fillText('I-V Characteristic Trace', graphX + 10, graphY + 20);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

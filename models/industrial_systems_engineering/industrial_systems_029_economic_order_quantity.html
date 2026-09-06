@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -384,28 +488,91 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     resize();
 
+    // --- 3. PHYSICAL STATE VARIABLES & EOQ INVENTORY ENGINE ---
     let time = 0;
-    function animate() {
-      ctx.clearRect(0, 0, width, height);
-      const blue = getThemeColor('--sim-blue');
-      const text = getThemeColor('--text');
-      const textMuted = getThemeColor('--text-muted');
-      const amber = getThemeColor('--sim-amber');
-      const teal = getThemeColor('--sim-teal');
-      const border = getThemeColor('--surface-border');
+    const D = 12000; // Annual demand units/year
+    const S = 150;   // Order setup cost $/order
+    const H = 4.0;   // Holding cost $/unit/year
+    const Qstar = Math.sqrt((2 * D * S) / H); // ~ 948.68 units
+    const Tcycle = Qstar / D; // ~ 0.079 years (~ 28.8 days)
+    const leadTime = 0.025; // years (~ 9.1 days)
+    const dailyDemand = D / 365;
+    const SS = 120; // Safety stock units
+    const ROP = dailyDemand * (leadTime * 365) + SS; // Reorder Point ~ 419 units
+    const minCost = Math.sqrt(2 * D * S * H); // ~ $3794.73
 
-      time += 0.02;
-      const chartX = width * 0.15;
+    // Simulation state
+    let invStock = Qstar + SS;
+    let orderPlaced = false;
+    let transitProgress = 0.0;
+    const history = []; // historical [t, stock]
+
+    // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
+    function animate() {
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      time += 0.025;
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // Deplete inventory continuously at constant consumption rate
+      const depletionRate = 7.5; // units per simulation frame
+      invStock -= depletionRate;
+
+      // Trigger order when hitting ROP
+      if (invStock <= ROP && !orderPlaced) {
+        orderPlaced = true;
+        transitProgress = 0.0;
+      }
+
+      // Transit delivery progression
+      if (orderPlaced) {
+        transitProgress += 0.022;
+        if (transitProgress >= 1.0) {
+          // Shipment arrives at warehouse: instantaneous replenishment by +Qstar!
+          invStock += Qstar;
+          orderPlaced = false;
+          transitProgress = 0.0;
+        }
+      }
+
+      // Record rolling history
+      history.push(invStock);
+      if (history.length > 70) history.shift();
+
+      // Layout: Left 55% = Sawtooth Inventory Trajectory & Pipeline, Right 45% = EOQ Cost Curves
+      const leftW = width * 0.52;
+      const rightX = width * 0.58;
+      const rightW = width * 0.38;
+
+      const chartX = width * 0.12;
       const chartY = height * 0.72;
-      const chartW = width * 0.72;
-      const chartH = height * 0.45;
+      const chartW = leftW - width * 0.08;
+      const chartH = height * 0.42;
+
+      // 1. Inventory Level Sawtooth Chart
+      // Y range: 0 to Qstar + SS + 200
+      const maxStock = Qstar + SS + 180;
+      function stockToY(s) {
+        return chartY - (s / maxStock) * chartH;
+      }
 
       // Axes
-      ctx.strokeStyle = border;
+      ctx.strokeStyle = theme.border;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(chartX, chartY);
@@ -414,49 +581,214 @@
       ctx.lineTo(chartX, chartY - chartH);
       ctx.stroke();
 
-      // Sawtooth Inventory Cycles
-      const cycleW = chartW / 3;
-      ctx.strokeStyle = blue;
-      ctx.lineWidth = 2.5;
-      for (let c = 0; c < 3; c++) {
-        const sx = chartX + c * cycleW;
-        ctx.beginPath();
-        ctx.moveTo(sx, chartY - chartH * 0.85);
-        ctx.lineTo(sx + cycleW, chartY);
-        ctx.lineTo(sx + cycleW, chartY - chartH * 0.85);
-        ctx.stroke();
+      // Safety Stock & ROP lines
+      const ssY = stockToY(SS);
+      const ropY = stockToY(ROP);
 
-        ctx.fillStyle = 'rgba(79, 195, 247, 0.1)';
-        ctx.lineTo(sx + cycleW, chartY);
-        ctx.lineTo(sx, chartY);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      // Reorder Point & Safety Stock Lines
-      ctx.strokeStyle = amber;
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 1.2;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(chartX, chartY - chartH * 0.35);
-      ctx.lineTo(chartX + chartW, chartY - chartH * 0.35);
+      ctx.moveTo(chartX, ssY);
+      ctx.lineTo(chartX + chartW, ssY);
+      ctx.stroke();
+
+      ctx.strokeStyle = theme.amber;
+      ctx.beginPath();
+      ctx.moveTo(chartX, ropY);
+      ctx.lineTo(chartX + chartW, ropY);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = amber;
-      ctx.font = '11px Inter, sans-serif';
+      ctx.fillStyle = theme.amber;
+      ctx.font = '600 10px var(--font-mono)';
       ctx.textAlign = 'right';
-      ctx.fillText('Reorder Point (ROP)', chartX + chartW, chartY - chartH * 0.35 - 6);
+      ctx.fillText(`ROP (${ROP.toFixed(0)})`, chartX - 6, ropY + 3);
+      ctx.fillStyle = theme.teal;
+      ctx.fillText(`SS (${SS})`, chartX - 6, ssY + 3);
 
-      ctx.fillStyle = text;
-      ctx.font = '13px Inter, sans-serif';
+      // Plot Historical Sawtooth
+      if (history.length > 1) {
+        ctx.strokeStyle = theme.blue;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        history.forEach((val, idx) => {
+          const px = chartX + (idx / 70) * chartW;
+          const py = stockToY(val);
+          if (idx === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+
+        // Fill area under curve
+        const lastIdx = history.length - 1;
+        ctx.lineTo(chartX + (lastIdx / 70) * chartW, chartY);
+        ctx.lineTo(chartX, chartY);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.10)';
+        ctx.fill();
+
+        // Current Inventory Cursor
+        const curPx = chartX + (lastIdx / 70) * chartW;
+        const curPy = stockToY(invStock);
+        ctx.beginPath();
+        ctx.arc(curPx, curPy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = theme.primary;
+        ctx.fill();
+        ctx.strokeStyle = theme.surface;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      // 2. Shipping Logistics Pipeline (Freight Transit)
+      const pipeX = chartX;
+      const pipeY = height * 0.85;
+      const pipeW = chartW;
+
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(pipeX, pipeY - 14, pipeW, 28);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(pipeX, pipeY - 14, pipeW, 28);
+
+      ctx.fillStyle = theme.textMuted;
+      ctx.font = '9px var(--font-mono)';
       ctx.textAlign = 'left';
-      ctx.fillText('Annual Demand D = 12,000 units | Setup S = $150/order | Holding H = $4/unit/yr', 24, 30);
-      ctx.fillText('Optimal Order Batch Q* = 948 units | Cycle Time T* = 28.8 days', 24, 52);
+      ctx.fillText('SUPPLIER', pipeX + 8, pipeY + 4);
+      ctx.textAlign = 'right';
+      ctx.fillText('WAREHOUSE (Q*)', pipeX + pipeW - 8, pipeY + 4);
+
+      if (orderPlaced) {
+        // Delivery truck / cargo in transit
+        const truckX = pipeX + 60 + transitProgress * (pipeW - 140);
+        ctx.fillStyle = theme.amber;
+        ctx.fillRect(truckX - 12, pipeY - 8, 24, 16);
+        ctx.strokeStyle = theme.surface;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(truckX - 12, pipeY - 8, 24, 16);
+
+        ctx.fillStyle = theme.surface;
+        ctx.font = '600 8px var(--font-mono)';
+        ctx.textAlign = 'center';
+        ctx.fillText('ORD', truckX, pipeY + 3);
+      }
+
+      // 3. Right-Hand Side: EOQ Total Cost Trade-Off Curve
+      const costChartY = chartY;
+      const costChartH = chartH;
+
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(rightX, costChartY);
+      ctx.lineTo(rightX + rightW, costChartY);
+      ctx.moveTo(rightX, costChartY);
+      ctx.lineTo(rightX, costChartY - costChartH);
+      ctx.stroke();
+
+      // Plot curves: Holding Cost H(Q) = (Q/2)*H, Order Cost S(Q) = (D/Q)*S, Total Cost TC(Q)
+      const qMin = 200;
+      const qMax = 2200;
+      const costMax = minCost * 2.2;
+
+      function qToX(q) {
+        return rightX + ((q - qMin) / (qMax - qMin)) * rightW;
+      }
+      function cToY(c) {
+        return costChartY - (c / costMax) * costChartH;
+      }
+
+      // Holding Cost Line (Linear in Q)
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(qToX(qMin), cToY((qMin / 2) * H));
+      ctx.lineTo(qToX(qMax), cToY((qMax / 2) * H));
+      ctx.stroke();
+
+      // Ordering Cost Curve (Hyperbolic D*S / Q)
+      ctx.strokeStyle = theme.amber;
+      ctx.beginPath();
+      for (let q = qMin; q <= qMax; q += 20) {
+        const c = (D / q) * S;
+        const px = qToX(q);
+        const py = cToY(c);
+        if (q === qMin) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Total Cost Curve TC(Q) = Holding + Ordering
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let q = qMin; q <= qMax; q += 20) {
+        const c = (q / 2) * H + (D / q) * S;
+        const px = qToX(q);
+        const py = cToY(c);
+        if (q === qMin) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Optimal Q* Minimum Point Marker
+      const optPx = qToX(Qstar);
+      const optPy = cToY(minCost);
+
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(optPx, costChartY);
+      ctx.lineTo(optPx, optPy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.beginPath();
+      ctx.arc(optPx, optPy, 5, 0, Math.PI * 2);
+      ctx.fillStyle = theme.red;
+      ctx.fill();
+
+      // Legend for Cost Curves
+      ctx.fillStyle = theme.textMuted;
+      ctx.font = '9px var(--font-mono)';
+      ctx.textAlign = 'left';
+      ctx.fillText('TC(Q) Total Cost', rightX + 8, costChartY - costChartH + 12);
+      ctx.fillText('Holding H·Q/2', rightX + 8, costChartY - costChartH + 26);
+      ctx.fillText('Ordering D·S/Q', rightX + 8, costChartY - costChartH + 40);
+
+      ctx.fillStyle = theme.red;
+      ctx.font = '600 10px var(--font-mono)';
+      ctx.fillText(`Q* = ${Qstar.toFixed(0)}`, optPx - 15, costChartY + 14);
+
+      // 4. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 255;
+      const hudH = 142;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('ECONOMIC ORDER QUANTITY (EOQ)', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Annual Demand D: ${D.toLocaleString()} units/yr`, hudX + 10, hudY + 36);
+      ctx.fillText(`Order Setup Cost S: $${S} | Holding H: $${H.toFixed(2)}/u/yr`, hudX + 10, hudY + 52);
+      ctx.fillText(`Optimal Batch Q*: ${Qstar.toFixed(0)} units (T* = ${(Tcycle*365).toFixed(1)} days)`, hudX + 10, hudY + 68);
+      ctx.fillText(`Active Warehouse Stock I(t): ${Math.round(invStock)} units`, hudX + 10, hudY + 84);
+      ctx.fillText(`Reorder Point ROP: ${Math.round(ROP)} (Lead Time: 9.1 days)`, hudX + 10, hudY + 100);
+      ctx.fillText(`Total Annual Cost TC*: $${minCost.toFixed(2)} / yr`, hudX + 10, hudY + 118);
 
       requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    animate();
   </script>
 </body>
 </html>

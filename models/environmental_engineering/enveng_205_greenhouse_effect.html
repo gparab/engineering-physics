@@ -29,6 +29,25 @@
       --block-accent: #064e3b;
       --block-grid: rgba(0, 0, 0, 0.06);
 
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
       --sim-teal: #0f766e;
@@ -62,6 +81,25 @@
       --surface-border: rgba(0, 0, 0, 0.10);
       --text: #000000;
       --accent: #0277bd;
+
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
 
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
@@ -211,7 +249,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -362,12 +402,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      // High-contrast fallbacks calibrated for the pastel simulation color block
-      if (variableName === '--text') return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      if (variableName === '--text-muted') return '#1f2937';
-      if (variableName === '--surface-border') return getComputedStyle(document.documentElement).getPropertyValue('--block-border').trim() || 'rgba(0, 0, 0, 0.12)';
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. HIGH-DPI CANVAS INITIALIZATION & RESIZE HANDLING ---
@@ -384,92 +486,267 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* trigger canvas update on theme switch */ });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    // --- 3. PHYSICAL STATE VARIABLES & PHOTON TRANSPORT ENGINE ---
     let time = 0;
+    const S0 = 1361; // W/m^2 solar constant
+    const albedo = 0.30;
+    const FsolarIn = (S0 / 4) * (1 - albedo); // ~ 238.2 W/m^2
+    const co2Ppm = 422; // ppm
+    const radiativeForcing = 5.35 * Math.log(co2Ppm / 280); // ~ 2.19 W/m^2
+    const Tsurface = 15.2; // °C
+    const TnoGhg = -18.0;  // °C
+    const Fsurface = 398; // W/m^2
+    const FbackRad = 342; // W/m^2
+    const Folr = 239;     // W/m^2
+
+    // Dual-spectrum photon particles
+    // 1. Shortwave Solar Photons (Yellow)
+    const swPhotons = [];
+    for (let i = 0; i < 40; i++) {
+      swPhotons.push({
+        x: 0.15 + Math.random() * 0.70,
+        y: Math.random() * 0.8,
+        speed: 0.008 + Math.random() * 0.006,
+        isReflected: Math.random() < albedo,
+        dirY: 1
+      });
+    }
+
+    // 2. Longwave Terrestrial IR Photons (Red)
+    const lwPhotons = [];
+    for (let i = 0; i < 60; i++) {
+      lwPhotons.push({
+        x: 0.18 + Math.random() * 0.64,
+        y: 0.70 - Math.random() * 0.40,
+        speed: 0.007 + Math.random() * 0.005,
+        state: Math.random() > 0.5 ? 'upward' : 'back_rad', // 'upward', 'absorbed', 'back_rad', 'escape'
+        reEmitAngle: (Math.random() - 0.5) * 0.8
+      });
+    }
+
+    // Atmospheric GHG molecules vibrating
+    const ghgMolecules = [];
+    for (let i = 0; i < 35; i++) {
+      ghgMolecules.push({
+        xFrac: 0.15 + Math.random() * 0.70,
+        yFrac: 0.36 + Math.random() * 0.18,
+        type: i % 3 === 0 ? 'CO₂' : (i % 3 === 1 ? 'H₂O' : 'CH₄'),
+        phase: Math.random() * Math.PI * 2
+      });
+    }
 
     // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
     function animate() {
-      ctx.clearRect(0, 0, width, height);
-      const blue = getThemeColor('--sim-blue');
-      const text = getThemeColor('--text');
-      const textMuted = getThemeColor('--text-muted');
-      const amber = getThemeColor('--sim-amber');
-      const red = getThemeColor('--sim-red');
-      const teal = getThemeColor('--sim-teal');
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
       time += 0.025;
-      const surfaceY = height * 0.72;
-      const atmTop = height * 0.36;
-      const atmBot = height * 0.52;
 
-      // Earth Surface
-      ctx.fillStyle = 'rgba(46, 125, 50, 0.2)';
-      ctx.fillRect(width * 0.1, surfaceY, width * 0.8, 30);
-      ctx.strokeStyle = teal;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(width * 0.1, surfaceY, width * 0.8, 30);
-
-      // Atmosphere Greenhouse Layer
-      ctx.fillStyle = 'rgba(255, 183, 77, 0.12)';
-      ctx.fillRect(width * 0.1, atmTop, width * 0.8, atmBot - atmTop);
-      ctx.strokeStyle = amber;
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
       ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      const surfaceY = height * 0.72;
+      const atmTop = height * 0.34;
+      const atmBot = height * 0.54;
+
+      // 1. Earth Surface Ground Layer
+      ctx.fillStyle = 'rgba(74, 222, 128, 0.15)';
+      ctx.fillRect(width * 0.1, surfaceY, width * 0.8, height - surfaceY - 20);
+      ctx.strokeStyle = theme.green;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(width * 0.1, surfaceY);
+      ctx.lineTo(width * 0.9, surfaceY);
+      ctx.stroke();
+
+      // Earth surface heating glow
+      const groundGlow = ctx.createLinearGradient(0, surfaceY, 0, surfaceY - 25);
+      groundGlow.addColorStop(0, 'rgba(248, 113, 113, 0.20)');
+      groundGlow.addColorStop(1, 'rgba(248, 113, 113, 0.0)');
+      ctx.fillStyle = groundGlow;
+      ctx.fillRect(width * 0.1, surfaceY - 25, width * 0.8, 25);
+
+      // 2. Atmospheric Greenhouse Gas Blanket Layer
+      const atmGrad = ctx.createLinearGradient(0, atmTop, 0, atmBot);
+      atmGrad.addColorStop(0, 'rgba(251, 191, 36, 0.08)');
+      atmGrad.addColorStop(0.5, 'rgba(251, 146, 60, 0.16)');
+      atmGrad.addColorStop(1, 'rgba(251, 191, 36, 0.08)');
+      ctx.fillStyle = atmGrad;
+      ctx.fillRect(width * 0.1, atmTop, width * 0.8, atmBot - atmTop);
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 5]);
       ctx.strokeRect(width * 0.1, atmTop, width * 0.8, atmBot - atmTop);
       ctx.setLineDash([]);
 
-      ctx.fillStyle = amber;
-      ctx.font = '11px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Atmospheric GHG Absorption Layer (CO₂, CH₄, H₂O)', width / 2, (atmTop + atmBot) / 2 + 4);
+      // Draw GHG Molecules in atmosphere
+      ghgMolecules.forEach(m => {
+        const mx = width * m.xFrac;
+        const my = height * m.yFrac + Math.sin(time * 4 + m.phase) * 3;
 
-      // Incoming Shortwave Solar Radiation (Yellow/Amber arrows downward)
-      const sunX = width * 0.28;
-      ctx.strokeStyle = amber;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(sunX, height * 0.15);
-      ctx.lineTo(sunX, surfaceY - 5);
-      ctx.stroke();
+        // Triatomic molecule representation
+        ctx.beginPath();
+        ctx.arc(mx, my, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = theme.surface;
+        ctx.fill();
+        ctx.strokeStyle = theme.border;
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-      ctx.fillStyle = amber;
-      ctx.beginPath();
-      ctx.moveTo(sunX, surfaceY);
-      ctx.lineTo(sunX - 6, surfaceY - 10);
-      ctx.lineTo(sunX + 6, surfaceY - 10);
-      ctx.closePath();
-      ctx.fill();
+        ctx.fillStyle = theme.textMuted;
+        ctx.font = '8px var(--font-mono)';
+        ctx.textAlign = 'center';
+        ctx.fillText(m.type, mx, my + 10);
+      });
 
-      // Outgoing Longwave IR Radiation (Red arrows trapped & re-emitted)
-      const irX = width * 0.65;
-      ctx.strokeStyle = red;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(irX, surfaceY);
-      ctx.lineTo(irX, atmBot);
-      ctx.stroke();
+      // 3. Shortwave Solar Photon Dynamics
+      swPhotons.forEach(p => {
+        p.y += p.speed * p.dirY;
 
-      // Back-radiation downward from atmosphere
-      const backX = width * 0.75;
-      ctx.beginPath();
-      ctx.moveTo(backX, atmBot);
-      ctx.lineTo(backX, surfaceY - 5);
-      ctx.stroke();
+        // Reflection at surface or atmosphere
+        if (p.dirY === 1 && p.y >= 0.72) {
+          if (p.isReflected) {
+            p.dirY = -1; // bounce back to space (albedo)
+          } else {
+            // Absorbed at surface, respawn at top
+            p.y = 0.08 + Math.random() * 0.05;
+            p.x = 0.15 + Math.random() * 0.70;
+            p.dirY = 1;
+            p.isReflected = Math.random() < albedo;
+          }
+        }
+        if (p.dirY === -1 && p.y <= 0.08) {
+          p.y = 0.08;
+          p.dirY = 1;
+          p.isReflected = Math.random() < albedo;
+        }
 
-      ctx.fillStyle = text;
-      ctx.font = '13px Inter, sans-serif';
+        const px = width * p.x;
+        const py = height * p.y;
+
+        ctx.beginPath();
+        ctx.arc(px, py, 3.0, 0, Math.PI * 2);
+        ctx.fillStyle = theme.amber;
+        ctx.fill();
+
+        // Trail
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px, py - p.dirY * 8);
+        ctx.stroke();
+      });
+
+      // 4. Longwave Infrared (Terrestrial & Back-Radiation) Photons
+      lwPhotons.forEach(p => {
+        const atmTopFrac = atmTop / height;
+        const atmBotFrac = atmBot / height;
+        const surfFrac = surfaceY / height;
+
+        if (p.state === 'upward') {
+          p.y -= p.speed;
+          // Entering GHG layer
+          if (p.y <= atmBotFrac && p.y >= atmTopFrac) {
+            // 75% absorption probability
+            if (Math.random() < 0.04) {
+              // Re-emission: 50% downward (back radiation), 50% upward (space)
+              if (Math.random() < 0.55) {
+                p.state = 'back_rad';
+              } else {
+                p.state = 'escape';
+              }
+            }
+          } else if (p.y < atmTopFrac) {
+            p.state = 'escape';
+          }
+        } else if (p.state === 'back_rad') {
+          p.y += p.speed * 1.1; // downward trapped flux
+          p.x += p.reEmitAngle * 0.003;
+          if (p.y >= surfFrac) {
+            // Re-absorbed by Earth, re-emitted
+            p.y = surfFrac - 0.01;
+            p.state = 'upward';
+            p.reEmitAngle = (Math.random() - 0.5) * 0.8;
+          }
+        } else if (p.state === 'escape') {
+          p.y -= p.speed;
+          if (p.y <= 0.08) {
+            // Escaped to space, respawn at surface
+            p.y = surfFrac;
+            p.x = 0.18 + Math.random() * 0.64;
+            p.state = 'upward';
+            p.reEmitAngle = (Math.random() - 0.5) * 0.8;
+          }
+        }
+
+        const px = width * p.x;
+        const py = height * p.y;
+        const isBack = p.state === 'back_rad';
+
+        ctx.beginPath();
+        ctx.arc(px, py, 2.8, 0, Math.PI * 2);
+        ctx.fillStyle = isBack ? theme.red : theme.alert;
+        ctx.fill();
+
+        ctx.strokeStyle = isBack ? 'rgba(248, 113, 113, 0.4)' : 'rgba(239, 68, 68, 0.3)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px, py + (isBack ? -7 : 7));
+        ctx.stroke();
+      });
+
+      // 5. Energy Flux Arrows & Physical Annotations
+      ctx.fillStyle = theme.text;
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillText('Incoming Solar (240 W/m²) ↓', width * 0.14, height * 0.16);
+      ctx.fillText('↑ Outgoing Longwave (239 W/m²)', width * 0.62, height * 0.16);
+      ctx.fillText('Surface Thermal Up (398 W/m²) ↑', width * 0.40, surfaceY - 35);
+      ctx.fillText('↓ Downward Back-Radiation (342 W/m²)', width * 0.48, surfaceY - 12);
+      ctx.fillText('GHG Absorption Blanket (CO₂, H₂O, CH₄)', width * 0.28, atmTop - 8);
+
+      // 6. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 250;
+      const hudH = 142;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
       ctx.textAlign = 'left';
-      ctx.fillText('Incoming Solar Shortwave: S₀/4 · (1 - α) = 240 W/m²', 24, 30);
-      ctx.fillText('Atmospheric Downward Longwave Back-Radiation: F_down = 333 W/m²', 24, 52);
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('PLANETARY RADIATIVE FORCING', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Solar Constant S₀: ${S0} W/m² | Albedo α: ${albedo.toFixed(2)}`, hudX + 10, hudY + 36);
+      ctx.fillText(`Atmospheric CO₂: ${co2Ppm} ppm (Pre-ind: 280 ppm)`, hudX + 10, hudY + 52);
+      ctx.fillText(`Radiative Forcing ΔF: +${radiativeForcing.toFixed(2)} W/m²`, hudX + 10, hudY + 68);
+      ctx.fillText(`Equilibrium Temp T_s: +${Tsurface.toFixed(1)}°C (with GHG)`, hudX + 10, hudY + 84);
+      ctx.fillText(`Bare-Rock Planet Temp: ${TnoGhg.toFixed(1)}°C (No GHG)`, hudX + 10, hudY + 100);
+      ctx.fillText(`Natural Greenhouse Effect: +${(Tsurface - TnoGhg).toFixed(1)} K`, hudX + 10, hudY + 118);
 
       requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    animate();
   </script>
 </body>
 </html>

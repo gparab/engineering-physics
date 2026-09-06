@@ -10,6 +10,24 @@
        Discipline: Electrical Engineering | Palette: Navy Block (#1c2042)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Monochrome Dark Canvas) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -70,6 +88,24 @@
       --surface-border: rgba(255, 255, 255, 0.14);
       --text: #ffffff;
       --accent: #0277bd;
+          /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
     }
 
     /* Reset & Base */
@@ -206,7 +242,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       color: var(--block-text);
       border-radius: 24px;
       border: 1px solid var(--block-border);
@@ -359,8 +397,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
@@ -377,112 +481,232 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* Clean redraw on next frame */ });
     resize();
 
     // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
-    // Physical parameters, differential equation coefficients, and state vectors
     let time = 0;
+    const Np = 500;
+    const Ns = 1000;
+    const turnsRatio = Ns / Np; // a = 2.0 (Step-Up)
+    const Vp_peak = 120 * Math.sqrt(2); // ~170 V
+    const omega = 3.5; // rad/sec animation frequency
 
+    // Magnetic flux particles circulating in core
+    const fluxParticles = [];
+    const numFluxParticles = 50;
+    for (let i = 0; i < numFluxParticles; i++) {
+      fluxParticles.push({ s: i / numFluxParticles });
+    }
+
+    // Oscilloscope waveform ring buffer
+    const oscBuffer = [];
+    const maxOscPoints = 220;
+
+    // --- 4. CONTINUOUS ANIMATION LOOP & NUMERICAL INTEGRATION ---
     function animate() {
       requestAnimationFrame(animate);
+      updateThemePalette();
       time += 0.025;
 
-      ctx.clearRect(0, 0, width, height);
+      // Physical electrical states
+      const Vp_inst = Vp_peak * Math.cos(omega * time);
+      const Phi_inst = Math.sin(omega * time); // 90 deg phase lag from Faraday's Law
+      const Vs_inst = -turnsRatio * Vp_peak * Math.cos(omega * time);
 
-      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
-      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
-      const simRed = getThemeColor('--sim-red') || '#ef5350';
-      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
-      const textColor = getThemeColor('--text') || '#e0e0e0';
-      const mutedColor = getThemeColor('--text-muted') || '#ffffff';
-      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+      // Push to oscilloscope buffer
+      oscBuffer.push({ vp: Vp_inst, vs: Vs_inst, phi: Phi_inst });
+      if (oscBuffer.length > maxOscPoints) oscBuffer.shift();
 
-      const cx = width * 0.5;
-      const cy = height * 0.44;
+      // Clear canvas
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      const coreW = Math.min(width, height) * 0.62;
-      const coreH = Math.min(width, height) * 0.48;
-      const coreThick = 34;
+      const cx = width * 0.50;
+      const cy = height * 0.35;
+      const coreW = Math.min(width * 0.70, 360);
+      const coreH = 150;
+      const coreThick = 32;
 
-      // 1. Laminated Ferromagnetic Core (Closed Rectangular Loop)
-      ctx.fillStyle = getThemeColor('--surface') || '#22223a';
+      // Coordinate Grid
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 30); ctx.lineTo(x, height - 30); ctx.stroke();
+      }
+      for (let y = 30; y < height - 30; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // 1. Ferromagnetic Laminated Core
+      ctx.fillStyle = theme.surface;
       ctx.fillRect(cx - coreW / 2, cy - coreH / 2, coreW, coreH);
 
-      // Cutout center hole
-      ctx.clearRect(cx - coreW / 2 + coreThick, cy - coreH / 2 + coreThick, coreW - 2 * coreThick, coreH - 2 * coreThick);
-      ctx.fillStyle = getThemeColor('--bg') || '#1a1a2e';
+      // Core interior window cutout
+      ctx.fillStyle = theme.bg;
       ctx.fillRect(cx - coreW / 2 + coreThick, cy - coreH / 2 + coreThick, coreW - 2 * coreThick, coreH - 2 * coreThick);
 
-      ctx.strokeStyle = surfaceBorder;
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 2.5;
       ctx.strokeRect(cx - coreW / 2, cy - coreH / 2, coreW, coreH);
       ctx.strokeRect(cx - coreW / 2 + coreThick, cy - coreH / 2 + coreThick, coreW - 2 * coreThick, coreH - 2 * coreThick);
 
-      // Circulating Magnetic Flux Φ_B(t) pulses in Core
-      const fluxPhase = Math.sin(time * 2);
-      ctx.strokeStyle = fluxPhase >= 0 ? 'rgba(79, 195, 247, 0.45)' : 'rgba(255, 183, 77, 0.45)';
-      ctx.lineWidth = Math.max(1, Math.abs(fluxPhase) * 6);
-      ctx.strokeRect(cx - coreW / 2 + coreThick / 2, cy - coreH / 2 + coreThick / 2, coreW - coreThick, coreH - coreThick);
+      // 2. Circulating Magnetic Flux Particles
+      const trackW = coreW - coreThick;
+      const trackH = coreH - coreThick;
+      const perimeter = 2 * (trackW + trackH);
+      const fluxSpeed = Phi_inst * 0.015; // Speed and direction proportional to flux density B(t)
 
-      ctx.fillStyle = textColor;
-      ctx.font = 'bold 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Ferromagnetic Core (High Permeability μ_r)', cx, cy - coreH / 2 + 22);
+      for (let p of fluxParticles) {
+        p.s = (p.s + fluxSpeed + 1.0) % 1.0;
+        const dist = p.s * perimeter;
 
-      // 2. Primary Winding (Left Leg, N_p = 4 turns)
+        let px, py;
+        if (dist < trackW) {
+          px = cx - trackW / 2 + dist;
+          py = cy - trackH / 2;
+        } else if (dist < trackW + trackH) {
+          px = cx + trackW / 2;
+          py = cy - trackH / 2 + (dist - trackW);
+        } else if (dist < 2 * trackW + trackH) {
+          px = cx + trackW / 2 - (dist - (trackW + trackH));
+          py = cy + trackH / 2;
+        } else {
+          px = cx - trackW / 2;
+          py = cy + trackH / 2 - (dist - (2 * trackW + trackH));
+        }
+
+        const alpha = Math.max(0.15, Math.abs(Phi_inst));
+        ctx.fillStyle = Phi_inst >= 0 ? `rgba(56, 189, 248, ${alpha})` : `rgba(251, 191, 36, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 3. Primary Winding (Left Leg, Np turns)
       const leftLegX = cx - coreW / 2 + coreThick / 2;
-      const nPrimary = 5;
-      const pSpacing = (coreH - coreThick * 2) / (nPrimary + 1);
-
-      ctx.strokeStyle = simRed;
+      const nPVisual = 5;
+      const pSpacing = (coreH - coreThick * 2) / (nPVisual + 1);
+      ctx.strokeStyle = theme.red;
       ctx.lineWidth = 4;
-      for (let i = 1; i <= nPrimary; i++) {
+      for (let i = 1; i <= nPVisual; i++) {
         const wy = cy - coreH / 2 + coreThick + i * pSpacing;
         ctx.beginPath();
-        ctx.ellipse(leftLegX, wy, coreThick * 0.7, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(leftLegX, wy, coreThick * 0.65, 7, 0, 0, Math.PI * 2);
         ctx.stroke();
       }
 
-      ctx.fillStyle = simRed;
-      ctx.font = 'bold 13px sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText('Primary Coil N_p = 500 Turns', cx - coreW / 2 - 15, cy - 10);
-      ctx.font = '11px sans-serif';
-      ctx.fillText('V_p = 120 V (AC)', cx - coreW / 2 - 15, cy + 10);
-
-      // 3. Secondary Winding (Right Leg, N_s = 10 turns => Step-Up)
+      // 4. Secondary Winding (Right Leg, Ns turns)
       const rightLegX = cx + coreW / 2 - coreThick / 2;
-      const nSecondary = 10;
-      const sSpacing = (coreH - coreThick * 2) / (nSecondary + 1);
-
-      ctx.strokeStyle = simTeal;
+      const nSVisual = 10;
+      const sSpacing = (coreH - coreThick * 2) / (nSVisual + 1);
+      ctx.strokeStyle = theme.teal;
       ctx.lineWidth = 3;
-      for (let i = 1; i <= nSecondary; i++) {
+      for (let i = 1; i <= nSVisual; i++) {
         const wy = cy - coreH / 2 + coreThick + i * sSpacing;
         ctx.beginPath();
-        ctx.ellipse(rightLegX, wy, coreThick * 0.7, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(rightLegX, wy, coreThick * 0.65, 5, 0, 0, Math.PI * 2);
         ctx.stroke();
       }
 
-      ctx.fillStyle = simTeal;
+      // 5. Real-Time Oscilloscope Waveform Panel (Lower Half)
+      const oscX = width * 0.10;
+      const oscY = height * 0.60;
+      const oscW = width * 0.80;
+      const oscH = height * 0.32;
+
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(oscX, oscY, oscW, oscH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(oscX, oscY, oscW, oscH);
+
+      const midY = oscY + oscH / 2;
+      ctx.strokeStyle = theme.grid;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(oscX, midY); ctx.lineTo(oscX + oscW, midY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (oscBuffer.length > 1) {
+        // Trace 1: Primary Voltage Vp (Red)
+        ctx.strokeStyle = theme.red;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < oscBuffer.length; i++) {
+          const px = oscX + (i / maxOscPoints) * oscW;
+          const py = midY - (oscBuffer[i].vp / Vp_peak) * (oscH * 0.38);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Trace 2: Core Magnetic Flux Phi (Blue Dashed)
+        ctx.strokeStyle = theme.blue;
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        for (let i = 0; i < oscBuffer.length; i++) {
+          const px = oscX + (i / maxOscPoints) * oscW;
+          const py = midY - oscBuffer[i].phi * (oscH * 0.35);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Trace 3: Secondary Induced Voltage Vs (Teal)
+        ctx.strokeStyle = theme.teal;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        for (let i = 0; i < oscBuffer.length; i++) {
+          const px = oscX + (i / maxOscPoints) * oscW;
+          const py = midY - (oscBuffer[i].vs / (Vp_peak * turnsRatio)) * (oscH * 0.44);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+
+      // Waveform Legend
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.red;
       ctx.textAlign = 'left';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText('Secondary Coil N_s = 1000 Turns', cx + coreW / 2 + 15, cy - 10);
-      ctx.font = '11px sans-serif';
-      ctx.fillText('V_s = 240 V (Step-Up 1:2)', cx + coreW / 2 + 15, cy + 10);
+      ctx.fillText(`Primary V_p(t) [120 V AC]`, oscX + 12, oscY + 16);
+      ctx.fillStyle = theme.blue;
+      ctx.fillText(`Core Flux Φ(t) [90° Lag]`, oscX + 170, oscY + 16);
+      ctx.fillStyle = theme.teal;
+      ctx.fillText(`Secondary V_s(t) [240 V AC, Step-Up 1:2]`, oscX + 330, oscY + 16);
 
-      // 4. Quantitative Balance Status
+      // 6. Scientific Telemetry HUD Overlay
+      const hudX = 24, hudY = 24, hudW = 260, hudH = 100;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('IDEAL TRANSFORMER & FARADAY FLUX', hudX + 10, hudY + 18);
+      ctx.font = '400 11px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Turns Ratio a = N_s / N_p = ${turnsRatio.toFixed(1)}`, hudX + 10, hudY + 36);
+      ctx.fillText(`V_p = 120 V AC → V_s = ${(120 * turnsRatio).toFixed(0)} V AC`, hudX + 10, hudY + 52);
+      ctx.fillText(`Core Flux Density B(t): ${(Math.abs(Phi_inst) * 1.5).toFixed(2)} Tesla`, hudX + 10, hudY + 68);
+      ctx.fillStyle = theme.primary;
+      ctx.fillText(`Power Conservation: V_p · I_p = V_s · I_s`, hudX + 10, hudY + 86);
+
+      // Bottom Status
+      ctx.fillStyle = theme.textMuted;
+      ctx.font = '500 11px monospace';
       ctx.textAlign = 'center';
-      ctx.fillStyle = textColor;
-      ctx.font = '13px sans-serif';
-      ctx.fillText('Turns Ratio a = N_s / N_p = 2.0  |  Ideal Transformation: P_in = P_out (V_p · I_p = V_s · I_s)', cx, height - 38);
-
-      ctx.fillStyle = simBlue;
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText('Induced Secondary Voltage: V_s = V_p · (N_s / N_p) = 120V · 2 = 240V', cx, height - 18);
+      ctx.fillText(`Faraday's Law of Induction: V_s(t) = -N_s (dΦ/dt) | Mutual Magnetic Coupling in Closed Core`, width / 2, height - 16);
     }
     animate();
   </script>

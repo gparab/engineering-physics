@@ -30,6 +30,25 @@
       --block-accent: #111111;
       --block-grid: rgba(0, 0, 0, 0.06);
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0277bd;
       --sim-teal: #00897b;
@@ -57,6 +76,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #ffffff;
@@ -199,7 +237,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -345,8 +385,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
@@ -363,14 +469,17 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => {});
+    
     resize();
 
     // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
     // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    // Continuous Dynamic Simulation Engine for A* Pathfinding & Robot Motion Planning
     let time = 0;
+    let pathTimer = 0;
     const gridRows = 9;
     const gridCols = 15;
     const obstacles = [
@@ -379,24 +488,48 @@
       [2, 10], [3, 10], [4, 10], [5, 10]
     ];
 
-    // --- 4. CONTINUOUS SIMULATION & ANIMATION INTEGRATION LOOP ---
+    // Dynamic mobile robot state
+    let robot = {
+      r: 4,
+      c: 1,
+      x: 0,
+      y: 0,
+      heading: 0,
+      pathIndex: 0,
+      speed: 1.5
+    };
+
+    // Optimal Path Waypoints
+    const pathWaypoints = [
+      [4, 1], [4, 2], [1, 3], [1, 4], [1, 5], [1, 6],
+      [2, 7], [3, 8], [3, 9], [1, 10], [1, 11], [2, 12], [4, 13]
+    ];
+
     function animate() {
       requestAnimationFrame(animate);
-      // --- 5. GRAPHICAL RENDERING PIPELINE ---
-      ctx.clearRect(0, 0, width, height);
+      updateThemePalette();
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
       time += 0.016;
-      const isDark = false;
-      const textColor = '#000000';
-      const mutedColor = 'rgba(0, 0, 0, 0.55)';
-      const accentColor = '#111111';
-      const startColor = '#26a69a';
-      const goalColor = '#ef5350';
-      const pathColor = '#ffb74d';
+      pathTimer += 0.016;
 
-      const cellW = Math.min(36, (width - 80) / gridCols);
-      const cellH = Math.min(28, (height * 0.5) / gridRows);
-      const cx = width * 0.5;
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const accentColor = theme.primary;
+      const startColor = theme.secondary || theme.green;
+      const goalColor = theme.secondary || theme.green;
+      const pathColor = theme.amber;
+      const alertColor = theme.alert || theme.red;
+      const wireColor = theme.border;
+      const surfaceColor = theme.surface;
+
+      const scale = Math.min(width / 750, height / 500);
+      const cellW = Math.min(36 * scale, (width - 120) / gridCols);
+      const cellH = Math.min(28 * scale, (height * 0.52) / gridRows);
+      const cx = width * 0.44;
       const cy = height * 0.44;
       const startX = cx - (gridCols * cellW) * 0.5;
       const startY = cy - (gridRows * cellH) * 0.5;
@@ -404,7 +537,26 @@
       const startCell = [4, 1];
       const goalCell = [4, 13];
 
-      // Draw Grid
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // Title Banner
+      ctx.font = '600 13px Inter, sans-serif';
+      ctx.fillStyle = accentColor;
+      ctx.textAlign = 'center';
+      ctx.fillText(`A* Heuristic Search & Kinematic Pure Pursuit: f(n) = g(n) + h(n)`, cx, 28);
+
+      // Dynamic search wavefront radius expanding across grid
+      const waveRadius = ((time * 3.5) % 18) * cellW * 0.7;
+
+      // Draw Grid Cells & A* Status
       for (let r = 0; r < gridRows; r++) {
         for (let c = 0; c < gridCols; c++) {
           const gx = startX + c * cellW;
@@ -413,36 +565,42 @@
           const isStart = (r === startCell[0] && c === startCell[1]);
           const isGoal = (r === goalCell[0] && c === goalCell[1]);
 
-          ctx.fillStyle = isObstacle ? ('rgba(0,0,0,0.3)') : (isDark ? '#22223a' : '#ffffff');
-          if (isStart) ctx.fillStyle = startColor;
-          if (isGoal) ctx.fillStyle = goalColor;
+          // Calculate distance from start
+          const distFromStart = Math.hypot(c - startCell[1], r - startCell[0]) * cellW;
+          const isOpenWave = (!isObstacle && Math.abs(distFromStart - waveRadius) < cellW * 0.8);
 
-          ctx.strokeStyle = isDark ? '#1a1a2e' : '#e0e0e0';
+          if (isObstacle) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+          } else if (isStart) {
+            ctx.fillStyle = startColor;
+          } else if (isGoal) {
+            ctx.fillStyle = goalColor;
+          } else if (isOpenWave) {
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.28)'; // Wavefront exploration
+          } else {
+            ctx.fillStyle = surfaceColor;
+          }
+
+          ctx.strokeStyle = wireColor;
           ctx.lineWidth = 1;
-          ctx.strokeRect(gx, gy, cellW, cellH);
           ctx.fillRect(gx, gy, cellW, cellH);
+          ctx.strokeRect(gx, gy, cellW, cellH);
 
           if (isStart) {
             ctx.font = '700 10px Inter, sans-serif';
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = theme.bg;
             ctx.textAlign = 'center';
-            ctx.fillText('S', gx + cellW * 0.5, gy + cellH * 0.5 + 3);
-          }
-          if (isGoal) {
+            ctx.fillText('S', gx + cellW * 0.5, gy + cellH * 0.5 + 3.5);
+          } else if (isGoal) {
             ctx.font = '700 10px Inter, sans-serif';
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = theme.bg;
             ctx.textAlign = 'center';
-            ctx.fillText('G', gx + cellW * 0.5, gy + cellH * 0.5 + 3);
+            ctx.fillText('G', gx + cellW * 0.5, gy + cellH * 0.5 + 3.5);
           }
         }
       }
 
-      // Draw Optimal Path Waypoints
-      const pathWaypoints = [
-        [4, 1], [4, 2], [1, 3], [1, 4], [1, 5], [1, 6],
-        [2, 7], [3, 8], [3, 9], [1, 10], [1, 11], [2, 12], [4, 13]
-      ];
-
+      // Draw Optimal Path Waypoints Polyline
       ctx.strokeStyle = pathColor;
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -454,11 +612,129 @@
       });
       ctx.stroke();
 
-      const ty = height - 40;
-      ctx.font = '13px Inter, sans-serif';
+      // Kinematic Robot Agent Trajectory along Waypoints
+      const pathLength = pathWaypoints.length;
+      const robotCycle = (time * 0.8) % (pathLength - 1);
+      const curWaypointIdx = Math.floor(robotCycle);
+      const waypointFrac = robotCycle - curWaypointIdx;
+
+      const wpA = pathWaypoints[curWaypointIdx];
+      const wpB = pathWaypoints[curWaypointIdx + 1];
+
+      const rAX = startX + wpA[1] * cellW + cellW * 0.5;
+      const rAY = startY + wpA[0] * cellH + cellH * 0.5;
+      const rBX = startX + wpB[1] * cellW + cellW * 0.5;
+      const rBY = startY + wpB[0] * cellH + cellH * 0.5;
+
+      robot.x = rAX + (rBX - rAX) * waypointFrac;
+      robot.y = rAY + (rBY - rAY) * waypointFrac;
+      robot.heading = Math.atan2(rBY - rAY, rBX - rAX);
+
+      // Sweeping Lidar Scanner Cone ahead of robot
+      const lidarDist = 38 * scale;
+      const sweepAngle = Math.sin(time * 12) * 0.45;
+      const beamAngle = robot.heading + sweepAngle;
+
+      ctx.strokeStyle = 'rgba(248, 113, 113, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(robot.x, robot.y);
+      ctx.lineTo(robot.x + Math.cos(beamAngle) * lidarDist, robot.y + Math.sin(beamAngle) * lidarDist);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(248, 113, 113, 0.12)';
+      ctx.beginPath();
+      ctx.moveTo(robot.x, robot.y);
+      ctx.arc(robot.x, robot.y, lidarDist, robot.heading - 0.45, robot.heading + 0.45);
+      ctx.closePath();
+      ctx.fill();
+
+      // Draw Robot Chassis with orientation heading
+      ctx.save();
+      ctx.translate(robot.x, robot.y);
+      ctx.rotate(robot.heading);
+
+      // Chassis Body
+      ctx.fillStyle = startColor;
+      ctx.strokeStyle = textColor;
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(-9 * scale, -7 * scale, 18 * scale, 14 * scale);
+      ctx.strokeRect(-9 * scale, -7 * scale, 18 * scale, 14 * scale);
+
+      // Wheels
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(-7 * scale, -9 * scale, 5 * scale, 2 * scale);
+      ctx.fillRect(2 * scale, -9 * scale, 5 * scale, 2 * scale);
+      ctx.fillRect(-7 * scale, 7 * scale, 5 * scale, 2 * scale);
+      ctx.fillRect(2 * scale, 7 * scale, 5 * scale, 2 * scale);
+
+      // Forward sensor nose
+      ctx.fillStyle = pathColor;
+      ctx.beginPath();
+      ctx.arc(8 * scale, 0, 3 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // Right Panel: A* Cost Function Breakdown HUD
+      const costX = width - 180 * scale;
+      const costY = height - 145 * scale;
+      const costW = 160 * scale;
+      const costH = 105 * scale;
+
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1;
+      ctx.fillRect(costX, costY, costW, costH);
+      ctx.strokeRect(costX, costY, costW, costH);
+
+      const gCost = (curWaypointIdx + waypointFrac).toFixed(1);
+      const hCost = Math.hypot(goalCell[1] - wpB[1], goalCell[0] - wpB[0]).toFixed(1);
+      const fCost = (parseFloat(gCost) + parseFloat(hCost)).toFixed(1);
+
+      ctx.font = '600 10px Inter, sans-serif';
       ctx.fillStyle = textColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('Heuristic Evaluation', costX + 8, costY + 16);
+
+      ctx.font = '500 9px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText(`g(n) [Exact]: ${gCost} m`, costX + 8, costY + 34);
+      ctx.fillText(`h(n) [Euclid]: ${hCost} m`, costX + 8, costY + 50);
+      ctx.fillStyle = pathColor;
+      ctx.fillText(`f(n) = g + h: ${fCost}`, costX + 8, costY + 68);
+      ctx.fillStyle = startColor;
+      ctx.fillText(`Tracking: Waypoint ${curWaypointIdx + 1}/${pathLength}`, costX + 8, costY + 86);
+
+      // Bottom Telemetry Footer
+      const ty = height - 20;
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
       ctx.textAlign = 'center';
-      ctx.fillText('A* Evaluation Function: f(n) = g(n) + h(n) with Admissible Euclidean Distance Heuristic', cx, ty);
+      ctx.fillText(`A* Admissibility: h(n) ≤ h*(n) (Zero Overestimation) | Robot Speed v = 1.5 m/s | Lidar FOV = 52°`, cx, ty);
+
+      // Scientific Telemetry HUD Overlay (Top-Left)
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 190 * scale;
+      const hudH = 100 * scale;
+      ctx.fillStyle = surfaceColor;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 10px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('A* MOTION PLANNER', hudX + 8, hudY + 16);
+
+      ctx.font = '9px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Grid Size: ${gridCols} × ${gridRows}`, hudX + 8, hudY + 34);
+      ctx.fillText(`Heuristic: Admissible L2`, hudX + 8, hudY + 50);
+      ctx.fillText(`Path Length: ${pathLength} pts`, hudX + 8, hudY + 66);
+      ctx.fillText(`Robot Pose: (${(robot.x - startX).toFixed(0)}, ${(robot.y - startY).toFixed(0)})`, hudX + 8, hudY + 82);
     }
     requestAnimationFrame(animate);
   </script>

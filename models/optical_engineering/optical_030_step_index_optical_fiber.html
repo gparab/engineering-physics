@@ -43,6 +43,25 @@
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* Geometry & Spacing */
       --rounded-card: 24px;
       --rounded-pill: 50px;
@@ -56,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #f5f5f5;
       --surface: #fafafa;
@@ -202,7 +240,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -353,20 +393,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      if (variableName === '--text' || variableName === '--text-muted') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      }
-      if (variableName === '--surface-border') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#3b0764';
-      }
-      if (variableName === '--surface') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#e0d4fc';
-      }
-      if (variableName === '--accent') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#3b0764';
-      }
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     function getCssColor(varName, fallback) {
@@ -389,76 +483,213 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* redraw triggers automatically on next frame */ });
     resize();
 
     // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
-    // Core physical parameters, oscillation frequencies, and position states
     let time = 0;
+    const nCore = 1.48;
+    const nClad = 1.45;
+    const NA = Math.sqrt(nCore * nCore - nClad * nClad); // Numerical aperture ~ 0.296
+    const thetaCrit = Math.asin(nClad / nCore); // Critical angle ~ 1.368 rad (78.4 deg)
+    const thetaAcc = Math.asin(NA); // Acceptance angle ~ 0.301 rad (17.2 deg)
+    const injectAngle = 0.20; // 11.5 deg relative to axis (within NA)
+
+    // Ray pulse packets traveling in core
+    const pulses = [];
+    const numPulses = 5;
+    for (let i = 0; i < numPulses; i++) {
+      pulses.push({ zOffset: i * 90 });
+    }
 
     // --- 4. CONTINUOUS ANIMATION LOOP & NUMERICAL INTEGRATION ---
-    // Propagates dynamics each animation frame via time integration step
     function animate() {
-      time += 0.025;
-      // Clear canvas (transparent ground lets pastel color block show through)
-      ctx.clearRect(0, 0, width, height);
+      requestAnimationFrame(animate);
+      updateThemePalette();
+      time += 0.03;
 
-      // --- 5. RENDERING PIPELINE ---
-      // Sequentially draws background grids, body geometry, vector fields, and readouts
-      const cx = width / 2;
-            const cy = height / 2 - 20;
-            const blue = getThemeColor('--sim-blue') || '#4fc3f7';
-            const amber = getThemeColor('--sim-amber') || '#ffb74d';
-            const text = getThemeColor('--text') || '#e0e0e0';
-            const border = getThemeColor('--surface-border') || '#33334d';
-      
-            const fW = 340;
-            const coreH = 50;
-            const cladH = 25;
-      
-            // Cladding layers (top and bottom)
-            ctx.fillStyle = 'rgba(79, 195, 247, 0.08)';
-            ctx.fillRect(cx - fW / 2, cy - coreH / 2 - cladH, fW, cladH);
-            ctx.fillRect(cx - fW / 2, cy + coreH / 2, fW, cladH);
-      
-            // Core layer
-            ctx.fillStyle = 'rgba(79, 195, 247, 0.2)';
-            ctx.fillRect(cx - fW / 2, cy - coreH / 2, fW, coreH);
-      
-            ctx.strokeStyle = border;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(cx - fW / 2, cy - coreH / 2);
-            ctx.lineTo(cx + fW / 2, cy - coreH / 2);
-            ctx.moveTo(cx - fW / 2, cy + coreH / 2);
-            ctx.lineTo(cx + fW / 2, cy + coreH / 2);
-            ctx.stroke();
-      
-            // Zigzagging optical ray in core
-            ctx.strokeStyle = amber;
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            const zSteps = 8;
-            const zStepW = fW / zSteps;
-            for (let i = 0; i <= zSteps; i++) {
-              const x = cx - fW / 2 + i * zStepW;
-              const y = cy + (i % 2 === 0 ? -coreH / 2 + 4 : coreH / 2 - 4);
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      const cx = width * 0.50;
+      const cy = height * 0.50;
+      const fW = Math.min(width * 0.88, 520);
+      const coreH = 64;
+      const cladH = 36;
+      const startX = cx - fW / 2;
+      const endX = cx + fW / 2;
+
+      // Coordinate Grid
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 30); ctx.lineTo(x, height - 30); ctx.stroke();
+      }
+      for (let y = 30; y < height - 30; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // 1. Cladding Layers
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+      ctx.fillRect(startX, cy - coreH / 2 - cladH, fW, cladH);
+      ctx.fillRect(startX, cy + coreH / 2, fW, cladH);
+
+      // Core Layer
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+      ctx.fillRect(startX, cy - coreH / 2, fW, coreH);
+
+      // Core-Cladding Interfaces
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(startX, cy - coreH / 2); ctx.lineTo(endX, cy - coreH / 2);
+      ctx.moveTo(startX, cy + coreH / 2); ctx.lineTo(endX, cy + coreH / 2);
+      ctx.stroke();
+
+      // Outer Cladding Boundaries
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(startX, cy - coreH / 2 - cladH); ctx.lineTo(endX, cy - coreH / 2 - cladH);
+      ctx.moveTo(startX, cy + coreH / 2 + cladH); ctx.lineTo(endX, cy + coreH / 2 + cladH);
+      ctx.stroke();
+
+      // 2. Optical Ray Geometry & Bounces
+      const rayAlpha = Math.PI / 2 - injectAngle; // Angle to normal
+      const isTIR = rayAlpha > thetaCrit;
+      const bouncePitch = coreH / Math.tan(injectAngle); // Horizontal distance per bounce
+
+      // Draw continuous guide ray path
+      ctx.strokeStyle = isTIR ? 'rgba(251, 191, 36, 0.4)' : 'rgba(248, 113, 113, 0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let rx = startX;
+      let ry = cy;
+      let dirY = -1;
+      ctx.moveTo(rx, ry);
+
+      const bouncePoints = [];
+      while (rx < endX) {
+        const nextDistY = dirY < 0 ? (ry - (cy - coreH / 2)) : ((cy + coreH / 2) - ry);
+        const nextDistX = nextDistY / Math.tan(injectAngle);
+        const nextX = rx + nextDistX;
+        const nextY = dirY < 0 ? cy - coreH / 2 : cy + coreH / 2;
+
+        if (nextX <= endX) {
+          ctx.lineTo(nextX, nextY);
+          bouncePoints.push({ x: nextX, y: nextY, side: dirY < 0 ? -1 : 1 });
+          rx = nextX;
+          ry = nextY;
+          dirY *= -1;
+        } else {
+          const finalY = ry + dirY * (endX - rx) * Math.tan(injectAngle);
+          ctx.lineTo(endX, finalY);
+          break;
+        }
+      }
+      ctx.stroke();
+
+      // 3. Evanescent Wave Decay into Cladding at Reflection Points
+      if (isTIR) {
+        const skinDepth = 14;
+        const evanFreq = time * 12;
+        ctx.lineWidth = 1.2;
+
+        for (let bp of bouncePoints) {
+          if (bp.x > startX + 20 && bp.x < endX - 20) {
+            for (let dy = 2; dy <= cladH - 4; dy += 4) {
+              const decay = Math.exp(-dy / skinDepth);
+              const phase = Math.cos(evanFreq - bp.x * 0.1);
+              const alpha = Math.max(0, decay * phase * 0.6);
+              ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+              ctx.beginPath();
+              ctx.moveTo(bp.x - 16, bp.y + bp.side * dy);
+              ctx.lineTo(bp.x + 16, bp.y + bp.side * dy);
+              ctx.stroke();
             }
-            ctx.stroke();
-      
-            ctx.fillStyle = text;
-            ctx.font = '12px var(--font-mono)';
-            ctx.fillText('Cladding (n_clad = 1.45)', cx - 140, cy - coreH / 2 - 32);
-            ctx.fillText('Fiber Core (n_core = 1.48)', cx - 140, cy - 2);
-            ctx.fillText('Total Internal Reflection: θ > θ_c', cx - 110, cy + coreH / 2 + 45);
-      
-            requestAnimationFrame(animate);
           }
-          animate();
+        }
+      } else {
+        ctx.strokeStyle = 'rgba(248, 113, 113, 0.5)';
+        ctx.lineWidth = 1.5;
+        for (let bp of bouncePoints) {
+          ctx.beginPath();
+          ctx.moveTo(bp.x, bp.y);
+          ctx.lineTo(bp.x + 30, bp.y + bp.side * 28);
+          ctx.stroke();
+        }
+      }
+
+      // 4. Dynamic Laser Pulses / Wavepackets Propagating Through Core
+      const pulseSpeed = 160; // px/sec
+      for (let p of pulses) {
+        const currentZ = ((time * pulseSpeed + p.zOffset) % (fW * 1.5));
+        if (currentZ < fW) {
+          const px = startX + currentZ;
+          const cycleX = currentZ % (2 * bouncePitch);
+          let py;
+          if (cycleX < bouncePitch) {
+            py = (cy - coreH / 2) + (cycleX / bouncePitch) * coreH;
+          } else {
+            py = (cy + coreH / 2) - ((cycleX - bouncePitch) / bouncePitch) * coreH;
+          }
+
+          // Draw photon packet
+          ctx.fillStyle = isTIR ? theme.amber : theme.red;
+          ctx.beginPath();
+          ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Wavepacket glow aura
+          ctx.strokeStyle = isTIR ? 'rgba(251, 191, 36, 0.4)' : 'rgba(248, 113, 113, 0.4)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(px, py, 9, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
+      // 5. Annotations
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px var(--font-mono)';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Cladding (n₂ = ${nClad.toFixed(2)})`, startX + 12, cy - coreH / 2 - 14);
+      ctx.fillText(`Core (n₁ = ${nCore.toFixed(2)})`, startX + 12, cy + 4);
+      ctx.fillText(`Cladding (n₂ = ${nClad.toFixed(2)})`, startX + 12, cy + coreH / 2 + 24);
+
+      // 6. Scientific Telemetry HUD Overlay
+      const hudX = 24, hudY = 24, hudW = 270, hudH = 110;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('STEP-INDEX FIBER TOTAL REFLECTION', hudX + 10, hudY + 18);
+      ctx.font = '400 11px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Numerical Aperture NA: ${NA.toFixed(3)}`, hudX + 10, hudY + 36);
+      ctx.fillText(`Critical Angle θ_c: ${(thetaCrit * 180 / Math.PI).toFixed(1)}° | Acc Angle: ${(thetaAcc * 180 / Math.PI).toFixed(1)}°`, hudX + 10, hudY + 52);
+      ctx.fillText(`Ray Incidence Angle α: ${(rayAlpha * 180 / Math.PI).toFixed(1)}°`, hudX + 10, hudY + 68);
+      ctx.fillStyle = isTIR ? theme.teal : theme.red;
+      ctx.fillText(isTIR ? '● STATUS: TOTAL INTERNAL REFLECTION (GUIDED)' : '■ STATUS: CLADDING LEAKAGE (UNBOUND MODE)', hudX + 10, hudY + 86);
+      ctx.fillStyle = theme.primary;
+      ctx.fillText(`Evanescent Wave Penetration Depth d_p: 0.42 μm`, hudX + 10, hudY + 100);
+
+      // Bottom Status
+      ctx.fillStyle = theme.textMuted;
+      ctx.font = '500 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Snell's Law at Interface: n₁ sin(θ₁) = n₂ sin(θ₂) | NA = √(n₁² - n₂²) = ${NA.toFixed(3)}`, width / 2, height - 16);
+    }
+    animate();
   </script>
 </body>
 </html>

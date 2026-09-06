@@ -30,6 +30,25 @@
       --block-accent: #7c2d12;
       --block-grid: rgba(0, 0, 0, 0.06);
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0277bd;
       --sim-teal: #00897b;
@@ -57,6 +76,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #ffffff;
@@ -199,7 +237,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -345,116 +385,443 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
-    let width = 0, height = 0;
+    let width, height, dpr;
 
     function resize() {
       const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
+      dpr = window.devicePixelRatio || 1;
       width = rect.width;
       height = rect.height;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => {});
+    window.addEventListener('themechange', () => { updateThemePalette(); });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
-    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
-    let chipTime = 0;
+    // Merchant orthogonal cutting parameters
+    const rakeAngleDeg = 10;   // alpha (deg)
+    const frictionAngleDeg = 24;// beta (deg)
+    const alpha = rakeAngleDeg * Math.PI / 180;
+    const beta = frictionAngleDeg * Math.PI / 180;
+    // Merchant shear angle: phi = 45 + alpha/2 - beta/2
+    const phi = (45 + rakeAngleDeg / 2 - frictionAngleDeg / 2) * Math.PI / 180; // ~ 38 deg
 
-    // --- 4. CONTINUOUS SIMULATION & ANIMATION INTEGRATION LOOP ---
+    const t0 = 0.25; // uncut chip thickness (mm)
+    const chipRatio = Math.sin(phi) / Math.cos(phi - alpha); // r = t0 / tc
+    const tc = t0 / chipRatio; // ~ 0.42 mm
+
+    // Chip flow velocity ratio: Vc * sin(phi) / cos(phi - alpha)
+    const Vc_m_min = 120; // m/min
+    const Vchip_m_min = Vc_m_min * chipRatio;
+
+    // Forces (Resultant R ~ 950 N)
+    const R_force = 920; // N
+    const Fc = R_force * Math.cos(beta - alpha); // ~ 890 N
+    const Ft = R_force * Math.sin(beta - alpha); // ~ 220 N
+    const Fs = Fc * Math.cos(phi) - Ft * Math.sin(phi); // shear force
+    const Fn = Fc * Math.sin(phi) + Ft * Math.cos(phi); // normal to shear
+    const F_fric = Fc * Math.sin(alpha) + Ft * Math.cos(alpha); // friction force on rake
+    const N_rake = Fc * Math.cos(alpha) - Ft * Math.sin(alpha); // normal on rake
+
+    // Workpiece grain markers
+    const NUM_GRAINS = 48;
+    const grains = [];
+    for (let i = 0; i < NUM_GRAINS; i++) {
+      grains.push({
+        x: -240 + Math.random() * 220,
+        y: Math.random() * 80,
+        r: 1.5 + Math.random() * 1.5
+      });
+    }
+
+    // Hot cutting sparks
+    const sparks = [];
+
+    let time = 0;
+    let lastTime = Date.now();
+
     function animate() {
-      // --- 5. GRAPHICAL RENDERING PIPELINE ---
-      ctx.clearRect(0, 0, width, height);
+      const now = Date.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      time += dt;
 
-      const cx = width * 0.45;
-      const cy = height * 0.52;
-      chipTime += 0.04;
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      const shearAngle = 0.52; // phi ≈ 30 deg
-      const rakeAngle = 0.18;  // alpha ≈ 10 deg
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
-      // Workpiece (Moving right towards tool, uncut chip thickness t0)
-      ctx.fillStyle = getThemeColor('--surface');
-      ctx.fillRect(cx - 220, cy, 220, 90);
-      ctx.strokeStyle = getThemeColor('--sim-blue');
-      ctx.lineWidth = 2.5;
-      ctx.strokeRect(cx - 220, cy, 220, 90);
+      // Layout: Tool & Workpiece on Left, Merchant Circle on Right
+      const cx = Math.min(width * 0.42, 360);
+      const cy = height * 0.50;
 
-      // Primary Shear Plane line
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(cx - 35, cy - 45);
-      ctx.strokeStyle = getThemeColor('--sim-red');
-      ctx.lineWidth = 3;
-      ctx.stroke();
+      const blue = theme.blue;
+      const amber = theme.amber;
+      const text = theme.text;
+      const border = theme.border;
 
-      // Cutting Tool Wedge
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(cx + 110, cy); // Relief flank
-      ctx.lineTo(cx + 80, cy + 90);
-      ctx.lineTo(cx, cy + 90);
-      ctx.closePath();
-      ctx.fillStyle = getThemeColor('--text-muted');
-      ctx.fill();
-      ctx.strokeStyle = getThemeColor('--text');
+      // 1. Workpiece (Continuous feed rightward toward tool at Vc)
+      const feedSpeed = 65; // px/sec
+      const wpW = 220;
+      const wpH = 85;
+      const uncutH = 45;
+
+      // Workpiece body
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.16)';
+      ctx.fillRect(cx - wpW, cy, wpW, wpH);
+      // Uncut layer above finished surface
+      ctx.fillRect(cx - wpW, cy - uncutH, wpW - 35, uncutH);
+      ctx.strokeStyle = theme.border;
       ctx.lineWidth = 2;
+      ctx.strokeRect(cx - wpW, cy, wpW, wpH);
+
+      // Feeding grains in workpiece
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+      grains.forEach(g => {
+        g.x += feedSpeed * dt;
+        if (g.x > 0) g.x = -wpW;
+
+        const gx = cx + g.x;
+        const gy = cy + g.y;
+        if (gx > cx - wpW && gx < cx - 10) {
+          ctx.beginPath();
+          ctx.arc(gx, gy, g.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      // Machined finished surface line (to the right of tool)
+      ctx.strokeStyle = theme.primary;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + 90, cy);
       ctx.stroke();
 
-      // Curling Chip formation
+      // 2. Primary Shear Plane (connecting tool tip to uncut surface)
+      const shearLen = uncutH / Math.sin(phi);
+      const shearEndX = cx - shearLen * Math.cos(phi);
+      const shearEndY = cy - uncutH;
+
+      // Shear zone thermal dissipation glow
+      const shearGrad = ctx.createLinearGradient(cx, cy, shearEndX, shearEndY);
+      shearGrad.addColorStop(0, 'rgba(239, 68, 68, 0.85)');
+      shearGrad.addColorStop(0.5, 'rgba(245, 158, 11, 0.6)');
+      shearGrad.addColorStop(1, 'rgba(239, 68, 68, 0.3)');
+
+      ctx.strokeStyle = shearGrad;
+      ctx.lineWidth = 4.5 + Math.sin(time * 12) * 1.2;
       ctx.beginPath();
-      ctx.moveTo(cx - 35, cy - 45);
-      ctx.quadraticCurveTo(cx - 65, cy - 110, cx - 15, cy - 125);
-      ctx.quadraticCurveTo(cx + 35, cy - 110, cx + 15, cy - 45);
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(shearEndX, shearEndY);
+      ctx.stroke();
+
+      // Shear plane angle arc & label
+      ctx.strokeStyle = theme.textMuted;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 32, Math.PI, Math.PI + phi);
+      ctx.stroke();
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.alert;
+      ctx.fillText(`φ = ${(phi * 180 / Math.PI).toFixed(0)}°`, cx - 55, cy - 14);
+
+      // 3. Cutting Tool Wedge (Single-point cemented carbide)
+      const toolL = cx;
+      const toolT = cy;
+      const rakeFaceX = cx - 18 * Math.sin(alpha);
+      const rakeFaceY = cy - 90 * Math.cos(alpha);
+
+      ctx.fillStyle = theme.surface;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      // Rake face
+      ctx.lineTo(cx - 95 * Math.sin(alpha), cy - 95 * Math.cos(alpha));
+      ctx.lineTo(cx + 105, cy - 85);
+      ctx.lineTo(cx + 105, cy + 85);
+      // Relief flank
+      ctx.lineTo(cx + 10, cy + 85);
       ctx.lineTo(cx, cy);
       ctx.closePath();
-      ctx.fillStyle = "rgba(255, 183, 77, 0.25)";
       ctx.fill();
-      ctx.strokeStyle = getThemeColor('--sim-amber');
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = theme.text;
+      ctx.lineWidth = 2.2;
       ctx.stroke();
 
-      // Cutting Force Vectors
-      // F_c (horizontal)
+      // Tool Rake Angle annotation
+      ctx.strokeStyle = theme.textMuted;
+      ctx.setLineDash([2, 2]);
       ctx.beginPath();
       ctx.moveTo(cx, cy);
-      ctx.lineTo(cx - 65, cy);
-      ctx.strokeStyle = getThemeColor('--sim-amber');
-      ctx.lineWidth = 3;
+      ctx.lineTo(cx, cy - 85);
       ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillText(`α = ${rakeAngleDeg}°`, cx - 8, cy - 70);
 
-      // F_t (vertical thrust)
+      // 4. Continuous Curling Chip Formation
+      // Material shears along shear plane, then curls backward
+      const chipThicknessPx = uncutH / chipRatio * 0.45;
+      const curlRadius = 38 + Math.sin(time * 2) * 4;
+      const chipCurlAng = (time * 4) % (Math.PI * 2);
+
+      ctx.save();
       ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(cx, cy + 55);
-      ctx.strokeStyle = getThemeColor('--sim-teal');
-      ctx.lineWidth = 3;
+      ctx.moveTo(shearEndX, shearEndY);
+      // Inner spiral curl
+      ctx.quadraticCurveTo(cx - 55, cy - 110, cx - 10, cy - 130);
+      ctx.arc(cx + 25, cy - 120, curlRadius, Math.PI * 0.9, Math.PI * 2.1);
+      ctx.lineWidth = chipThicknessPx;
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
       ctx.stroke();
 
-      // Labels
-      ctx.fillStyle = getThemeColor('--text');
-      ctx.font = "11px var(--font-sans)";
-      ctx.fillText("Workpiece (Velocity V_c)", cx - 180, cy + 45);
-      ctx.fillText("Primary Shear Plane (φ)", cx - 135, cy - 35);
-      ctx.fillText("Continuous Chip", cx - 45, cy - 135);
-      ctx.fillText("Single Point Cutting Tool", cx + 25, cy + 45);
-      ctx.fillText("Cutting Force F_c", cx - 110, cy - 8);
-      ctx.fillText("Thrust Force F_t", cx + 8, cy + 40);
+      // Flow striations on chip surface (moving with chip velocity)
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 2.2;
+      const stripeOffset = (time * 80) % 18;
+      for (let s = 0; s < 7; s++) {
+        const sDist = s * 18 + stripeOffset;
+        const sFrac = sDist / 120;
+        if (sFrac < 1.0) {
+          const sx = shearEndX + (cx - shearEndX) * sFrac * 0.7;
+          const sy = shearEndY - sDist * 0.8;
+          ctx.beginPath();
+          ctx.moveTo(sx - 4, sy);
+          ctx.lineTo(sx + 10, sy - 8);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+
+      // 5. Thermal Friction Interface at Tool Tip
+      const tipGlow = ctx.createRadialGradient(cx, cy, 1, cx, cy, 22);
+      tipGlow.addColorStop(0, 'rgba(239, 68, 68, 0.9)');
+      tipGlow.addColorStop(0.4, 'rgba(245, 158, 11, 0.6)');
+      tipGlow.addColorStop(1, 'rgba(239, 68, 68, 0)');
+      ctx.fillStyle = tipGlow;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ejected Sparks
+      if (Math.random() < 0.35) {
+        sparks.push({
+          x: cx,
+          y: cy,
+          vx: -(60 + Math.random() * 80),
+          vy: -(80 + Math.random() * 90),
+          life: 0.35 + Math.random() * 0.2
+        });
+      }
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const spk = sparks[i];
+        spk.life -= dt;
+        spk.x += spk.vx * dt;
+        spk.y += spk.vy * dt;
+        spk.vy += 280 * dt; // gravity
+        if (spk.life <= 0) {
+          sparks.splice(i, 1);
+        } else {
+          ctx.fillStyle = theme.accent;
+          ctx.beginPath();
+          ctx.arc(spk.x, spk.y, 1.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 6. Live Merchant Circle Diagram (Right Side Viewport)
+      const mcX = Math.max(cx + 210, width - 180);
+      const mcY = height * 0.44;
+      const mcRadius = 80;
+
+      // Merchant circle boundary
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(mcX, mcY, mcRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Tool tip origin of force vectors: center-left on circle diameter
+      // In Merchant Circle, Resultant R connects tool tip (origin) to opposite circle end
+      const angR = (beta - alpha); // resultant angle from horizontal
+      const rEndX = mcX + mcRadius * Math.cos(angR);
+      const rEndY = mcY - mcRadius * Math.sin(angR);
+      const origX = mcX - mcRadius * Math.cos(angR);
+      const origY = mcY + mcRadius * Math.sin(angR);
+
+      // Resultant Force R vector (Red)
+      ctx.strokeStyle = theme.alert;
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      ctx.moveTo(origX, origY);
+      ctx.lineTo(rEndX, rEndY);
+      ctx.stroke();
+
+      // Cutting Force Fc (horizontal) & Thrust Ft (vertical)
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(origX, origY);
+      ctx.lineTo(rEndX, origY); // Fc
+      ctx.lineTo(rEndX, rEndY); // Ft
+      ctx.stroke();
+
+      // Shear Force Fs & Normal Fn
+      const fsX = origX + (rEndX - origX) * Math.cos(phi) * Math.cos(phi);
+      const fsY = origY - (rEndX - origX) * Math.cos(phi) * Math.sin(phi);
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(origX, origY);
+      ctx.lineTo(fsX, fsY); // Fs
+      ctx.lineTo(rEndX, rEndY); // Fn
+      ctx.stroke();
+
+      // Friction Force F & Normal N on tool rake face
+      const ffX = origX + (rEndX - origX) * Math.sin(alpha) * Math.sin(alpha);
+      const ffY = origY - (rEndX - origX) * Math.sin(alpha) * Math.cos(alpha);
+      ctx.strokeStyle = theme.primary;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(origX, origY);
+      ctx.lineTo(ffX, ffY); // F
+      ctx.lineTo(rEndX, rEndY); // N
+      ctx.stroke();
+
+      // Labels on Merchant Circle
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.alert;
+      ctx.fillText(`R = ${R_force} N`, mcX - 10, mcY - 8);
+      ctx.fillStyle = theme.amber;
+      ctx.fillText(`F_c = ${Fc.toFixed(0)} N`, (origX + rEndX) / 2 - 10, origY + 14);
+      ctx.fillText(`F_t = ${Ft.toFixed(0)} N`, rEndX + 6, (origY + rEndY) / 2);
+      ctx.fillStyle = theme.teal;
+      ctx.fillText(`F_s = ${Fs.toFixed(0)} N`, (origX + fsX) / 2 - 25, (origY + fsY) / 2);
+
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px var(--font-sans)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Merchant Force Circle', mcX, mcY - mcRadius - 12);
+
+      // Workpiece feed velocity label
+      ctx.fillStyle = theme.text;
+      ctx.textAlign = 'left';
+      ctx.fillText(`Workpiece Feed V_c = ${Vc_m_min} m/min →`, cx - wpW + 10, cy + wpH + 18);
+
+      // 7. Scientific Telemetry HUD Overlay (Bottom)
+      const hudX = 24;
+      const hudY = height - 76;
+      const hudW = width - 48;
+      const hudH = 56;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      const colW = hudW / 4;
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+
+      ctx.fillText(`Cutting Speed V_c: ${Vc_m_min} m/min`, hudX + 12, hudY + 22);
+      ctx.fillText(`Chip Velocity V_chip: ${Vchip_m_min.toFixed(1)} m/min`, hudX + 12, hudY + 40);
+
+      ctx.fillText(`Uncut Thickness t₀: ${t0.toFixed(2)} mm`, hudX + colW + 10, hudY + 22);
+      ctx.fillText(`Chip Thickness t_c: ${tc.toFixed(2)} mm (r = ${chipRatio.toFixed(2)})`, hudX + colW + 10, hudY + 40);
+
+      ctx.fillText(`Shear Angle φ: ${(phi * 180 / Math.PI).toFixed(1)}°`, hudX + colW * 2 + 10, hudY + 22);
+      ctx.fillText(`Friction Angle β: ${frictionAngleDeg}° (μ = ${Math.tan(beta).toFixed(2)})`, hudX + colW * 2 + 10, hudY + 40);
+
+      ctx.fillText(`Cutting Power P_c: ${(Fc * Vc_m_min / 60).toFixed(0)} W`, hudX + colW * 3 + 10, hudY + 22);
+      ctx.fillText(`Specific Energy u_c: ${(Fc / (t0 * 2.0)).toFixed(0)} J/mm³`, hudX + colW * 3 + 10, hudY + 40);
 
       requestAnimationFrame(animate);
     }
-    animate();
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>

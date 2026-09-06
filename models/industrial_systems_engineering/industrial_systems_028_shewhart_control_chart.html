@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -384,90 +488,289 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     resize();
 
-    const points = [];
-    for (let i = 0; i < 24; i++) {
-      // normal random numbers between -2.2 and 2.2
-      points.push((Math.random() + Math.random() + Math.random() - 1.5) * 1.6);
+    // --- 3. PHYSICAL STATE VARIABLES & STREAMING STATISTICAL ENGINE ---
+    let time = 0;
+    const n = 5; // Subgroup sample size
+    const targetMu = 50.0; // Target mean
+    let currentMu = 50.0;
+    const sigma = 1.8;
+    const sigmaXbar = sigma / Math.sqrt(n); // ~ 0.805
+
+    const UCL = targetMu + 3 * sigmaXbar; // +3 sigma
+    const LCL = targetMu - 3 * sigmaXbar; // -3 sigma
+    const USL = targetMu + 4.5 * sigmaXbar; // Upper Spec Limit
+    const LSL = targetMu - 4.5 * sigmaXbar; // Lower Spec Limit
+
+    // Gaussian random generator (Box-Muller transform)
+    function randomGaussian(mean, stdDev) {
+      let u = 0, v = 0;
+      while (u === 0) u = Math.random();
+      while (v === 0) v = Math.random();
+      const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+      return mean + z * stdDev;
     }
 
-    let time = 0;
+    // Historical streaming samples
+    const MAX_POINTS = 32;
+    const samples = [];
+    let sampleCounter = 0;
+    let sampleTimer = 0;
+
+    for (let i = 0; i < MAX_POINTS; i++) {
+      sampleCounter++;
+      samples.push({
+        id: sampleCounter,
+        val: randomGaussian(targetMu, sigmaXbar),
+        isViolation: false,
+        rule: ''
+      });
+    }
+
+    // Histogram bins on right margin
+    const histBins = new Array(16).fill(0);
+
+    // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
     function animate() {
-      ctx.clearRect(0, 0, width, height);
-      const blue = getThemeColor('--sim-blue');
-      const text = getThemeColor('--text');
-      const textMuted = getThemeColor('--text-muted');
-      const amber = getThemeColor('--sim-amber');
-      const teal = getThemeColor('--sim-teal');
-      const red = getThemeColor('--sim-red');
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      time += 0.02;
-      const chartX = width * 0.15;
+      time += 0.025;
+      sampleTimer += 0.025;
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // Process mean shift disturbance cycle (tool wear / thermal drift)
+      const drift = Math.sin(time * 0.4) * 0.9 + (Math.sin(time * 1.5) > 0.85 ? 1.8 : 0);
+      currentMu = targetMu + drift;
+
+      // Stream a new subgroup sample every 0.25s
+      if (sampleTimer >= 0.25) {
+        sampleTimer = 0;
+        sampleCounter++;
+        const newVal = randomGaussian(currentMu, sigmaXbar);
+
+        // Nelson Rule 1: Point beyond 3-sigma limits
+        let isViolation = false;
+        let rule = '';
+        if (newVal > UCL || newVal < LCL) {
+          isViolation = true;
+          rule = 'Rule 1: Beyond 3σ';
+        }
+
+        samples.shift();
+        samples.push({
+          id: sampleCounter,
+          val: newVal,
+          isViolation,
+          rule
+        });
+
+        // Update histogram bin
+        const binIdx = Math.floor(((newVal - (targetMu - 4 * sigmaXbar)) / (8 * sigmaXbar)) * 16);
+        if (binIdx >= 0 && binIdx < 16) histBins[binIdx]++;
+      }
+
+      // Calculate sample statistics
+      let sum = 0;
+      samples.forEach(s => sum += s.val);
+      const xDoubleBar = sum / samples.length;
+
+      // Process Capability indices
+      const Cp = (USL - LSL) / (6 * sigmaXbar);
+      const Cpk = Math.min((USL - xDoubleBar) / (3 * sigmaXbar), (xDoubleBar - LSL) / (3 * sigmaXbar));
+
+      const chartX = width * 0.14;
+      const chartW = width * 0.65;
       const chartY = height * 0.52;
-      const chartW = width * 0.72;
-      const chartH = height * 0.42;
+      const chartH = height * 0.45;
 
-      // Center Line (x-bar)
-      ctx.strokeStyle = teal;
+      const yMin = targetMu - 4.5 * sigmaXbar;
+      const yMax = targetMu + 4.5 * sigmaXbar;
+
+      function valToY(v) {
+        return chartY + chartH * 0.5 - ((v - yMin) / (yMax - yMin)) * chartH;
+      }
+
+      // 1. Chart Background & Zone Shading (Zone A, B, C)
+      const uclY = valToY(UCL);
+      const lclY = valToY(LCL);
+      const clY = valToY(targetMu);
+
+      // In-control zone (green/teal wash)
+      ctx.fillStyle = 'rgba(45, 212, 191, 0.05)';
+      ctx.fillRect(chartX, uclY, chartW, lclY - uclY);
+
+      // Warning zone (> 3 sigma red wash)
+      ctx.fillStyle = 'rgba(248, 113, 113, 0.08)';
+      ctx.fillRect(chartX, valToY(yMax), chartW, uclY - valToY(yMax));
+      ctx.fillRect(chartX, lclY, chartW, valToY(yMin) - lclY);
+
+      // Chart Border
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(chartX, valToY(yMax), chartW, chartH);
+
+      // Centerline CL
+      ctx.strokeStyle = theme.teal;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(chartX, chartY);
-      ctx.lineTo(chartX + chartW, chartY);
+      ctx.moveTo(chartX, clY);
+      ctx.lineTo(chartX + chartW, clY);
       ctx.stroke();
 
-      // UCL and LCL (+3 sigma, -3 sigma)
-      ctx.strokeStyle = red;
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([5, 5]);
+      // Control Limits UCL & LCL
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([5, 4]);
       ctx.beginPath();
-      ctx.moveTo(chartX, chartY - chartH * 0.4);
-      ctx.lineTo(chartX + chartW, chartY - chartH * 0.4);
-      ctx.moveTo(chartX, chartY + chartH * 0.4);
-      ctx.lineTo(chartX + chartW, chartY + chartH * 0.4);
+      ctx.moveTo(chartX, uclY);
+      ctx.lineTo(chartX + chartW, uclY);
+      ctx.moveTo(chartX, lclY);
+      ctx.lineTo(chartX + chartW, lclY);
       ctx.stroke();
+
+      // 1-sigma & 2-sigma zone division lines
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 4]);
+      for (const sMult of [-2, -1, 1, 2]) {
+        const sY = valToY(targetMu + sMult * sigmaXbar);
+        ctx.beginPath();
+        ctx.moveTo(chartX, sY);
+        ctx.lineTo(chartX + chartW, sY);
+        ctx.stroke();
+      }
       ctx.setLineDash([]);
 
-      ctx.fillStyle = red;
-      ctx.font = '11px Inter, sans-serif';
+      // Axis Limit Labels
+      ctx.fillStyle = theme.red;
+      ctx.font = '600 10px var(--font-mono)';
       ctx.textAlign = 'right';
-      ctx.fillText('UCL (+3σ)', chartX - 10, chartY - chartH * 0.4 + 4);
-      ctx.fillText('LCL (-3σ)', chartX - 10, chartY + chartH * 0.4 + 4);
-      ctx.fillStyle = teal;
-      ctx.fillText('CL (x̄̄)', chartX - 10, chartY + 4);
+      ctx.fillText(`UCL (+3σ) ${UCL.toFixed(2)}`, chartX - 8, uclY + 3);
+      ctx.fillText(`LCL (-3σ) ${LCL.toFixed(2)}`, chartX - 8, lclY + 3);
+      ctx.fillStyle = theme.teal;
+      ctx.fillText(`CL (x̄̄) ${targetMu.toFixed(2)}`, chartX - 8, clY + 3);
 
-      // Plotted Data Points and connecting line
-      ctx.strokeStyle = blue;
+      // 2. Connect Historical Streaming Points with Trend Line
+      ctx.strokeStyle = theme.blue;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      points.forEach((pt, idx) => {
-        const px = chartX + (idx / (points.length - 1)) * chartW;
-        const py = chartY - pt * (chartH * 0.12);
+      samples.forEach((s, idx) => {
+        const px = chartX + (idx / (samples.length - 1)) * chartW;
+        const py = valToY(s.val);
         if (idx === 0) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
       });
       ctx.stroke();
 
-      points.forEach((pt, idx) => {
-        const px = chartX + (idx / (points.length - 1)) * chartW;
-        const py = chartY - pt * (chartH * 0.12);
-        ctx.fillStyle = amber;
-        ctx.beginPath();
-        ctx.arc(px, py, 4, 0, Math.PI * 2);
-        ctx.fill();
+      // Draw Individual Sample Nodes
+      samples.forEach((s, idx) => {
+        const px = chartX + (idx / (samples.length - 1)) * chartW;
+        const py = valToY(s.val);
+
+        if (s.isViolation) {
+          // Pulsing Alarm indicator for Nelson violation
+          const pulse = 1 + 0.3 * Math.sin(time * 8);
+          ctx.beginPath();
+          ctx.arc(px, py, 7 * pulse, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(248, 113, 113, 0.4)';
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = theme.red;
+          ctx.fill();
+
+          // Text flag
+          ctx.fillStyle = theme.red;
+          ctx.font = '600 9px var(--font-mono)';
+          ctx.textAlign = 'center';
+          ctx.fillText('OUT OF CONTROL', px, py - 12);
+        } else {
+          ctx.beginPath();
+          ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = theme.amber;
+          ctx.fill();
+          ctx.strokeStyle = theme.surface;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
       });
 
-      ctx.fillStyle = text;
-      ctx.font = '13px Inter, sans-serif';
+      // 3. Right-Margin Vertical Gaussian Normal Probability Density Curve
+      const pdfX = chartX + chartW + 10;
+      const pdfW = width - pdfX - 20;
+
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(pdfX, valToY(yMax), pdfW, chartH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(pdfX, valToY(yMax), pdfW, chartH);
+
+      // Normal Distribution Bell Curve plotted vertically
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let yPixel = valToY(yMax); yPixel <= valToY(yMin); yPixel += 2) {
+        const v = yMin + ((valToY(yMin) - yPixel) / chartH) * (yMax - yMin);
+        const z = (v - targetMu) / sigmaXbar;
+        const pdfVal = (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * z * z);
+        const curveX = pdfX + pdfVal * (pdfW * 2.1);
+        if (yPixel === valToY(yMax)) ctx.moveTo(curveX, yPixel);
+        else ctx.lineTo(curveX, yPixel);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = theme.textMuted;
+      ctx.font = '9px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillText('f(x) PDF', pdfX + pdfW / 2, valToY(yMax) - 6);
+
+      // 4. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 255;
+      const hudH = 142;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
       ctx.textAlign = 'left';
-      ctx.fillText('Shewhart X-Bar Process Control Chart (n = 5)', 24, 30);
-      ctx.fillText('Process Capability Index C_pk = 1.42 (In Statistical Control)', 24, 52);
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('SHEWHART STATISTICAL QUALITY CONTROL', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Subgroup Size n = ${n} | Total Samples N: ${sampleCounter}`, hudX + 10, hudY + 36);
+      ctx.fillText(`Grand Mean x̄̄: ${xDoubleBar.toFixed(2)} (Target: ${targetMu.toFixed(1)})`, hudX + 10, hudY + 52);
+      ctx.fillText(`Standard Deviation σ_x̄: ${sigmaXbar.toFixed(3)} mm`, hudX + 10, hudY + 68);
+      ctx.fillText(`Capability Index C_p: ${Cp.toFixed(2)} | C_pk: ${Cpk.toFixed(2)}`, hudX + 10, hudY + 84);
+
+      const hasAlarm = samples[samples.length - 1].isViolation;
+      ctx.fillStyle = hasAlarm ? theme.red : theme.teal;
+      ctx.fillText(`Process State: ${hasAlarm ? 'OUT OF CONTROL (ALARM)' : 'STATISTICAL STABILITY (NORMAL)'}`, hudX + 10, hudY + 102);
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Active Rule: ${hasAlarm ? 'Nelson Rule 1 Tripped' : 'Within 3σ Bounds'}`, hudX + 10, hudY + 118);
 
       requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    animate();
   </script>
 </body>
 </html>

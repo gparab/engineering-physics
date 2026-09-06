@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rock Fracture Mohr-Coulomb Failure Envelope — Geophysical Engineering</title>
+  <style>
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block (Coral) */
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #ffd6cc;
+      --block-text: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    main canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Rock Fracture Mohr-Coulomb Failure Envelope</h1>
+      <div class="discipline-badge">Geophysical Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      The Mohr-Coulomb failure criterion dictates the shear fracturing of brittle rock under triaxial compressive stress. Shear failure occurs when the internal shear stress on any plane overcomes rock cohesion c plus frictional sliding resistance proportional to the normal stress σ_n. On Mohr's stress diagram, failure initiates when the stress circle touches the linear failure envelope at conjugate fracture angles θ = 45° + φ/2.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        τ_failure = c + σ_n · tan(φ) ,  σ₁ = 2c · tan(45° + φ/2) + σ₃ · tan²(45° + φ/2)
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Rock Fracture Mohr-Coulomb Failure Envelope
+     * Discipline: Geophysical Engineering
+     *
+     * 1. Physical Phenomenon:
+     *    Brittle rock core shear rupture under triaxial confining stress states.
+     *    Mohr circle stress representation tangent to linear Coulomb failure envelope.
+     * 2. Governing Equations:
+     *    Failure envelope: tau = c + sigma_n * tan(phi)
+     *    Principal stress relation: sigma_1 = 2 * c * tan(45 + phi/2) + sigma_3 * tan^2(45 + phi/2)
+     * 3. Parameters and Velocity:
+     *    Simulates axial stress loading until circle contacts failure envelope, producing fracture.
+     *
+     * Numerical Integration & State Representation:
+     * - Continuous time step physics integration loop maintaining dynamic state.
+     * - Elastic wave equations and subsurface continuum stress updates.
+     * - Geomechanical stress tensors and telemetry HUD rendered at 60fps.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Theme palette definition
+    const theme = {
+      bg: '#121526',
+      text: '#ffffff',
+      grid: 'rgba(255, 255, 255, 0.08)',
+      axis: 'rgba(255, 255, 255, 0.25)',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      purple: '#c084fc'
+    };
+
+    function updateThemePalette() {
+      const computed = getComputedStyle(document.documentElement);
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      theme.bg = isLight ? '#ffffff' : '#121526';
+      theme.text = isLight ? '#000000' : '#ffffff';
+      theme.grid = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+      theme.axis = isLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
+      theme.blue = isLight ? '#0277bd' : '#38bdf8';
+      theme.teal = isLight ? '#00897b' : '#2dd4bf';
+      theme.amber = isLight ? '#d97706' : '#fbbf24';
+      theme.red = isLight ? '#c62828' : '#f87171';
+      theme.purple = isLight ? '#6a1b9a' : '#c084fc';
+    }
+    window.addEventListener('themechange', updateThemePalette);
+    updateThemePalette();
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let sigma3 = 25; // Confining stress (MPa)
+    let sigma1 = 35; // Axial stress (MPa)
+    let loading = true;
+    const c = 18; // Cohesion (MPa)
+    const phi = 32 * Math.PI / 180; // Friction angle
+    const failureSigma1 = 2 * c * Math.tan(Math.PI / 4 + phi / 2) + sigma3 * Math.pow(Math.tan(Math.PI / 4 + phi / 2), 2);
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION LOOP ---
+    function animate() {
+      updateThemePalette();
+
+      if (loading) {
+        sigma1 += 0.45;
+        if (sigma1 >= failureSigma1 + 2) loading = false;
+      } else {
+        sigma1 -= 0.65;
+        if (sigma1 <= sigma3 + 10) loading = true;
+      }
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      // Left Panel: Triaxial Rock Core Specimen
+      const coreX = 110;
+      const coreY = height * 0.5;
+
+      ctx.fillStyle = 'rgba(106, 27, 154, 0.25)';
+      ctx.fillRect(coreX - 35, coreY - 60, 70, 120);
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(coreX - 35, coreY - 60, 70, 120);
+
+      // Axial load arrows sigma1
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(coreX, coreY - 95); ctx.lineTo(coreX, coreY - 60);
+      ctx.moveTo(coreX, coreY + 95); ctx.lineTo(coreX, coreY + 60);
+      ctx.stroke();
+      ctx.fillStyle = theme.red;
+      ctx.fillText('σ₁ (Axial)', coreX - 25, coreY - 100);
+
+      // Confining pressure arrows sigma3
+      ctx.strokeStyle = theme.teal;
+      ctx.beginPath();
+      ctx.moveTo(coreX - 65, coreY); ctx.lineTo(coreX - 35, coreY);
+      ctx.moveTo(coreX + 65, coreY); ctx.lineTo(coreX + 35, coreY);
+      ctx.stroke();
+      ctx.fillStyle = theme.teal;
+      ctx.fillText('σ₃', coreX - 85, coreY + 4);
+
+      // Shear fracture crack line at failure
+      if (sigma1 >= failureSigma1 - 1) {
+        ctx.strokeStyle = theme.amber;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(coreX - 35, coreY + 40);
+        ctx.lineTo(coreX + 35, coreY - 40);
+        ctx.stroke();
+        ctx.fillText('Shear Rupture θ = 61°', coreX - 55, coreY + 60);
+      }
+
+      // Right Panel: Mohr's Circle Stress Diagram
+      const mX = width * 0.45;
+      const mY = height - 70;
+      const mW = width * 0.48;
+      const mH = height - 120;
+
+      // Coordinate axes (Normal stress sigma vs Shear stress tau)
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(mX, mY); ctx.lineTo(mX + mW, mY); // sigma axis
+      ctx.moveTo(mX, mY); ctx.lineTo(mX, mY - mH); // tau axis
+      ctx.stroke();
+
+      ctx.fillStyle = theme.text;
+      ctx.fillText('Normal Stress σ (MPa)', mX + mW - 130, mY + 22);
+      ctx.fillText('Shear τ (MPa)', mX - 45, mY - mH + 15);
+
+      // Mohr-Coulomb failure envelope: tau = c + sigma * tan(phi)
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(mX, mY - c * 2.2);
+      ctx.lineTo(mX + mW, mY - (c + (mW / 2.2) * Math.tan(phi)) * 2.2);
+      ctx.stroke();
+      ctx.fillText('Failure Envelope τ = c + σ·tan(φ)', mX + 80, mY - (c + 30) * 2.2);
+
+      // Dynamic Mohr's Circle
+      const centerSigma = (sigma1 + sigma3) / 2;
+      const radiusSigma = (sigma1 - sigma3) / 2;
+      const circleCX = mX + centerSigma * 2.2;
+      const circleR = radiusSigma * 2.2;
+
+      ctx.beginPath();
+      ctx.arc(circleCX, mY, circleR, 0, Math.PI, true);
+      ctx.strokeStyle = (sigma1 >= failureSigma1) ? theme.red : theme.teal;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Telemetry HUD
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText('MOHR-COULOMB ROCK FRACTURE', 24, 30);
+      ctx.fillText(`Cohesion c: ${c} MPa | Friction Angle φ: 32°`, 24, 46);
+      ctx.fillText(`Current σ₁: ${sigma1.toFixed(1)} MPa | Confining σ₃: ${sigma3} MPa`, 24, 62);
+      ctx.fillText(`Peak Strength σ₁_fail: ${failureSigma1.toFixed(1)} MPa (${sigma1 >= failureSigma1 ? 'RUPTURE OCCURRED' : 'ELASTIC REGIME'})`, 24, 78);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

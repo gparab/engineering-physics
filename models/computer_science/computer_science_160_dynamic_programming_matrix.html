@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -385,81 +489,324 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => {});
+    
     resize();
 
 
+    // Continuous Dynamic Simulation Engine for Dynamic Programming Matrix (LCS)
     let time = 0;
-    const strX = "ALGO";
-    const strY = "LOGO";
-    const rows = strX.length + 1;
-    const cols = strY.length + 1;
+    let stepTimer = 0;
+
+    // String pair presets
+    const stringPairs = [
+      { x: 'ALGO', y: 'LOGO' },
+      { x: 'DYNAMIC', y: 'PROGRAM' },
+      { x: 'PHYSICS', y: 'SCIENCE' }
+    ];
+    let pairIdx = 0;
 
     function animate() {
       requestAnimationFrame(animate);
-      ctx.clearRect(0, 0, width, height);
+      updateThemePalette();
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
       time += 0.016;
-      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-      const textColor = "#000000";
-      const mutedColor = "#334155";
-      const accentColor = "#0f172a";
-      const highColor = "#065f46";
+      stepTimer += 0.016;
 
-      const cellW = 38;
-      const cellH = 34;
-      const cx = width * 0.5;
-      const cy = height * 0.44;
-      const startX = cx - (cols * cellW) * 0.5;
-      const startY = cy - (rows * cellH) * 0.5;
+      const currentPair = stringPairs[pairIdx];
+      const strX = currentPair.x;
+      const strY = currentPair.y;
+      const rows = strX.length + 1;
+      const cols = strY.length + 1;
+      const totalCells = rows * cols;
 
-      // Compute LCS table
+      // Dynamic sequence cycle: 0 to totalCells (filling), then traceback, then switch pair
+      const cellStep = Math.floor(stepTimer * 3.5); // 3.5 cells per second
+      const cycleLength = totalCells + 15;
+      const cyclePos = cellStep % cycleLength;
+
+      const isFilling = cyclePos < totalCells;
+      const isTraceback = cyclePos >= totalCells;
+
+      if (cellStep > 0 && cyclePos === 0 && Math.floor((stepTimer - 0.016) * 3.5) % cycleLength === cycleLength - 1) {
+        pairIdx = (pairIdx + 1) % stringPairs.length;
+      }
+
+      // Compute full DP matrix and optimal choices
       const dp = Array.from({ length: rows }, () => new Array(cols).fill(0));
+      const choice = Array.from({ length: rows }, () => new Array(cols).fill('none'));
+
       for (let i = 1; i < rows; i++) {
         for (let j = 1; j < cols; j++) {
-          if (strX[i - 1] === strY[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
-          else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+          if (strX[i - 1] === strY[j - 1]) {
+            dp[i][j] = dp[i - 1][j - 1] + 1;
+            choice[i][j] = 'diag';
+          } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+            dp[i][j] = dp[i - 1][j];
+            choice[i][j] = 'up';
+          } else {
+            dp[i][j] = dp[i][j - 1];
+            choice[i][j] = 'left';
+          }
         }
       }
 
-      // Draw Column Headers (strY)
-      ctx.font = '700 13px monospace';
+      // Compute current active cell in filling mode
+      const activeI = isFilling ? Math.floor(cyclePos / cols) : rows - 1;
+      const activeJ = isFilling ? (cyclePos % cols) : cols - 1;
+
+      // Extract traceback path
+      const pathCells = [];
+      let ti = rows - 1;
+      let tj = cols - 1;
+      let extractedLCS = '';
+      while (ti > 0 && tj > 0) {
+        pathCells.push({ i: ti, j: tj });
+        if (strX[ti - 1] === strY[tj - 1]) {
+          extractedLCS = strX[ti - 1] + extractedLCS;
+          ti--;
+          tj--;
+        } else if (dp[ti - 1][tj] >= dp[ti][tj - 1]) {
+          ti--;
+        } else {
+          tj--;
+        }
+      }
+      pathCells.push({ i: 0, j: 0 });
+
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const accentColor = theme.primary;
+      const highColor = theme.secondary || theme.green;
+      const alertColor = theme.alert || theme.red;
+      const goldColor = theme.amber;
+      const wireColor = theme.border;
+      const surfaceColor = theme.surface;
+
+      const scale = Math.min(width / 750, height / 500);
+      const cellW = Math.min(42 * scale, (width - 240) / cols);
+      const cellH = Math.min(36 * scale, (height - 180) / rows);
+      const cx = width * 0.44;
+      const cy = height * 0.45;
+      const startX = cx - (cols * cellW) * 0.5;
+      const startY = cy - (rows * cellH) * 0.5;
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
+      // Title Banner
+      ctx.font = '600 13px Inter, sans-serif';
       ctx.fillStyle = accentColor;
       ctx.textAlign = 'center';
-      for (let j = 1; j < cols; j++) {
-        ctx.fillText(strY[j - 1], startX + j * cellW + cellW * 0.5, startY - 10);
+      const statusText = isFilling
+        ? `Memoization Wavefront: Computing DP[${activeI}][${activeJ}] for '${strX}' vs '${strY}'`
+        : `Traceback Extraction Complete: LCS = '${extractedLCS}' (Length ${dp[rows - 1][cols - 1]})`;
+      ctx.fillText(statusText, cx, 28);
+
+      // Draw Column Headers (strY)
+      ctx.font = '700 12px monospace';
+      ctx.textAlign = 'center';
+      for (let j = 0; j < cols; j++) {
+        const hx = startX + j * cellW + cellW * 0.5;
+        if (j > 0) {
+          const isMatchChar = (activeI > 0 && activeJ === j && strX[activeI - 1] === strY[j - 1]);
+          ctx.fillStyle = isMatchChar ? highColor : accentColor;
+          ctx.fillText(strY[j - 1], hx, startY - 10);
+        } else {
+          ctx.fillStyle = mutedColor;
+          ctx.fillText('ε', hx, startY - 10);
+        }
       }
 
       // Draw Row Headers (strX)
-      for (let i = 1; i < rows; i++) {
-        ctx.fillText(strX[i - 1], startX - 16, startY + i * cellH + cellH * 0.5 + 4);
+      for (let i = 0; i < rows; i++) {
+        const hy = startY + i * cellH + cellH * 0.5 + 4;
+        if (i > 0) {
+          const isMatchChar = (activeI === i && activeJ > 0 && strX[i - 1] === strY[activeJ - 1]);
+          ctx.fillStyle = isMatchChar ? highColor : accentColor;
+          ctx.fillText(strX[i - 1], startX - 18, hy);
+        } else {
+          ctx.fillStyle = mutedColor;
+          ctx.fillText('ε', startX - 18, hy);
+        }
       }
 
-      // Fill DP Grid
+      // Render DP Grid Cells
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
           const gx = startX + j * cellW;
           const gy = startY + i * cellH;
+          const cellIndex = i * cols + j;
+          const isCalculated = isTraceback || cellIndex <= cyclePos;
+          const isActive = isFilling && i === activeI && j === activeJ;
+          const isOptimalPath = isTraceback && pathCells.some(p => p.i === i && p.j === j);
           const isDiagonalMatch = (i > 0 && j > 0 && strX[i - 1] === strY[j - 1]);
 
-          ctx.fillStyle = isDiagonalMatch ? (isDark ? 'rgba(38, 166, 154, 0.25)' : 'rgba(0, 121, 107, 0.15)') : ('#ffffff');
-          ctx.strokeStyle = isDiagonalMatch ? highColor : ('rgba(0, 0, 0, 0.2)');
-          ctx.lineWidth = 1;
-          ctx.strokeRect(gx, gy, cellW, cellH);
+          // Cell fill color
+          if (isOptimalPath) {
+            ctx.fillStyle = 'rgba(251, 191, 36, 0.28)'; // Golden traceback highlight
+          } else if (isActive) {
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.35)'; // Active wavefront cell
+          } else if (isCalculated && isDiagonalMatch) {
+            ctx.fillStyle = 'rgba(52, 211, 153, 0.18)'; // Character match cell
+          } else if (isCalculated) {
+            ctx.fillStyle = surfaceColor;
+          } else {
+            ctx.fillStyle = theme.bg;
+          }
+
           ctx.fillRect(gx, gy, cellW, cellH);
 
-          ctx.font = '600 12px monospace';
-          ctx.fillStyle = isDiagonalMatch ? highColor : textColor;
-          ctx.fillText(`${dp[i][j]}`, gx + cellW * 0.5, gy + cellH * 0.5 + 4);
+          // Cell border
+          ctx.strokeStyle = isOptimalPath ? goldColor : (isActive ? accentColor : wireColor);
+          ctx.lineWidth = (isOptimalPath || isActive) ? 2 : 1;
+          ctx.strokeRect(gx, gy, cellW, cellH);
+
+          // Cell numeric value
+          if (isCalculated) {
+            ctx.font = isOptimalPath ? '700 13px monospace' : '600 12px monospace';
+            ctx.fillStyle = isOptimalPath ? goldColor : (isDiagonalMatch ? highColor : textColor);
+            ctx.textAlign = 'center';
+            ctx.fillText(`${dp[i][j]}`, gx + cellW * 0.5, gy + cellH * 0.5 + 4);
+          } else {
+            ctx.font = '500 10px monospace';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.fillText('·', gx + cellW * 0.5, gy + cellH * 0.5 + 4);
+          }
+
+          // Dynamic dependency arrows into active cell
+          if (isActive && i > 0 && j > 0) {
+            ctx.strokeStyle = highColor;
+            ctx.lineWidth = 1.5;
+            if (isDiagonalMatch) {
+              // Arrow from top-left (i-1, j-1)
+              ctx.beginPath();
+              ctx.moveTo(gx - cellW * 0.3, gy - cellH * 0.3);
+              ctx.lineTo(gx + cellW * 0.2, gy + cellH * 0.2);
+              ctx.stroke();
+            } else {
+              // Arrows from up and left
+              ctx.strokeStyle = accentColor;
+              ctx.beginPath();
+              ctx.moveTo(gx + cellW * 0.5, gy - cellH * 0.3);
+              ctx.lineTo(gx + cellW * 0.5, gy + 4);
+              ctx.moveTo(gx - cellW * 0.3, gy + cellH * 0.5);
+              ctx.lineTo(gx + 4, gy + cellH * 0.5);
+              ctx.stroke();
+            }
+          }
         }
       }
 
-      const ty = height - 40;
-      ctx.font = '13px Inter, sans-serif';
+      // Golden laser beam connecting traceback path
+      if (isTraceback && pathCells.length > 1) {
+        ctx.strokeStyle = goldColor;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let p = 0; p < pathCells.length; p++) {
+          const px = startX + pathCells[p].j * cellW + cellW * 0.5;
+          const py = startY + pathCells[p].i * cellH + cellH * 0.5;
+          if (p === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+
+      // Dynamic Travelling Computation Particle & Active Wavefront Pulse
+      const activeGX = startX + activeJ * cellW + cellW * 0.5;
+      const activeGY = startY + activeI * cellH + cellH * 0.5;
+
+      // Breathing aura around active cell
+      const auraR = (cellW * 0.45) + Math.sin(time * 8) * 3;
+      ctx.strokeStyle = highColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(activeGX, activeGY, auraR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Flowing computation particle from previous state
+      const particleProgress = (stepTimer * 3.5) % 1.0;
+      const prevGX = startX + Math.max(0, activeJ - 1) * cellW + cellW * 0.5;
+      const prevGY = startY + Math.max(0, activeI - 1) * cellH + cellH * 0.5;
+      const partX = prevGX + (activeGX - prevGX) * particleProgress;
+      const partY = prevGY + (activeGY - prevGY) * particleProgress;
+
+      ctx.fillStyle = accentColor;
+      ctx.beginPath();
+      ctx.arc(partX, partY, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Right Panel: Subproblem Memoization Cache Inspector
+      const cacheX = width - 180 * scale;
+      const cacheY = height - 150 * scale;
+      const cacheW = 160 * scale;
+      const cacheH = 110 * scale;
+
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1;
+      ctx.fillRect(cacheX, cacheY, cacheW, cacheH);
+      ctx.strokeRect(cacheX, cacheY, cacheW, cacheH);
+
+      ctx.font = '600 10px Inter, sans-serif';
       ctx.fillStyle = textColor;
-      ctx.fillText("Longest Common Subsequence DP Memoization: LCS('ALGO', 'LOGO') = 'LGO' (Length 3)", cx, ty);
+      ctx.textAlign = 'left';
+      ctx.fillText('Recurrence State', cacheX + 8, cacheY + 16);
+
+      ctx.font = '500 9px monospace';
+      ctx.fillStyle = mutedColor;
+      const subComputed = Math.min(totalCells, cyclePos + 1);
+      ctx.fillText(`Subproblems: ${subComputed}/${totalCells}`, cacheX + 8, cacheY + 34);
+      ctx.fillText(`Cache Hits: ${subComputed > 0 ? (subComputed * 2) : 0}`, cacheX + 8, cacheY + 50);
+      ctx.fillText(`Complexity: O(|X|·|Y|)`, cacheX + 8, cacheY + 66);
+      ctx.fillStyle = goldColor;
+      ctx.fillText(`LCS: "${extractedLCS}"`, cacheX + 8, cacheY + 84);
+      ctx.fillStyle = highColor;
+      ctx.fillText(`Max Score: ${dp[rows - 1][cols - 1]}`, cacheX + 8, cacheY + 100);
+
+      // Bottom Telemetry Footer
+      const ty = height - 20;
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.textAlign = 'center';
+      ctx.fillText(`Bellman Optimality: DP[i,j] = match ? DP[i-1,j-1]+1 : max(DP[i-1,j], DP[i,j-1]) | Extracted LCS: '${extractedLCS}'`, cx, ty);
+
+      // Scientific Telemetry HUD Overlay (Top-Left)
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 200 * scale;
+      const hudH = 110 * scale;
+      ctx.fillStyle = surfaceColor;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 10px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('DP LCS MEMOIZATION', hudX + 8, hudY + 16);
+
+      ctx.font = '9px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Sequences: X="${strX}", Y="${strY}"`, hudX + 8, hudY + 34);
+      ctx.fillText(`Grid Dimensions: ${rows}×${cols} cells`, hudX + 8, hudY + 50);
+      ctx.fillText(`Wavefront Cell: (${activeI}, ${activeJ})`, hudX + 8, hudY + 66);
+      ctx.fillText(`Phase: ${isFilling ? 'Matrix Fill' : 'Traceback'}`, hudX + 8, hudY + 82);
+      ctx.fillText(`Optimal Length: ${dp[rows - 1][cols - 1]}`, hudX + 8, hudY + 98);
     }
     requestAnimationFrame(animate);
   </script>

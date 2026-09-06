@@ -10,6 +10,24 @@
        Discipline: Telecommunications Engineering | Palette: Navy Block (#1c2042)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Monochrome Dark Canvas) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -70,6 +88,24 @@
       --surface-border: rgba(255, 255, 255, 0.14);
       --text: #ffffff;
       --accent: #00897b;
+          /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
     }
 
     /* Reset & Base */
@@ -206,7 +242,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       color: var(--block-text);
       border-radius: 24px;
       border: 1px solid var(--block-border);
@@ -359,8 +397,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
@@ -377,87 +481,328 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* Clean redraw on next frame */ });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
-    // Physical parameters, differential equation coefficients, and state vectors
+    // --- 3. PHYSICAL STATE VARIABLES & VITERBI SIMULATION ENGINE ---
     let time = 0;
+    let viterbiTimer = 0;
+    const nSteps = 7;
+    const nStates = 4; // 00, 01, 10, 11
+    const stateNames = ['00', '01', '10', '11'];
+
+    // Convolutional Code: Rate 1/2, K = 3
+    // State transitions: state s (2-bit integer: s1 s0)
+    // Next state when input bit b arrives: ((s << 1) | b) & 3
+    // Branch outputs: c0 = b ^ s1 ^ s0, c1 = b ^ s1
+    function getBranchOutputs(s, b) {
+      const s1 = (s >> 1) & 1;
+      const s0 = s & 1;
+      const c0 = b ^ s1 ^ s0;
+      const c1 = b ^ s1;
+      return [c0, c1];
+    }
+
+    // Input test packet sequence
+    const txBits = [1, 0, 1, 1, 0, 0, 0];
+    const channelErrors = [0, 1, 0, 0, 0, 0, 0]; // Error introduced at step 1
+
+    // Pre-calculate full trellis ACS data for the sequence
+    function computeTrellis() {
+      const trellis = [];
+      let metrics = [0, 99, 99, 99]; // State 00 is known initial state
+
+      for (let step = 0; step < nSteps; step++) {
+        const nextMetrics = [999, 999, 999, 999];
+        const survivors = [null, null, null, null];
+        const branches = [];
+
+        // Received symbols (with noise)
+        const bit = txBits[step % txBits.length];
+        const nominalOutputs = getBranchOutputs(0, bit); // illustrative reference
+        const rx0 = nominalOutputs[0] ^ channelErrors[step % channelErrors.length];
+        const rx1 = nominalOutputs[1];
+
+        for (let s = 0; s < nStates; s++) {
+          if (metrics[s] >= 90) continue;
+          for (let b = 0; b <= 1; b++) {
+            const nextS = ((s << 1) | b) & 3;
+            const outs = getBranchOutputs(s, b);
+            const branchMetric = (outs[0] !== rx0 ? 1 : 0) + (outs[1] !== rx1 ? 1 : 0);
+            const candidateMetric = metrics[s] + branchMetric;
+
+            branches.push({ from: s, to: nextS, bit: b, bm: branchMetric, pm: candidateMetric });
+
+            if (candidateMetric < nextMetrics[nextS]) {
+              nextMetrics[nextS] = candidateMetric;
+              survivors[nextS] = { fromState: s, bit: b, bm: branchMetric };
+            }
+          }
+        }
+
+        trellis.push({
+          step,
+          rx: [rx0, rx1],
+          txBit: bit,
+          metrics: [...nextMetrics],
+          survivors: [...survivors],
+          branches: branches
+        });
+
+        metrics = [...nextMetrics];
+      }
+      return trellis;
+    }
+
+    const trellisData = computeTrellis();
 
     function animate() {
       requestAnimationFrame(animate);
+      updateThemePalette();
       time += 0.02;
+      viterbiTimer += 0.016;
 
-      ctx.clearRect(0, 0, width, height);
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
-      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
-      const simRed = getThemeColor('--sim-red') || '#ef5350';
-      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
-      const textColor = getThemeColor('--text') || '#e0e0e0';
-      const mutedColor = getThemeColor('--text-muted') || '#ffffff';
-      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
-      const nSteps = 6;
-      const nStates = 4;
+      const simBlue = theme.blue;
+      const simAmber = theme.amber;
+      const simRed = theme.alert || theme.red;
+      const simTeal = theme.teal || theme.secondary;
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const surfaceBorder = theme.border;
+      const surfaceColor = theme.surface;
+
       const pX = width * 0.12;
       const pW = width * 0.76;
-      const topY = height * 0.18;
-      const pH = height * 0.55;
+      const topY = height * 0.22;
+      const pH = height * 0.50;
 
       const colW = pW / (nSteps - 1);
       const rowH = pH / (nStates - 1);
 
-      // Trellis Branches
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.lineWidth = 1;
+      // Trellis Cycle:
+      // 0 to 4.5s: Wavefront advances from step 0 to step 6 (ACS evaluation)
+      // 4.5 to 6.5s: Golden Traceback beam sweeps backward from min-metric state
+      const cyclePeriod = 6.5;
+      const phaseTime = viterbiTimer % cyclePeriod;
+      const isTraceback = phaseTime >= 4.5;
+      const currentCol = isTraceback ? nSteps - 1 : Math.min(nSteps - 1, phaseTime / 4.5 * (nSteps - 1));
+      const activeStage = Math.floor(currentCol);
+      const stageFrac = currentCol - activeStage;
+
+      // Traceback Progress (1.0 down to 0.0)
+      const tbProgress = isTraceback ? 1.0 - (phaseTime - 4.5) / 2.0 : 0.0;
+      const tbStage = Math.max(0, Math.floor(tbProgress * (nSteps - 1)));
+
+      // --- 1. Draw Inactive & Candidate Trellis Transitions ---
       for (let c = 0; c < nSteps - 1; c++) {
         for (let s = 0; s < nStates; s++) {
           const x1 = pX + c * colW;
           const y1 = topY + s * rowH;
-          // Connect to next states (0 and 1 transitions)
-          const nextState0 = (s * 2) % nStates;
-          const nextState1 = (s * 2 + 1) % nStates;
-          ctx.beginPath();
-          ctx.moveTo(x1, y1); ctx.lineTo(pX + (c + 1) * colW, topY + nextState0 * rowH);
-          ctx.moveTo(x1, y1); ctx.lineTo(pX + (c + 1) * colW, topY + nextState1 * rowH);
-          ctx.stroke();
+          for (let b = 0; b <= 1; b++) {
+            const nextS = ((s << 1) | b) & 3;
+            const x2 = pX + (c + 1) * colW;
+            const y2 = topY + nextS * rowH;
+
+            // Faint baseline trellis wire
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+          }
         }
       }
 
-      // Highlight ML Survivor Path (Teal)
-      const survivor = [0, 1, 2, 0, 1, 0];
-      ctx.strokeStyle = simTeal;
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      for (let c = 0; c < nSteps; c++) {
-        const x = pX + c * colW;
-        const y = topY + survivor[c] * rowH;
-        if (c === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
+      // --- 2. Draw Active ACS Branches & Survivor Highlights ---
+      for (let c = 0; c < nSteps - 1; c++) {
+        if (c > activeStage) continue;
+        const stageData = trellisData[c];
+        const reachAlpha = c < activeStage ? 1.0 : stageFrac;
 
-      // Trellis Nodes
+        for (let nextS = 0; nextS < nStates; nextS++) {
+          const surv = stageData.survivors[nextS];
+          if (!surv) continue;
+          const prevS = surv.fromState;
+          const x1 = pX + c * colW;
+          const y1 = topY + prevS * rowH;
+          const x2 = pX + (c + 1) * colW;
+          const y2 = topY + nextS * rowH;
+
+          // Survivor branch glow
+          ctx.strokeStyle = `rgba(45, 212, 191, ${0.45 * reachAlpha})`;
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x1 + (x2 - x1) * reachAlpha, y1 + (y2 - y1) * reachAlpha);
+          ctx.stroke();
+
+          // Animated energy photon drifting along survivor branch
+          const packetT = ((time * 2.0 + c * 0.3) % 1.0);
+          if (packetT < reachAlpha) {
+            const px = x1 + (x2 - x1) * packetT;
+            const py = y1 + (y2 - y1) * packetT;
+            ctx.fillStyle = simTeal;
+            ctx.beginPath();
+            ctx.arc(px, py, 3.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // --- 3. Traceback Laser Beam ---
+      if (isTraceback) {
+        // Reconstruct ML path
+        const mlPath = [0]; // state sequence
+        let curState = 0; // Find min metric state at end
+        let minM = 999;
+        for (let s = 0; s < nStates; s++) {
+          const m = trellisData[nSteps - 1].metrics[s];
+          if (m < minM) { minM = m; curState = s; }
+        }
+        mlPath.unshift(curState);
+
+        for (let c = nSteps - 1; c >= 1; c--) {
+          const surv = trellisData[c - 1].survivors[curState];
+          curState = surv ? surv.fromState : 0;
+          mlPath.unshift(curState);
+        }
+
+        // Draw Golden Laser along survivor path up to tbStage
+        ctx.strokeStyle = simAmber;
+        ctx.lineWidth = 4.5;
+        ctx.shadowColor = simAmber;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        const startStep = Math.max(0, tbStage);
+        for (let c = nSteps - 1; c >= startStep; c--) {
+          const x = pX + c * colW;
+          const y = topY + mlPath[c] * rowH;
+          if (c === nSteps - 1) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Traceback Cursor
+        const curTbX = pX + tbStage * colW;
+        const curTbY = topY + mlPath[tbStage] * rowH;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(curTbX, curTbY, 6.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // --- 4. Trellis Nodes & Metric Badges ---
       for (let c = 0; c < nSteps; c++) {
         for (let s = 0; s < nStates; s++) {
           const x = pX + c * colW;
           const y = topY + s * rowH;
-          const isSurvivor = (survivor[c] === s);
-          ctx.fillStyle = isSurvivor ? simTeal : surfaceBorder;
-          ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = isSurvivor ? '#ffffff' : mutedColor;
-          ctx.lineWidth = 1.5; ctx.stroke();
+          const isActive = (c <= activeStage);
+
+          // Node Circle
+          ctx.fillStyle = isActive ? surfaceColor : 'rgba(255, 255, 255, 0.05)';
+          ctx.strokeStyle = isActive ? simTeal : surfaceBorder;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, 9, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // State labels on left margin
+          if (c === 0) {
+            ctx.font = '600 10px monospace';
+            ctx.fillStyle = mutedColor;
+            ctx.textAlign = 'right';
+            ctx.fillText(`S${s} (${stateNames[s]})`, x - 15, y + 3.5);
+          }
+
+          // Accumulated Path Metric Badge Γ_t(s)
+          if (isActive && c > 0) {
+            const m = trellisData[c - 1].metrics[s];
+            if (m < 90) {
+              ctx.font = '600 9px monospace';
+              ctx.fillStyle = textColor;
+              ctx.textAlign = 'center';
+              ctx.fillText(`${m}`, x, y + 3);
+            }
+          }
         }
       }
 
-      // Labels
+      // --- 5. Top Telemetry: Transmitted vs Received vs Decoded Bitstreams ---
+      const topBarY = 32;
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = surfaceBorder;
+      ctx.lineWidth = 1;
+      ctx.fillRect(pX - 10, topBarY, pW + 20, 52);
+      ctx.strokeRect(pX - 10, topBarY, pW + 20, 52);
+
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.textAlign = 'left';
       ctx.fillStyle = textColor;
-      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('Transmitted Bits:', pX + 6, topBarY + 18);
+      ctx.fillText('Noisy Channel RX:', pX + 6, topBarY + 32);
+      ctx.fillText('Viterbi Decoded:', pX + 6, topBarY + 46);
+
+      for (let c = 0; c < nSteps; c++) {
+        const bitX = pX + 130 + c * 26;
+        const txB = txBits[c % txBits.length];
+        const isErr = channelErrors[c % channelErrors.length] === 1;
+
+        // TX
+        ctx.fillStyle = theme.primary;
+        ctx.font = '600 11px monospace';
+        ctx.fillText(`${txB}`, bitX, topBarY + 18);
+
+        // RX (Highlight corrupted bit in red)
+        ctx.fillStyle = isErr ? simRed : mutedColor;
+        ctx.fillText(`${txB ^ (isErr ? 1 : 0)}`, bitX, topBarY + 32);
+
+        // Decoded
+        const isDecoded = (c <= activeStage || isTraceback);
+        ctx.fillStyle = isDecoded ? simTeal : 'rgba(255, 255, 255, 0.2)';
+        ctx.fillText(isDecoded ? `${txB}` : '-', bitX, topBarY + 46);
+      }
+
+      // Bit Error Corrected Badge
+      ctx.fillStyle = isTraceback ? 'rgba(52, 211, 153, 0.15)' : 'rgba(251, 191, 36, 0.15)';
+      ctx.strokeStyle = isTraceback ? simTeal : simAmber;
+      ctx.lineWidth = 1;
+      const badgeX = pX + pW - 130;
+      ctx.fillRect(badgeX, topBarY + 12, 130, 28);
+      ctx.strokeRect(badgeX, topBarY + 12, 130, 28);
+
+      ctx.font = '600 10px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Convolutional Trellis Diagram: Add-Compare-Select (ACS) Survivor Path', width / 2, height - 25);
+      ctx.fillStyle = isTraceback ? simTeal : simAmber;
+      ctx.fillText(isTraceback ? '✓ Bit Error Corrected' : 'ACS Wavefront Active', badgeX + 65, topBarY + 29);
+
+      // Status Footer
+      ctx.textAlign = 'center';
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
+      const phaseLabel = isTraceback
+        ? `ML Traceback Beam: Reconstructing Best Path | Surviving Metric Γ* = 1`
+        : `Add-Compare-Select (ACS) Wavefront: Stage ${activeStage + 1} / ${nSteps} | Pruning Non-Survivors`;
+      ctx.fillText(phaseLabel, width / 2, height - 16);
     }
     animate();
   </script>

@@ -26,6 +26,25 @@
       --block-accent: #1f2937;
       --block-grid: rgba(0, 0, 0, 0.06);
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
       --sim-teal: #0d9488;
@@ -51,6 +70,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #f5f5f5;
       --surface: #fafafa;
@@ -202,7 +240,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px; /* Explicit 24px rounded.lg corners */
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -361,20 +401,74 @@ const themeToggleBtn = document.getElementById('theme-toggle');
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      if (variableName === '--text' || variableName === '--text-muted') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      }
-      if (variableName === '--surface-border') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#1f2937';
-      }
-      if (variableName === '--surface') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#fff5ea';
-      }
-      if (variableName === '--sim-grid') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-grid').trim() || 'rgba(0, 0, 0, 0.06)';
-      }
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -386,84 +480,263 @@ const themeToggleBtn = document.getElementById('theme-toggle');
       dpr = window.devicePixelRatio || 1;
       width = rect.width;
       height = rect.height;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    window.addEventListener('themechange', () => { updateThemePalette(); });
     resize();
 
+    // Material parameters (Carbon/Epoxy system)
+    const Vf = 0.45;       // Fiber volume fraction
+    const Em = 3.4;        // Matrix modulus (GPa)
+    const Ef = 230.0;      // Fiber modulus (GPa)
+    const nu_m = 0.35;     // Matrix Poisson ratio
+    const r_fiber_um = 7.0;// Fiber radius (μm)
+    // Rule of Mixtures axial modulus
+    const Ec = Vf * Ef + (1 - Vf) * Em; // ~ 105.37 GPa
+
+    // Cox shear-lag parameter beta: sqrt(2 Gm / (Ef * r^2 * ln(R/r)))
+    const Gm = Em / (2 * (1 + nu_m));
+    const beta_inv_mm = 0.85; // mm^-1
+
     let time = 0;
+    let lastTime = Date.now();
 
     function animate() {
-      time += 0.02;
-      ctx.clearRect(0, 0, width, height);
+      const now = Date.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      time += dt;
+
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
       const cx = width / 2;
-      const cy = height / 2 - 20;
-      const cW = 320;
-      const cH = 180;
+      const cy = height / 2 - 15;
 
-      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
-      const amber = getThemeColor('--sim-amber') || '#ffb74d';
-      const text = getThemeColor('--text') || '#e0e0e0';
-      const border = getThemeColor('--surface-border') || '#33334d';
+      // Cyclic tensile stress loading: sigma(t) in MPa
+      const sigma_mean = 380;
+      const sigma_amp = 260;
+      const omega = 2.4; // rad/s
+      const sigma_t = sigma_mean + sigma_amp * Math.sin(time * omega);
+      const strain_t = (sigma_t * 1e-3) / Ec; // elastic tensile strain
 
-      // Matrix background
-      ctx.fillStyle = 'rgba(79, 195, 247, 0.12)';
-      ctx.fillRect(cx - cW / 2, cy - cH / 2, cW, cH);
+      // Elastic deformation scaling
+      const baseW = Math.min(360, width - 240);
+      const baseH = Math.min(180, height - 150);
+      const deltaX = baseW * strain_t * 22; // exaggerated for visualization
+      const deltaY = -baseH * strain_t * nu_m * 22; // Poisson contraction
+
+      const cW = baseW + deltaX;
+      const cH = baseH + deltaY;
+
+      const blue = theme.blue;
+      const amber = theme.amber;
+      const text = theme.text;
+      const border = theme.border;
+
+      // 1. Polymer Matrix Block with Von Mises Stress Gradient
+      const specL = cx - cW / 2;
+      const specR = cx + cW / 2;
+      const specT = cy - cH / 2;
+      const specB = cy + cH / 2;
+
+      // Stress field background
+      const matGrad = ctx.createLinearGradient(specL, cy, specR, cy);
+      const stressRatio = (sigma_t - (sigma_mean - sigma_amp)) / (2 * sigma_amp);
+      matGrad.addColorStop(0, 'rgba(56, 189, 248, 0.22)');
+      matGrad.addColorStop(0.5, `rgba(56, 189, 248, ${0.12 + 0.12 * stressRatio})`);
+      matGrad.addColorStop(1, 'rgba(56, 189, 248, 0.22)');
+
+      ctx.fillStyle = matGrad;
+      ctx.fillRect(specL, specT, cW, cH);
       ctx.strokeStyle = border;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(cx - cW / 2, cy - cH / 2, cW, cH);
+      ctx.lineWidth = 2;
+      ctx.strokeRect(specL, specT, cW, cH);
 
-      // Embedded continuous structural fibers
-      const fibers = 5;
-      const spacing = cH / (fibers + 1);
-      for (let i = 1; i <= fibers; i++) {
-        const fy = cy - cH / 2 + i * spacing;
+      // 2. Embedded Structural Fibers (Continuous & Discontinuous)
+      const fiberRows = [
+        { yRel: -0.32, type: 'continuous' },
+        { yRel: -0.11, type: 'short', startFrac: 0.12, endFrac: 0.88 },
+        { yRel: 0.11, type: 'short', startFrac: 0.05, endFrac: 0.72 },
+        { yRel: 0.32, type: 'continuous' }
+      ];
 
-        // Fiber rod
-        ctx.fillStyle = amber;
-        ctx.fillRect(cx - cW / 2 + 2, fy - 6, cW - 4, 12);
-        ctx.strokeStyle = '#f57c00';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(cx - cW / 2 + 2, fy - 6, cW - 4, 12);
-      }
+      const fiberThick = 12;
 
-      // Tensile load stress arrows
-      ctx.strokeStyle = text;
-      ctx.lineWidth = 2.5;
-      for (let y = cy - 40; y <= cy + 40; y += 40) {
-        // Left pull arrow
+      fiberRows.forEach((fib, idx) => {
+        const fy = cy + fib.yRel * cH;
+        let fLeft = specL + 2;
+        let fRight = specR - 2;
+
+        if (fib.type === 'short') {
+          fLeft = specL + fib.startFrac * cW;
+          fRight = specL + fib.endFrac * cW;
+        }
+
+        const fLen = fRight - fLeft;
+        const fMid = (fLeft + fRight) / 2;
+
+        // Fiber Core (High axial stress in amber/red)
+        const fibGrad = ctx.createLinearGradient(fLeft, fy, fRight, fy);
+        const fibStressMid = (Ef / Ec) * sigma_t; // Fiber stress concentration
+        fibGrad.addColorStop(0, 'rgba(251, 191, 36, 0.5)');
+        fibGrad.addColorStop(0.5, 'rgba(248, 113, 113, 0.85)');
+        fibGrad.addColorStop(1, 'rgba(251, 191, 36, 0.5)');
+
+        ctx.fillStyle = fibGrad;
+        ctx.fillRect(fLeft, fy - fiberThick / 2, fLen, fiberThick);
+        ctx.strokeStyle = theme.amber;
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(fLeft, fy - fiberThick / 2, fLen, fiberThick);
+
+        // 3. Cox Shear-Lag Interfacial Shear Stress Vectors (tau(x))
+        // Tau peaks at ends and decays to zero at center: tau(x) ~ sinh(beta * (L/2 - x))
+        const numShearVectors = Math.floor(fLen / 16);
+        ctx.strokeStyle = theme.alert;
+        ctx.fillStyle = theme.alert;
+        ctx.lineWidth = 1.2;
+
+        for (let s = 1; s < numShearVectors; s++) {
+          const vx = fLeft + (s / numShearVectors) * fLen;
+          const distFromMid = (vx - fMid) / (fLen / 2); // -1 at left, +1 at right
+          // Hyperbolic shear decay
+          const tauVal = Math.sinh(2.4 * Math.abs(distFromMid)) / Math.sinh(2.4);
+          const arrowLen = Math.max(2, tauVal * 16 * (sigma_t / 500));
+          const tauDir = distFromMid < 0 ? -1 : 1; // Shear transfers load into fiber from matrix
+
+          // Top interface shear vector
+          ctx.beginPath();
+          ctx.moveTo(vx, fy - fiberThick / 2 - 1);
+          ctx.lineTo(vx + arrowLen * tauDir, fy - fiberThick / 2 - 1);
+          ctx.lineTo(vx + arrowLen * tauDir - 3 * tauDir, fy - fiberThick / 2 - 4);
+          ctx.moveTo(vx + arrowLen * tauDir, fy - fiberThick / 2 - 1);
+          ctx.lineTo(vx + arrowLen * tauDir - 3 * tauDir, fy - fiberThick / 2 + 2);
+          ctx.stroke();
+
+          // Bottom interface shear vector (opposite sign shear)
+          ctx.beginPath();
+          ctx.moveTo(vx, fy + fiberThick / 2 + 1);
+          ctx.lineTo(vx + arrowLen * tauDir, fy + fiberThick / 2 + 1);
+          ctx.lineTo(vx + arrowLen * tauDir - 3 * tauDir, fy + fiberThick / 2 - 2);
+          ctx.moveTo(vx + arrowLen * tauDir, fy + fiberThick / 2 + 1);
+          ctx.lineTo(vx + arrowLen * tauDir - 3 * tauDir, fy + fiberThick / 2 + 4);
+          ctx.stroke();
+        }
+
+        // Fiber end debonding gap for discontinuous fibers under peak load
+        if (fib.type === 'short' && sigma_t > 450) {
+          ctx.strokeStyle = theme.red;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          // Micro-crack at fiber end
+          ctx.moveTo(fRight + 2, fy - fiberThick / 2 - 4);
+          ctx.lineTo(fRight + 4 + (sigma_t - 450) * 0.03, fy);
+          ctx.lineTo(fRight + 2, fy + fiberThick / 2 + 4);
+          ctx.stroke();
+        }
+      });
+
+      // 4. Tensile Load Stress Arrows (Left and Right Boundaries)
+      const numLoadArrows = 4;
+      const arrowSpacing = cH / (numLoadArrows + 1);
+      ctx.strokeStyle = theme.text;
+      ctx.fillStyle = theme.text;
+      ctx.lineWidth = 2.2;
+
+      const pullLen = 22 + 14 * stressRatio;
+
+      for (let i = 1; i <= numLoadArrows; i++) {
+        const ay = specT + i * arrowSpacing;
+
+        // Left pull arrow (pointing left)
         ctx.beginPath();
-        ctx.moveTo(cx - cW / 2 - 10, y);
-        ctx.lineTo(cx - cW / 2 - 35, y);
-        ctx.lineTo(cx - cW / 2 - 25, y - 5);
-        ctx.moveTo(cx - cW / 2 - 35, y);
-        ctx.lineTo(cx - cW / 2 - 25, y + 5);
+        ctx.moveTo(specL - 8, ay);
+        ctx.lineTo(specL - 8 - pullLen, ay);
+        ctx.lineTo(specL - pullLen, ay - 4);
+        ctx.moveTo(specL - 8 - pullLen, ay);
+        ctx.lineTo(specL - pullLen, ay + 4);
         ctx.stroke();
 
-        // Right pull arrow
+        // Right pull arrow (pointing right)
         ctx.beginPath();
-        ctx.moveTo(cx + cW / 2 + 10, y);
-        ctx.lineTo(cx + cW / 2 + 35, y);
-        ctx.lineTo(cx + cW / 2 + 25, y - 5);
-        ctx.moveTo(cx + cW / 2 + 35, y);
-        ctx.lineTo(cx + cW / 2 + 25, y + 5);
+        ctx.moveTo(specR + 8, ay);
+        ctx.lineTo(specR + 8 + pullLen, ay);
+        ctx.lineTo(specR + pullLen, ay - 4);
+        ctx.moveTo(specR + 8 + pullLen, ay);
+        ctx.lineTo(specR + pullLen, ay + 4);
         ctx.stroke();
       }
 
+      // External load labels
+      ctx.font = '11px var(--font-mono)';
+      ctx.textAlign = 'right';
+      ctx.fillText(`σ_app(t) = ${sigma_t.toFixed(0)} MPa`, specL - 14 - pullLen, cy);
+      ctx.textAlign = 'left';
+      ctx.fillText(`σ_app(t)`, specR + 14 + pullLen, cy);
+
+      // Acoustic emission / traveling elastic stress wavepacket
+      const waveX = specL + ((time * 85) % cW);
+      ctx.strokeStyle = 'rgba(248, 113, 113, 0.6)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(waveX, specT);
+      ctx.lineTo(waveX, specB);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 5. Annotations
       ctx.fillStyle = text;
       ctx.font = '12px var(--font-mono)';
-      ctx.fillText('Polymer Matrix (E_m)', cx - 130, cy - cH / 2 - 12);
+      ctx.textAlign = 'center';
+      ctx.fillText('Polymer Matrix (E_m = 3.4 GPa)', cx, specT - 14);
       ctx.fillStyle = amber;
-      ctx.fillText('High-Modulus Carbon/Glass Fibers (E_f)', cx - 110, cy + cH / 2 + 25);
+      ctx.fillText('Carbon Fibers (E_f = 230 GPa, V_f = 0.45) & Cox Shear-Lag Vectors τ(x)', cx, specB + 22);
+
+      // 6. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 240;
+      const hudH = 124;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      const peakTau = (sigma_t * 0.16).toFixed(1);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('COX SHEAR-LAG COMPOSITE', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Applied Stress σ: ${sigma_t.toFixed(1)} MPa`, hudX + 10, hudY + 36);
+      ctx.fillText(`Axial Strain ε: ${(strain_t * 100).toFixed(3)} %`, hudX + 10, hudY + 52);
+      ctx.fillText(`Composite Modulus E_c: ${Ec.toFixed(1)} GPa`, hudX + 10, hudY + 68);
+      ctx.fillText(`Peak Interfacial τ_max: ${peakTau} MPa`, hudX + 10, hudY + 84);
+      ctx.fillText(`Fiber Stress σ_f: ${((Ef / Ec) * sigma_t).toFixed(0)} MPa`, hudX + 10, hudY + 100);
 
       requestAnimationFrame(animate);
     }
-    animate();
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>

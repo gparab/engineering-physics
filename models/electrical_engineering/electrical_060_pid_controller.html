@@ -10,6 +10,24 @@
        Discipline: Electrical Engineering | Palette: Navy Block (#1c2042)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Monochrome Dark Canvas) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -70,6 +88,24 @@
       --surface-border: rgba(255, 255, 255, 0.14);
       --text: #ffffff;
       --accent: #0277bd;
+          /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
     }
 
     /* Reset & Base */
@@ -206,7 +242,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       color: var(--block-text);
       border-radius: 24px;
       border: 1px solid var(--block-border);
@@ -359,8 +397,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
@@ -377,149 +481,249 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* Clean redraw on next frame */ });
     resize();
 
     // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
-    // Physical parameters, differential equation coefficients, and state vectors
     let time = 0;
 
+    // Dynamical plant parameters (second-order mass-spring-damper)
+    const plant = {
+      m: 1.0,
+      b: 0.8,
+      k: 2.0,
+      y: 0.0,   // position (process variable PV)
+      v: 0.0,   // velocity
+      setpoint: 1.0
+    };
+
+    // PID Controller gains & state
+    const pid = {
+      Kp: 12.0,
+      Ki: 4.5,
+      Kd: 3.2,
+      integral: 0.0,
+      prevError: 0.0,
+      u: 0.0,
+      P: 0.0,
+      I: 0.0,
+      D: 0.0
+    };
+
+    // Rolling waveform buffer for oscilloscope
+    const bufferSize = 260;
+    const history = [];
+
+    // --- 4. CONTINUOUS ANIMATION LOOP & NUMERICAL INTEGRATION ---
     function animate() {
       requestAnimationFrame(animate);
+      updateThemePalette();
       time += 0.016;
 
-      ctx.clearRect(0, 0, width, height);
+      // 1. Dynamic Setpoint Periodic Step (every 5 seconds)
+      plant.setpoint = Math.sin(time * 0.6) > 0 ? 1.0 : 0.0;
 
-      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
-      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
-      const simRed = getThemeColor('--sim-red') || '#ef5350';
-      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
-      const textColor = getThemeColor('--text') || '#e0e0e0';
-      const mutedColor = getThemeColor('--text-muted') || '#ffffff';
-      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+      // 2. Numerical Integration Step (Euler / RK2)
+      const dt = 0.016;
+      const error = plant.setpoint - plant.y;
 
-      // 1. Parallel P, I, D Blocks (Left / Center)
-      const bX = width * 0.32;
-      const bW = 84;
-      const bH = 34;
+      // Proportional term
+      pid.P = pid.Kp * error;
 
-      const yP = height * 0.16;
-      const yI = height * 0.30;
-      const yD = height * 0.44;
+      // Integral term with anti-windup clamping
+      pid.integral += error * dt;
+      pid.integral = Math.max(-5.0, Math.min(5.0, pid.integral));
+      pid.I = pid.Ki * pid.integral;
 
-      // Connecting lines
-      const splitX = width * 0.14;
-      const sumX = width * 0.54;
+      // Derivative term (on error)
+      const dError = (error - pid.prevError) / dt;
+      pid.prevError = error;
+      pid.D = pid.Kd * dError;
 
-      ctx.strokeStyle = surfaceBorder;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      // Input to Splitter
-      ctx.moveTo(width * 0.06, yI);
-      ctx.lineTo(splitX, yI);
-      // Split to P, I, D
-      ctx.moveTo(splitX, yP); ctx.lineTo(splitX, yD);
-      ctx.moveTo(splitX, yP); ctx.lineTo(bX - bW / 2, yP);
-      ctx.moveTo(splitX, yI); ctx.lineTo(bX - bW / 2, yI);
-      ctx.moveTo(splitX, yD); ctx.lineTo(bX - bW / 2, yD);
-      // P, I, D to Summing Junction
-      ctx.moveTo(bX + bW / 2, yP); ctx.lineTo(sumX, yP); ctx.lineTo(sumX, yI);
-      ctx.moveTo(bX + bW / 2, yI); ctx.lineTo(sumX, yI);
-      ctx.moveTo(bX + bW / 2, yD); ctx.lineTo(sumX, yD); ctx.lineTo(sumX, yI);
-      // Summing to Plant Output
-      ctx.moveTo(sumX, yI); ctx.lineTo(width * 0.88, yI);
-      ctx.stroke();
+      // Total control effort with actuator saturation limit
+      pid.u = pid.P + pid.I + pid.D;
+      pid.u = Math.max(-18.0, Math.min(18.0, pid.u));
 
-      // P Block
-      ctx.fillStyle = getThemeColor('--surface') || '#22223a';
-      ctx.fillRect(bX - bW / 2, yP - bH / 2, bW, bH);
-      ctx.strokeStyle = simRed;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(bX - bW / 2, yP - bH / 2, bW, bH);
-      ctx.fillStyle = simRed;
-      ctx.font = 'bold 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('P: K_p · e', bX, yP + 4);
+      // Plant dynamics: m y'' + b y' + k y = u
+      const acceleration = (pid.u - plant.b * plant.v - plant.k * plant.y) / plant.m;
+      plant.v += acceleration * dt;
+      plant.y += plant.v * dt;
 
-      // I Block
-      ctx.fillStyle = getThemeColor('--surface') || '#22223a';
-      ctx.fillRect(bX - bW / 2, yI - bH / 2, bW, bH);
-      ctx.strokeStyle = simAmber;
-      ctx.strokeRect(bX - bW / 2, yI - bH / 2, bW, bH);
-      ctx.fillStyle = simAmber;
-      ctx.fillText('I: K_i ∫ e dt', bX, yI + 4);
+      // Push to rolling history
+      history.push({
+        sp: plant.setpoint,
+        pv: plant.y,
+        u: pid.u,
+        p: pid.P,
+        i: pid.I,
+        d: pid.D
+      });
+      if (history.length > bufferSize) history.shift();
 
-      // D Block
-      ctx.fillStyle = getThemeColor('--surface') || '#22223a';
-      ctx.fillRect(bX - bW / 2, yD - bH / 2, bW, bH);
-      ctx.strokeStyle = simBlue;
-      ctx.strokeRect(bX - bW / 2, yD - bH / 2, bW, bH);
-      ctx.fillStyle = simBlue;
-      ctx.fillText('D: K_d · de/dt', bX, yD + 4);
+      // Clear Canvas
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      // Summing Circle
-      ctx.fillStyle = getThemeColor('--surface') || '#22223a';
-      ctx.beginPath();
-      ctx.arc(sumX, yI, 15, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = simTeal;
-      ctx.stroke();
-      ctx.fillStyle = simTeal;
-      ctx.fillText('∑', sumX, yI + 4);
+      // Coordinate Grid
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 30); ctx.lineTo(x, height - 30); ctx.stroke();
+      }
+      for (let y = 30; y < height - 30; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
-      // Plant Block
-      const pX = width * 0.72;
-      ctx.fillRect(pX - 40, yI - 20, 80, 40);
-      ctx.strokeStyle = simTeal;
-      ctx.strokeRect(pX - 40, yI - 20, 80, 40);
-      ctx.fillStyle = textColor;
-      ctx.fillText('Plant G(s)', pX, yI + 4);
+      // 3. Render Upper Schematic Diagram & Physical Actuator
+      const splitX = width * 0.12;
+      const bX = width * 0.28;
+      const sumX = width * 0.46;
+      const plantX = width * 0.62;
+      const yMid = height * 0.24;
 
-      // 2. Real-time Closed-Loop Step Response (Bottom Half)
-      const graphX = width * 0.1;
-      const graphY = height * 0.58;
-      const graphW = width * 0.8;
-      const graphH = height * 0.36;
-
-      ctx.fillStyle = getThemeColor('--surface') || '#22223a';
-      ctx.fillRect(graphX, graphY, graphW, graphH);
-      ctx.strokeStyle = surfaceBorder;
-      ctx.strokeRect(graphX, graphY, graphW, graphH);
-
-      // Target setpoint line
-      const spY = graphY + graphH * 0.28;
-      ctx.strokeStyle = simAmber;
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(graphX, spY);
-      ctx.lineTo(graphX + graphW, spY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = simAmber;
-      ctx.font = '11px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('Setpoint r(t) = 1.0', graphX + 12, spY - 5);
-
-      // Response Curve PV(t)
-      const base0Y = graphY + graphH * 0.85;
-      ctx.strokeStyle = simTeal;
+      // Connecting paths
+      ctx.strokeStyle = theme.border;
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      for (let x = 0; x < graphW - 30; x++) {
-        const tVal = x * 0.02;
-        // Dampened PID step response with small overshoot and zero steady state error
-        const pv = 1.0 - Math.exp(-tVal * 1.8) * Math.cos(tVal * 4.2);
-        const yCoord = base0Y - pv * (base0Y - spY);
-        if (x === 0) ctx.moveTo(graphX + 15 + x, yCoord);
-        else ctx.lineTo(graphX + 15 + x, yCoord);
-      }
+      ctx.moveTo(width * 0.05, yMid); ctx.lineTo(splitX, yMid);
+      ctx.moveTo(splitX, yMid - 30); ctx.lineTo(splitX, yMid + 30);
+      ctx.moveTo(splitX, yMid - 30); ctx.lineTo(bX - 25, yMid - 30);
+      ctx.moveTo(splitX, yMid); ctx.lineTo(bX - 25, yMid);
+      ctx.moveTo(splitX, yMid + 30); ctx.lineTo(bX - 25, yMid + 30);
+      ctx.moveTo(bX + 25, yMid - 30); ctx.lineTo(sumX, yMid - 30); ctx.lineTo(sumX, yMid);
+      ctx.moveTo(bX + 25, yMid); ctx.lineTo(sumX, yMid);
+      ctx.moveTo(bX + 25, yMid + 30); ctx.lineTo(sumX, yMid + 30); ctx.lineTo(sumX, yMid);
+      ctx.moveTo(sumX, yMid); ctx.lineTo(plantX - 30, yMid);
+      ctx.moveTo(plantX + 30, yMid); ctx.lineTo(width * 0.90, yMid);
       ctx.stroke();
 
-      ctx.fillStyle = simTeal;
-      ctx.fillText('Process Variable PV(t) [Zero Steady-State Error]', graphX + graphW * 0.45, spY - 5);
+      // P, I, D Blocks
+      function drawBlock(bx, by, label, color, val) {
+        ctx.fillStyle = theme.surface;
+        ctx.fillRect(bx - 28, by - 12, 56, 24);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(bx - 28, by - 12, 56, 24);
+        ctx.fillStyle = color;
+        ctx.font = 'bold 10px var(--font-mono)';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, bx, by + 4);
+      }
+      drawBlock(bX, yMid - 30, 'P: Kp·e', theme.red, pid.P);
+      drawBlock(bX, yMid, 'I: Ki∫e', theme.amber, pid.I);
+      drawBlock(bX, yMid + 30, 'D: Kd·ė', theme.blue, pid.D);
+
+      // Summing junction
+      ctx.fillStyle = theme.surface;
+      ctx.beginPath();
+      ctx.arc(sumX, yMid, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = theme.teal;
+      ctx.stroke();
+      ctx.fillStyle = theme.teal;
+      ctx.font = 'bold 12px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillText('∑', sumX, yMid + 4);
+
+      // Plant Block with Live Mechanical Cart Actuator
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(plantX - 32, yMid - 20, 64, 40);
+      ctx.strokeStyle = theme.teal;
+      ctx.strokeRect(plantX - 32, yMid - 20, 64, 40);
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px var(--font-mono)';
+      ctx.fillText('PLANT', plantX, yMid - 2);
+
+      // Cart tracking setpoint
+      const cartX = plantX - 20 + plant.y * 20;
+      ctx.fillStyle = theme.primary;
+      ctx.fillRect(cartX - 5, yMid + 8, 10, 8);
+
+      // 4. Live Rolling Oscilloscope Graph (Lower Half)
+      const gX = width * 0.08;
+      const gY = height * 0.44;
+      const gW = width * 0.84;
+      const gH = height * 0.46;
+
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(gX, gY, gW, gH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(gX, gY, gW, gH);
+
+      // Target Setpoint line in graph
+      const spY = gY + gH * 0.35;
+      const zeroY = gY + gH * 0.80;
+
+      // Draw horizontal reference lines
+      ctx.strokeStyle = theme.grid;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(gX, spY); ctx.lineTo(gX + gW, spY);
+      ctx.moveTo(gX, zeroY); ctx.lineTo(gX + gW, zeroY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.amber;
+      ctx.textAlign = 'left';
+      ctx.fillText(`Setpoint r(t) = ${plant.setpoint.toFixed(1)}`, gX + 10, gY + 16);
+
+      // Plot historical curves
+      if (history.length > 1) {
+        // Setpoint curve
+        ctx.strokeStyle = theme.amber;
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        for (let i = 0; i < history.length; i++) {
+          const px = gX + (i / bufferSize) * gW;
+          const py = zeroY - history[i].sp * (zeroY - spY);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Process Variable PV curve (glowing response)
+        ctx.strokeStyle = theme.teal;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let i = 0; i < history.length; i++) {
+          const px = gX + (i / bufferSize) * gW;
+          const py = zeroY - history[i].pv * (zeroY - spY);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+
+      // Legend
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.teal;
+      ctx.fillText('■ Process Variable y(t)', gX + 160, gY + 16);
+      ctx.fillStyle = theme.primary;
+      ctx.fillText(`Error e(t): ${error.toFixed(2)}`, gX + 320, gY + 16);
+
+      // 5. PID Component Telemetry Readout
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.red;
+      ctx.fillText(`P: ${pid.P.toFixed(2)}`, gX + 10, gY + gH - 12);
+      ctx.fillStyle = theme.amber;
+      ctx.fillText(`I: ${pid.I.toFixed(2)}`, gX + 90, gY + gH - 12);
+      ctx.fillStyle = theme.blue;
+      ctx.fillText(`D: ${pid.D.toFixed(2)}`, gX + 170, gY + gH - 12);
+      ctx.fillStyle = theme.text;
+      ctx.fillText(`Total Effort u(t): ${pid.u.toFixed(2)}`, gX + 250, gY + gH - 12);
+
+      // Bottom Status
+      ctx.fillStyle = theme.textMuted;
+      ctx.font = '500 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Closed-Loop Feedback: u(t) = K_p e(t) + K_i ∫ e(τ) dτ + K_d (de/dt) | 2nd-Order Plant ODE m ÿ + b ẏ + k y = u`, width / 2, height - 16);
     }
     animate();
   </script>

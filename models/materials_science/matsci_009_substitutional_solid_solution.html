@@ -26,6 +26,25 @@
       --block-accent: #1f2937;
       --block-grid: rgba(0, 0, 0, 0.06);
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
       --sim-teal: #0d9488;
@@ -51,6 +70,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #f5f5f5;
       --surface: #fafafa;
@@ -202,7 +240,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px; /* Explicit 24px rounded.lg corners */
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -361,20 +401,74 @@ const themeToggleBtn = document.getElementById('theme-toggle');
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      if (variableName === '--text' || variableName === '--text-muted') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      }
-      if (variableName === '--surface-border') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#1f2937';
-      }
-      if (variableName === '--surface') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#fff5ea';
-      }
-      if (variableName === '--sim-grid') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-grid').trim() || 'rgba(0, 0, 0, 0.06)';
-      }
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -386,59 +480,318 @@ const themeToggleBtn = document.getElementById('theme-toggle');
       dpr = window.devicePixelRatio || 1;
       width = rect.width;
       height = rect.height;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
+    window.addEventListener('themechange', () => { updateThemePalette(); });
     resize();
 
+    // Lattice Grid Configuration
+    const rows = 9;
+    const cols = 11;
+    const numSites = rows * cols;
+    const sp = 30; // lattice parameter spacing in pixels
+
+    // Lattice state: 0 = Solvent (Cu), 1 = Solute (Ni), -1 = Vacancy
+    const grid = new Int8Array(numSites);
+    const soluteTrails = []; // Historical paths for diffusing solutes
+
+    // Initialize Solutes & Vacancies
+    const initialSolutes = [15, 23, 31, 47, 52, 68, 76, 84, 91];
+    initialSolutes.forEach(idx => {
+      if (idx < numSites) {
+        grid[idx] = 1;
+        soluteTrails.push({ id: idx, path: [] });
+      }
+    });
+
+    const vacancies = [26, 70];
+    vacancies.forEach(idx => {
+      if (idx < numSites) grid[idx] = -1;
+    });
+
+    // Physical Constants
+    const r_solvent_pm = 128; // Cu atomic radius
+    const r_solute_pm = 144;  // Solute atomic radius (+12.5% mismatch)
+    const sizeMisfit = ((r_solute_pm - r_solvent_pm) / r_solvent_pm) * 100; // +12.5%
+    const DeltaG_m_eV = 0.68; // Migration activation energy
+    const kB_eV = 8.617e-5;
+
     let time = 0;
-    const soluteIndices = new Set([7, 13, 21, 28, 33, 42]);
+    let lastTime = Date.now();
+    let hopAccumulator = 0;
+
+    function getNeighbors(idx) {
+      const r = Math.floor(idx / cols);
+      const c = idx % cols;
+      const nbrs = [];
+      if (r > 0) nbrs.push(idx - cols);
+      if (r < rows - 1) nbrs.push(idx + cols);
+      if (c > 0) nbrs.push(idx - 1);
+      if (c < cols - 1) nbrs.push(idx + 1);
+      return nbrs;
+    }
 
     function animate() {
-      time += 0.02;
-      ctx.clearRect(0, 0, width, height);
+      const now = Date.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      time += dt;
 
-      const cx = width / 2;
-      const cy = height / 2 - 20;
-      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
-      const amber = getThemeColor('--sim-amber') || '#ffb74d';
-      const text = getThemeColor('--text') || '#e0e0e0';
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      const rows = 7;
-      const cols = 7;
-      const sp = 32;
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
-      let idx = 0;
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const x = cx + (c - cols / 2) * sp;
-          const y = cy + (r - rows / 2) * sp;
+      const cx = width / 2 - 20;
+      const cy = height / 2 - 10;
+      const blue = theme.blue;
+      const amber = theme.amber;
+      const text = theme.text;
 
-          const isSolute = soluteIndices.has(idx);
+      // Dynamic Temperature Cycle: 850 K to 1150 K
+      const tempK = 950 + 200 * Math.sin(time * 0.4);
+      // Arrhenius jump rate
+      const jumpRate = 22 * Math.exp(-DeltaG_m_eV / (kB_eV * tempK));
+      hopAccumulator += jumpRate * dt * 14;
 
-          ctx.fillStyle = isSolute ? amber : blue;
-          ctx.beginPath();
-          ctx.arc(x, y, isSolute ? 7 : 5.5, 0, Math.PI * 2);
-          ctx.fill();
+      // 1. Execute Vacancy-Solvent/Solute Swaps
+      while (hopAccumulator >= 1.0) {
+        hopAccumulator -= 1.0;
+        // Pick one vacancy
+        const vIdx = Math.floor(Math.random() * vacancies.length);
+        const currVPos = vacancies[vIdx];
+        const nbrs = getNeighbors(currVPos);
+        if (nbrs.length > 0) {
+          const target = nbrs[Math.floor(Math.random() * nbrs.length)];
+          const occupant = grid[target];
+          if (occupant !== -1) {
+            // Swap vacancy and atom
+            grid[currVPos] = occupant;
+            grid[target] = -1;
+            vacancies[vIdx] = target;
 
-          idx++;
+            // If solute hopped, record its trail
+            if (occupant === 1) {
+              const tr = Math.floor(target / cols);
+              const tc = target % cols;
+              soluteTrails.forEach(st => {
+                if (st.path.length === 0 || Math.hypot(st.path[st.path.length - 1].c - tc, st.path[st.path.length - 1].r - tr) < 2) {
+                  st.path.push({ r: tr, c: tc, t: time });
+                  if (st.path.length > 18) st.path.shift();
+                }
+              });
+            }
+          }
         }
       }
 
-      ctx.fillStyle = text;
-      ctx.font = '12px var(--font-mono)';
+      // 2. Compute Elastic Strain Field around Oversized Solute Atoms
+      // Displace neighbor coordinates radially: u_r ~ (delta r) / dist^2
+      const positionsX = new Float32Array(numSites);
+      const positionsY = new Float32Array(numSites);
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const idx = r * cols + c;
+          let x = cx + (c - (cols - 1) / 2) * sp;
+          let y = cy + (r - (rows - 1) / 2) * sp;
+
+          // Elastic distortion from all solute atoms
+          for (let i = 0; i < numSites; i++) {
+            if (grid[i] === 1 && i !== idx) {
+              const sr = Math.floor(i / cols);
+              const sc = i % cols;
+              const sx = cx + (sc - (cols - 1) / 2) * sp;
+              const sy = cy + (sr - (rows - 1) / 2) * sp;
+              const dx = x - sx;
+              const dy = y - sy;
+              const d2 = dx * dx + dy * dy;
+              if (d2 > 1 && d2 < sp * sp * 9) {
+                const dist = Math.sqrt(d2);
+                const push = (4.5 * (sp / dist)) * (sp / dist);
+                x += (dx / dist) * push;
+                y += (dy / dist) * push;
+              }
+            }
+          }
+
+          // Thermal phonon vibration
+          const thermalAmp = 1.3 * Math.sqrt(tempK / 300);
+          x += thermalAmp * (Math.sin(time * 16 + r * 3.1 + c) + 0.3 * Math.cos(time * 28 + c * 2.3));
+          y += thermalAmp * (Math.cos(time * 14 + c * 2.7) + 0.3 * Math.sin(time * 30 + r * 1.9));
+
+          positionsX[idx] = x;
+          positionsY[idx] = y;
+        }
+      }
+
+      // 3. Render Interatomic Bonds
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+      ctx.lineWidth = 1;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const idx = r * cols + c;
+          const px = positionsX[idx];
+          const py = positionsY[idx];
+
+          if (c < cols - 1) {
+            const rightIdx = r * cols + (c + 1);
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(positionsX[rightIdx], positionsY[rightIdx]);
+            ctx.stroke();
+          }
+          if (r < rows - 1) {
+            const downIdx = (r + 1) * cols + c;
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(positionsX[downIdx], positionsY[downIdx]);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // 4. Render Solute Diffusion Historical Path Trails
+      soluteTrails.forEach(st => {
+        if (st.path.length > 1) {
+          ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+          ctx.lineWidth = 1.8;
+          ctx.setLineDash([2, 2]);
+          ctx.beginPath();
+          st.path.forEach((pt, pIdx) => {
+            const tx = cx + (pt.c - (cols - 1) / 2) * sp;
+            const ty = cy + (pt.r - (rows - 1) / 2) * sp;
+            if (pIdx === 0) ctx.moveTo(tx, ty);
+            else ctx.lineTo(tx, ty);
+          });
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      });
+
+      // 5. Render Atoms & Vacancies
+      for (let idx = 0; idx < numSites; idx++) {
+        const px = positionsX[idx];
+        const py = positionsY[idx];
+        const state = grid[idx];
+
+        if (state === 1) {
+          // Solute Atom (Oversized with localized compressive strain halo)
+          const haloGrad = ctx.createRadialGradient(px, py, 2, px, py, 18);
+          haloGrad.addColorStop(0, 'rgba(251, 191, 36, 0.4)');
+          haloGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+          ctx.fillStyle = haloGrad;
+          ctx.beginPath();
+          ctx.arc(px, py, 18, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = amber;
+          ctx.beginPath();
+          ctx.arc(px, py, 7.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#d97706';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+        } else if (state === 0) {
+          // Solvent Host Atom (Cu)
+          ctx.fillStyle = blue;
+          ctx.beginPath();
+          ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (state === -1) {
+          // Vacancy site (dashed circle with jump activation pulse)
+          ctx.strokeStyle = theme.alert;
+          ctx.lineWidth = 1.8;
+          ctx.setLineDash([2, 2]);
+          ctx.beginPath();
+          ctx.arc(px, py, 6.5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Flashing jump halo
+          const vPulse = 8 + 4 * Math.sin(time * 10 + idx);
+          ctx.strokeStyle = 'rgba(248, 113, 113, 0.35)';
+          ctx.beginPath();
+          ctx.arc(px, py, vPulse, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
+      // Legend
+      ctx.font = '11px var(--font-mono)';
+      ctx.textAlign = 'left';
       ctx.fillStyle = blue;
-      ctx.fillText('● Host Solvent Lattice Atoms (Cu)', cx - 130, cy + 125);
+      ctx.fillText('● Host Cu Solvent (r = 128 pm)', cx - 180, cy + (rows * sp) / 2 + 25);
       ctx.fillStyle = amber;
-      ctx.fillText('● Substitutional Solute Atoms (Ni)', cx - 130, cy + 145);
+      ctx.fillText('● Substitutional Solute (r = 144 pm, +12.5% Misfit)', cx - 180, cy + (rows * sp) / 2 + 42);
+      ctx.fillStyle = theme.alert;
+      ctx.fillText('◌ Mobile Vacancy Hopping Site', cx + 90, cy + (rows * sp) / 2 + 25);
+
+      // Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 230;
+      const hudH = 124;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      const soluteFrac = ((initialSolutes.length / numSites) * 100).toFixed(1);
+      const D_diff = (2.1e-12 * Math.exp(-DeltaG_m_eV / (kB_eV * tempK))).toExponential(2);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('SOLID SOLUTION DIFFUSION', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Lattice Temp T: ${tempK.toFixed(0)} K`, hudX + 10, hudY + 36);
+      ctx.fillText(`Size Misfit δ: +${sizeMisfit.toFixed(1)}%`, hudX + 10, hudY + 52);
+      ctx.fillText(`Solute Conc C_B: ${soluteFrac} at%`, hudX + 10, hudY + 68);
+      ctx.fillText(`Vacancy Jump Γ: ${(jumpRate * 10).toFixed(1)} s⁻¹`, hudX + 10, hudY + 84);
+      ctx.fillText(`Diffusivity D: ${D_diff} m²/s`, hudX + 10, hudY + 100);
+
+      // Inset Vegard's Law Plot
+      const vX = width - 180, vY = 24, vW = 150, vH = 80;
+      ctx.fillStyle = theme.surface; ctx.fillRect(vX, vY, vW, vH);
+      ctx.strokeStyle = theme.border; ctx.strokeRect(vX, vY, vW, vH);
+      ctx.strokeStyle = theme.axis; ctx.beginPath();
+      ctx.moveTo(vX + 20, vY + vH - 15); ctx.lineTo(vX + vW - 10, vY + vH - 15);
+      ctx.moveTo(vX + 20, vY + vH - 15); ctx.lineTo(vX + 20, vY + 12); ctx.stroke();
+
+      // Vegard straight line: a(x)
+      ctx.strokeStyle = theme.primary; ctx.lineWidth = 1.5; ctx.beginPath();
+      ctx.moveTo(vX + 20, vY + vH - 22); ctx.lineTo(vX + vW - 15, vY + 20); ctx.stroke();
+
+      // Current operating composition dot
+      const opX = vX + 20 + (initialSolutes.length / numSites) * (vW - 35);
+      const opY = (vY + vH - 22) - (initialSolutes.length / numSites) * (vH - 42);
+      ctx.fillStyle = theme.accent; ctx.beginPath();
+      ctx.arc(opX, opY, 4, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = theme.textMuted; ctx.font = '9px var(--font-mono)';
+      ctx.fillText('Vegard a(x) [Å]', vX + 22, vY + 10);
+      ctx.fillText(`a = ${(3.615 + 0.08 * (initialSolutes.length / numSites)).toFixed(3)} Å`, vX + 24, vY + vH - 2);
 
       requestAnimationFrame(animate);
     }
-    animate();
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>

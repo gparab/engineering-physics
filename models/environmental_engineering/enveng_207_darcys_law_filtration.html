@@ -29,6 +29,25 @@
       --block-accent: #064e3b;
       --block-grid: rgba(0, 0, 0, 0.06);
 
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
       --sim-teal: #0f766e;
@@ -62,6 +81,25 @@
       --surface-border: rgba(0, 0, 0, 0.10);
       --text: #000000;
       --accent: #0277bd;
+
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
 
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
@@ -211,7 +249,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -362,12 +402,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      // High-contrast fallbacks calibrated for the pastel simulation color block
-      if (variableName === '--text') return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      if (variableName === '--text-muted') return '#1f2937';
-      if (variableName === '--surface-border') return getComputedStyle(document.documentElement).getPropertyValue('--block-border').trim() || 'rgba(0, 0, 0, 0.12)';
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. HIGH-DPI CANVAS INITIALIZATION & RESIZE HANDLING ---
@@ -384,65 +486,264 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => { /* trigger canvas update on theme switch */ });
+    window.addEventListener('themechange', () => { });
     resize();
 
     // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let time = 0;
+    const K0 = 1.2e-3; // m/s clean bed conductivity
+    const eps0 = 0.42;  // clean bed porosity
+    let eps = eps0;
+    const Lbed = 0.8;   // m bed depth
+    let headLoss = 0.45; // m H2O
+    const qDarcy = K0 * (headLoss / Lbed); // m/s
+
+    // 65 Sand Grains in fixed porous packing
     const grains = [];
-    for (let i = 0; i < 60; i++) {
-      grains.push({ x: 0.2 + 0.6 * Math.random(), y: 0.45 + 0.28 * Math.random(), r: 5 + 3 * Math.random() });
+    const numGrains = 65;
+    for (let i = 0; i < numGrains; i++) {
+      const col = (i % 8);
+      const row = Math.floor(i / 8);
+      grains.push({
+        xFrac: 0.26 + col * 0.065 + (Math.sin(i * 17) * 0.015),
+        yFrac: 0.46 + row * 0.038 + (Math.cos(i * 13) * 0.012),
+        r: 6.5 + (Math.sin(i * 7) + 1) * 2.5,
+        cloggedDeposit: 0.0
+      });
     }
 
-    let time = 0;
+    // Water & Contaminant Tracer Particles
+    const PARTICLE_COUNT = 85;
+    const particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        xFrac: 0.24 + Math.random() * 0.50,
+        yFrac: 0.25 + Math.random() * 0.50,
+        speedY: 0.003 + Math.random() * 0.002,
+        isContaminant: Math.random() < 0.28,
+        captured: false,
+        size: 2.0 + Math.random() * 1.5
+      });
+    }
 
     // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
     function animate() {
-      ctx.clearRect(0, 0, width, height);
-      const blue = getThemeColor('--sim-blue');
-      const text = getThemeColor('--text');
-      const textMuted = getThemeColor('--text-muted');
-      const amber = getThemeColor('--sim-amber');
-      const border = getThemeColor('--surface-border');
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      time += 0.02;
+      time += 0.025;
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
       const colX = width * 0.22;
-      const colW = width * 0.56;
-      const colTop = height * 0.25;
-      const colBot = height * 0.78;
-      const mediaTop = height * 0.45;
+      const colW = width * 0.54;
+      const colTop = height * 0.22;
+      const colBot = height * 0.82;
+      const mediaTop = height * 0.44;
 
-      // Filter Column
-      ctx.strokeStyle = border;
+      // Dynamic head loss accumulation with gentle pulsation
+      headLoss = 0.45 + 0.05 * Math.sin(time * 0.5) + 0.02 * Math.cos(time * 1.2);
+      eps = eps0 - 0.04 * (headLoss - 0.45);
+
+      // 1. Filter Column Housing
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(colX, colTop, colW, colBot - colTop);
+      ctx.strokeStyle = theme.border;
       ctx.lineWidth = 3;
       ctx.strokeRect(colX, colTop, colW, colBot - colTop);
 
-      // Water above media
-      ctx.fillStyle = 'rgba(79, 195, 247, 0.2)';
+      // Water above media (Influent Supernatant Water)
+      const supernatant = ctx.createLinearGradient(0, colTop, 0, mediaTop);
+      supernatant.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
+      supernatant.addColorStop(1, 'rgba(45, 212, 191, 0.20)');
+      ctx.fillStyle = supernatant;
       ctx.fillRect(colX, colTop, colW, mediaTop - colTop);
 
-      // Media Bed
-      ctx.fillStyle = 'rgba(244, 164, 96, 0.15)';
-      ctx.fillRect(colX, mediaTop, colW, colBot - mediaTop);
+      // Media Bed (Sand/Anthracite layer)
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.08)';
+      ctx.fillRect(colX, mediaTop, colW, colBot - mediaTop - 30);
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(colX, mediaTop);
+      ctx.lineTo(colX + colW, mediaTop);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-      // Sand Grains
-      ctx.fillStyle = amber;
+      // Underdrain & Support Gravel
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.18)';
+      ctx.fillRect(colX, colBot - 30, colW, 30);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(colX, colBot - 30);
+      ctx.lineTo(colX + colW, colBot - 30);
+      ctx.stroke();
+
+      // 2. Sand Grains & Pore Channels
       grains.forEach(g => {
+        const gx = width * g.xFrac;
+        const gy = height * g.yFrac;
+
+        // Clogged biofilm/contaminant rim
         ctx.beginPath();
-        ctx.arc(width * g.x, height * g.y, g.r, 0, Math.PI * 2);
+        ctx.arc(gx, gy, g.r + 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(244, 164, 96, 0.22)';
+        ctx.fill();
+
+        // Sand grain core
+        ctx.beginPath();
+        ctx.arc(gx, gy, g.r, 0, Math.PI * 2);
+        ctx.fillStyle = theme.amber;
+        ctx.fill();
+        ctx.strokeStyle = theme.border;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      });
+
+      // 3. Fluid & Contaminant Particle Streamlines (Darcy interstitial flow)
+      particles.forEach(p => {
+        if (!p.captured) {
+          // Accelerate through media bed pore throats (v_pore = q / eps)
+          const inMedia = (p.yFrac * height >= mediaTop) && (p.yFrac * height <= colBot - 30);
+          const velMult = inMedia ? (1.0 / eps) * 0.9 : 0.6;
+          p.yFrac += p.speedY * velMult;
+
+          // Tortuous lateral deflection around sand grains
+          const px = width * p.xFrac;
+          const py = height * p.yFrac;
+
+          grains.forEach(g => {
+            const gx = width * g.xFrac;
+            const gy = height * g.yFrac;
+            const dx = px - gx;
+            const dy = py - gy;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const avoidDist = g.r + p.size + 3;
+
+            if (dist < avoidDist && dist > 0.1) {
+              // Push sideways around grain
+              const nx = dx / dist;
+              p.xFrac += (nx * 0.0035);
+
+              // Adhesion/ripening capture probability for contaminants
+              if (p.isContaminant && dist < g.r + 3.0 && Math.random() < 0.02) {
+                p.captured = true;
+                g.cloggedDeposit += 0.05;
+              }
+            }
+          });
+
+          // Reset when reaching bottom effluent drain
+          if (p.yFrac * height >= colBot) {
+            p.yFrac = colTop / height + 0.01;
+            p.xFrac = 0.24 + Math.random() * 0.50;
+            p.captured = false;
+          }
+        }
+
+        const curX = width * p.xFrac;
+        const curY = height * p.yFrac;
+
+        ctx.beginPath();
+        ctx.arc(curX, curY, p.size, 0, Math.PI * 2);
+        if (p.isContaminant) {
+          ctx.fillStyle = p.captured ? theme.red : theme.alert;
+        } else {
+          ctx.fillStyle = theme.blue;
+        }
         ctx.fill();
       });
 
-      ctx.fillStyle = text;
-      ctx.font = '13px Inter, sans-serif';
+      // 4. Dynamic Piezometric Manometer Tube (Right Side)
+      const manoX = colX + colW + 28;
+      const manoY = colBot;
+      const manoH = 170;
+      const waterHeadY = colTop + (colBot - colTop) * (1.0 - headLoss / 0.8);
+
+      // Glass manometer column
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+      ctx.fillRect(manoX, waterHeadY, 14, manoY - waterHeadY);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(manoX, colTop - 20, 14, colBot - (colTop - 20));
+
+      // Water meniscus in manometer
+      ctx.fillStyle = theme.blue;
+      ctx.beginPath();
+      ctx.arc(manoX + 7, waterHeadY, 7, 0, Math.PI);
+      ctx.fill();
+
+      // Connecting impulse tubing
+      ctx.strokeStyle = theme.blue;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(colX + colW, colBot - 40);
+      ctx.lineTo(manoX, colBot - 40);
+      ctx.stroke();
+
+      // Manometer tick marks & measurement label
+      ctx.strokeStyle = theme.textMuted;
+      ctx.lineWidth = 1;
+      for (let my = colTop; my <= colBot; my += 20) {
+        ctx.beginPath();
+        ctx.moveTo(manoX + 14, my);
+        ctx.lineTo(manoX + 20, my);
+        ctx.stroke();
+      }
+      ctx.fillStyle = theme.text;
+      ctx.font = '600 10px var(--font-mono)';
       ctx.textAlign = 'left';
-      ctx.fillText('Filtration Rate v = 10.0 m/h | Clean Bed Porosity ε₀ = 0.42', 24, 30);
-      ctx.fillText('Hydraulic Conductivity K = 1.2 × 10⁻³ m/s', 24, 52);
+      ctx.fillText(`Δh = ${headLoss.toFixed(2)} m H₂O`, manoX + 24, waterHeadY + 4);
+      ctx.fillText(`(Head Loss)`, manoX + 24, waterHeadY + 16);
+
+      // Annotations
+      ctx.fillStyle = theme.teal;
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillText('INFLUENT RAW WATER (v_f = 10 m/h) ↓', colX + 15, colTop - 10);
+      ctx.fillText('↓ EFFLUENT TREATED FILTRATE (NTU < 0.15)', colX + 15, colBot + 20);
+      ctx.fillText('Granular Media Bed (L = 0.80 m)', colX + 15, mediaTop + 18);
+
+      // 5. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 245;
+      const hudH = 142;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('DARCYS LAW GRANULAR FILTRATION', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Superficial Velocity v_f: 10.0 m/h`, hudX + 10, hudY + 36);
+      ctx.fillText(`Darcy Superficial Flux q: ${(qDarcy * 1000).toFixed(2)} mm/s`, hudX + 10, hudY + 52);
+      ctx.fillText(`Hydraulic Conductivity K₀: ${(K0*1000).toFixed(2)} mm/s`, hudX + 10, hudY + 68);
+      ctx.fillText(`Active Media Porosity ε: ${eps.toFixed(3)} (Clean ε₀ = 0.42)`, hudX + 10, hudY + 84);
+      ctx.fillText(`Head Loss Δh: ${headLoss.toFixed(2)} m (Darcy i = ${(headLoss/Lbed).toFixed(3)})`, hudX + 10, hudY + 100);
+      ctx.fillText(`Filtrate Turbidity: 0.12 NTU (Passing)`, hudX + 10, hudY + 118);
 
       requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    animate();
   </script>
 </body>
 </html>

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superconducting Transmon Qubit Anharmonicity — Quantum Engineering</title>
+  <style>
+
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block (Cream / Amber) */
+      --block-bg: #fff5ea;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #fff5ea;
+      --block-text: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    main canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Superconducting Transmon Qubit Anharmonicity</h1>
+      <div class="discipline-badge">Quantum Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      The transmon qubit operates in the large Josephson-to-charging energy ratio regime (E_J / E_C ≫ 1), drastically reducing sensitivity to low-frequency charge noise while maintaining weak negative anharmonicity α. The non-linear Josephson inductance provides a cosine potential well that pulls higher energy eigenstates closer together, shifting the |1⟩→|2⟩ transition frequency below the computational |0⟩→|1⟩ frequency to prevent multi-level leakage.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        H = 4E_C · (n̂ - n_g)² - E_J · cos(φ̂) ,  α = E₁₂ - E₀₁ ≈ -E_C
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Superconducting Transmon Qubit Anharmonicity
+     * Discipline: Quantum Engineering
+     *
+     * 1. Physical Phenomenon:
+     *    Coherent quantum mechanics, Hilbert space state vectors, and unitary transformations.
+     *    Superconducting circuits, quantum optics, and fault-tolerant error correction.
+     * 2. Governing Equations:
+     *    Unitary evolution: i * hbar * d|psi>/dt = H |psi>
+     *    Projective measurement: P(m) = <psi| M_m^dagger M_m |psi>
+     * 3. Numerical Integration & State Representation:
+     *    Continuous phase space tracking, rotating frame coordinates, and density matrices.
+     *    Real-time state vector precession, coherent superposition, and decoherence envelopes.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Theme palette definition
+    const theme = {
+      bg: '#121526',
+      text: '#ffffff',
+      grid: 'rgba(255, 255, 255, 0.08)',
+      axis: 'rgba(255, 255, 255, 0.25)',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      purple: '#c084fc'
+    };
+
+    function updateThemePalette() {
+      const computed = getComputedStyle(document.documentElement);
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      theme.bg = isLight ? '#ffffff' : '#121526';
+      theme.text = isLight ? '#000000' : '#ffffff';
+      theme.grid = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+      theme.axis = isLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
+      theme.blue = isLight ? '#0277bd' : '#38bdf8';
+      theme.teal = isLight ? '#00897b' : '#2dd4bf';
+      theme.amber = isLight ? '#d97706' : '#fbbf24';
+      theme.red = isLight ? '#c62828' : '#f87171';
+      theme.purple = isLight ? '#6a1b9a' : '#c084fc';
+    }
+    window.addEventListener('themechange', updateThemePalette);
+    updateThemePalette();
+
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let time = 0;
+    const EJ_over_EC = 50;
+    const f01 = 5.0; // GHz
+    const alpha = -0.28; // GHz anharmonicity
+    const f12 = f01 + alpha;
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION LOOP ---
+    function animate() {
+      updateThemePalette();
+      time += 0.024;
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      const cx = width * 0.5;
+      const cy = height * 0.62;
+      const scaleX = (width - 120) / (4 * Math.PI);
+      const scaleY = height * 0.35;
+
+      // Cosine Potential Well V(phi) = -E_J * cos(phi)
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let x = -width * 0.44; x <= width * 0.44; x += 4) {
+        const phi = (x / scaleX);
+        const v = -Math.cos(phi);
+        const py = cy + v * scaleY;
+        if (x === -width * 0.44) ctx.moveTo(cx + x, py);
+        else ctx.lineTo(cx + x, py);
+      }
+      ctx.stroke();
+
+      // Energy Eigenstate Levels within the Cosine Well
+      const levels = [
+        { n: 0, energy: -0.85, label: '|0⟩', color: theme.blue, f: 0 },
+        { n: 1, energy: -0.45, label: '|1⟩', color: theme.teal, f: f01 },
+        { n: 2, energy: -0.10, label: '|2⟩', color: theme.amber, f: f12 },
+        { n: 3, energy: 0.20, label: '|3⟩', color: theme.red, f: f12 + alpha * 1.2 }
+      ];
+
+      for (let lvl of levels) {
+        const ly = cy + lvl.energy * scaleY;
+        const phiMax = Math.acos(Math.max(-1, Math.min(1, -lvl.energy)));
+        const xSpan = phiMax * scaleX;
+
+        // Discrete Bound Level Rung
+        ctx.strokeStyle = lvl.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx - xSpan, ly);
+        ctx.lineTo(cx + xSpan, ly);
+        ctx.stroke();
+
+        // Eigenstate Wavefunction Superimposed
+        ctx.strokeStyle = lvl.color;
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        for (let x = -xSpan; x <= xSpan; x += 3) {
+          const phi = x / scaleX;
+          let psi = 0;
+          if (lvl.n === 0) psi = Math.exp(-Math.pow(phi * 1.2, 2)) * 16;
+          else if (lvl.n === 1) psi = (phi * 1.8) * Math.exp(-Math.pow(phi * 1.2, 2)) * 16;
+          else if (lvl.n === 2) psi = (2 * Math.pow(phi * 1.2, 2) - 1) * Math.exp(-Math.pow(phi * 1.2, 2)) * 12;
+          else psi = (2 * Math.pow(phi * 1.2, 3) - 3 * (phi * 1.2)) * Math.exp(-Math.pow(phi * 1.2, 2)) * 6;
+
+          // Subtle breathing phase animation
+          const animatedPsi = psi * Math.cos(time * (lvl.n + 1) * 1.5);
+          if (x === -xSpan) ctx.moveTo(cx + x, ly - animatedPsi);
+          else ctx.lineTo(cx + x, ly - animatedPsi);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = lvl.color;
+        ctx.font = '12px JetBrains Mono, monospace';
+        ctx.fillText(lvl.label, cx + xSpan + 10, ly + 4);
+      }
+
+      // Transition Frequency Arrows
+      const y0 = cy + levels[0].energy * scaleY;
+      const y1 = cy + levels[1].energy * scaleY;
+      const y2 = cy + levels[2].energy * scaleY;
+
+      // 0 -> 1 transition arrow (f_01)
+      const arrow1X = cx - 90;
+      ctx.strokeStyle = theme.teal;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(arrow1X, y0); ctx.lineTo(arrow1X, y1);
+      ctx.stroke();
+
+      ctx.fillStyle = theme.teal;
+      ctx.beginPath();
+      ctx.moveTo(arrow1X - 4, y1 + 8); ctx.lineTo(arrow1X, y1); ctx.lineTo(arrow1X + 4, y1 + 8);
+      ctx.fill();
+
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText(`ω₀₁ = 2π · ${f01.toFixed(2)} GHz`, arrow1X - 110, (y0 + y1) * 0.5 + 4);
+
+      // 1 -> 2 transition arrow (f_12)
+      const arrow2X = cx + 80;
+      ctx.strokeStyle = theme.amber;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(arrow2X, y1); ctx.lineTo(arrow2X, y2);
+      ctx.stroke();
+
+      ctx.fillStyle = theme.amber;
+      ctx.beginPath();
+      ctx.moveTo(arrow2X - 4, y2 + 8); ctx.lineTo(arrow2X, y2); ctx.lineTo(arrow2X + 4, y2 + 8);
+      ctx.fill();
+
+      ctx.fillText(`ω₁₂ = 2π · ${f12.toFixed(2)} GHz`, arrow2X + 12, (y1 + y2) * 0.5 + 4);
+
+      // Anharmonicity Gap Bracket
+      ctx.strokeStyle = theme.red;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx + 20, y1); ctx.lineTo(cx + 35, y1);
+      ctx.moveTo(cx + 20, y2); ctx.lineTo(cx + 35, y2);
+      ctx.moveTo(cx + 35, y1); ctx.lineTo(cx + 35, y2);
+      ctx.stroke();
+
+      ctx.fillStyle = theme.red;
+      ctx.fillText(`α ≈ -E_C = ${alpha * 1000} MHz`, cx + 42, (y1 + y2) * 0.5 + 4);
+
+      // Telemetry HUD
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText('SUPERCONDUCTING TRANSMON QUBIT ANHARMONIC POTENTIAL', 24, 28);
+      ctx.fillText(`Josephson Ratio E_J / E_C = ${EJ_over_EC} | Charge Noise Insensitive Regime`, 24, 46);
+      ctx.fillText(`Qubit Frequency ω₀₁ / 2π: ${f01.toFixed(2)} GHz | 2nd State ω₁₂ / 2π: ${f12.toFixed(2)} GHz`, 24, height - 25);
+      ctx.fillText(`Weak Negative Anharmonicity α: ${alpha * 1000} MHz (Blocks multi-level leakage)`, 24, height - 10);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
+</body>
+</html>

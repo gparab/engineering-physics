@@ -10,6 +10,24 @@
        Discipline: Telecommunications Engineering | Palette: Navy Block (#1c2042)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Monochrome Dark Canvas) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -70,6 +88,24 @@
       --surface-border: rgba(255, 255, 255, 0.14);
       --text: #ffffff;
       --accent: #00897b;
+          /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
     }
 
     /* Reset & Base */
@@ -206,7 +242,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       color: var(--block-text);
       border-radius: 24px;
       border: 1px solid var(--block-border);
@@ -359,8 +397,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
@@ -377,84 +481,302 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* Clean redraw on next frame */ });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
-    // Physical parameters, differential equation coefficients, and state vectors
+    // --- 3. PHYSICAL STATE VARIABLES & OFDM SIMULATION ENGINE ---
     let time = 0;
+    const numSubcarriers = 5;
+    const baseFreqs = [1.0, 2.0, 3.0, 4.0, 5.0]; // Orthogonal integer multiples of Delta f
+    const subcarrierPhases = [0, Math.PI * 0.25, Math.PI * 0.5, Math.PI * 0.75, Math.PI];
+    const subcarrierSymbols = [
+      { i: 1, q: 1 },
+      { i: -1, q: 1 },
+      { i: 1, q: -1 },
+      { i: -1, q: -1 },
+      { i: 0, q: 1 }
+    ];
+    const subcarrierColors = ['#38bdf8', '#2dd4bf', '#fbbf24', '#f87171', '#c084fc'];
+    
+    // Rolling buffer for composite time-domain signal s(t)
+    const timeBufferSize = 180;
+    const timeBuffer = new Float32Array(timeBufferSize);
 
     function animate() {
       requestAnimationFrame(animate);
-      time += 0.02;
+      updateThemePalette();
+      time += 0.025;
 
-      ctx.clearRect(0, 0, width, height);
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      const simBlue = getThemeColor('--sim-blue') || '#4fc3f7';
-      const simAmber = getThemeColor('--sim-amber') || '#ffb74d';
-      const simRed = getThemeColor('--sim-red') || '#ef5350';
-      const simTeal = getThemeColor('--sim-teal') || '#26a69a';
-      const textColor = getThemeColor('--text') || '#e0e0e0';
-      const mutedColor = getThemeColor('--text-muted') || '#ffffff';
-      const surfaceBorder = getThemeColor('--surface-border') || '#33334d';
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
-      const pX = width * 0.1;
-      const pW = width * 0.8;
-      const pY = height * 0.18;
-      const pH = height * 0.54;
-      const base0Y = pY + pH - 30;
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const surfaceBorder = theme.border;
+      const surfaceColor = theme.surface;
 
-      ctx.fillStyle = getThemeColor('--surface') || '#22223a';
-      ctx.fillRect(pX, pY, pW, pH);
+      // --- 1. Compute Instantaneous Time-Domain Sample ---
+      let instantaneousComposite = 0;
+      let totalPower = 0;
+      let instI = 0;
+      let instQ = 0;
+
+      for (let k = 0; k < numSubcarriers; k++) {
+        const omega = 2 * Math.PI * baseFreqs[k] * 0.8;
+        const phi = subcarrierPhases[k];
+        const sk = subcarrierSymbols[k].i * Math.cos(omega * time + phi) - subcarrierSymbols[k].q * Math.sin(omega * time + phi);
+        instantaneousComposite += sk;
+        totalPower += sk * sk;
+        instI += subcarrierSymbols[k].i * Math.cos(omega * time + phi);
+        instQ += subcarrierSymbols[k].q * Math.sin(omega * time + phi);
+      }
+      instantaneousComposite /= numSubcarriers;
+      instI /= numSubcarriers;
+      instQ /= numSubcarriers;
+
+      // Shift rolling time buffer
+      for (let i = 0; i < timeBufferSize - 1; i++) {
+        timeBuffer[i] = timeBuffer[i + 1];
+      }
+      timeBuffer[timeBufferSize - 1] = instantaneousComposite;
+
+      // Layout Panels:
+      // Top Panel: Frequency Spectrum S_k(f) with zero-crosstalk null demonstration
+      // Bottom-Left: Scrolling Time-Domain Signal s(t)
+      // Bottom-Right: I/Q Constellation & Subcarrier Phasor Wheel
+      const topX = 30;
+      const topY = 30;
+      const topW = width - 60;
+      const topH = Math.max(140, height * 0.44);
+
+      const botY = topY + topH + 20;
+      const botH = height - botY - 35;
+      const botWLeft = (topW - 20) * 0.62;
+      const botWRight = (topW - 20) * 0.38;
+      const botXRight = topX + botWLeft + 20;
+
+      // --- PANEL 1: Frequency Spectrum (Orthogonal Sinc Curves) ---
+      ctx.fillStyle = surfaceColor;
+      ctx.fillRect(topX, topY, topW, topH);
       ctx.strokeStyle = surfaceBorder;
-      ctx.strokeRect(pX, pY, pW, pH);
+      ctx.lineWidth = 1;
+      ctx.strokeRect(topX, topY, topW, topH);
 
-      // Frequency axis
+      ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('Frequency Domain: Sinc Subcarrier Orthogonality at Sampling Centers', topX + 16, topY + 22);
+
+      const base0Y = topY + topH - 30;
       ctx.strokeStyle = surfaceBorder;
       ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(pX, base0Y); ctx.lineTo(pX + pW, base0Y); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(topX + 20, base0Y);
+      ctx.lineTo(topX + topW - 20, base0Y);
+      ctx.stroke();
 
-      // Draw 5 Orthogonal Sinc Subcarriers
-      const subColors = [simBlue, simTeal, simAmber, simRed, '#ba68c8'];
-      const nSubs = 5;
-      const spacing = pW / (nSubs + 1);
+      const spacing = (topW - 100) / (numSubcarriers + 1);
+      const subcarrierCenters = [];
 
-      for (let s = 1; s <= nSubs; s++) {
-        const centerFreqX = pX + s * spacing;
-        ctx.strokeStyle = subColors[s - 1];
-        ctx.lineWidth = 2.5;
+      for (let s = 1; s <= numSubcarriers; s++) {
+        const centerFreqX = topX + 50 + s * spacing;
+        subcarrierCenters.push(centerFreqX);
+        const col = subcarrierColors[s - 1];
+
+        // Draw Sinc Curve for subcarrier s
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
         ctx.beginPath();
 
-        for (let x = 0; x < pW; x++) {
-          const fx = pX + x;
-          const u = (fx - centerFreqX) / (spacing * 0.32);
+        for (let x = 0; x < topW - 40; x += 2) {
+          const fx = topX + 20 + x;
+          const u = (fx - centerFreqX) / (spacing * 0.5);
           const sinc = u === 0 ? 1 : Math.sin(Math.PI * u) / (Math.PI * u);
-          const py = base0Y - Math.abs(sinc) * (pH * 0.65);
+          const py = base0Y - sinc * (topH * 0.55);
           if (x === 0) ctx.moveTo(fx, py);
           else ctx.lineTo(fx, py);
         }
         ctx.stroke();
 
-        // Subcarrier center peak marker
-        ctx.fillStyle = subColors[s - 1];
-        ctx.beginPath(); ctx.arc(centerFreqX, base0Y - pH * 0.65, 4.5, 0, Math.PI * 2); ctx.fill();
+        // Subcarrier center peak marker with dynamic breathing ring
+        const peakPulse = 4.5 + Math.sin(time * 3 + s) * 1.5;
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.arc(centerFreqX, base0Y - topH * 0.55, peakPulse, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx.font = 'bold 11px sans-serif';
+        // Zero-null detection markers on adjacent subcarrier centers
+        ctx.fillStyle = col;
+        ctx.font = '600 11px monospace';
         ctx.textAlign = 'center';
         ctx.fillText(`f_${s}`, centerFreqX, base0Y + 18);
       }
 
-      ctx.fillStyle = textColor;
-      ctx.font = 'bold 13px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('Overlapping Orthogonal Sinc Spectra: Zero Interference at Sample Peaks', pX + 15, pY + 24);
+      // Dynamic receiver sampling comb cursor demonstrating orthogonality
+      const activeScanIdx = (Math.floor(time * 0.8) % numSubcarriers);
+      const scanX = subcarrierCenters[activeScanIdx];
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(scanX, topY + 30);
+      ctx.lineTo(scanX, base0Y + 8);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-      // Status
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '500 10px monospace';
+      ctx.fillText(`RX Match Filter @ f_${activeScanIdx + 1} (ICI = 0.00)`, scanX, topY + 42);
+
+      // --- PANEL 2: Scrolling Time-Domain Baseband Oscilloscope s(t) ---
+      if (botH > 60) {
+        ctx.fillStyle = surfaceColor;
+        ctx.fillRect(topX, botY, botWLeft, botH);
+        ctx.strokeStyle = surfaceBorder;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(topX, botY, botWLeft, botH);
+
+        ctx.font = '600 11px Inter, sans-serif';
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'left';
+        ctx.fillText('Time Domain: Composite Signal s(t) = ∑ Re{X_k · e^{j 2π f_k t}}', topX + 14, botY + 18);
+
+        const oscMidY = botY + botH * 0.55;
+        ctx.strokeStyle = theme.grid;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(topX + 10, oscMidY);
+        ctx.lineTo(topX + botWLeft - 10, oscMidY);
+        ctx.stroke();
+
+        // Draw rolling waveform
+        ctx.strokeStyle = theme.primary;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        const stepX = (botWLeft - 30) / (timeBufferSize - 1);
+        for (let i = 0; i < timeBufferSize; i++) {
+          const wx = topX + 15 + i * stepX;
+          const wy = oscMidY - timeBuffer[i] * (botH * 0.35);
+          if (i === 0) ctx.moveTo(wx, wy);
+          else ctx.lineTo(wx, wy);
+        }
+        ctx.stroke();
+
+        // Draw instantaneous sample head indicator
+        const headX = topX + 15 + (timeBufferSize - 1) * stepX;
+        const headY = oscMidY - timeBuffer[timeBufferSize - 1] * (botH * 0.35);
+        ctx.fillStyle = theme.accent;
+        ctx.beginPath();
+        ctx.arc(headX, headY, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cyclic Prefix Marker banner
+        const cpW = botWLeft * 0.22;
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+        ctx.fillRect(topX + 15, botY + 28, cpW, botH - 35);
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+        ctx.setLineDash([2, 2]);
+        ctx.strokeRect(topX + 15, botY + 28, cpW, botH - 35);
+        ctx.setLineDash([]);
+        ctx.font = '500 9px monospace';
+        ctx.fillStyle = theme.primary;
+        ctx.fillText('Cyclic Prefix (T_cp)', topX + 22, botY + 42);
+
+        // --- PANEL 3: I/Q Complex Plane & Rotating Phasors ---
+        ctx.fillStyle = surfaceColor;
+        ctx.fillRect(botXRight, botY, botWRight, botH);
+        ctx.strokeStyle = surfaceBorder;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(botXRight, botY, botWRight, botH);
+
+        ctx.font = '600 11px Inter, sans-serif';
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'left';
+        ctx.fillText('I/Q Constellation & Phasors', botXRight + 12, botY + 18);
+
+        const iqCx = botXRight + botWRight * 0.5;
+        const iqCy = botY + botH * 0.58;
+        const iqRadius = Math.min(botWRight, botH) * 0.32;
+
+        // Axes
+        ctx.strokeStyle = surfaceBorder;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(iqCx - iqRadius - 8, iqCy);
+        ctx.lineTo(iqCx + iqRadius + 8, iqCy);
+        ctx.moveTo(iqCx, iqCy - iqRadius - 8);
+        ctx.lineTo(iqCx, iqCy + iqRadius + 8);
+        ctx.stroke();
+
+        // Unit circle
+        ctx.strokeStyle = theme.grid;
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.arc(iqCx, iqCy, iqRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 5 rotating subcarrier phasors
+        for (let k = 0; k < numSubcarriers; k++) {
+          const omega = 2 * Math.PI * baseFreqs[k] * 0.8;
+          const theta = omega * time + subcarrierPhases[k];
+          const px = iqCx + Math.cos(theta) * (iqRadius * 0.7);
+          const py = iqCy - Math.sin(theta) * (iqRadius * 0.7);
+
+          ctx.strokeStyle = subcarrierColors[k];
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(iqCx, iqCy);
+          ctx.lineTo(px, py);
+          ctx.stroke();
+
+          ctx.fillStyle = subcarrierColors[k];
+          ctx.beginPath();
+          ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Composite vector sum
+        const sumX = iqCx + instI * iqRadius;
+        const sumY = iqCy - instQ * iqRadius;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(iqCx, iqCy);
+        ctx.lineTo(sumX, sumY);
+        ctx.stroke();
+
+        ctx.fillStyle = theme.accent;
+        ctx.beginPath();
+        ctx.arc(sumX, sumY, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = '500 9px monospace';
+        ctx.fillStyle = mutedColor;
+        ctx.textAlign = 'center';
+        ctx.fillText(`I: ${instI.toFixed(2)}  Q: ${instQ.toFixed(2)}`, iqCx, botY + botH - 8);
+      }
+
+      // Bottom Telemetry Footer
+      const ty = height - 12;
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
       ctx.textAlign = 'center';
-      ctx.font = '13px sans-serif';
-      ctx.fillText('Orthogonality Condition: Subcarrier Spacing Δf = 1 / T_symbol  (Zero Spectral Guard Band Loss)', width / 2, height - 25);
+      ctx.fillText(`Orthogonality Condition: ∫₀^T exp(j 2π f_k t) · exp(-j 2π f_m t) dt = T · δ_km | Subcarriers N: 5 | Zero ICI`, width / 2, ty);
     }
     animate();
   </script>

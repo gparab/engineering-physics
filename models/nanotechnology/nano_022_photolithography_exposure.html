@@ -43,6 +43,25 @@
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* Geometry & Spacing */
       --rounded-card: 24px;
       --rounded-pill: 50px;
@@ -56,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #f5f5f5;
       --surface: #fafafa;
@@ -202,7 +240,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -353,20 +393,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      if (variableName === '--text' || variableName === '--text-muted') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      }
-      if (variableName === '--surface-border') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#312e81';
-      }
-      if (variableName === '--surface') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-bg').trim() || '#e0d4fc';
-      }
-      if (variableName === '--accent') {
-        return getComputedStyle(document.documentElement).getPropertyValue('--block-accent').trim() || '#312e81';
-      }
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     function getCssColor(varName, fallback) {
@@ -375,7 +469,6 @@
     }
 
     // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
-    // Configures canvas backing store buffer scaled by devicePixelRatio for Retina crispness
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
     let width = 0, height = 0, dpr = 1;
@@ -389,71 +482,268 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => { /* redraw triggers automatically on next frame */ });
+    window.addEventListener('themechange', () => { updateThemePalette(); });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & PARAMETERS ---
-    // Core physical parameters, oscillation frequencies, and position states
+    // Photolithography parameters
+    const lambda_nm = 193; // ArF DUV immersion (nm)
+    const NA = 1.35;       // Numerical aperture
+    const k1 = 0.28;
+    const CD_nm = (k1 * lambda_nm / NA); // ~ 40 nm target critical dimension
+    const cycleDuration = 16; // seconds
+
+    // Dill ABC parameters
+    const Dill_A = 0.75; // um^-1
+    const Dill_B = 0.08; // um^-1
+    const Dill_C = 0.016; // cm^2/mJ
+
+    // Resist discretization
+    const NUM_RESIST_COLUMNS = 70;
+
     let time = 0;
+    let lastTime = Date.now();
 
-    // --- 4. CONTINUOUS ANIMATION LOOP & NUMERICAL INTEGRATION ---
-    // Propagates dynamics each animation frame via time integration step
     function animate() {
-      time += 0.025;
-      // Clear canvas (transparent ground lets pastel color block show through)
-      ctx.clearRect(0, 0, width, height);
+      const now = Date.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      time += dt;
 
-      // --- 5. RENDERING PIPELINE ---
-      // Sequentially draws background grids, body geometry, vector fields, and readouts
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
+
       const cx = width / 2;
-            const cy = height / 2 - 20;
-            const blue = getThemeColor('--sim-blue') || '#4fc3f7';
-            const amber = getThemeColor('--sim-amber') || '#ffb74d';
-            const text = getThemeColor('--text') || '#e0e0e0';
-            const border = getThemeColor('--surface-border') || '#33334d';
-      
-            // UV Light source beams from top
-            ctx.fillStyle = 'rgba(255, 235, 59, 0.15)';
-            ctx.fillRect(cx - 140, cy - 110, 280, 50);
-      
-            // Photomask (opaque chromium absorbers with slit openings)
-            const maskY = cy - 60;
-            ctx.fillStyle = '#445566';
-            ctx.fillRect(cx - 140, maskY, 80, 12);
-            ctx.fillRect(cx - 20, maskY, 40, 12);
-            ctx.fillRect(cx + 60, maskY, 80, 12);
-      
-            // Light rays propagating through apertures
-            ctx.strokeStyle = '#ffeb3b';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([4, 4]);
-            for (let x of [-50, 30]) {
-              ctx.beginPath();
-              ctx.moveTo(cx + x, maskY + 12);
-              ctx.lineTo(cx + x, cy + 10);
-              ctx.stroke();
-            }
-            ctx.setLineDash([]);
-      
-            // Photoresist layer
-            ctx.fillStyle = 'rgba(79, 195, 247, 0.4)';
-            ctx.fillRect(cx - 140, cy + 10, 280, 20);
-      
-            // Silicon substrate
-            ctx.fillStyle = border;
-            ctx.fillRect(cx - 140, cy + 30, 280, 40);
-      
-            ctx.fillStyle = text;
-            ctx.font = '12px var(--font-mono)';
-            ctx.fillText('Deep UV Illumination (λ = 193 nm)', cx - 120, cy - 120);
-            ctx.fillText('Photomask Absorber (Cr)', cx - 130, maskY - 8);
-            ctx.fillText('Photoresist on Silicon Wafer', cx - 100, cy + 90);
-      
-            requestAnimationFrame(animate);
+      const cy = height * 0.44;
+
+      const blue = theme.blue;
+      const amber = theme.amber;
+      const text = theme.text;
+      const border = theme.border;
+
+      // Cycle phase
+      const cycleTime = time % cycleDuration;
+      const isExposing = cycleTime < 8.0;
+      const isEtching = cycleTime >= 8.0 && cycleTime < 14.0;
+      const isResetting = cycleTime >= 14.0;
+
+      const exposureDose = isExposing ? (cycleTime / 8.0) * 35.0 : (isEtching ? 35.0 : 0.0); // mJ/cm^2
+      const etchProgress = isEtching ? (cycleTime - 8.0) / 6.0 : (isResetting ? 1.0 : 0.0);
+
+      const stackW = Math.min(380, width - 180);
+      const maskY = cy - 70;
+      const resistY = cy + 15;
+      const resistH = 45;
+      const waferY = resistY + resistH;
+      const waferH = 40;
+
+      // Aperture definition in mask: two open slits
+      const slit1X = cx - stackW * 0.22;
+      const slit2X = cx + stackW * 0.22;
+      const slitW = 42; // aperture width
+
+      // 1. DUV Illumination Source (Top Field)
+      const uvGrad = ctx.createLinearGradient(cx, maskY - 60, cx, maskY);
+      uvGrad.addColorStop(0, 'rgba(192, 132, 252, 0.45)');
+      uvGrad.addColorStop(1, 'rgba(192, 132, 252, 0.15)');
+      ctx.fillStyle = uvGrad;
+      ctx.fillRect(cx - stackW / 2, maskY - 60, stackW, 60);
+
+      // Downward coherent planar wavefront lines from source
+      if (isExposing) {
+        ctx.strokeStyle = 'rgba(192, 132, 252, 0.65)';
+        ctx.lineWidth = 1.5;
+        const waveSpacing = 12;
+        const waveOffset = (time * 65) % waveSpacing;
+        for (let wy = maskY - 60 + waveOffset; wy < maskY; wy += waveSpacing) {
+          ctx.beginPath();
+          ctx.moveTo(cx - stackW / 2, wy);
+          ctx.lineTo(cx + stackW / 2, wy);
+          ctx.stroke();
+        }
+      }
+
+      // 2. Photomask Layer (Opaque Chromium Absorber on Quartz)
+      // Quartz glass substrate
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.fillRect(cx - stackW / 2, maskY - 10, stackW, 10);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cx - stackW / 2, maskY - 10, stackW, 10);
+
+      // Chromium absorbers (blocking light everywhere except the two slits)
+      ctx.fillStyle = '#334155';
+      // Left block
+      ctx.fillRect(cx - stackW / 2, maskY, (slit1X - slitW / 2) - (cx - stackW / 2), 12);
+      // Center block
+      ctx.fillRect(slit1X + slitW / 2, maskY, (slit2X - slitW / 2) - (slit1X + slitW / 2), 12);
+      // Right block
+      ctx.fillRect(slit2X + slitW / 2, maskY, (cx + stackW / 2) - (slit2X + slitW / 2), 12);
+
+      // 3. Propagating Diffracted Optical Wavefronts through Apertures
+      if (isExposing) {
+        ctx.lineWidth = 1.5;
+        const waveSpacing = 14;
+        const phase = (time * 50) % waveSpacing;
+
+        // Draw cylindrical diffracted wave arcs from each slit
+        [slit1X, slit2X].forEach(slitCenter => {
+          for (let r = phase; r < 90; r += waveSpacing) {
+            const alphaWave = Math.max(0.05, 0.75 * (1 - r / 90));
+            ctx.strokeStyle = `rgba(168, 85, 247, ${alphaWave})`;
+            ctx.beginPath();
+            ctx.arc(slitCenter, maskY + 12, r, Math.PI * 0.15, Math.PI * 0.85);
+            ctx.stroke();
           }
-          animate();
+
+          // Optical Ray Beams connecting to resist
+          ctx.strokeStyle = 'rgba(236, 72, 153, 0.35)';
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(slitCenter - slitW / 2, maskY + 12);
+          ctx.lineTo(slitCenter - slitW / 2 - 6, resistY);
+          ctx.moveTo(slitCenter + slitW / 2, maskY + 12);
+          ctx.lineTo(slitCenter + slitW / 2 + 6, resistY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        });
+      }
+
+      // 4. Aerial Image Irradiance Profile I(x) Curve
+      const curveY = resistY - 12;
+      ctx.strokeStyle = theme.accent;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i <= NUM_RESIST_COLUMNS; i++) {
+        const xPos = cx - stackW / 2 + (i / NUM_RESIST_COLUMNS) * stackW;
+        // Dual slit diffraction irradiance: sinc^2 interference
+        const d1 = Math.abs(xPos - slit1X);
+        const d2 = Math.abs(xPos - slit2X);
+        const u1 = (Math.PI * (slitW * 0.5) * (xPos - slit1X)) / (lambda_nm * 0.8);
+        const u2 = (Math.PI * (slitW * 0.5) * (xPos - slit2X)) / (lambda_nm * 0.8);
+        const sinc1 = u1 === 0 ? 1 : Math.sin(u1) / u1;
+        const sinc2 = u2 === 0 ? 1 : Math.sin(u2) / u2;
+        const I_val = 0.05 + 0.9 * (sinc1 * sinc1 + sinc2 * sinc2);
+
+        const py = curveY - I_val * 24;
+        if (i === 0) ctx.moveTo(xPos, py);
+        else ctx.lineTo(xPos, py);
+      }
+      ctx.stroke();
+
+      // 5. Photoresist Layer & Photochemical Bleaching (Dill Model)
+      const colW = stackW / NUM_RESIST_COLUMNS;
+      for (let i = 0; i < NUM_RESIST_COLUMNS; i++) {
+        const xPos = cx - stackW / 2 + i * colW;
+        const d1 = Math.abs(xPos - slit1X);
+        const d2 = Math.abs(xPos - slit2X);
+        const u1 = (Math.PI * (slitW * 0.5) * (xPos - slit1X)) / (lambda_nm * 0.8);
+        const u2 = (Math.PI * (slitW * 0.5) * (xPos - slit2X)) / (lambda_nm * 0.8);
+        const sinc1 = u1 === 0 ? 1 : Math.sin(u1) / u1;
+        const sinc2 = u2 === 0 ? 1 : Math.sin(u2) / u2;
+        const localIntensity = 0.05 + 0.9 * (sinc1 * sinc1 + sinc2 * sinc2);
+
+        // Dill PAC Bleaching Kinetics: M(x, t) = exp(-C * I * dose)
+        const M_pac = Math.exp(-Dill_C * localIntensity * exposureDose); // 1.0 (unexposed) -> 0.05 (bleached)
+
+        // Etch depth (Mack model): soluble where M is low
+        const isDissolved = (1 - M_pac) > 0.55;
+        const currentEtchDepth = isEtching && isDissolved ? Math.min(resistH, etchProgress * resistH * ((1 - M_pac) / 0.95)) : (isResetting && isDissolved ? resistH : 0);
+
+        const drawResistH = resistH - currentEtchDepth;
+        if (drawResistH > 1) {
+          // Color based on PAC concentration: unexposed is amber/purple, bleached is cyan
+          const rC = Math.floor(251 * M_pac + 56 * (1 - M_pac));
+          const gC = Math.floor(191 * M_pac + 189 * (1 - M_pac));
+          const bC = Math.floor(36 * M_pac + 248 * (1 - M_pac));
+
+          ctx.fillStyle = `rgb(${rC}, ${gC}, ${bC})`;
+          ctx.fillRect(xPos, resistY + currentEtchDepth, colW + 0.5, drawResistH);
+        }
+      }
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cx - stackW / 2, resistY, stackW, resistH);
+
+      // 6. Developer Solvent Spray / Etch Front Wave (during etch phase)
+      if (isEtching) {
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+        for (let k = 0; k < 18; k++) {
+          const dropX = cx - stackW * 0.4 + (k * 22 + (time * 40) % 22);
+          const dropY = resistY - 8 + ((time * 70 + k * 15) % 25);
+          ctx.beginPath();
+          ctx.arc(dropX, dropY, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 7. Silicon Substrate Wafer (Bottom Foundation)
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(cx - stackW / 2, waferY, stackW, waferH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(cx - stackW / 2, waferY, stackW, waferH);
+
+      // Silicon wafer atomic plane hash lines
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)';
+      ctx.lineWidth = 1;
+      for (let wx = cx - stackW / 2 + 15; wx < cx + stackW / 2; wx += 25) {
+        ctx.beginPath();
+        ctx.moveTo(wx, waferY);
+        ctx.lineTo(wx - 10, waferY + waferH);
+        ctx.stroke();
+      }
+
+      // Labels
+      ctx.fillStyle = text;
+      ctx.font = '11px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillText('DUV Laser Source (λ = 193 nm ArF)', cx, maskY - 68);
+      ctx.fillText('Photomask Cr Absorber & Slits', cx, maskY + 28);
+      ctx.fillText('Silicon Substrate (Si <100>)', cx, waferY + 24);
+
+      // 8. Scientific Telemetry HUD Overlay (Top Left)
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 240;
+      const hudH = 124;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
+      const phaseLabel = isExposing ? 'EXPOSURE (PAC Bleaching)' : (isEtching ? 'DEVELOPMENT (Wet Etch)' : 'INSPECTION (Complete)');
+      const meanPAC = Math.max(5, (100 * Math.exp(-Dill_C * 0.85 * exposureDose))).toFixed(1);
+
+      ctx.textAlign = 'left';
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('PHOTOLITHOGRAPHY PROCESS', hudX + 10, hudY + 18);
+
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`State: ${phaseLabel}`, hudX + 10, hudY + 36);
+      ctx.fillText(`DUV Dose E: ${exposureDose.toFixed(1)} mJ/cm²`, hudX + 10, hudY + 52);
+      ctx.fillText(`PAC Bleached M: ${meanPAC}%`, hudX + 10, hudY + 68);
+      ctx.fillText(`Critical Dim CD: ${CD_nm.toFixed(1)} nm`, hudX + 10, hudY + 84);
+      ctx.fillText(`Etch Trench Depth: ${(etchProgress * 45).toFixed(1)} nm`, hudX + 10, hudY + 100);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>

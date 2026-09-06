@@ -29,6 +29,25 @@
       --block-accent: #064e3b;
       --block-grid: rgba(0, 0, 0, 0.06);
 
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
       --sim-teal: #0f766e;
@@ -62,6 +81,25 @@
       --surface-border: rgba(0, 0, 0, 0.10);
       --text: #000000;
       --accent: #0277bd;
+
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
 
       /* High-Contrast Simulation Palette */
       --sim-blue: #0284c7;
@@ -211,7 +249,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -362,12 +402,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      // High-contrast fallbacks calibrated for the pastel simulation color block
-      if (variableName === '--text') return getComputedStyle(document.documentElement).getPropertyValue('--block-text').trim() || '#000000';
-      if (variableName === '--text-muted') return '#1f2937';
-      if (variableName === '--surface-border') return getComputedStyle(document.documentElement).getPropertyValue('--block-border').trim() || 'rgba(0, 0, 0, 0.12)';
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. HIGH-DPI CANVAS INITIALIZATION & RESIZE HANDLING ---
@@ -384,72 +486,225 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* trigger canvas update on theme switch */ });
     resize();
 
-    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    // --- 3. PHYSICAL STATE VARIABLES & CARBON MASS BALANCE ODE ---
     let time = 0;
+    // Reservoir masses in GtC
+    let Matm = 875.0;     // Atmosphere GtC (~418 ppm)
+    let Mland = 2150.0;   // Terrestrial biosphere GtC
+    let Mocean = 1020.0;  // Surface ocean GtC
+    const Efoss = 10.2;   // Anthropogenic fossil emissions GtC/yr
+
+    // Pathways and tracer particles
+    // 1. Photosynthesis GPP (Atmosphere -> Land, Green)
+    // 2. Respiration (Land -> Atmosphere, Amber)
+    // 3. Ocean Dissolution (Atmosphere -> Ocean, Blue)
+    // 4. Ocean Degassing (Ocean -> Atmosphere, Cyan)
+    // 5. Fossil Fuel Combustion (Human Industry -> Atmosphere, Red)
+    const fluxes = [
+      { id: 'gpp', from: 'atm', to: 'land', rate: 120.0, color: 'green' },
+      { id: 'resp', from: 'land', to: 'atm', rate: 116.8, color: 'amber' },
+      { id: 'ocn_in', from: 'atm', to: 'ocean', rate: 90.0, color: 'blue' },
+      { id: 'ocn_out', from: 'ocean', to: 'atm', rate: 87.5, color: 'teal' },
+      { id: 'foss', from: 'industry', to: 'atm', rate: 10.2, color: 'red' }
+    ];
+
+    const carbonParticles = [];
+    fluxes.forEach((fl, fIdx) => {
+      const count = Math.round(fl.rate * 0.25);
+      for (let i = 0; i < count; i++) {
+        carbonParticles.push({
+          fluxIdx: fIdx,
+          progress: Math.random(),
+          speed: 0.008 + Math.random() * 0.005,
+          offset: (Math.random() - 0.5) * 12,
+          size: 2.0 + Math.random() * 1.5
+        });
+      }
+    });
 
     // --- 4. CONTINUOUS ANIMATION & RENDERING LOOP ---
     function animate() {
-      ctx.clearRect(0, 0, width, height);
-      const blue = getThemeColor('--sim-blue');
-      const text = getThemeColor('--text');
-      const textMuted = getThemeColor('--text-muted');
-      const amber = getThemeColor('--sim-amber');
-      const teal = getThemeColor('--sim-teal');
-      const border = getThemeColor('--surface-border');
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
-      time += 0.02;
+      time += 0.025;
 
-      // Three Reservoirs: Atmosphere (top), Terrestrial (left), Ocean (right)
-      const atmX = width / 2;
-      const atmY = height * 0.28;
-      const terrX = width * 0.25;
-      const terrY = height * 0.7;
-      const oceanX = width * 0.75;
-      const oceanY = height * 0.7;
-
-      function drawBox(x, y, label, mass, color) {
-        ctx.fillStyle = border;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.fillRect(x - 65, y - 30, 130, 60);
-        ctx.strokeRect(x - 65, y - 30, 130, 60);
-
-        ctx.fillStyle = text;
-        ctx.font = '12px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(label, x, y - 6);
-        ctx.fillStyle = color;
-        ctx.fillText(mass, x, y + 14);
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
+      }
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
       }
 
-      drawBox(atmX, atmY, 'Atmosphere', '870 GtC', amber);
-      drawBox(terrX, terrY, 'Terrestrial Biosphere', '2,150 GtC', teal);
-      drawBox(oceanX, oceanY, 'Surface Ocean', '1,020 GtC', blue);
+      // Seasonal Biosphere Keeling Oscillation (Annual harmonic)
+      const seasonalBreath = Math.sin(time * 0.8) * 8.0; // summer uptake vs winter respiration
+      fluxes[0].rate = 120.0 + seasonalBreath; // GPP
+      fluxes[1].rate = 116.8 - seasonalBreath * 0.4; // Respiration
 
-      // Circulating Carbon Flux Arrows
-      ctx.strokeStyle = textMuted;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(terrX + 20, terrY - 30);
-      ctx.lineTo(atmX - 30, atmY + 30);
-      ctx.moveTo(atmX + 30, atmY + 30);
-      ctx.lineTo(oceanX - 20, oceanY - 30);
-      ctx.stroke();
+      // Continuous Euler integration of carbon mass exchange (dt = 0.002 yr per frame)
+      const dt = 0.0015;
+      const netLandSink = fluxes[0].rate - fluxes[1].rate; // GtC/yr
+      const netOceanSink = fluxes[2].rate - fluxes[3].rate; // GtC/yr
+      const netAtmChange = Efoss - netLandSink - netOceanSink;
 
-      ctx.fillStyle = text;
-      ctx.font = '13px Inter, sans-serif';
+      Matm += netAtmChange * dt;
+      Mland += netLandSink * dt;
+      Mocean += netOceanSink * dt;
+
+      // Keep within realistic physical window for continuous visual experience
+      if (Matm > 910) Matm = 870;
+
+      const co2Ppm = Matm / 2.124; // 1 ppm ~ 2.124 GtC
+
+      // Layout Positions of Reservoirs
+      const atmX = width * 0.50;
+      const atmY = height * 0.26;
+      const terrX = width * 0.24;
+      const terrY = height * 0.70;
+      const oceanX = width * 0.76;
+      const oceanY = height * 0.70;
+      const indX = width * 0.12;
+      const indY = height * 0.45;
+
+      function getReservoirPos(name) {
+        if (name === 'atm') return { x: atmX, y: atmY };
+        if (name === 'land') return { x: terrX, y: terrY };
+        if (name === 'ocean') return { x: oceanX, y: oceanY };
+        if (name === 'industry') return { x: indX, y: indY };
+        return { x: width / 2, y: height / 2 };
+      }
+
+      // 1. Draw Flow Corridor Curves
+      fluxes.forEach(fl => {
+        const pFrom = getReservoirPos(fl.from);
+        const pTo = getReservoirPos(fl.to);
+        const midX = (pFrom.x + pTo.x) * 0.5;
+        const midY = (pFrom.y + pTo.y) * 0.5 - 20;
+
+        ctx.strokeStyle = theme.border;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(pFrom.x, pFrom.y);
+        ctx.quadraticCurveTo(midX, midY, pTo.x, pTo.y);
+        ctx.stroke();
+
+        // Active flux stroke
+        ctx.strokeStyle = fl.color === 'green' ? 'rgba(74, 222, 128, 0.2)' :
+                          (fl.color === 'blue' ? 'rgba(56, 189, 248, 0.2)' :
+                          (fl.color === 'amber' ? 'rgba(251, 191, 36, 0.2)' : 'rgba(248, 113, 113, 0.2)'));
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+
+      // 2. Propagate and Render Carbon Tracer Particles
+      carbonParticles.forEach(p => {
+        p.progress += p.speed;
+        if (p.progress >= 1.0) {
+          p.progress = 0;
+          p.offset = (Math.random() - 0.5) * 12;
+        }
+
+        const fl = fluxes[p.fluxIdx];
+        const pFrom = getReservoirPos(fl.from);
+        const pTo = getReservoirPos(fl.to);
+        const midX = (pFrom.x + pTo.x) * 0.5;
+        const midY = (pFrom.y + pTo.y) * 0.5 - 20;
+
+        const t = p.progress;
+        // Quadratic Bezier interpolation: B(t) = (1-t)^2*P0 + 2(1-t)t*P1 + t^2*P2
+        const curX = (1 - t) * (1 - t) * pFrom.x + 2 * (1 - t) * t * midX + t * t * pTo.x + p.offset * 0.6;
+        const curY = (1 - t) * (1 - t) * pFrom.y + 2 * (1 - t) * t * midY + t * t * pTo.y + p.offset * 0.6;
+
+        let col = theme.teal;
+        if (fl.color === 'green') col = theme.green;
+        else if (fl.color === 'amber') col = theme.amber;
+        else if (fl.color === 'blue') col = theme.blue;
+        else if (fl.color === 'red') col = theme.red;
+
+        ctx.beginPath();
+        ctx.arc(curX, curY, p.size * 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = fl.color === 'green' ? 'rgba(74, 222, 128, 0.25)' :
+                        (fl.color === 'blue' ? 'rgba(56, 189, 248, 0.25)' : 'rgba(251, 191, 36, 0.25)');
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(curX, curY, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = col;
+        ctx.fill();
+      });
+
+      // 3. Draw Reservoirs (Atmosphere, Biosphere, Ocean, Industry)
+      function drawReservoirBox(x, y, title, massStr, subStr, col, w = 150, h = 68) {
+        ctx.fillStyle = theme.surface;
+        ctx.fillRect(x - w / 2, y - h / 2, w, h);
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - w / 2, y - h / 2, w, h);
+
+        ctx.fillStyle = theme.text;
+        ctx.font = '600 11px var(--font-mono)';
+        ctx.textAlign = 'center';
+        ctx.fillText(title, x, y - 14);
+
+        ctx.fillStyle = col;
+        ctx.font = '600 13px var(--font-mono)';
+        ctx.fillText(massStr, x, y + 4);
+
+        ctx.fillStyle = theme.textMuted;
+        ctx.font = '9px var(--font-mono)';
+        ctx.fillText(subStr, x, y + 20);
+      }
+
+      drawReservoirBox(atmX, atmY, 'ATMOSPHERE', `${Matm.toFixed(1)} GtC`, `[ ${co2Ppm.toFixed(1)} ppm CO₂ ]`, theme.amber, 170, 72);
+      drawReservoirBox(terrX, terrY, 'TERRESTRIAL BIOSPHERE', `${Mland.toFixed(1)} GtC`, `Soil + Vegetation (Sink: -3.2)`, theme.green, 170, 72);
+      drawReservoirBox(oceanX, oceanY, 'SURFACE OCEAN', `${Mocean.toFixed(1)} GtC`, `Solubility + Marine Pump (-2.5)`, theme.blue, 170, 72);
+      drawReservoirBox(indX, indY, 'FOSSIL INDUSTRY', `+${Efoss.toFixed(1)} GtC/yr`, `Anthropogenic Flux`, theme.red, 120, 60);
+
+      // 4. Flux Pathway Labels
+      ctx.fillStyle = theme.text;
+      ctx.font = '600 10px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillText(`GPP: ${fluxes[0].rate.toFixed(1)} GtC/yr ↓`, width * 0.32, height * 0.45);
+      ctx.fillText(`↑ Resp: ${fluxes[1].rate.toFixed(1)} GtC/yr`, width * 0.40, height * 0.52);
+      ctx.fillText(`Ocean Dissolution: ${fluxes[2].rate.toFixed(1)} GtC/yr ↓`, width * 0.68, height * 0.45);
+      ctx.fillText(`↑ Marine Degas: ${fluxes[3].rate.toFixed(1)} GtC/yr`, width * 0.60, height * 0.52);
+
+      // 5. Scientific Telemetry HUD Overlay
+      const hudX = 24;
+      const hudY = 24;
+      const hudW = 255;
+      const hudH = 142;
+      ctx.fillStyle = theme.surface;
+      ctx.fillRect(hudX, hudY, hudW, hudH);
+      ctx.strokeStyle = theme.border;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX, hudY, hudW, hudH);
+
       ctx.textAlign = 'left';
-      ctx.fillText('Annual Anthropogenic Emissions: +10.2 GtC/yr', 24, 30);
-      ctx.fillText('Ocean Sink: -2.6 GtC/yr | Land Sink: -3.1 GtC/yr', 24, 52);
+      ctx.font = '600 11px var(--font-mono)';
+      ctx.fillStyle = theme.text;
+      ctx.fillText('GLOBAL CARBON MASS BALANCE', hudX + 10, hudY + 18);
 
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillStyle = theme.textMuted;
+      ctx.fillText(`Atmospheric Carbon Stock: ${Matm.toFixed(1)} GtC`, hudX + 10, hudY + 36);
+      ctx.fillText(`CO₂ Concentration: ${co2Ppm.toFixed(1)} ppm (Keeling Sine)`, hudX + 10, hudY + 52);
+      ctx.fillText(`Anthropogenic Fossil Input: +${Efoss.toFixed(1)} GtC/yr`, hudX + 10, hudY + 68);
+      ctx.fillText(`Terrestrial Net Sink: -${netLandSink.toFixed(2)} GtC/yr`, hudX + 10, hudY + 84);
+      ctx.fillText(`Ocean Net Dissolution Sink: -${netOceanSink.toFixed(2)} GtC/yr`, hudX + 10, hudY + 100);
+      ctx.fillText(`Airborne Fraction AF: ${((netAtmChange/Efoss)*100).toFixed(1)}% Accumulated`, hudX + 10, hudY + 118);
       requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    animate();
   </script>
 </body>
 </html>

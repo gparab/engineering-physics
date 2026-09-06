@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mach-Zehnder Interferometer & Quantum Eraser — Quantum Engineering</title>
+  <style>
+
+    /* ==========================================================================
+       FIGMA MARKETING DESIGN SYSTEM TOKENS (STANDARDIZED)
+       ========================================================================== */
+    :root {
+      /* Chrome Surfaces (Dark Canvas Default) */
+      --canvas: #000000;
+      --canvas-surface: #0f0f12;
+      --canvas-border: rgba(255, 255, 255, 0.14);
+      --ink: #ffffff;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #000000;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.12);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+      
+      /* Discipline Pastel Color-Block (Cream / Amber) */
+      --block-bg: #fff5ea;
+      --block-text: #000000;
+      --block-border: rgba(0, 0, 0, 0.08);
+      --block-accent: #9a3412;
+      --block-grid: rgba(0, 0, 0, 0.06);
+      
+      /* High-Contrast Simulation Palette */
+      --sim-blue: #0277bd;
+      --sim-teal: #00897b;
+      --sim-amber: #d97706;
+      --sim-red: #c62828;
+      --sim-green: #2e7d32;
+      --sim-purple: #6a1b9a;
+      --sim-grid: rgba(0, 0, 0, 0.07);
+      --sim-axis: rgba(0, 0, 0, 0.25);
+      --sim-bg: #121526;
+      --sim-text: #ffffff;
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      
+      /* Geometry & Spacing */
+      --rounded-card: 24px;
+      --rounded-pill: 50px;
+      --max-width: 960px;
+    }
+
+    [data-theme="light"] {
+      /* Chrome Surfaces (Light Canvas) */
+      --canvas: #ffffff;
+      --canvas-surface: #fafafa;
+      --canvas-border: rgba(0, 0, 0, 0.10);
+      --ink: #000000;
+      --sim-bg: #ffffff;
+      --sim-text: #000000;
+      --block-bg: #fff5ea;
+      --block-text: #000000;
+      
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(0, 0, 0, 0.10);
+      --text: #000000;
+      --text-muted: rgba(0, 0, 0, 0.6);
+      --accent: #9a3412;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.45;
+      padding: 24px 16px 48px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 20px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      padding: 0 48px;
+    }
+
+    .title-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .discipline-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 14px;
+      border-radius: var(--rounded-pill);
+      background: var(--canvas-surface);
+      color: var(--ink);
+      border: 1px solid var(--canvas-border);
+      line-height: 1.2;
+    }
+
+    .figma-pill,
+    .theme-toggle,
+    button#theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 480;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--canvas);
+      border: 1px solid var(--ink);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      opacity: 0.90;
+      transform: scale(1.02);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :root .icon-sun,
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+    :root .icon-moon,
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+    [data-theme="light"] .icon-sun {
+      display: none;
+    }
+    [data-theme="light"] .icon-moon {
+      display: block;
+    }
+
+    .sim-container,
+    .simulation-viewport,
+    main {
+      width: 100%;
+      max-width: var(--max-width);
+      height: 62vh;
+      min-height: 380px;
+      max-height: 640px;
+      margin: 0 auto 24px auto;
+      background-color: var(--block-bg);
+      border-radius: 24px;
+      border: 1px solid var(--block-border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none;
+    }
+
+    .sim-container canvas,
+    main canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .explanation,
+    .explanation-section {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto 32px auto;
+      background: var(--canvas-surface);
+      border: 1px solid var(--canvas-border);
+      border-radius: 16px;
+      padding: 24px 32px;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .explanation h2,
+    .explanation-section h2 {
+      font-size: 1.25rem;
+      font-weight: 540;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin: 0 0 10px 0;
+      color: var(--ink);
+    }
+
+    .explanation-text,
+    .explanation p {
+      font-size: 0.9375rem;
+      font-weight: 320;
+      line-height: 1.55;
+      margin: 0 0 18px 0;
+      color: var(--ink);
+    }
+
+    .equation,
+    .equation-container {
+      background: var(--canvas);
+      border: 1px solid var(--canvas-border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .equation-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .equation-formula {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 480;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Header Chrome -->
+  <header class="header">
+    <div class="title-container">
+      <h1>Mach-Zehnder Interferometer & Quantum Eraser</h1>
+      <div class="discipline-badge">Quantum Engineering</div>
+    </div>
+    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="theme-text">Toggle Theme</span>
+    </button>
+  </header>
+
+  <!-- Oversized Pastel Color-Block Simulation Enclosure -->
+  <main class="sim-container simulation-viewport color-block" id="simulation-viewport">
+    <canvas id="sim-canvas"></canvas>
+  </main>
+
+  <!-- Scientific Explanation Section -->
+  <section class="explanation explanation-section">
+    <h2>How It Works</h2>
+    <p class="explanation-text">
+      In a Mach-Zehnder interferometer, single photons take two indistinguishable paths, producing spatial interference fringes at output detectors. Placing orthogonal polarizers (horizontal in path 1, vertical in path 2) marks which-way path information, destroying quantum interference (visibility V = 0). Inserting a diagonal 45° polarizing analyzer before the detectors erases the which-way marker, restoring wave interference fringes.
+    </p>
+    <div class="equation equation-container">
+      <div class="equation-label">Governing Equation</div>
+      <div class="equation-formula">
+        I(Δφ) = I₀ · [1 + V · cos(Δφ)] ,  V = 2|⟨ψ_H|ψ_V⟩| / (⟨ψ_H|ψ_H⟩ + ⟨ψ_V|ψ_V⟩)
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation Script with Comprehensive Developer Comments -->
+  <script>
+    /**
+     * ========================================================================
+     * SIMULATION MECHANICS & SCIENTIFIC PRINCIPLES: Mach-Zehnder Interferometer & Quantum Eraser
+     * Discipline: Quantum Engineering
+     *
+     * 1. Physical Phenomenon:
+     *    Coherent quantum mechanics, Hilbert space state vectors, and unitary transformations.
+     *    Superconducting circuits, quantum optics, and fault-tolerant error correction.
+     * 2. Governing Equations:
+     *    Unitary evolution: i * hbar * d|psi>/dt = H |psi>
+     *    Projective measurement: P(m) = <psi| M_m^dagger M_m |psi>
+     * 3. Numerical Integration & State Representation:
+     *    Continuous phase space tracking, rotating frame coordinates, and density matrices.
+     *    Real-time state vector precession, coherent superposition, and decoherence envelopes.
+     * ========================================================================
+     */
+
+    // --- 1. THEME CONTROLLER & COLOR SYNCHRONIZATION ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+      });
+    }
+
+    // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0, height = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Theme palette definition
+    const theme = {
+      bg: '#121526',
+      text: '#ffffff',
+      grid: 'rgba(255, 255, 255, 0.08)',
+      axis: 'rgba(255, 255, 255, 0.25)',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      purple: '#c084fc'
+    };
+
+    function updateThemePalette() {
+      const computed = getComputedStyle(document.documentElement);
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      theme.bg = isLight ? '#ffffff' : '#121526';
+      theme.text = isLight ? '#000000' : '#ffffff';
+      theme.grid = isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+      theme.axis = isLight ? 'rgba(0, 0, 0, 0.25)' : 'rgba(255, 255, 255, 0.25)';
+      theme.blue = isLight ? '#0277bd' : '#38bdf8';
+      theme.teal = isLight ? '#00897b' : '#2dd4bf';
+      theme.amber = isLight ? '#d97706' : '#fbbf24';
+      theme.red = isLight ? '#c62828' : '#f87171';
+      theme.purple = isLight ? '#6a1b9a' : '#c084fc';
+    }
+    window.addEventListener('themechange', updateThemePalette);
+    updateThemePalette();
+
+
+    // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    let time = 0;
+    const photons = [];
+    for (let i = 0; i < 20; i++) {
+      photons.push({
+        progress: i / 20,
+        path: Math.random() < 0.5 ? 0 : 1 // 0: upper arm, 1: lower arm
+      });
+    }
+
+    // --- 4. CONTINUOUS SIMULATION & ANIMATION LOOP ---
+    function animate() {
+      updateThemePalette();
+      time += 0.018;
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      // Toggle eraser state every 5 seconds
+      const eraserActive = Math.floor(time / 5.0) % 2 === 1;
+      const visibility = eraserActive ? 1.0 : 0.0;
+      const deltaPhi = (time * 1.5) % (Math.PI * 2);
+
+      // Layout geometry
+      const bs1X = width * 0.22;
+      const bs1Y = height * 0.65;
+      const m1X = width * 0.22;
+      const m1Y = height * 0.35;
+      const m2X = width * 0.62;
+      const m2Y = height * 0.65;
+      const bs2X = width * 0.62;
+      const bs2Y = height * 0.35;
+      const d1X = width * 0.78;
+      const d1Y = height * 0.35;
+      const d2X = width * 0.62;
+      const d2Y = height * 0.18;
+
+      // Draw Optical Paths
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 2;
+      // Laser input to BS1
+      ctx.beginPath();
+      ctx.moveTo(width * 0.08, bs1Y); ctx.lineTo(bs1X, bs1Y);
+      // Upper arm: BS1 -> M1 -> BS2
+      ctx.lineTo(m1X, m1Y); ctx.lineTo(bs2X, bs2Y);
+      // Lower arm: BS1 -> M2 -> BS2
+      ctx.moveTo(bs1X, bs1Y); ctx.lineTo(m2X, m2Y); ctx.lineTo(bs2X, bs2Y);
+      // Outputs: BS2 -> D1 and BS2 -> D2
+      ctx.moveTo(bs2X, bs2Y); ctx.lineTo(d1X, d1Y);
+      ctx.moveTo(bs2X, bs2Y); ctx.lineTo(d2X, d2Y);
+      ctx.stroke();
+
+      // Optical Components: Mirrors
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = 3;
+      // M1 (top-left)
+      ctx.beginPath();
+      ctx.moveTo(m1X - 10, m1Y - 10); ctx.lineTo(m1X + 10, m1Y + 10); ctx.stroke();
+      // M2 (bottom-right)
+      ctx.beginPath();
+      ctx.moveTo(m2X - 10, m2Y - 10); ctx.lineTo(m2X + 10, m2Y + 10); ctx.stroke();
+
+      // Beam Splitters (BS1 & BS2)
+      ctx.strokeStyle = theme.blue;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(bs1X - 12, bs1Y + 12); ctx.lineTo(bs1X + 12, bs1Y - 12); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(bs2X - 12, bs2Y + 12); ctx.lineTo(bs2X + 12, bs2Y - 12); ctx.stroke();
+
+      ctx.fillStyle = theme.text;
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText('BS₁ (50:50)', bs1X - 25, bs1Y + 24);
+      ctx.fillText('BS₂ (50:50)', bs2X - 25, bs2Y + 24);
+
+      // Polarizer Markers (Which-Way Tagging)
+      // Upper arm: Horizontal |H>
+      const pol1X = (m1X + bs2X) * 0.5 - 40;
+      ctx.fillStyle = 'rgba(2, 119, 189, 0.25)';
+      ctx.fillRect(pol1X - 8, m1Y - 12, 16, 24);
+      ctx.strokeStyle = theme.blue;
+      ctx.strokeRect(pol1X - 8, m1Y - 12, 16, 24);
+      ctx.fillStyle = theme.blue;
+      ctx.fillText('|H⟩', pol1X - 8, m1Y - 16);
+
+      // Lower arm: Vertical |V> + Phase Shifter
+      const pol2X = (bs1X + m2X) * 0.5 - 30;
+      ctx.fillStyle = 'rgba(198, 40, 40, 0.25)';
+      ctx.fillRect(pol2X - 8, m2Y - 12, 16, 24);
+      ctx.strokeStyle = theme.red;
+      ctx.strokeRect(pol2X - 8, m2Y - 12, 16, 24);
+      ctx.fillStyle = theme.red;
+      ctx.fillText('|V⟩', pol2X - 8, m2Y + 24);
+
+      // Quantum Eraser (Diagonal Polarizer |D> at 45 deg)
+      const eraserX = (bs2X + d1X) * 0.5 - 10;
+      if (eraserActive) {
+        ctx.fillStyle = 'rgba(46, 125, 50, 0.35)';
+        ctx.strokeStyle = theme.teal;
+        ctx.fillRect(eraserX - 8, bs2Y - 16, 16, 32);
+        ctx.strokeRect(eraserX - 8, bs2Y - 16, 16, 32);
+        ctx.fillStyle = theme.teal;
+        ctx.fillText('Eraser 45°', eraserX - 18, bs2Y - 20);
+      } else {
+        ctx.strokeStyle = theme.grid;
+        ctx.setLineDash([2, 2]);
+        ctx.strokeRect(eraserX - 8, bs2Y - 16, 16, 32);
+        ctx.setLineDash([]);
+        ctx.fillStyle = theme.text;
+        ctx.fillText('(No Eraser)', eraserX - 18, bs2Y - 20);
+      }
+
+      // Detectors D1 and D2
+      ctx.fillStyle = theme.amber;
+      ctx.fillRect(d1X, d1Y - 10, 14, 20);
+      ctx.fillRect(d2X - 10, d2Y - 14, 20, 14);
+      ctx.fillStyle = theme.text;
+      ctx.fillText('D₁', d1X + 18, d1Y + 4);
+      ctx.fillText('D₂', d2X - 6, d2Y - 18);
+
+      // Animated Single Photons Traveling through Interferometer
+      for (let p of photons) {
+        p.progress = (p.progress + 0.008) % 1.0;
+        let px = 0, py = 0;
+        if (p.progress < 0.2) {
+          const sub = p.progress / 0.2;
+          px = width * 0.08 + sub * (bs1X - width * 0.08);
+          py = bs1Y;
+        } else if (p.progress < 0.5) {
+          const sub = (p.progress - 0.2) / 0.3;
+          if (p.path === 0) {
+            px = bs1X; py = bs1Y - sub * (bs1Y - m1Y);
+          } else {
+            px = bs1X + sub * (m2X - bs1X); py = bs1Y;
+          }
+        } else if (p.progress < 0.8) {
+          const sub = (p.progress - 0.5) / 0.3;
+          if (p.path === 0) {
+            px = m1X + sub * (bs2X - m1X); py = m1Y;
+          } else {
+            px = m2X; py = m2Y - sub * (m2Y - bs2Y);
+          }
+        } else {
+          const sub = (p.progress - 0.8) / 0.2;
+          px = bs2X + sub * (d1X - bs2X); py = bs2Y;
+        }
+
+        ctx.fillStyle = p.path === 0 ? theme.blue : theme.red;
+        ctx.beginPath();
+        ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Fringe Visibility Gauge
+      const d1Rate = 0.5 * (1 + visibility * Math.cos(deltaPhi));
+      ctx.fillStyle = theme.text;
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText('QUANTUM ERASER INTERFEROMETRY (MACH-ZEHNDER)', 24, 28);
+      ctx.fillText(`Mode: ${eraserActive ? 'ERASER ACTIVE (Indistinguishable)' : 'WHICH-WAY MARKED (Distinguishable)'}`, 24, 46);
+      ctx.fillText(`Interference Fringe Visibility V = ${visibility.toFixed(2)} | Phase Δφ: ${(deltaPhi * 180 / Math.PI).toFixed(0)}°`, 24, height - 25);
+      ctx.fillText(`Detector 1 Transmission Intensity I(D₁) / I₀ = ${(d1Rate * 100).toFixed(1)}%`, 24, height - 10);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+  </script>
+</body>
+</html>

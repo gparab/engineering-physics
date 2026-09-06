@@ -9,6 +9,24 @@
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
        ========================================================================== */
     :root {
+      /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
       /* Chrome Surfaces (Dark Canvas Default) */
       --canvas: #000000;
       --canvas-surface: #0f0f12;
@@ -57,6 +75,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #fafafa;
@@ -208,7 +245,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -367,9 +406,74 @@
       });
     }
 
-    function getThemeColor(varName, fallback) {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-      return val || fallback;
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
+    function getThemeColor(variableName) {
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     const canvas = document.getElementById('sim-canvas');
@@ -385,77 +489,249 @@
       canvas.height = height * dpr;
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
     window.addEventListener('themechange', () => { /* redraw triggers automatically */ });
     resize();
 
+    // Continuous Dynamic Simulation Engine for Computational Complexity & Big-O
     let time = 0;
+    let sweepN = 4;
+    let sweepDir = 1;
+
+    // Parallel Algorithm Worker states for visual execution race
+    const workers = [
+      { name: 'O(1) Hash Lookup', color: '#38bdf8', ops: 1, pos: 0, maxOps: 1, status: 'DONE' },
+      { name: 'O(log n) Binary Search', color: '#34d399', ops: 0, pos: 0, maxOps: 6, status: 'RUNNING' },
+      { name: 'O(n) Linear Scan', color: '#a3e635', ops: 0, pos: 0, maxOps: 16, status: 'RUNNING' },
+      { name: 'O(n log n) MergeSort', color: '#fbbf24', ops: 0, pos: 0, maxOps: 64, status: 'RUNNING' },
+      { name: 'O(n²) BubbleSort', color: '#f97316', ops: 0, pos: 0, maxOps: 256, status: 'RUNNING' },
+      { name: 'O(2ⁿ) Subset Sum', color: '#f87171', ops: 0, pos: 0, maxOps: 1024, status: 'EXPLODING' }
+    ];
 
     function animate() {
-      time += 0.02;
-      ctx.clearRect(0, 0, width, height);
-
-      const cx = width / 2 - 20;
-      const cy = height / 2 + 30;
-      const gW = 280;
-      const gH = 160;
-
-      const blue = getThemeColor('--sim-blue') || '#4fc3f7';
-      const amber = getThemeColor('--sim-amber') || '#ffb74d';
-      const red = getThemeColor('--sim-red') || '#ef5350';
-      const green = getThemeColor('--sim-green') || '#81c784';
-      const text = getThemeColor('--text') || '#e0e0e0';
-      const border = getThemeColor('--surface-border') || '#33334d';
-
-      // Axes
-      ctx.strokeStyle = border;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(cx - gW / 2, cy);
-      ctx.lineTo(cx + gW / 2 + 20, cy);
-      ctx.moveTo(cx - gW / 2, cy);
-      ctx.lineTo(cx - gW / 2, cy - gH - 20);
-      ctx.stroke();
-
-      // Curves: O(1), O(n), O(n²), O(2ⁿ)
-      // O(n) linear (green)
-      ctx.strokeStyle = green;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(cx - gW / 2, cy);
-      ctx.lineTo(cx + gW / 2, cy - gH * 0.45);
-      ctx.stroke();
-
-      // O(n²) polynomial (amber)
-      ctx.strokeStyle = amber;
-      ctx.beginPath();
-      ctx.moveTo(cx - gW / 2, cy);
-      ctx.quadraticCurveTo(cx - gW / 2 + 100, cy, cx + gW / 2, cy - gH * 0.85);
-      ctx.stroke();
-
-      // O(2ⁿ) exponential (red)
-      ctx.strokeStyle = red;
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(cx - gW / 2, cy);
-      ctx.quadraticCurveTo(cx - gW / 2 + 160, cy, cx - gW / 2 + 180, cy - gH - 10);
-      ctx.stroke();
-
-      ctx.fillStyle = text;
-      ctx.font = '12px var(--font-mono)';
-      ctx.fillText('Input Size (n) →', cx + gW / 2 - 40, cy + 20);
-      ctx.fillText('Operations T(n) ↑', cx - gW / 2 - 10, cy - gH - 25);
-      ctx.fillStyle = red;
-      ctx.fillText('O(2ⁿ)', cx - gW / 2 + 185, cy - gH);
-      ctx.fillStyle = amber;
-      ctx.fillText('O(n²)', cx + gW / 2 + 5, cy - gH * 0.85);
-      ctx.fillStyle = green;
-      ctx.fillText('O(n)', cx + gW / 2 + 5, cy - gH * 0.45);
-
       requestAnimationFrame(animate);
+      updateThemePalette();
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
+
+      time += 0.016;
+
+      // Continuous dynamic sweep of input size n
+      sweepN += sweepDir * 0.08;
+      if (sweepN >= 48) {
+        sweepN = 48;
+        sweepDir = -1;
+      } else if (sweepN <= 4) {
+        sweepN = 4;
+        sweepDir = 1;
+      }
+
+      const n = Math.round(sweepN);
+      const log2n = Math.log2(n);
+      const nlogn = n * log2n;
+      const n2 = n * n;
+      const expN = Math.min(10000, Math.pow(2, Math.min(n, 14)));
+
+      // Update worker operation counts
+      workers[0].ops = 1;
+      workers[1].ops = Math.round(log2n);
+      workers[2].ops = n;
+      workers[3].ops = Math.round(nlogn);
+      workers[4].ops = Math.min(2500, n2);
+      workers[5].ops = expN;
+
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const accentColor = theme.primary;
+      const border = theme.border;
+      const surfaceColor = theme.surface;
+
+      const scale = Math.min(width / 720, height / 480);
+      const plotW = 280 * scale;
+      const plotH = 170 * scale;
+      const plotX = 70 * scale;
+      const plotY = 50 * scale;
+      const originX = plotX;
+      const originY = plotY + plotH;
+
+      // Header Banner
+      ctx.font = '600 13px Inter, sans-serif';
+      ctx.fillStyle = accentColor;
+      ctx.textAlign = 'left';
+      ctx.fillText(`Asymptotic Execution Race: n = ${n} elements | Dynamic Complexity Sweep`, plotX, 30);
+
+      // Coordinate Grid & Axes
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(originX, originY);
+      ctx.lineTo(originX + plotW + 20, originY); // X-axis (n)
+      ctx.moveTo(originX, originY);
+      ctx.lineTo(originX, originY - plotH - 15); // Y-axis (T(n))
+      ctx.stroke();
+
+      // Axis labels
+      ctx.font = '500 10px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText('Input Size (n) →', originX + plotW - 60, originY + 22);
+      ctx.save();
+      ctx.translate(originX - 35, originY - plotH * 0.5);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('Operations T(n) ↑', -40, 0);
+      ctx.restore();
+
+      // Tick marks on X-axis
+      for (let tn = 10; tn <= 40; tn += 10) {
+        const tx = originX + (tn / 48) * plotW;
+        ctx.beginPath();
+        ctx.moveTo(tx, originY);
+        ctx.lineTo(tx, originY + 4);
+        ctx.stroke();
+        ctx.fillText(tn.toString(), tx - 6, originY + 16);
+      }
+
+      // Continuous Theoretical Complexity Curves
+      const curveDefs = [
+        { label: 'O(1)', color: '#38bdf8', fn: (x) => 6 },
+        { label: 'O(log n)', color: '#34d399', fn: (x) => Math.log2(x) * 12 },
+        { label: 'O(n)', color: '#a3e635', fn: (x) => x * 2.5 },
+        { label: 'O(n log n)', color: '#fbbf24', fn: (x) => (x * Math.log2(x)) * 0.75 },
+        { label: 'O(n²)', color: '#f97316', fn: (x) => Math.pow(x, 2) * 0.08 },
+        { label: 'O(2ⁿ)', color: '#f87171', fn: (x) => Math.pow(2, Math.min(x, 10)) * 0.16 }
+      ];
+
+      for (const curve of curveDefs) {
+        ctx.strokeStyle = curve.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let xVal = 2; xVal <= 48; xVal += 1) {
+          const cx = originX + (xVal / 48) * plotW;
+          const yVal = curve.fn(xVal);
+          const cy = Math.max(originY - plotH - 10, originY - (yVal / 140) * plotH);
+          if (xVal === 2) ctx.moveTo(cx, cy);
+          else ctx.lineTo(cx, cy);
+        }
+        ctx.stroke();
+      }
+
+      // Sweeping Dynamic Cursor at n(t)
+      const cursorX = originX + (n / 48) * plotW;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cursorX, originY);
+      ctx.lineTo(cursorX, originY - plotH - 10);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Active intersection points and projection badges
+      for (const curve of curveDefs) {
+        const yVal = curve.fn(n);
+        const cy = Math.max(originY - plotH - 10, originY - (yVal / 140) * plotH);
+        ctx.fillStyle = curve.color;
+        ctx.beginPath();
+        ctx.arc(cursorX, cy, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Right Panel: Real-Time Algorithm Race Arena
+      const arenaX = originX + plotW + 55 * scale;
+      const arenaY = plotY - 10;
+      const arenaW = width - arenaX - 25;
+      const trackH = 34 * scale;
+
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 1;
+      ctx.fillRect(arenaX, arenaY, arenaW, trackH * 6 + 18);
+      ctx.strokeRect(arenaX, arenaY, arenaW, trackH * 6 + 18);
+
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.fillText('Real-Time Algorithm Conveyor Execution', arenaX + 12, arenaY + 16);
+
+      for (let i = 0; i < workers.length; i++) {
+        const w = workers[i];
+        const ty = arenaY + 28 + i * trackH;
+
+        // Label
+        ctx.font = '500 10px monospace';
+        ctx.fillStyle = w.color;
+        ctx.fillText(w.name, arenaX + 10, ty + 12);
+
+        // Track bar background
+        const barX = arenaX + 130 * scale;
+        const barW = Math.max(60, arenaW - 195 * scale);
+        const barH = 10;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.fillRect(barX, ty + 3, barW, barH);
+
+        // Dynamic progress runner
+        const runnerProgress = (time * (i === 0 ? 3 : (6 / (i + 1)))) % 1.0;
+        const runnerX = barX + runnerProgress * barW;
+
+        ctx.fillStyle = w.color;
+        ctx.fillRect(barX, ty + 3, runnerProgress * barW, barH);
+        ctx.beginPath();
+        ctx.arc(runnerX, ty + 8, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Numerical operation count
+        ctx.font = '600 10px monospace';
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'right';
+        ctx.fillText(`${w.ops} ops`, arenaX + arenaW - 10, ty + 12);
+        ctx.textAlign = 'left';
+      }
+
+      // Bottom Panel: Array Partitioning & Comparative Memory Scans
+      const arrY = height - 90 * scale;
+      const cellCount = Math.min(24, n);
+      const cellW = Math.min(22 * scale, (width - 120) / cellCount);
+      const arrStartX = (width - cellCount * cellW) / 2;
+
+      ctx.fillStyle = mutedColor;
+      ctx.font = '500 10px monospace';
+      ctx.fillText(`Simulated Memory Array (size n = ${n}):`, arrStartX, arrY - 10);
+
+      // Active comparison pointers sweeping the array
+      const activeScanIdx = Math.floor(time * 12) % cellCount;
+      const activeBinaryIdx = Math.floor(time * 3) % cellCount;
+
+      for (let c = 0; c < cellCount; c++) {
+        const cx = arrStartX + c * cellW;
+        ctx.strokeStyle = border;
+        ctx.lineWidth = 1;
+
+        if (c === activeScanIdx) {
+          ctx.fillStyle = '#a3e635'; // Linear scan cursor
+        } else if (c === activeBinaryIdx) {
+          ctx.fillStyle = '#34d399'; // Binary search pivot
+        } else {
+          ctx.fillStyle = surfaceColor;
+        }
+
+        ctx.fillRect(cx, arrY, cellW - 2, 22 * scale);
+        ctx.strokeRect(cx, arrY, cellW - 2, 22 * scale);
+
+        ctx.font = '500 9px monospace';
+        ctx.fillStyle = (c === activeScanIdx || c === activeBinaryIdx) ? '#000000' : mutedColor;
+        ctx.textAlign = 'center';
+        ctx.fillText(c.toString(), cx + (cellW - 2) * 0.5, arrY + 14 * scale);
+      }
+
+      // Dynamic Telemetry Footer
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.textAlign = 'center';
+      ctx.fillText(`Asymptotic Dominance: O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2ⁿ) | Max Ops: ${expN.toLocaleString()}`, width / 2, height - 15);
     }
-    animate();
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>

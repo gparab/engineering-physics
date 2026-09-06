@@ -30,6 +30,25 @@
       --block-accent: #111111;
       --block-grid: rgba(0, 0, 0, 0.06);
       
+            /* Simulation Canvas Tokens (Dark Mode) */
+      --sim-bg: #121526;
+      --sim-surface: #1e2238;
+      --sim-border: #2d3354;
+      --sim-text: #f1f5f9;
+      --sim-text-muted: #94a3b8;
+      --sim-grid: rgba(255, 255, 255, 0.06);
+      --sim-axis: #94a3b8;
+      --sim-primary: #38bdf8;
+      --sim-secondary: #34d399;
+      --sim-accent: #fbbf24;
+      --sim-alert: #f87171;
+      --sim-purple: #c084fc;
+      --sim-blue: #38bdf8;
+      --sim-teal: #2dd4bf;
+      --sim-amber: #fbbf24;
+      --sim-red: #f87171;
+      --sim-green: #4ade80;
+
       /* High-Contrast Simulation Palette */
       --sim-blue: #0277bd;
       --sim-teal: #00897b;
@@ -57,6 +76,25 @@
       --canvas-border: rgba(0, 0, 0, 0.10);
       --ink: #000000;
       
+            /* Simulation Canvas Tokens (Light Mode) */
+      --sim-bg: #f8fafc;
+      --sim-surface: #ffffff;
+      --sim-border: #e2e8f0;
+      --sim-text: #0f172a;
+      --sim-text-muted: #64748b;
+      --sim-grid: rgba(0, 0, 0, 0.06);
+      --sim-axis: #64748b;
+      --sim-primary: #0284c7;
+      --sim-secondary: #0d9488;
+      --sim-accent: #d97706;
+      --sim-alert: #dc2626;
+      --sim-purple: #9333ea;
+      --sim-blue: #0284c7;
+      --sim-teal: #0d9488;
+      --sim-amber: #d97706;
+      --sim-red: #dc2626;
+      --sim-green: #16a34a;
+
       /* Backward Compatibility Tokens */
       --bg: #ffffff;
       --surface: #ffffff;
@@ -199,7 +237,9 @@
       min-height: 380px;
       max-height: 640px;
       margin: 0 auto 24px auto;
-      background-color: var(--block-bg);
+      background-color: var(--sim-bg);
+      border: 1px solid var(--sim-border);
+      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -345,8 +385,74 @@
       });
     }
 
+        // Responsive ThemePalette Engine
+    const ThemePalette = {
+      bg: '#121526',
+      surface: '#1e2238',
+      border: '#2d3354',
+      text: '#f1f5f9',
+      textMuted: '#94a3b8',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      axis: '#94a3b8',
+      primary: '#38bdf8',
+      secondary: '#34d399',
+      accent: '#fbbf24',
+      alert: '#f87171',
+      purple: '#c084fc',
+      blue: '#38bdf8',
+      teal: '#2dd4bf',
+      amber: '#fbbf24',
+      red: '#f87171',
+      green: '#4ade80'
+    };
+
+    function updateThemePalette() {
+      const root = getComputedStyle(document.documentElement);
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+    }
+    const theme = ThemePalette;
+    updateThemePalette();
+    window.addEventListener('themechange', () => {
+      updateThemePalette();
+    });
+
     function getThemeColor(variableName) {
-      return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+      if (!variableName) return theme.text;
+      const v = variableName.trim();
+      if (v === '--sim-bg' || v === 'bg') return theme.bg;
+      if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
+      if (v === '--sim-accent' || v === 'accent') return theme.accent;
+      if (v === '--sim-alert' || v === 'alert') return theme.alert;
+      if (v === '--sim-blue' || v === 'blue') return theme.blue;
+      if (v === '--sim-teal' || v === 'teal') return theme.teal;
+      if (v === '--sim-amber' || v === 'amber') return theme.amber;
+      if (v === '--sim-red' || v === 'red') return theme.red;
+      if (v === '--sim-green' || v === 'green') return theme.green;
+      if (v === '--sim-purple' || v === 'purple') return theme.purple;
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || theme.text;
     }
 
     // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
@@ -363,119 +469,283 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+      updateThemePalette();
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('themechange', () => {});
+    
     resize();
 
     // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
     // --- 3. PHYSICAL STATE VARIABLES & SIMULATION PARAMETERS ---
+    // Continuous Dynamic Simulation Engine for Graph SLAM & Pose Graph Optimization
     let time = 0;
-    // --- 4. CONTINUOUS SIMULATION & ANIMATION INTEGRATION LOOP ---
+    let slamTimer = 0;
+
+    // Ground truth poses around a loop circuit
+    const groundTruthPoses = [
+      { x: -140, y: 50 },
+      { x: -120, y: -40 },
+      { x: -40,  y: -80 },
+      { x: 50,   y: -70 },
+      { x: 120,  y: -20 },
+      { x: 110,  y: 60 },
+      { x: 20,   y: 80 }
+    ];
+
+    // Estimated drifted poses (with dead-reckoning noise)
+    const estimatedPoses = groundTruthPoses.map((p, i) => ({
+      x: p.x + (i > 0 ? (i * 4.5) : 0),
+      y: p.y + (i > 0 ? (i * 3.5) : 0),
+      driftX: (i * 4.5),
+      driftY: (i * 3.5)
+    }));
+
+    // Landmarks
+    const landmarks = [
+      { x: -40, y: -10 },
+      { x: 40,  y: 10 }
+    ];
+
     function animate() {
       requestAnimationFrame(animate);
-      // --- 5. GRAPHICAL RENDERING PIPELINE ---
-      ctx.clearRect(0, 0, width, height);
+      updateThemePalette();
+
+      // Active canvas background painting
+      ctx.fillStyle = theme.bg;
+      ctx.fillRect(0, 0, width, height);
 
       time += 0.016;
-      const isDark = false;
-      const textColor = '#000000';
-      const mutedColor = 'rgba(0, 0, 0, 0.55)';
-      const accentColor = '#111111';
-      const landmarkColor = '#ffb74d';
-      const loopColor = '#26a69a';
+      slamTimer += 0.016;
 
-      const cx = width * 0.5;
+      const textColor = theme.text;
+      const mutedColor = theme.textMuted;
+      const accentColor = theme.primary;
+      const landmarkColor = theme.amber;
+      const loopColor = theme.secondary || theme.green;
+      const alertColor = theme.alert || theme.red;
+      const highColor = theme.secondary || theme.green;
+      const wireColor = theme.border;
+      const surfaceColor = theme.surface;
+
+      const scale = Math.min(width / 750, height / 500);
+      const cx = width * 0.46;
       const cy = height * 0.44;
 
-      // Robot Pose Trajectory Nodes (Loop closure)
-      const poses = [
-        { x: -140, y: 50 },
-        { x: -120, y: -40 },
-        { x: -40,  y: -80 },
-        { x: 50,   y: -70 },
-        { x: 120,  y: -20 },
-        { x: 110,  y: 60 },
-        { x: 20,   y: 80 },
-        { x: -130, y: 55 } // Loop closure return
-      ];
-
-      // Landmarks
-      const landmarks = [
-        { x: -40, y: -10 },
-        { x: 40,  y: 10 }
-      ];
-
-      // Draw Odometry Edges
-      ctx.strokeStyle = accentColor;
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      for (let i = 0; i < poses.length - 1; i++) {
-        if (i === 0) ctx.moveTo(cx + poses[i].x, cy + poses[i].y);
-        else ctx.lineTo(cx + poses[i].x, cy + poses[i].y);
+      // Coordinate Grid Layer
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = 1;
+      for (let x = 40; x < width - 40; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
       }
-      ctx.stroke();
+      for (let y = 40; y < height - 40; y += 40) {
+        ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(width - 40, y); ctx.stroke();
+      }
 
-      // Loop Closure Edge (Dashed Green)
-      ctx.strokeStyle = loopColor;
-      ctx.lineWidth = 2.5;
-      ctx.setLineDash([5, 5]);
+      // SLAM Optimization Lifecycle (6 second loop):
+      // 0.0 - 2.5s: Dead reckoning drift accumulation (ellipses expand)
+      // 2.5 - 3.5s: Loop closure detected (pulse connects last node to first node)
+      // 3.5 - 6.0s: Gauss-Newton relaxation (poses relax back to ground truth, ellipses contract)
+      const cycle = slamTimer % 6.0;
+      let optProgress = 0;
+      let loopActive = false;
+      let phaseName = '';
+
+      if (cycle < 2.5) {
+        phaseName = 'Dead-Reckoning Odometry Drift (Sensor Noise Accumulating)';
+        optProgress = 0;
+        loopActive = false;
+      } else if (cycle < 3.5) {
+        phaseName = 'Loop Closure Detected at Node 6 ↔ Node 0 (Residual Constraint Snapped)';
+        optProgress = (cycle - 2.5) * 0.2;
+        loopActive = true;
+      } else {
+        phaseName = 'Gauss-Newton Least Squares Graph Relaxation (Optimizing Trajectory)';
+        optProgress = 0.2 + (cycle - 3.5) / 2.5 * 0.8;
+        loopActive = true;
+      }
+
+      // Smooth relaxation factor
+      const relax = Math.min(1.0, optProgress);
+
+      // Current active poses
+      const currentPoses = groundTruthPoses.map((gt, i) => {
+        const drift = (1.0 - relax);
+        const curX = gt.x + estimatedPoses[i].driftX * drift;
+        const curY = gt.y + estimatedPoses[i].driftY * drift;
+        return { x: curX, y: curY, driftMag: Math.hypot(curX - gt.x, curY - gt.y) };
+      });
+
+      // Moving robot cursor along current trajectory
+      const trajLength = currentPoses.length;
+      const robotTrajPos = (time * 0.6) % trajLength;
+      const rIdx1 = Math.floor(robotTrajPos);
+      const rIdx2 = (rIdx1 + 1) % trajLength;
+      const rFrac = robotTrajPos - rIdx1;
+
+      const p1 = currentPoses[rIdx1];
+      const p2 = currentPoses[rIdx2];
+      const robotX = cx + (p1.x + (p2.x - p1.x) * rFrac) * scale;
+      const robotY = cy + (p1.y + (p2.y - p1.y) * rFrac) * scale;
+
+      // Title Banner
+      ctx.font = '600 13px Inter, sans-serif';
+      ctx.fillStyle = accentColor;
+      ctx.textAlign = 'center';
+      ctx.fillText(`Graph SLAM: ${phaseName}`, cx, 28);
+
+      // Draw Ground Truth Path (faint dashed line)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(cx + poses[6].x, cy + poses[6].y);
-      ctx.lineTo(cx + poses[0].x, cy + poses[0].y);
+      for (let i = 0; i < groundTruthPoses.length; i++) {
+        const gx = cx + groundTruthPoses[i].x * scale;
+        const gy = cy + groundTruthPoses[i].y * scale;
+        if (i === 0) ctx.moveTo(gx, gy);
+        else ctx.lineTo(gx, gy);
+      }
+      ctx.closePath();
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Landmark Observation Lines
-      ctx.strokeStyle = isDark ? 'rgba(255, 183, 77, 0.4)' : 'rgba(245, 124, 0, 0.4)';
+      // Draw Odometry Edges for estimated trajectory
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i < currentPoses.length; i++) {
+        const px = cx + currentPoses[i].x * scale;
+        const py = cy + currentPoses[i].y * scale;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Loop Closure Constraint (Pulsing Green Line between Node 6 and Node 0)
+      if (loopActive) {
+        const pStart = currentPoses[0];
+        const pEnd = currentPoses[currentPoses.length - 1];
+        ctx.strokeStyle = loopColor;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(cx + pEnd.x * scale, cy + pEnd.y * scale);
+        ctx.lineTo(cx + pStart.x * scale, cy + pStart.y * scale);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Pulse ring on loop closure node
+        const pulseR = (12 + Math.sin(time * 12) * 5) * scale;
+        ctx.strokeStyle = loopColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx + pEnd.x * scale, cy + pEnd.y * scale, pulseR, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Landmark Observation Sensor Beams
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.25)';
       ctx.lineWidth = 1;
       landmarks.forEach(lm => {
-        poses.forEach(p => {
+        const lx = cx + lm.x * scale;
+        const ly = cy + lm.y * scale;
+        currentPoses.forEach(p => {
           ctx.beginPath();
-          ctx.moveTo(cx + lm.x, cy + lm.y);
-          ctx.lineTo(cx + p.x, cy + p.y);
+          ctx.moveTo(lx, ly);
+          ctx.lineTo(cx + p.x * scale, cy + p.y * scale);
           ctx.stroke();
         });
       });
 
       // Draw Landmark Nodes (Diamonds)
       landmarks.forEach((lm, idx) => {
-        const lx = cx + lm.x;
-        const ly = cy + lm.y;
+        const lx = cx + lm.x * scale;
+        const ly = cy + lm.y * scale;
         ctx.fillStyle = landmarkColor;
         ctx.beginPath();
-        ctx.moveTo(lx, ly - 8);
-        ctx.lineTo(lx + 8, ly);
-        ctx.lineTo(lx, ly + 8);
-        ctx.lineTo(lx - 8, ly);
+        ctx.moveTo(lx, ly - 9 * scale);
+        ctx.lineTo(lx + 9 * scale, ly);
+        ctx.lineTo(lx, ly + 9 * scale);
+        ctx.lineTo(lx - 9 * scale, ly);
         ctx.closePath();
         ctx.fill();
 
         ctx.font = '700 10px monospace';
-        ctx.fillStyle = textColor;
+        ctx.fillStyle = landmarkColor;
         ctx.textAlign = 'center';
-        ctx.fillText(`L${idx + 1}`, lx, ly - 12);
+        ctx.fillText(`L${idx + 1}`, lx, ly - 14 * scale);
       });
 
-      // Draw Pose Nodes (Circles)
-      poses.forEach((p, idx) => {
-        if (idx === poses.length - 1) return;
-        const px = cx + p.x;
-        const py = cy + p.y;
-        ctx.fillStyle = isDark ? '#22223a' : '#ffffff';
+      // Draw Pose Uncertainty Covariance Ellipses & Nodes
+      currentPoses.forEach((p, idx) => {
+        const px = cx + p.x * scale;
+        const py = cy + p.y * scale;
+
+        // Covariance Ellipse (scaled by drift magnitude and contracted by relaxation)
+        const sigmaX = Math.max(5, (10 + idx * 3.5) * (1.0 - relax * 0.75)) * scale;
+        const sigmaY = Math.max(4, (8 + idx * 2.5) * (1.0 - relax * 0.75)) * scale;
+
+        ctx.fillStyle = 'rgba(248, 113, 113, 0.15)';
+        ctx.strokeStyle = 'rgba(248, 113, 113, 0.45)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(px, py, sigmaX, sigmaY, 0.3 * idx, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Node Circle
+        ctx.fillStyle = surfaceColor;
         ctx.strokeStyle = accentColor;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(px, py, 7, 0, Math.PI * 2);
+        ctx.arc(px, py, 7 * scale, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
+
+        ctx.font = '600 9px monospace';
+        ctx.fillStyle = textColor;
+        ctx.fillText(`x${idx}`, px, py - 11 * scale);
       });
 
-      const ty = height - 40;
-      ctx.font = '13px Inter, sans-serif';
+      // Animated Mobile Robot Token
+      ctx.fillStyle = highColor;
+      ctx.beginPath();
+      ctx.arc(robotX, robotY, 6 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Right Panel: Optimization Convergence HUD
+      const convX = width - 180 * scale;
+      const convY = height - 145 * scale;
+      const convW = 160 * scale;
+      const convH = 105 * scale;
+
+      ctx.fillStyle = surfaceColor;
+      ctx.strokeStyle = wireColor;
+      ctx.lineWidth = 1;
+      ctx.fillRect(convX, convY, convW, convH);
+      ctx.strokeRect(convX, convY, convW, convH);
+
+      const chiSquare = (240.0 * Math.pow(1.0 - relax, 2) + 12.5).toFixed(1);
+
+      ctx.font = '600 10px Inter, sans-serif';
       ctx.fillStyle = textColor;
+      ctx.textAlign = 'left';
+      ctx.fillText('Gauss-Newton Solver', convX + 8, convY + 16);
+
+      ctx.font = '500 9px monospace';
+      ctx.fillStyle = mutedColor;
+      ctx.fillText(`Poses: ${currentPoses.length} nodes`, convX + 8, convY + 34);
+      ctx.fillText(`Landmarks: ${landmarks.length} features`, convX + 8, convY + 50);
+      ctx.fillStyle = alertColor;
+      ctx.fillText(`Residual χ²: ${chiSquare}`, convX + 8, convY + 68);
+      ctx.fillStyle = highColor;
+      ctx.fillText(`Convergence: ${(relax * 100).toFixed(0)}%`, convX + 8, convY + 86);
+
+      // Bottom Telemetry Footer
+      const ty = height - 20;
+      ctx.font = '500 11px monospace';
+      ctx.fillStyle = mutedColor;
       ctx.textAlign = 'center';
-      ctx.fillText('Non-Linear Least Squares Pose Graph Optimization with Loop Closure Constraints', cx, ty);
+      ctx.fillText(`Optimization Equation: (Jᵀ Ω J) Δx = -Jᵀ Ω e | Residual Error χ² = ${chiSquare} | Covariance Contracting`, cx, ty);
     }
     requestAnimationFrame(animate);
   </script>
