@@ -2,16 +2,15 @@
 """
 generate_index.py
 Regenerates index.html for Engineering Physics Component Library
-adhering strictly to the Figma Marketing Design System.
+adhering strictly to the Apple Human Interface Guidelines (HIG).
 
 Features:
-- Monochrome chrome canvas (#ffffff canvas, #000000 primary ink)
-- Oversized typography with tight letter-spacing in Inter
-- Category eyebrows in uppercase monospace with positive tracking
-- Interactive discipline filter bar with pill buttons (border-radius: 50px)
+- Apple HIG adaptive light/dark mode via @media (prefers-color-scheme: dark)
+- System font stacks (-apple-system / SF Mono)
+- 8-point spacing grid and 12px card border-radius
+- Clean monochromatic section headers with subtle grouped backgrounds
 - Instant client-side search and filtering
-- Pastel color-block badges and section accents matching Figma tokens
-- Reads model ratings from model_ratings.md and displays rating badges
+- Inline iframe modal simulation viewer
 - Validates 100% of relative model paths before writing output
 """
 
@@ -27,69 +26,69 @@ RATINGS_FILE = REPO_ROOT / "model_ratings.md"
 
 EXCLUDE_DIRS = {"misc", "__pycache__", ".agents"}
 
-# Discipline to Figma pastel color token mapping
+# Discipline label mapping (Apple HIG monochromatic design system)
 DISCIPLINE_PALETTES = {
     # Canonical 23 engineering disciplines
-    "acoustics_engineering": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Acoustics Engineering", "name": "Lilac"},
-    "aerospace_engineering": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Aerospace Engineering", "name": "Mint"},
-    "agricultural_engineering": {"bg": "#d4f542", "border": "#bef264", "label": "Agricultural Engineering", "name": "Lime"},
-    "biomedical_engineering": {"bg": "#fed7e2", "border": "#fbcfe8", "label": "Biomedical Engineering", "name": "Pink"},
-    "chemical_engineering": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Chemical Engineering", "name": "Cream"},
-    "civil_engineering": {"bg": "#ffd6cc", "border": "#fecdd3", "label": "Civil Engineering", "name": "Coral"},
-    "computer_engineering": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Computer Engineering", "name": "Lilac"},
-    "computer_science": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Computer Science", "name": "Mint"},
-    "electrical_engineering": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Electrical Engineering", "name": "Cream"},
-    "electronics_engineering": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Electronics Engineering", "name": "Cream"},
-    "energy_engineering": {"bg": "#d4f542", "border": "#bef264", "label": "Energy Engineering", "name": "Lime"},
-    "environmental_engineering": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Environmental Engineering", "name": "Mint"},
-    "fundamental_physics": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Fundamental Physics", "name": "Lilac"},
-    "industrial_systems_engineering": {"bg": "#ffd6cc", "border": "#fecdd3", "label": "Industrial & Systems Engineering", "name": "Coral"},
-    "marine_engineering": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Marine Engineering", "name": "Mint"},
-    "materials_science": {"bg": "#fed7e2", "border": "#fbcfe8", "label": "Materials Science", "name": "Pink"},
-    "mechanical_engineering": {"bg": "#ffd6cc", "border": "#fecdd3", "label": "Mechanical Engineering", "name": "Coral"},
-    "mining_petroleum_engineering": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Mining & Petroleum Engineering", "name": "Cream"},
-    "nanotechnology": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Nanotechnology", "name": "Lilac"},
-    "nuclear_engineering": {"bg": "#d4f542", "border": "#bef264", "label": "Nuclear Engineering", "name": "Lime"},
-    "optical_engineering": {"bg": "#fed7e2", "border": "#fbcfe8", "label": "Optical Engineering", "name": "Pink"},
-    "robotics_engineering": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Robotics Engineering", "name": "Mint"},
-    "telecommunications_engineering": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Telecommunications Engineering", "name": "Cream"},
+    "acoustics_engineering": {"label": "Acoustics Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "aerospace_engineering": {"label": "Aerospace Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "agricultural_engineering": {"label": "Agricultural Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "biomedical_engineering": {"label": "Biomedical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "chemical_engineering": {"label": "Chemical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "civil_engineering": {"label": "Civil Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "computer_engineering": {"label": "Computer Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "computer_science": {"label": "Computer Science", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "electrical_engineering": {"label": "Electrical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "electronics_engineering": {"label": "Electronics Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "energy_engineering": {"label": "Energy Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "environmental_engineering": {"label": "Environmental Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "fundamental_physics": {"label": "Fundamental Physics", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "industrial_systems_engineering": {"label": "Industrial & Systems Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "marine_engineering": {"label": "Marine Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "materials_science": {"label": "Materials Science", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "mechanical_engineering": {"label": "Mechanical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "mining_petroleum_engineering": {"label": "Mining & Petroleum Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "nanotechnology": {"label": "Nanotechnology", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "nuclear_engineering": {"label": "Nuclear Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "optical_engineering": {"label": "Optical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "robotics_engineering": {"label": "Robotics Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "telecommunications_engineering": {"label": "Telecommunications Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
 
-    # Expansion engineering disciplines (Milestone 3)
-    "plasma_physics": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Plasma Physics", "name": "Lilac"},
-    "astrodynamics": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Astrodynamics", "name": "Mint"},
-    "geophysical_engineering": {"bg": "#ffd6cc", "border": "#fecdd3", "label": "Geophysical Engineering", "name": "Coral"},
-    "cryogenic_engineering": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Cryogenic Engineering", "name": "Lilac"},
-    "quantum_engineering": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Quantum Engineering", "name": "Cream"},
+    # Expansion engineering disciplines
+    "plasma_physics": {"label": "Plasma Physics", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "astrodynamics": {"label": "Astrodynamics", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "geophysical_engineering": {"label": "Geophysical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "cryogenic_engineering": {"label": "Cryogenic Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "quantum_engineering": {"label": "Quantum Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
 
     # Legacy aliases (for backward compatibility if needed)
-    "acoustics": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Acoustics", "name": "Lilac"},
-    "aerospace": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Aerospace Engineering", "name": "Mint"},
-    "biomech": {"bg": "#fed7e2", "border": "#fbcfe8", "label": "Biomechanical Engineering", "name": "Pink"},
-    "biomechanical_engineering": {"bg": "#fed7e2", "border": "#fbcfe8", "label": "Biomechanical Engineering", "name": "Pink"},
-    "chem_eng": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Chemical Engineering", "name": "Cream"},
-    "chemeng": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Chemical Engineering", "name": "Cream"},
-    "civil": {"bg": "#ffd6cc", "border": "#fecdd3", "label": "Civil Engineering", "name": "Coral"},
-    "compeng": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Computer Engineering", "name": "Lilac"},
-    "cs": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Computer Science", "name": "Mint"},
-    "electrical": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Electrical Engineering", "name": "Cream"},
-    "ee": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Electrical Engineering", "name": "Cream"},
-    "electronics": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Electronics Engineering", "name": "Cream"},
-    "energy": {"bg": "#d4f542", "border": "#bef264", "label": "Energy Engineering", "name": "Lime"},
-    "enveng": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Environmental Engineering", "name": "Mint"},
-    "industrial_systems": {"bg": "#ffd6cc", "border": "#fecdd3", "label": "Industrial & Systems Engineering", "name": "Coral"},
-    "marine": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Marine Engineering", "name": "Mint"},
-    "matsci": {"bg": "#fed7e2", "border": "#fbcfe8", "label": "Materials Science", "name": "Pink"},
-    "mech": {"bg": "#ffd6cc", "border": "#fecdd3", "label": "Mechanical Engineering", "name": "Coral"},
-    "mining_petro": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Mining & Petroleum Engineering", "name": "Cream"},
-    "nano": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Nanotechnology", "name": "Lilac"},
-    "nuclear": {"bg": "#d4f542", "border": "#bef264", "label": "Nuclear Engineering", "name": "Lime"},
-    "optical": {"bg": "#fed7e2", "border": "#fbcfe8", "label": "Optical Engineering", "name": "Pink"},
-    "robotics": {"bg": "#d2f8e5", "border": "#a7f3d0", "label": "Robotics Engineering", "name": "Mint"},
-    "telecommunications": {"bg": "#fff5ea", "border": "#fed7aa", "label": "Telecommunications Engineering", "name": "Cream"},
-    "addendum": {"bg": "#e0d4fc", "border": "#c4b5fd", "label": "Multidisciplinary Addendum", "name": "Lilac"},
+    "acoustics": {"label": "Acoustics Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "aerospace": {"label": "Aerospace Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "biomech": {"label": "Biomechanical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "biomechanical_engineering": {"label": "Biomechanical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "chem_eng": {"label": "Chemical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "chemeng": {"label": "Chemical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "civil": {"label": "Civil Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "compeng": {"label": "Computer Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "cs": {"label": "Computer Science", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "electrical": {"label": "Electrical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "ee": {"label": "Electrical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "electronics": {"label": "Electronics Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "energy": {"label": "Energy Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "enveng": {"label": "Environmental Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "industrial_systems": {"label": "Industrial & Systems Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "marine": {"label": "Marine Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "matsci": {"label": "Materials Science", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "mech": {"label": "Mechanical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "mining_petro": {"label": "Mining & Petroleum Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "nano": {"label": "Nanotechnology", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "nuclear": {"label": "Nuclear Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "optical": {"label": "Optical Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "robotics": {"label": "Robotics Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "telecommunications": {"label": "Telecommunications Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
+    "addendum": {"label": "Multidisciplinary Addendum", "bg": "var(--color-surface)", "border": "var(--color-separator)"},
 }
 
-DEFAULT_PALETTE = {"bg": "#fff5ea", "border": "#fed7aa", "label": "Engineering", "name": "Cream"}
+DEFAULT_PALETTE = {"label": "Engineering", "bg": "var(--color-surface)", "border": "var(--color-separator)"}
 
 
 def load_ratings() -> dict:
@@ -171,29 +170,42 @@ def generate_dashboard():
     total_models = len(all_files)
     total_disciplines = len(disciplines)
 
-    # Build HTML content
+    # Build HTML content adhering strictly to Apple Human Interface Guidelines (HIG)
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Engineering Physics Interactive Component Library</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@320;330;340;480;540;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {{
       --color-canvas: #ffffff;
-      --color-surface: #fafafa;
-      --color-primary: #000000;
-      --color-ink: #000000;
-      --color-hairline: #e5e5e5;
-      --color-hairline-soft: #f0f0f0;
-      --rounded-md: 8px;
-      --rounded-lg: 24px;
-      --rounded-pill: 50px;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, monospace;
+      --color-surface: #f2f2f7;
+      --color-card: #f2f2f7;
+      --color-text: #000000;
+      --color-text-secondary: rgba(60, 60, 67, 0.6);
+      --color-text-tertiary: rgba(60, 60, 67, 0.3);
+      --color-separator: rgba(60, 60, 67, 0.29);
+      --color-accent: #007aff;
+      --rounded-sm: 8px;
+      --rounded-md: 12px;
+      --rounded-lg: 16px;
+      --rounded-pill: 9999px;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace;
+    }}
+
+    @media (prefers-color-scheme: dark) {{
+      :root {{
+        --color-canvas: #1c1c1e;
+        --color-surface: #2c2c2e;
+        --color-card: #2c2c2e;
+        --color-text: #ffffff;
+        --color-text-secondary: rgba(235, 235, 245, 0.6);
+        --color-text-tertiary: rgba(235, 235, 245, 0.3);
+        --color-separator: rgba(84, 84, 88, 0.65);
+        --color-accent: #0a84ff;
+      }}
     }}
 
     * {{
@@ -204,26 +216,33 @@ def generate_dashboard():
 
     body {{
       background: var(--color-canvas);
-      color: var(--color-ink);
+      color: var(--color-text);
       font-family: var(--font-sans);
-      font-size: 16px;
-      line-height: 1.5;
+      font-size: 17px;
+      line-height: 1.47;
       -webkit-font-smoothing: antialiased;
-      padding-bottom: 96px;
+      padding-bottom: 48px;
     }}
 
     .top-nav {{
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--color-hairline);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--color-separator);
       height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 40px;
+      padding: 0 32px;
+    }}
+
+    @media (prefers-color-scheme: dark) {{
+      .top-nav {{
+        background: rgba(28, 28, 30, 0.85);
+      }}
     }}
 
     .nav-brand {{
@@ -233,62 +252,65 @@ def generate_dashboard():
     }}
 
     .brand-title {{
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 17px;
+      font-weight: 600;
       letter-spacing: -0.4px;
+      color: var(--color-text);
     }}
 
     .brand-badge {{
       font-family: var(--font-mono);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: #000000;
-      color: #ffffff;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--color-surface);
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-separator);
       padding: 3px 10px;
-      border-radius: var(--rounded-pill);
+      border-radius: 8px;
     }}
 
     .header-hero {{
-      max-width: 1280px;
+      max-width: 960px;
       margin: 0 auto;
-      padding: 72px 40px 48px 40px;
+      padding: 48px 24px 32px 24px;
       text-align: center;
     }}
 
     .hero-eyebrow {{
       font-family: var(--font-mono);
-      font-size: 13px;
+      font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 16px;
-      color: #000000;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+      color: var(--color-accent);
+      font-weight: 500;
     }}
 
     .hero-title {{
-      font-size: clamp(38px, 5vw, 64px);
+      font-size: 34px;
       font-weight: 700;
-      letter-spacing: -1.8px;
-      line-height: 1.05;
-      margin-bottom: 20px;
+      letter-spacing: -0.8px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      color: var(--color-text);
     }}
 
     .hero-desc {{
-      font-size: 20px;
-      font-weight: 340;
-      line-height: 1.4;
-      max-width: 760px;
-      margin: 0 auto 36px auto;
-      color: #111111;
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.47;
+      max-width: 720px;
+      margin: 0 auto 32px auto;
+      color: var(--color-text-secondary);
     }}
 
     .search-filter-bar {{
       max-width: 1280px;
       margin: 0 auto 48px auto;
-      padding: 0 40px;
+      padding: 0 32px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
     }}
 
     .search-box {{
@@ -301,18 +323,24 @@ def generate_dashboard():
     .search-input {{
       width: 100%;
       height: 48px;
-      border-radius: var(--rounded-pill);
-      border: 1px solid var(--color-hairline);
-      padding: 0 24px;
-      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--color-separator);
+      background: var(--color-surface);
+      color: var(--color-text);
+      padding: 0 16px;
+      font-size: 17px;
       font-family: var(--font-sans);
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }}
 
     .search-input:focus {{
-      border-color: #000000;
-      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    }}
+
+    .search-input::placeholder {{
+      color: var(--color-text-tertiary);
     }}
 
     .discipline-pills {{
@@ -325,43 +353,49 @@ def generate_dashboard():
     .filter-pill {{
       display: inline-flex;
       align-items: center;
-      height: 36px;
+      height: 32px;
       padding: 0 16px;
-      border-radius: var(--rounded-pill);
-      border: 1px solid var(--color-hairline);
-      background: #ffffff;
-      color: #000000;
-      font-size: 14px;
-      font-weight: 480;
+      border-radius: 16px;
+      border: 1px solid var(--color-separator);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
       text-decoration: none;
       transition: all 0.15s ease;
     }}
 
-    .filter-pill:hover, .filter-pill.active {{
-      background: #000000;
+    .filter-pill:hover {{
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }}
+
+    .filter-pill.active {{
+      background: var(--color-accent);
       color: #ffffff;
-      border-color: #000000;
+      border-color: var(--color-accent);
     }}
 
     .main-content {{
       max-width: 1280px;
       margin: 0 auto;
-      padding: 0 40px;
+      padding: 0 32px;
     }}
 
     .discipline-section {{
-      margin-bottom: 56px;
+      margin-bottom: 48px;
     }}
 
     .section-header-block {{
-      padding: 24px 32px;
-      border-radius: var(--rounded-lg);
-      margin-bottom: 24px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: var(--color-surface);
+      border: 1px solid var(--color-separator);
     }}
 
     .section-title-group {{
@@ -372,28 +406,30 @@ def generate_dashboard():
 
     .section-eyebrow {{
       font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       font-weight: 500;
+      color: var(--color-text-secondary);
     }}
 
     .section-title {{
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 700;
       letter-spacing: -0.6px;
       line-height: 1.2;
+      color: var(--color-text);
     }}
 
     .section-count-badge {{
       font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 500;
-      padding: 6px 14px;
-      border-radius: var(--rounded-pill);
-      background: #ffffff;
-      color: #000000;
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      padding: 4px 12px;
+      border-radius: 12px;
+      background: var(--color-canvas);
+      color: var(--color-text-secondary);
+      border: 1px solid var(--color-separator);
     }}
 
     .model-grid {{
@@ -403,23 +439,29 @@ def generate_dashboard():
     }}
 
     .model-card {{
-      background: #ffffff;
-      border: 1px solid var(--color-hairline);
+      background: var(--color-card);
+      border: 1px solid var(--color-separator);
       border-radius: 12px;
-      padding: 20px 24px;
+      padding: 16px 20px;
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 110px;
+      min-height: 104px;
       transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
     }}
 
     .model-card:hover {{
-      transform: translateY(-3px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
-      border-color: #000000;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      border-color: var(--color-accent);
+    }}
+
+    @media (prefers-color-scheme: dark) {{
+      .model-card:hover {{
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      }}
     }}
 
     .card-top {{
@@ -430,11 +472,11 @@ def generate_dashboard():
     }}
 
     .card-title {{
-      font-size: 16px;
-      font-weight: 540;
-      letter-spacing: -0.2px;
-      line-height: 1.35;
-      color: #000000;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      line-height: 1.3;
+      color: var(--color-text);
       margin-right: 8px;
     }}
 
@@ -447,23 +489,13 @@ def generate_dashboard():
 
     .card-id {{
       font-family: var(--font-mono);
-      font-size: 11px;
-      color: #222222;
-      letter-spacing: 0.04em;
-    }}
-
-    .card-rating-badge {{
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
-      padding: 2px 8px;
-      border-radius: var(--rounded-pill);
-      background: #000000;
-      color: #ffffff;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      letter-spacing: 0.02em;
     }}
 
     /* ==========================================================================
-       INLINE MODAL VIEWER (FIGMA MARKETING DESIGN SYSTEM)
+       INLINE MODAL VIEWER (APPLE HIG DESIGN SYSTEM)
        ========================================================================== */
     .modal-overlay {{
       position: fixed;
@@ -475,7 +507,7 @@ def generate_dashboard():
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
     }}
 
     .modal-overlay.is-active {{
@@ -487,9 +519,9 @@ def generate_dashboard():
     .modal-backdrop {{
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.70);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }}
 
     .modal-container {{
@@ -497,15 +529,15 @@ def generate_dashboard():
       z-index: 1001;
       width: min(1360px, calc(100vw - 32px));
       height: min(920px, calc(100vh - 32px));
-      background: #000000;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: var(--rounded-lg);
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.50);
+      background: var(--color-canvas);
+      border: 1px solid var(--color-separator);
+      border-radius: 12px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.25);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      transform: scale(0.97) translateY(8px);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: scale(0.98) translateY(8px);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }}
 
     .modal-overlay.is-active .modal-container {{
@@ -524,8 +556,8 @@ def generate_dashboard():
     .modal-header {{
       height: 56px;
       min-height: 56px;
-      background: #0f0f12;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-separator);
       padding: 0 20px;
       display: flex;
       align-items: center;
@@ -543,23 +575,24 @@ def generate_dashboard():
 
     .modal-discipline-badge {{
       font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 3px 10px;
-      border-radius: var(--rounded-pill);
-      background: #e0d4fc;
-      color: #000000;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: var(--color-canvas);
+      color: var(--color-accent);
+      border: 1px solid var(--color-separator);
       white-space: nowrap;
       flex-shrink: 0;
     }}
 
     .modal-title {{
-      font-size: 16px;
-      font-weight: 540;
-      letter-spacing: -0.2px;
-      color: #ffffff;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--color-text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -567,9 +600,9 @@ def generate_dashboard():
 
     .modal-id-badge {{
       font-family: var(--font-mono);
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.55);
-      letter-spacing: 0.04em;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      letter-spacing: 0.02em;
       white-space: nowrap;
       flex-shrink: 0;
     }}
@@ -591,30 +624,24 @@ def generate_dashboard():
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      height: 34px;
-      padding: 0 14px;
-      border-radius: var(--rounded-pill);
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 8px;
       font-family: var(--font-sans);
-      font-size: 12px;
-      font-weight: 480;
+      font-size: 13px;
+      font-weight: 500;
       letter-spacing: -0.1px;
       cursor: pointer;
       text-decoration: none;
-      border: 1px solid rgba(255, 255, 255, 0.20);
-      background: rgba(255, 255, 255, 0.08);
-      color: #ffffff;
-      transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+      border: 1px solid var(--color-separator);
+      background: var(--color-canvas);
+      color: var(--color-accent);
+      transition: background 0.15s ease, border-color 0.15s ease;
       white-space: nowrap;
     }}
 
     .modal-btn:hover {{
-      background: rgba(255, 255, 255, 0.18);
-      border-color: rgba(255, 255, 255, 0.35);
-      transform: translateY(-1px);
-    }}
-
-    .modal-btn:active {{
-      transform: translateY(0);
+      background: var(--color-surface);
     }}
 
     .modal-btn svg {{
@@ -628,39 +655,33 @@ def generate_dashboard():
       stroke-linejoin: round;
     }}
 
-    /* Primary Close Pill (Figma button-secondary on dark chrome) */
     .modal-close-pill {{
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      height: 34px;
-      padding: 0 16px;
-      border-radius: var(--rounded-pill);
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 8px;
       font-family: var(--font-sans);
       font-size: 13px;
-      font-weight: 540;
+      font-weight: 600;
       letter-spacing: -0.1px;
       cursor: pointer;
       border: none;
-      background: #ffffff;
-      color: #000000;
-      transition: opacity 0.15s ease, transform 0.15s ease;
+      background: var(--color-accent);
+      color: #ffffff;
+      transition: opacity 0.15s ease;
     }}
 
     .modal-close-pill:hover {{
-      opacity: 0.92;
-      transform: scale(1.02);
-    }}
-
-    .modal-close-pill:active {{
-      transform: scale(0.98);
+      opacity: 0.88;
     }}
 
     .modal-body {{
       flex: 1;
       width: 100%;
       height: calc(100% - 56px);
-      background: #000000;
+      background: var(--color-canvas);
       position: relative;
     }}
 
@@ -669,7 +690,7 @@ def generate_dashboard():
       height: 100%;
       border: none;
       display: block;
-      background: #000000;
+      background: var(--color-canvas);
     }}
   </style>
 </head>
@@ -682,7 +703,6 @@ def generate_dashboard():
     <div>
       <a href="https://gautamparab.com" target="_blank" style="font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; color: inherit; text-decoration: none; font-weight: 500;">gautamparab.com &rarr;</a>
     </div>
-
   </nav>
 
   <header class="header-hero">
@@ -716,9 +736,9 @@ def generate_dashboard():
         count = len(files)
 
         html += f"""    <section class="discipline-section" id="section-{disc}" data-discipline="{disc}">
-      <div class="section-header-block" style="background-color: {palette['bg']}; border-color: {palette['border']};">
+      <div class="section-header-block">
         <div class="section-title-group">
-          <span class="section-eyebrow">Discipline &middot; {palette['name']} Block</span>
+          <span class="section-eyebrow">Engineering Discipline</span>
           <h2 class="section-title">{palette['label']}</h2>
         </div>
         <div class="section-count-badge">{count} models</div>
@@ -729,16 +749,13 @@ def generate_dashboard():
             rel_path = f.relative_to(REPO_ROOT)
             meta = extract_model_meta(f)
             model_name = meta["title"]
-            rating_score = ratings.get(f.name)
-            rating_badge = ""
 
-            html += f"""        <a href="{rel_path}" class="model-card" data-title="{model_name.lower()}" data-model-id="{f.stem}" data-model-name="{model_name}" data-discipline="{palette['label']}" data-discipline-bg="{palette['bg']}" data-discipline-border="{palette['border']}">
+            html += f"""        <a href="{rel_path}" class="model-card" data-title="{model_name.lower()}" data-model-id="{f.stem}" data-model-name="{model_name}" data-discipline="{palette['label']}">
           <div class="card-top">
             <span class="card-title">{model_name}</span>
           </div>
           <div class="card-meta">
             <span class="card-id">{f.stem}</span>
-            <span style="font-size: 12px; font-weight: 540;">Explore &rarr;</span>
           </div>
         </a>\n"""
 
@@ -747,7 +764,7 @@ def generate_dashboard():
 
     html += """  </main>
 
-  <!-- Inline Modal Viewer Overlay (Figma Marketing Design System) -->
+  <!-- Inline Modal Viewer Overlay (Apple HIG Design System) -->
   <div id="modalViewer" class="modal-overlay modal-viewer" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-backdrop" id="modalBackdrop"></div>
     <div class="modal-container" id="modalContainer">
@@ -758,15 +775,6 @@ def generate_dashboard():
           <span id="modalIdBadge" class="modal-id-badge">model_id</span>
         </div>
         <div class="modal-header-actions">
-          <button id="modalThemeBtn" class="modal-btn" aria-label="Toggle simulation theme" title="Toggle simulation theme">
-            <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-            <svg class="icon-moon" viewBox="0 0 24 24" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            <span>Theme</span>
-          </button>
-          <button id="modalReloadBtn" class="modal-btn" aria-label="Reset simulation" title="Reset simulation">
-            <svg viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            <span>Reset</span>
-          </button>
           <a id="modalStandaloneLink" href="#" target="_blank" class="modal-btn" aria-label="Open model standalone in new tab" title="Open standalone tab">
             <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
             <span>Standalone ↗</span>
@@ -824,8 +832,6 @@ def generate_dashboard():
     const modalIdBadge = document.getElementById('modalIdBadge');
     const modalStandaloneLink = document.getElementById('modalStandaloneLink');
     const modalCloseBtn = document.getElementById('modal-close') || document.querySelector('.modal-close');
-    const modalThemeBtn = document.getElementById('modalThemeBtn');
-    const modalReloadBtn = document.getElementById('modalReloadBtn');
 
     let lastFocusedElement = null;
     let currentModelPath = '';
@@ -837,8 +843,6 @@ def generate_dashboard():
       if (modalTitle) modalTitle.textContent = meta.title || 'Physics Model';
       if (modalBadge) {
         modalBadge.textContent = meta.discipline || 'Engineering';
-        modalBadge.style.backgroundColor = meta.discBg || '#e0d4fc';
-        modalBadge.style.borderColor = meta.discBorder || 'rgba(0,0,0,0.1)';
       }
       if (modalIdBadge) modalIdBadge.textContent = meta.id || '';
       if (modalStandaloneLink) modalStandaloneLink.href = modelUrl;
@@ -903,65 +907,6 @@ def generate_dashboard():
       }
     });
 
-    if (modalReloadBtn) {
-      modalReloadBtn.addEventListener('click', () => {
-        if (!currentModelPath || !modalIframe || modalIframe.src === 'about:blank') return;
-        try {
-          modalIframe.contentWindow.location.reload();
-        } catch (err) {
-          modalIframe.src = currentModelPath;
-        }
-      });
-    }
-
-    if (modalThemeBtn) {
-      modalThemeBtn.addEventListener('click', () => {
-        try {
-          if (!modalIframe) return;
-          const iframeDoc = modalIframe.contentDocument;
-          const iframeWin = modalIframe.contentWindow;
-          if (!iframeDoc || !iframeWin) return;
-
-          const currentTheme = iframeDoc.documentElement.getAttribute('data-theme') || 'dark';
-          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-          iframeDoc.documentElement.setAttribute('data-theme', newTheme);
-          iframeWin.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
-          updateModalThemeIcon(newTheme);
-        } catch (err) {
-          console.warn('Theme toggle in iframe unavailable:', err);
-        }
-      });
-    }
-
-    function updateModalThemeIcon(theme) {
-      if (!modalThemeBtn) return;
-      const isDark = theme === 'dark';
-      const sun = modalThemeBtn.querySelector('.icon-sun');
-      const moon = modalThemeBtn.querySelector('.icon-moon');
-      if (sun && moon) {
-        sun.style.display = isDark ? 'block' : 'none';
-        moon.style.display = isDark ? 'none' : 'block';
-      }
-    }
-
-    if (modalIframe) {
-      modalIframe.addEventListener('load', () => {
-        try {
-          const iframeDoc = modalIframe.contentDocument;
-          const iframeWin = modalIframe.contentWindow;
-          if (!iframeDoc || !iframeWin) return;
-
-          const activeTheme = iframeDoc.documentElement.getAttribute('data-theme') || 'dark';
-          updateModalThemeIcon(activeTheme);
-
-          iframeWin.addEventListener('themechange', (e) => {
-            const t = e.detail?.theme || iframeDoc.documentElement.getAttribute('data-theme');
-            updateModalThemeIcon(t);
-          });
-        } catch (err) {}
-      });
-    }
-
     document.addEventListener('click', (e) => {
       const card = e.target.closest('.model-card');
       if (!card) return;
@@ -974,10 +919,8 @@ def generate_dashboard():
       const title = card.getAttribute('data-model-name') || (card.querySelector('.card-title') ? card.querySelector('.card-title').textContent.trim() : 'Physics Model');
       const id = card.getAttribute('data-model-id') || '';
       const discipline = card.getAttribute('data-discipline') || 'Engineering';
-      const discBg = card.getAttribute('data-discipline-bg') || '#e0d4fc';
-      const discBorder = card.getAttribute('data-discipline-border') || 'rgba(0,0,0,0.1)';
 
-      openModal(href, { title, id, discipline, discBg, discBorder }, card);
+      openModal(href, { title, id, discipline }, card);
     });
 
     window.addEventListener('popstate', () => {
@@ -989,9 +932,7 @@ def generate_dashboard():
           const title = targetCard.getAttribute('data-model-name') || (targetCard.querySelector('.card-title') ? targetCard.querySelector('.card-title').textContent.trim() : 'Physics Model');
           const id = targetCard.getAttribute('data-model-id') || '';
           const discipline = targetCard.getAttribute('data-discipline') || 'Engineering';
-          const discBg = targetCard.getAttribute('data-discipline-bg') || '#e0d4fc';
-          const discBorder = targetCard.getAttribute('data-discipline-border') || 'rgba(0,0,0,0.1)';
-          openModal(href, { title, id, discipline, discBg, discBorder }, targetCard);
+          openModal(href, { title, id, discipline }, targetCard);
           return;
         }
       }

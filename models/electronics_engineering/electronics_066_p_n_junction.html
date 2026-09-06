@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,109 +11,195 @@
 
   <style>
     /* ==========================================================================
-       FIGMA MARKETING DESIGN SYSTEM — NAVY PASTEL COLOR BLOCK
-       Discipline: Electronics Engineering | Palette: Navy Block (#1c2042)
+       APPLE HUMAN INTERFACE GUIDELINES (HIG) DESIGN SYSTEM TOKENS
+       Clean, Content-First Scientific Technical Reference Specification
        ========================================================================== */
     :root {
-      /* Simulation Canvas Tokens (Dark Mode) */
-      --sim-bg: #121526;
-      --sim-surface: #1e2238;
-      --sim-border: #2d3354;
-      --sim-text: #f1f5f9;
-      --sim-text-muted: #94a3b8;
-      --sim-grid: rgba(255, 255, 255, 0.06);
-      --sim-axis: #94a3b8;
-      --sim-primary: #38bdf8;
-      --sim-secondary: #34d399;
-      --sim-accent: #fbbf24;
-      --sim-alert: #f87171;
-      --sim-purple: #c084fc;
-      --sim-blue: #38bdf8;
-      --sim-teal: #2dd4bf;
-      --sim-amber: #fbbf24;
-      --sim-red: #f87171;
-      --sim-green: #4ade80;
-      /* Chrome Surfaces (Monochrome Dark Canvas) */
-      --canvas: #000000;
-      --canvas-surface: #0f0f12;
-      --canvas-border: rgba(255, 255, 255, 0.14);
-      --ink: #ffffff;
-      
-      /* Discipline Pastel Color-Block (Navy Block #1c2042) */
-      --block-bg: #1c2042;
-      --block-text: #ffffff;
-      --block-border: rgba(255, 255, 255, 0.12);
-      --block-accent: #4fc3f7;
-      --block-grid: rgba(255, 255, 255, 0.08);
-      
-      /* Backward Compatibility Tokens (verify_models.py Rules) */
-      --bg: #1c2042;
-      --surface: #252b56;
-      --surface-border: rgba(255, 255, 255, 0.14);
-      --text: #ffffff;
-      --accent: #4fc3f7;
-      
-      /* Simulation Color Palette (High Contrast on Navy) */
-      --sim-blue: #4fc3f7;
-      --sim-teal: #4db6ac;
-      --sim-mint: #d2f8e5;
-      --sim-amber: #ffb74d;
-      --sim-red: #e57373;
-      --sim-green: #81c784;
-      --sim-purple: #ba68c8;
-      
-      /* Typography */
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+      /* System Surfaces (Apple HIG Light Mode) */
+      --canvas: #ffffff;
+      --canvas-surface: #f2f2f7;
+      --canvas-border: rgba(60, 60, 67, 0.29);
+      --separator: rgba(60, 60, 67, 0.29);
+      --ink: #000000;
+
+      /* Apple HIG Label Hierarchy (Light) */
+      --label-primary: #000000;
+      --label-secondary: rgba(60, 60, 67, 0.60);
+      --label-tertiary: rgba(60, 60, 67, 0.30);
+      --label-quaternary: rgba(60, 60, 67, 0.18);
+      --system-blue: #007aff;
+
+      /* Backward Compatibility Tokens */
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(60, 60, 67, 0.29);
+      --text: #000000;
+      --text-muted: rgba(60, 60, 67, 0.60);
+      --accent: #007aff;
+
+      /* Simulation Canvas Tokens (Grouped Light Surface #f2f2f7) */
+      --sim-bg: #f2f2f7;
+      --sim-surface: #ffffff;
+      --sim-border: rgba(60, 60, 67, 0.29);
+      --sim-text: #000000;
+      --sim-text-muted: rgba(60, 60, 67, 0.60);
+      --sim-grid: rgba(60, 60, 67, 0.08);
+      --sim-axis: rgba(60, 60, 67, 0.35);
+
+      /* Apple System Palette (Light) */
+      --sim-blue: #007aff;
+      --sim-teal: #30b0c7;
+      --sim-green: #34c759;
+      --sim-amber: #ff9500;
+      --sim-orange: #ff9500;
+      --sim-red: #ff3b30;
+      --sim-purple: #af52de;
+      --sim-indigo: #5856d6;
+      --sim-pink: #ff2d55;
+      --sim-primary: #007aff;
+      --sim-secondary: #34c759;
+      --sim-accent: #ff9500;
+      --sim-alert: #ff3b30;
+
+      /* Typography (SF Pro & SF Mono System Fonts) */
+      --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace;
       --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
-      
-      /* Geometry & Pill Invariants */
-      --rounded-card: 24px;
-      --rounded-pill: 50px;
+
+      /* Geometry & 8-point Spacing Grid */
+      --rounded-card: 12px;
       --max-width: 960px;
     }
 
-    [data-theme="light"] {
-      /* Chrome Surfaces (Monochrome Light Canvas) */
-      --canvas: #ffffff;
-      --canvas-surface: #fafafa;
-      --canvas-border: rgba(0, 0, 0, 0.10);
-      --ink: #000000;
-      
-      /* Simulation container remains signature Navy color block in both themes */
-      --block-bg: #1c2042;
-      --block-text: #ffffff;
-      --block-border: rgba(255, 255, 255, 0.12);
-      --block-accent: #4fc3f7;
-      --block-grid: rgba(255, 255, 255, 0.08);
-      
-      /* Canvas internal tokens preserve crisp contrast on Navy container */
-      --bg: #1c2042;
-      --surface: #252b56;
-      --surface-border: rgba(255, 255, 255, 0.14);
-      --text: #ffffff;
-      --accent: #0277bd;
-          /* Simulation Canvas Tokens (Light Mode) */
-      --sim-bg: #f8fafc;
-      --sim-surface: #ffffff;
-      --sim-border: #e2e8f0;
-      --sim-text: #0f172a;
-      --sim-text-muted: #64748b;
-      --sim-grid: rgba(0, 0, 0, 0.06);
-      --sim-axis: #64748b;
-      --sim-primary: #0284c7;
-      --sim-secondary: #0d9488;
-      --sim-accent: #d97706;
-      --sim-alert: #dc2626;
-      --sim-purple: #9333ea;
-      --sim-blue: #0284c7;
-      --sim-teal: #0d9488;
-      --sim-amber: #d97706;
-      --sim-red: #dc2626;
-      --sim-green: #16a34a;
+    /* Apple HIG Dark Mode Tokens via Native Media Query */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        /* System Surfaces (Apple HIG Dark Mode) */
+        --canvas: #1c1c1e;
+        --canvas-surface: #2c2c2e;
+        --canvas-border: rgba(84, 84, 88, 0.65);
+        --separator: rgba(84, 84, 88, 0.65);
+        --ink: #ffffff;
+
+        /* Apple HIG Label Hierarchy (Dark) */
+        --label-primary: #ffffff;
+        --label-secondary: rgba(235, 235, 245, 0.60);
+        --label-tertiary: rgba(235, 235, 245, 0.30);
+        --label-quaternary: rgba(235, 235, 245, 0.18);
+        --system-blue: #0a84ff;
+
+        /* Backward Compatibility Tokens */
+        --bg: #1c1c1e;
+        --surface: #2c2c2e;
+        --surface-border: rgba(84, 84, 88, 0.65);
+        --text: #ffffff;
+        --text-muted: rgba(235, 235, 245, 0.60);
+        --accent: #0a84ff;
+
+        /* Simulation Canvas Tokens (Grouped Dark Surface #2c2c2e) */
+        --sim-bg: #2c2c2e;
+        --sim-surface: #3a3a3c;
+        --sim-border: rgba(84, 84, 88, 0.65);
+        --sim-text: #ffffff;
+        --sim-text-muted: rgba(235, 235, 245, 0.60);
+        --sim-grid: rgba(255, 255, 255, 0.08);
+        --sim-axis: rgba(235, 235, 245, 0.35);
+
+        /* Apple System Palette (Dark) */
+        --sim-blue: #0a84ff;
+        --sim-teal: #40c8e0;
+        --sim-green: #30d158;
+        --sim-amber: #ff9f0a;
+        --sim-orange: #ff9f0a;
+        --sim-red: #ff453a;
+        --sim-purple: #bf5af2;
+        --sim-indigo: #5e5ce6;
+        --sim-pink: #ff375f;
+        --sim-primary: #0a84ff;
+        --sim-secondary: #30d158;
+        --sim-accent: #ff9f0a;
+        --sim-alert: #ff453a;
+      }
     }
 
-    /* Reset & Base */
+    [data-theme="dark"] {
+      --canvas: #1c1c1e;
+      --canvas-surface: #2c2c2e;
+      --canvas-border: rgba(84, 84, 88, 0.65);
+      --separator: rgba(84, 84, 88, 0.65);
+      --ink: #ffffff;
+      --label-primary: #ffffff;
+      --label-secondary: rgba(235, 235, 245, 0.60);
+      --label-tertiary: rgba(235, 235, 245, 0.30);
+      --label-quaternary: rgba(235, 235, 245, 0.18);
+      --system-blue: #0a84ff;
+      --bg: #1c1c1e;
+      --surface: #2c2c2e;
+      --surface-border: rgba(84, 84, 88, 0.65);
+      --text: #ffffff;
+      --text-muted: rgba(235, 235, 245, 0.60);
+      --accent: #0a84ff;
+      --sim-bg: #2c2c2e;
+      --sim-surface: #3a3a3c;
+      --sim-border: rgba(84, 84, 88, 0.65);
+      --sim-text: #ffffff;
+      --sim-text-muted: rgba(235, 235, 245, 0.60);
+      --sim-grid: rgba(255, 255, 255, 0.08);
+      --sim-axis: rgba(235, 235, 245, 0.35);
+      --sim-blue: #0a84ff;
+      --sim-teal: #40c8e0;
+      --sim-green: #30d158;
+      --sim-amber: #ff9f0a;
+      --sim-orange: #ff9f0a;
+      --sim-red: #ff453a;
+      --sim-purple: #bf5af2;
+      --sim-indigo: #5e5ce6;
+      --sim-pink: #ff375f;
+      --sim-primary: #0a84ff;
+      --sim-secondary: #30d158;
+      --sim-accent: #ff9f0a;
+      --sim-alert: #ff453a;
+    }
+
+    [data-theme="light"] {
+      --canvas: #ffffff;
+      --canvas-surface: #f2f2f7;
+      --canvas-border: rgba(60, 60, 67, 0.29);
+      --separator: rgba(60, 60, 67, 0.29);
+      --ink: #000000;
+      --label-primary: #000000;
+      --label-secondary: rgba(60, 60, 67, 0.60);
+      --label-tertiary: rgba(60, 60, 67, 0.30);
+      --label-quaternary: rgba(60, 60, 67, 0.18);
+      --system-blue: #007aff;
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-border: rgba(60, 60, 67, 0.29);
+      --text: #000000;
+      --text-muted: rgba(60, 60, 67, 0.60);
+      --accent: #007aff;
+      --sim-bg: #f2f2f7;
+      --sim-surface: #ffffff;
+      --sim-border: rgba(60, 60, 67, 0.29);
+      --sim-text: #000000;
+      --sim-text-muted: rgba(60, 60, 67, 0.60);
+      --sim-grid: rgba(60, 60, 67, 0.08);
+      --sim-axis: rgba(60, 60, 67, 0.35);
+      --sim-blue: #007aff;
+      --sim-teal: #30b0c7;
+      --sim-green: #34c759;
+      --sim-amber: #ff9500;
+      --sim-orange: #ff9500;
+      --sim-red: #ff3b30;
+      --sim-purple: #af52de;
+      --sim-indigo: #5856d6;
+      --sim-pink: #ff2d55;
+      --sim-primary: #007aff;
+      --sim-secondary: #34c759;
+      --sim-accent: #ff9500;
+      --sim-alert: #ff3b30;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -122,134 +208,73 @@
 
     body {
       background-color: var(--canvas);
-      color: var(--ink);
+      color: var(--label-primary);
       font-family: var(--font-sans);
-      font-size: 16px;
-      line-height: 1.5;
+      font-size: 17px;
+      line-height: 1.47059;
+      letter-spacing: -0.022em;
       padding: 24px 16px 48px 16px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: background-color 0.2s ease, color 0.2s ease;
+      transition: background-color 0.25s ease, color 0.25s ease;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Header Chrome */
+    /* Minimalist Top Bar: Title Left, Discipline Badge Right */
     .header {
-      position: relative;
       width: 100%;
       max-width: var(--max-width);
-      margin: 0 auto 20px auto;
-      text-align: center;
-      padding: 0 160px;
-    }
-
-    .title-container {
+      margin: 0 auto 24px auto;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0;
     }
 
-    h1 {
-      font-size: 1.75rem;
+    h1, .model-title {
+      font-size: 1.75rem; /* 28px - Apple HIG Title 1 */
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.025em;
       line-height: 1.2;
-      color: var(--ink);
+      color: var(--label-primary);
       margin: 0;
     }
 
     .discipline-badge {
       display: inline-block;
       font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 4px 14px;
-      border-radius: 50px;
+      letter-spacing: 0.04em;
+      padding: 4px 12px;
+      border-radius: 6px;
       background: var(--canvas-surface);
-      color: var(--ink);
-      border: 1px solid var(--canvas-border);
-      line-height: 1.2;
+      color: var(--label-secondary);
+      border: 1px solid var(--separator);
+      line-height: 1.33333;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    /* Pill Button (#theme-toggle and all CTAs) */
-    .figma-pill,
-    .theme-toggle,
-    button#theme-toggle {
-      position: absolute;
-      top: 0;
-      right: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 8px 18px;
-      border-radius: 50px;
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 480;
-      letter-spacing: -0.01em;
-      cursor: pointer;
-      background: var(--ink);
-      color: var(--canvas);
-      border: 1px solid var(--ink);
-      transition: transform 0.15s ease, opacity 0.15s ease;
-      line-height: 1;
-    }
-
-    .theme-toggle:hover {
-      opacity: 0.90;
-      transform: scale(1.02);
-    }
-
-    .theme-toggle:active {
-      transform: scale(0.98);
-    }
-
-    .theme-toggle svg {
-      width: 14px;
-      height: 14px;
-      display: block;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    :root .icon-sun,
-    [data-theme="dark"] .icon-sun {
-      display: block;
-    }
-    :root .icon-moon,
-    [data-theme="dark"] .icon-moon {
-      display: none;
-    }
-    [data-theme="light"] .icon-sun {
-      display: none;
-    }
-    [data-theme="light"] .icon-moon {
-      display: block;
-    }
-
-    /* Oversized Navy Pastel Color-Block Simulation Container */
-    main,
+    /* Clean Grouped Simulation Enclosure */
     .sim-container,
-    .simulation-viewport {
+    .simulation-viewport,
+    main {
       width: 100%;
       max-width: var(--max-width);
       height: 62vh;
       min-height: 380px;
       max-height: 640px;
-      margin: 0 auto 24px auto;
+      margin: 0 auto 32px auto;
       background-color: var(--sim-bg);
-      border-radius: 24px;
-      border: 1px solid var(--block-border);
+      border-radius: var(--rounded-card);
+      border: 1px solid var(--separator);
       padding: 24px;
       position: relative;
       overflow: hidden;
@@ -259,57 +284,57 @@
       box-shadow: none;
     }
 
-    .simulation-viewport canvas,
     .sim-container canvas,
     main canvas {
       display: block;
       width: 100%;
       height: 100%;
+      border-radius: 8px;
     }
 
-    /* Explanation Section (Monochrome Framing) */
+    /* Scientific Explanation Card */
     .explanation,
     .explanation-section {
       width: 100%;
       max-width: var(--max-width);
       margin: 0 auto 32px auto;
       background: var(--canvas-surface);
-      border: 1px solid var(--canvas-border);
-      border-radius: 16px;
+      border: 1px solid var(--separator);
+      border-radius: var(--rounded-card);
       padding: 24px 32px;
-      transition: background-color 0.2s ease, border-color 0.2s ease;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     .explanation h2,
     .explanation-section h2 {
-      font-size: 1.25rem;
-      font-weight: 540;
-      line-height: 1.25;
-      letter-spacing: -0.01em;
-      margin: 0 0 10px 0;
-      color: var(--ink);
+      font-size: 1.375rem; /* 22px - Apple HIG Title 2 */
+      font-weight: 600;
+      line-height: 1.27273;
+      letter-spacing: -0.015em;
+      margin: 0 0 12px 0;
+      color: var(--label-primary);
     }
 
-    /* Zero mid-gray text: weight 320 carries reading hierarchy */
     .explanation-text,
     .explanation p {
-      font-size: 0.9375rem;
-      font-weight: 320;
-      line-height: 1.6;
-      margin: 0 0 18px 0;
-      color: var(--ink);
-    }    /* ==========================================================================
-       EQUATION BLOCK & KATEX TYPESETTING STYLES (STANDARDIZED)
-       ========================================================================== */
+      font-size: 1.0625rem; /* 17px - Apple HIG Body */
+      font-weight: 400;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      margin: 0 0 24px 0;
+      color: var(--label-primary);
+    }
+
+    /* Equation Block & KaTeX Styling (Supporting both .formula-card and .equation-container) */
     .formula-card,
     .equation,
     .equation-container {
       background: var(--canvas);
-      border: 1px solid var(--canvas-border);
-      border-radius: 8px;
+      border: 1px solid var(--separator);
+      border-radius: var(--rounded-card);
       padding: 16px 20px;
       text-align: center;
-      transition: background-color 0.2s ease, border-color 0.2s ease;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     .formula-label,
@@ -318,32 +343,29 @@
       font-size: 11px;
       font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--ink);
+      letter-spacing: 0.06em;
+      color: var(--label-secondary);
       margin-bottom: 8px;
-      transition: color 0.2s ease;
     }
 
     .equation-formula {
       font-family: var(--font-mono);
       font-size: 1.15rem;
-      font-weight: 480;
-      letter-spacing: 0.02em;
-      color: var(--ink);
+      font-weight: 400;
+      color: var(--label-primary);
       overflow-x: auto;
       overflow-y: hidden;
       padding: 4px 0;
       text-align: center;
-      transition: color 0.2s ease;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--separator) transparent;
     }
 
-    /* KaTeX Theme Synchronization & Font Scaling */
     .equation-formula .katex {
-      color: var(--ink);
+      color: var(--label-primary);
       font-size: 1.12em;
       line-height: 1.25;
-      transition: color 0.2s ease;
     }
 
     .equation-formula .katex-display {
@@ -360,7 +382,6 @@
       text-align: center;
     }
 
-    /* Radicals, fraction rules, and vector arrow SVG fill inherit theme color */
     .equation-formula .katex * {
       border-color: currentColor;
     }
@@ -369,61 +390,47 @@
       fill: currentColor;
     }
 
-    /* Minimalist Subtly Themed Scrollbar for Overflowing Equations */
     .equation-formula::-webkit-scrollbar,
     .equation-formula .katex-display::-webkit-scrollbar {
       height: 4px;
     }
 
-    .equation-formula::-webkit-scrollbar-track,
-    .equation-formula .katex-display::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
     .equation-formula::-webkit-scrollbar-thumb,
     .equation-formula .katex-display::-webkit-scrollbar-thumb {
-      background: var(--canvas-border);
+      background: var(--separator);
       border-radius: 4px;
     }
 
-    .equation-formula,
-    .equation-formula .katex-display {
-      scrollbar-width: thin;
-      scrollbar-color: var(--canvas-border) transparent;
-    }
-
-    @media (max-width: 768px) {
+    @media (max-width: 640px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .discipline-badge {
+        align-self: flex-start;
+      }
+      .explanation,
+      .explanation-section {
+        padding: 20px 20px;
+      }
       .equation-formula .katex {
         font-size: 0.95em;
-      }
-      .header {
-        padding: 0 16px;
-      }
-      .figma-pill,
-      .theme-toggle,
-      button#theme-toggle {
-        position: static !important;
-        margin: 12px auto 4px auto !important;
       }
     }
   </style>
 </head>
 <body>
   <!-- Header Chrome -->
+    <!-- Apple HIG Minimal Top Bar: Title Left, Discipline Badge Right (No Buttons) -->
   <header class="header">
-    <div class="title-container">
-      <h1>P-N Junction (Depletion Region)</h1>
-      <div class="discipline-badge">Electronics Engineering</div>
-    </div>
-    <button id="theme-toggle" class="figma-pill theme-toggle" aria-label="Toggle theme">
-      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-      <span class="theme-text">Toggle Theme</span>
-    </button>
+    <h1 class="model-title">P-N Junction (Depletion Region)</h1>
+    <div class="discipline-badge">Electronics Engineering</div>
   </header>
 
-  <!-- Oversized Navy Pastel Color-Block Simulation Enclosure -->
-  <main class="sim-container color-block" id="simulation-viewport">
+  <!-- Apple HIG Clean Grouped Simulation Enclosure -->
+  <!-- Apple HIG Clean Grouped Simulation Enclosure -->
+  <main class="sim-container simulation-viewport" id="simulation-viewport">
     <canvas id="sim-canvas"></canvas>
   </main>
 
@@ -459,79 +466,94 @@
      * Numerical Method:
      *   - Continuous 60fps simulation loop stepping physical time and state variables
      *   - Dynamic canvas backing store buffer normalization via devicePixelRatio
-     *   - High-contrast rendering pipeline on Navy pastel color block (#1c2042)
+     *   - Apple HIG retina rendering pipeline on grouped surface (#f2f2f7 / #2c2c2e)
      * ========================================================================
      */
 
-    // --- 1. THEME CONTROLLER & HIGH-CONTRAST TOKEN RESOLVER ---
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    if (themeToggleBtn) {
-      themeToggleBtn.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
-      });
+    // --- 1. DYNAMIC APPLE HIG COLOR SYNCHRONIZATION ENGINE ---
+    const colorSchemeMedia = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+    function isDarkMode() {
+      const docTheme = document.documentElement.getAttribute('data-theme');
+      if (docTheme === 'dark') return true;
+      if (docTheme === 'light') return false;
+      return colorSchemeMedia ? colorSchemeMedia.matches : false;
     }
 
-        // Responsive ThemePalette Engine
     const ThemePalette = {
-      bg: '#121526',
-      surface: '#1e2238',
-      border: '#2d3354',
-      text: '#f1f5f9',
-      textMuted: '#94a3b8',
-      grid: 'rgba(255, 255, 255, 0.06)',
-      axis: '#94a3b8',
-      primary: '#38bdf8',
-      secondary: '#34d399',
-      accent: '#fbbf24',
-      alert: '#f87171',
-      purple: '#c084fc',
-      blue: '#38bdf8',
-      teal: '#2dd4bf',
-      amber: '#fbbf24',
-      red: '#f87171',
-      green: '#4ade80'
+      bg: '#f2f2f7',
+      surface: '#ffffff',
+      border: 'rgba(60, 60, 67, 0.29)',
+      text: '#000000',
+      textMuted: 'rgba(60, 60, 67, 0.60)',
+      grid: 'rgba(60, 60, 67, 0.08)',
+      axis: 'rgba(60, 60, 67, 0.35)',
+      primary: '#007aff',
+      secondary: '#34c759',
+      accent: '#ff9500',
+      alert: '#ff3b30',
+      purple: '#af52de',
+      blue: '#007aff',
+      teal: '#30b0c7',
+      amber: '#ff9500',
+      red: '#ff3b30',
+      green: '#34c759',
+      indigo: '#5856d6',
+      pink: '#ff2d55'
     };
 
     function updateThemePalette() {
       const root = getComputedStyle(document.documentElement);
-      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || '#121526';
-      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || '#1e2238';
-      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || '#2d3354';
-      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || '#f1f5f9';
-      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || '#94a3b8';
-      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || 'rgba(255, 255, 255, 0.06)';
-      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || '#94a3b8';
-      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || '#38bdf8';
-      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || '#34d399';
-      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || '#fbbf24';
-      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || '#f87171';
-      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || '#c084fc';
-      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || '#38bdf8';
-      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || '#2dd4bf';
-      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || '#fbbf24';
-      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || '#f87171';
-      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || '#4ade80';
+      const dark = isDarkMode();
+      
+      ThemePalette.bg = root.getPropertyValue('--sim-bg').trim() || (dark ? '#2c2c2e' : '#f2f2f7');
+      ThemePalette.surface = root.getPropertyValue('--sim-surface').trim() || (dark ? '#3a3a3c' : '#ffffff');
+      ThemePalette.border = root.getPropertyValue('--sim-border').trim() || (dark ? 'rgba(84, 84, 88, 0.65)' : 'rgba(60, 60, 67, 0.29)');
+      ThemePalette.text = root.getPropertyValue('--sim-text').trim() || (dark ? '#ffffff' : '#000000');
+      ThemePalette.textMuted = root.getPropertyValue('--sim-text-muted').trim() || (dark ? 'rgba(235, 235, 245, 0.60)' : 'rgba(60, 60, 67, 0.60)');
+      ThemePalette.grid = root.getPropertyValue('--sim-grid').trim() || (dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(60, 60, 67, 0.08)');
+      ThemePalette.axis = root.getPropertyValue('--sim-axis').trim() || (dark ? 'rgba(235, 235, 245, 0.35)' : 'rgba(60, 60, 67, 0.35)');
+      ThemePalette.primary = root.getPropertyValue('--sim-primary').trim() || (dark ? '#0a84ff' : '#007aff');
+      ThemePalette.secondary = root.getPropertyValue('--sim-secondary').trim() || (dark ? '#30d158' : '#34c759');
+      ThemePalette.accent = root.getPropertyValue('--sim-accent').trim() || (dark ? '#ff9f0a' : '#ff9500');
+      ThemePalette.alert = root.getPropertyValue('--sim-alert').trim() || (dark ? '#ff453a' : '#ff3b30');
+      ThemePalette.blue = root.getPropertyValue('--sim-blue').trim() || (dark ? '#0a84ff' : '#007aff');
+      ThemePalette.teal = root.getPropertyValue('--sim-teal').trim() || (dark ? '#40c8e0' : '#30b0c7');
+      ThemePalette.amber = root.getPropertyValue('--sim-amber').trim() || (dark ? '#ff9f0a' : '#ff9500');
+      ThemePalette.red = root.getPropertyValue('--sim-red').trim() || (dark ? '#ff453a' : '#ff3b30');
+      ThemePalette.green = root.getPropertyValue('--sim-green').trim() || (dark ? '#30d158' : '#34c759');
+      ThemePalette.purple = root.getPropertyValue('--sim-purple').trim() || (dark ? '#bf5af2' : '#af52de');
+      ThemePalette.indigo = root.getPropertyValue('--sim-indigo').trim() || (dark ? '#5e5ce6' : '#5856d6');
+      ThemePalette.pink = root.getPropertyValue('--sim-pink').trim() || (dark ? '#ff375f' : '#ff2d55');
+
+      if (typeof theme !== 'undefined' && theme !== ThemePalette) {
+        Object.assign(theme, ThemePalette);
+      }
     }
+
     const theme = ThemePalette;
     updateThemePalette();
-    window.addEventListener('themechange', () => {
-      updateThemePalette();
-    });
+
+    if (colorSchemeMedia) {
+      if (colorSchemeMedia.addEventListener) {
+        colorSchemeMedia.addEventListener('change', updateThemePalette);
+      } else if (colorSchemeMedia.addListener) {
+        colorSchemeMedia.addListener(updateThemePalette);
+      }
+    }
+    window.addEventListener('themechange', updateThemePalette);
 
     function getThemeColor(variableName) {
       if (!variableName) return theme.text;
       const v = variableName.trim();
       if (v === '--sim-bg' || v === 'bg') return theme.bg;
       if (v === '--sim-surface' || v === 'surface' || v === '--surface') return theme.surface;
-      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--block-border') return theme.border;
-      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--block-text' || v === '--ink') return theme.text;
-      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted') return theme.textMuted;
-      if (v === '--sim-grid' || v === 'grid' || v === '--block-grid') return theme.grid;
-      if (v === '--sim-axis' || v === 'axis' || v === '--block-axis') return theme.axis;
-      if (v === '--sim-primary' || v === 'primary' || v === '--block-accent' || v === '--accent') return theme.primary;
+      if (v === '--sim-border' || v === '--surface-border' || v === 'border' || v === '--separator') return theme.border;
+      if (v === '--sim-text' || v === '--text' || v === 'text' || v === '--ink' || v === '--label-primary') return theme.text;
+      if (v === '--sim-text-muted' || v === '--text-muted' || v === 'textMuted' || v === '--label-secondary') return theme.textMuted;
+      if (v === '--sim-grid' || v === 'grid') return theme.grid;
+      if (v === '--sim-axis' || v === 'axis') return theme.axis;
+      if (v === '--sim-primary' || v === 'primary' || v === '--accent' || v === '--system-blue') return theme.primary;
       if (v === '--sim-secondary' || v === 'secondary') return theme.secondary;
       if (v === '--sim-accent' || v === 'accent') return theme.accent;
       if (v === '--sim-alert' || v === 'alert') return theme.alert;
