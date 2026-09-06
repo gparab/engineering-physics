@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cardiac Dipole & Electrocardiography Vector</title>
+  <!-- KaTeX LaTeX Typesetting Engine -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
   <style>
     :root {
       /* Chrome Surfaces (Dark Canvas Default) */
@@ -292,16 +297,17 @@
       line-height: 1.55;
       margin: 0 0 18px 0;
       color: var(--ink);
-    }
-
-    /* Equation Block */
+    }    /* ==========================================================================
+       EQUATION BLOCK & KATEX TYPESETTING STYLES (STANDARDIZED)
+       ========================================================================== */
     .equation,
     .equation-container {
       background: var(--canvas);
       border: 1px solid var(--canvas-border);
       border-radius: 8px;
-      padding: 14px 20px;
+      padding: 16px 20px;
       text-align: center;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
 
     .equation-label {
@@ -311,7 +317,8 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--ink);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      transition: color 0.2s ease;
     }
 
     .equation-formula {
@@ -321,10 +328,71 @@
       letter-spacing: 0.02em;
       color: var(--ink);
       overflow-x: auto;
-      padding: 2px 0;
+      overflow-y: hidden;
+      padding: 4px 0;
+      text-align: center;
+      transition: color 0.2s ease;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* KaTeX Theme Synchronization & Font Scaling */
+    .equation-formula .katex {
+      color: var(--ink);
+      font-size: 1.12em;
+      line-height: 1.25;
+      transition: color 0.2s ease;
+    }
+
+    .equation-formula .katex-display {
+      margin: 0;
+      padding: 4px 0;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .equation-formula .katex-display > .katex {
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* Radicals, fraction rules, and vector arrow SVG fill inherit theme color */
+    .equation-formula .katex * {
+      border-color: currentColor;
+    }
+
+    .equation-formula .katex svg path {
+      fill: currentColor;
+    }
+
+    /* Minimalist Subtly Themed Scrollbar for Overflowing Equations */
+    .equation-formula::-webkit-scrollbar,
+    .equation-formula .katex-display::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .equation-formula::-webkit-scrollbar-track,
+    .equation-formula .katex-display::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .equation-formula::-webkit-scrollbar-thumb,
+    .equation-formula .katex-display::-webkit-scrollbar-thumb {
+      background: var(--canvas-border);
+      border-radius: 4px;
+    }
+
+    .equation-formula,
+    .equation-formula .katex-display {
+      scrollbar-width: thin;
+      scrollbar-color: var(--canvas-border) transparent;
     }
 
     @media (max-width: 768px) {
+      .equation-formula .katex {
+        font-size: 0.95em;
+      }
       .header {
         padding: 0 16px;
       }
@@ -356,12 +424,12 @@
   <section class="explanation explanation-section">
     <h2>How It Works</h2>
     <p class="explanation-text">
-      The electrical activation sequence of the myocardium can be modeled as an equivalent rotating cardiac electrical dipole vector (p⃗) suspended inside the volume conductor of the human torso. As depolarization spreads through atrial tissue, the ventricular septum, and the apex, the dipole vector sweeps out the characteristic P-QRS-T electrocardiographic sequence projected onto Einthoven's limb leads.
+      The electrical activation sequence of the myocardium can be modeled as an equivalent rotating cardiac electrical dipole vector (\(\vec{p}\)) suspended inside the volume conductor of the human torso. As depolarization spreads through atrial tissue, the ventricular septum, and the apex, the dipole vector sweeps out the characteristic P-QRS-T electrocardiographic sequence projected onto Einthoven's limb leads.
     </p>
     <div class="equation equation-container">
       <div class="equation-label">Governing Equation</div>
       <div class="equation-formula">
-        V_lead = (p⃗ · d⃗_lead) / (4π · σ · r²) ,  V_I = Φ_LA - Φ_RA ,  V_II = Φ_LL - Φ_RA
+        $$ V_{\text{lead}} = \frac{\vec{p} \cdot \vec{d}_{\text{lead}}}{4\pi \sigma r^2} \quad\vert\quad V_{\text{I}} = \Phi_{\text{LA}} - \Phi_{\text{RA}} \quad\vert\quad V_{\text{II}} = \Phi_{\text{LL}} - \Phi_{\text{RA}} $$
       </div>
     </div>
   </section>
@@ -374,11 +442,11 @@
  * Discipline: Biomedical Engineering (Mint #d2f8e5 Palette)
  *
  * 1. Physical Phenomenon & Mechanics:
- *    The electrical activation sequence of the myocardium can be modeled as an equivalent rotating cardiac electrical dipole vector (p⃗) suspended inside the volume conductor of the human torso. As depolarization spreads through atrial tissue, the ventricular septum, and the apex, the dipole vector sweeps out the characteristic P-QRS-T electrocardiographic sequence projected onto Einthoven's limb leads.
+ *    The electrical activation sequence of the myocardium can be modeled as an equivalent rotating cardiac electrical dipole vector (\(\vec{p}\)) suspended inside the volume conductor of the human torso. As depolarization spreads through atrial tissue, the ventricular septum, and the apex, the dipole vector sweeps out the characteristic P-QRS-T electrocardiographic sequence projected onto Einthoven's limb leads.
  *
  * 2. Mathematical Foundation & Governing Equations:
  *    Governed by the physical formulation:
- *      V_lead = (p⃗ · d⃗_lead) / (4π · σ · r²) ,  V_I = Φ_LA - Φ_RA ,  V_II = Φ_LL - Φ_RA
+ *      V_lead = ((\(\vec{p}\))2 · d (vector)_lead) / (4π · σ · r²) ,  V_I = Φ_LA - Φ_RA ,  V_II = Φ_LL - Φ_RA
  *    Evaluates continuous physical state trajectories, conservation relations,
  *    and spatial boundary conditions across discrete simulation time steps (dt).
  *
@@ -583,11 +651,43 @@ const themeToggleBtn = document.getElementById('theme-toggle');
       ctx.fillText("LA (Left Arm)", pLA.x + 10, pLA.y);
       ctx.fillText("LL (Left Leg)", pLL.x - 30, pLL.y + 18);
       ctx.fillText("Lead I (LA - RA)", cx - 35, pRA.y - 10);
-      ctx.fillText("Cardiac Vector Dipole (p⃗)", tipX + 10, tipY);
+      ctx.fillText("Cardiac Vector Dipole p", tipX + 10, tipY);
 
       requestAnimationFrame(animate);
     }
     animate();
+
+    // --- KATEX MATHEMATICAL RENDERING INITIALIZATION ---
+    function renderPhysicsEquations() {
+      if (typeof renderMathInElement === 'function') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\[', right: '\\]', display: true },
+            { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      } else if (typeof katex !== 'undefined') {
+        document.querySelectorAll('.equation-formula').forEach(el => {
+          const raw = el.textContent.trim().replace(/^\$\$|\$\$$/g, '').trim();
+          try {
+            katex.render(raw, el, {
+              displayMode: true,
+              throwOnError: false
+            });
+          } catch (err) {
+            console.warn('KaTeX direct render error:', err);
+          }
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderPhysicsEquations);
+    } else {
+      renderPhysicsEquations();
+    }
   </script>
 </body>
 </html>

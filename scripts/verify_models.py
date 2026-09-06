@@ -357,14 +357,48 @@ def check_rule_7_explanation_equation(content: str) -> RuleResult:
         if norm_text == p or norm_text.startswith(p + ":") or norm_text.startswith(p + " -"):
             return RuleResult(rule_id, name, False, f"Governing equation contains placeholder text: '{text}'")
 
-    latex_macros = re.findall(r'\\[a-zA-Z]+', text)
-    if not latex_macros:
-        latex_macros = re.findall(r'\\[a-zA-Z]+', raw_eq)
-    if latex_macros:
-        macro_preview = ', '.join(sorted(set(latex_macros))[:5])
-        return RuleResult(rule_id, name, False, f"Contains unrendered raw LaTeX macro(s): {macro_preview}")
+    # Detect if KaTeX is being used in this model (via CDN links or LaTeX syntax)
+    has_katex_head = bool(
+        re.search(r'katex(\.min)?\.(css|js)', content, re.IGNORECASE)
+    )
+    has_katex_formula = bool(
+        ('$$' in raw_eq) or
+        re.search(r'\\\[|\\\(|\\begin\{', raw_eq) or
+        ('class="katex"' in raw_eq) or
+        ("class='katex'" in raw_eq)
+    )
+    has_katex = has_katex_head or has_katex_formula
 
-    return RuleResult(rule_id, name, True, f"Valid 'How It Works' and unicode equation: '{text[:35]}...'")
+    if has_katex:
+        # Check for forbidden Unicode combining character U+20D7
+        if '\u20d7' in content:
+            return RuleResult(rule_id, name, False, "Contains forbidden Unicode combining character U+20D7 (use KaTeX \\vec{} instead)")
+
+        # Strip KaTeX delimited math blocks and rendered spans to check text outside delimiters
+        outside_delims = re.sub(r'\$\$[\s\S]*?\$\$', '', raw_eq)
+        outside_delims = re.sub(r'\\\[[\s\S]*?\\\]', '', outside_delims)
+        outside_delims = re.sub(r'\\begin\{[a-zA-Z*]+\}[\s\S]*?\\end\{[a-zA-Z*]+\}', '', outside_delims)
+        outside_delims = re.sub(r'\\\([\s\S]*?\\\)', '', outside_delims)
+        outside_delims = re.sub(r'<span[^>]*class=["\'][^"\']*\bkatex\b[^"\']*["\'][^>]*>[\s\S]*?</span>', '', outside_delims)
+        outside_delims = re.sub(r'<[^>]+>', '', outside_delims)
+
+        # Flag raw math symbols (∑, √, ∫, ≤) outside KaTeX delimiters
+        raw_symbols = ['∑', '√', '∫', '≤']
+        flagged_symbols = [s for s in raw_symbols if s in outside_delims]
+        if flagged_symbols:
+            return RuleResult(rule_id, name, False, f"Contains raw math symbol(s) outside KaTeX delimiters: {', '.join(flagged_symbols)}")
+
+        return RuleResult(rule_id, name, True, f"Valid 'How It Works' and KaTeX LaTeX equation: '{text[:35]}...'")
+    else:
+        # Legacy Unicode equation validation: flag unrendered raw LaTeX macros
+        latex_macros = re.findall(r'\\[a-zA-Z]+', text)
+        if not latex_macros:
+            latex_macros = re.findall(r'\\[a-zA-Z]+', raw_eq)
+        if latex_macros:
+            macro_preview = ', '.join(sorted(set(latex_macros))[:5])
+            return RuleResult(rule_id, name, False, f"Contains unrendered raw LaTeX macro(s): {macro_preview}")
+
+        return RuleResult(rule_id, name, True, f"Valid 'How It Works' and unicode equation: '{text[:35]}...'")
 
 
 # ============================================================================
@@ -417,17 +451,28 @@ def check_rule_8_developer_comments(content: str) -> RuleResult:
 
 
 # ============================================================================
-# Rule 9: Strict standalone architecture (zero external CSS, allowed GSAP CDN only)
+# Rule 9: Strict standalone architecture (zero external CSS/JS except GSAP and KaTeX CDN)
 # ============================================================================
 def check_rule_9_standalone(content: str) -> RuleResult:
     rule_id = "RULE_09"
-    name = "Strict standalone architecture (zero external CSS/JS except GSAP)"
+    name = "Strict standalone architecture (zero external CSS/JS except GSAP and KaTeX CDN)"
     violations = []
 
-    css_links = re.findall(r'<link[^>]*rel=["\']stylesheet["\'][^>]*>', content, re.IGNORECASE)
-    if css_links:
-        violations.append(f"Contains {len(css_links)} external stylesheet link(s)")
+    # Check external stylesheets (only KaTeX CSS allowed)
+    for link_tag in re.finditer(r'<link\b[^>]*>', content, re.IGNORECASE):
+        tag_str = link_tag.group(0)
+        if not re.search(r'\brel=["\']stylesheet["\']', tag_str, re.IGNORECASE):
+            continue
+        href_match = re.search(r'\bhref=["\']([^"\']+)["\']', tag_str, re.IGNORECASE)
+        if not href_match:
+            violations.append(f"Invalid external stylesheet link: {tag_str}")
+            continue
+        href = href_match.group(1).strip()
+        is_katex_css = "katex.min.css" in href.lower() or ("katex" in href.lower() and href.lower().endswith(".css"))
+        if not is_katex_css:
+            violations.append(f"Forbidden external stylesheet dependency: {href}")
 
+    # Check external scripts (only GSAP 3.12.2 and KaTeX CDN scripts allowed)
     script_srcs = re.findall(r'<script[^>]*src=["\']([^"\']+)["\']', content, re.IGNORECASE)
     for src in script_srcs:
         src_clean = src.strip()
@@ -435,13 +480,15 @@ def check_rule_9_standalone(content: str) -> RuleResult:
             violations.append(f"Forbidden Three.js dependency: {src_clean}")
             continue
         is_gsap_core = "cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" in src_clean
-        if not is_gsap_core:
+        is_katex_core = "katex.min.js" in src_clean or ("katex" in src_clean.lower() and src_clean.lower().endswith("/katex.min.js"))
+        is_katex_auto = "auto-render.min.js" in src_clean or ("auto-render" in src_clean.lower() and src_clean.lower().endswith(".js"))
+        if not (is_gsap_core or is_katex_core or is_katex_auto):
             violations.append(f"Forbidden external script dependency: {src_clean}")
 
     if violations:
         return RuleResult(rule_id, name, False, "; ".join(violations))
 
-    return RuleResult(rule_id, name, True, "Strictly standalone")
+    return RuleResult(rule_id, name, True, "Strictly standalone (allowed GSAP and KaTeX CDN only)")
 
 
 # ============================================================================

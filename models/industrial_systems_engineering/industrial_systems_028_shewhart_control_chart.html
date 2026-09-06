@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shewhart Statistical Quality Control Chart — Physics Simulation</title>
+  <!-- KaTeX LaTeX Typesetting Engine -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <style>
     /* ==========================================================================
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
@@ -302,15 +306,21 @@
     }
 
     /* Equation Block */
+    /* ==========================================================================
+       EQUATION BLOCK & KATEX TYPESETTING STYLES (STANDARDIZED)
+       ========================================================================== */
+    .formula-card,
     .equation,
     .equation-container {
       background: var(--canvas);
       border: 1px solid var(--canvas-border);
       border-radius: 8px;
-      padding: 14px 20px;
+      padding: 16px 20px;
       text-align: center;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
 
+    .formula-label,
     .equation-label {
       font-family: var(--font-mono);
       font-size: 11px;
@@ -318,7 +328,8 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--ink);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      transition: color 0.2s ease;
     }
 
     .equation-formula {
@@ -328,7 +339,71 @@
       letter-spacing: 0.02em;
       color: var(--ink);
       overflow-x: auto;
-      padding: 2px 0;
+      overflow-y: hidden;
+      padding: 4px 0;
+      text-align: center;
+      transition: color 0.2s ease;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* KaTeX Theme Synchronization & Font Scaling */
+    .equation-formula .katex {
+      color: var(--ink);
+      font-size: 1.12em;
+      line-height: 1.25;
+      transition: color 0.2s ease;
+    }
+
+    .equation-formula .katex-display {
+      margin: 0;
+      padding: 4px 0;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .equation-formula .katex-display > .katex {
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* Radicals, fraction rules, and vector arrow SVG fill inherit theme color */
+    .equation-formula .katex * {
+      border-color: currentColor;
+    }
+
+    .equation-formula .katex svg path {
+      fill: currentColor;
+    }
+
+    /* Minimalist Subtly Themed Scrollbar for Overflowing Equations */
+    .equation-formula::-webkit-scrollbar,
+    .equation-formula .katex-display::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .equation-formula::-webkit-scrollbar-track,
+    .equation-formula .katex-display::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .equation-formula::-webkit-scrollbar-thumb,
+    .equation-formula .katex-display::-webkit-scrollbar-thumb {
+      background: var(--canvas-border);
+      border-radius: 4px;
+    }
+
+    .equation-formula,
+    .equation-formula .katex-display {
+      scrollbar-width: thin;
+      scrollbar-color: var(--canvas-border) transparent;
+    }
+
+    @media (max-width: 768px) {
+      .equation-formula .katex {
+        font-size: 0.95em;
+      }
     }
 
     @media (max-width: 768px) {
@@ -369,7 +444,7 @@
     <div class="equation equation-container">
       <div class="equation-label">Governing Equation</div>
       <div class="equation-formula">
-        UCL, LCL = x̄̄ ± 3 · [σ / √(n)] &emsp;|&emsp; C_pk = min[(USL - μ)/(3σ), (μ - LSL)/(3σ)]
+        $$ \mathrm{UCL}, \mathrm{LCL} = \bar{\bar{x}} \pm 3 \left[\frac{\sigma}{\sqrt{n}}\right] \quad\vert\quad C_{pk} = \min\left[\frac{\mathrm{USL} - \mu}{3\sigma}, \frac{\mu - \mathrm{LSL}}{3\sigma}\right] $$
       </div>
     </div>
   </section>
@@ -386,7 +461,7 @@
      *    Statistical process control uses Shewhart X-bar control charts to distinguish between natural common-cause process variation and unnatural special-cause variation. The upper and lower control limits are placed at ±3 standard deviations from the center line according to the central limit theorem. Consecutive sample points remaining within the ±3σ boundaries confirm process statistical stability.
      *
      * 2. MATHEMATICAL FOUNDATION & FORMULATION:
-     *    Governing Relation: UCL, LCL = x̄̄ ± 3 · [σ / √(n)]  |  C_pk = min[(USL - μ)/(3σ), (μ - LSL)/(3σ)]
+     *    Governing Relation: UCL, LCL = x_bar_bar ± 3 · [σ / √(n)]  |  C_pk = min[(USL - μ)/(3σ), (μ - LSL)/(3σ)]
      *    State equations govern dynamic trajectories, probability transitions,
      *    charge distributions, and conservation laws under boundary conditions.
      *
@@ -698,7 +773,7 @@
       ctx.fillText(`UCL (+3σ) ${UCL.toFixed(2)}`, chartX - 8, uclY + 3);
       ctx.fillText(`LCL (-3σ) ${LCL.toFixed(2)}`, chartX - 8, lclY + 3);
       ctx.fillStyle = theme.teal;
-      ctx.fillText(`CL (x̄̄) ${targetMu.toFixed(2)}`, chartX - 8, clY + 3);
+      ctx.fillText(`CL (x_bar_bar) ${targetMu.toFixed(2)}`, chartX - 8, clY + 3);
 
       // 2. Connect Historical Streaming Points with Trend Line
       ctx.strokeStyle = theme.blue;
@@ -794,8 +869,8 @@
       ctx.font = '10px var(--font-mono)';
       ctx.fillStyle = theme.textMuted;
       ctx.fillText(`Subgroup Size n = ${n} | Total Samples N: ${sampleCounter}`, hudX + 10, hudY + 36);
-      ctx.fillText(`Grand Mean x̄̄: ${xDoubleBar.toFixed(2)} (Target: ${targetMu.toFixed(1)})`, hudX + 10, hudY + 52);
-      ctx.fillText(`Standard Deviation σ_x̄: ${sigmaXbar.toFixed(3)} mm`, hudX + 10, hudY + 68);
+      ctx.fillText(`Grand Mean x_bar_bar: ${xDoubleBar.toFixed(2)} (Target: ${targetMu.toFixed(1)})`, hudX + 10, hudY + 52);
+      ctx.fillText(`Standard Deviation sigma_xbar: ${sigmaXbar.toFixed(3)} mm`, hudX + 10, hudY + 68);
       ctx.fillText(`Capability Index C_p: ${Cp.toFixed(2)} | C_pk: ${Cpk.toFixed(2)}`, hudX + 10, hudY + 84);
 
       const hasAlarm = samples[samples.length - 1].isViolation;
@@ -807,6 +882,38 @@
       requestAnimationFrame(animate);
     }
     animate();
+  
+    // --- KATEX MATHEMATICAL RENDERING INITIALIZATION ---
+    function renderPhysicsEquations() {
+      if (typeof renderMathInElement === 'function') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\[', right: '\\]', display: true },
+            { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      } else if (typeof katex !== 'undefined') {
+        document.querySelectorAll('.equation-formula').forEach(el => {
+          const raw = el.textContent.trim().replace(/^\$\$|\$\$$/g, '').trim();
+          try {
+            katex.render(raw, el, {
+              displayMode: true,
+              throwOnError: false
+            });
+          } catch (err) {
+            console.warn('KaTeX direct render error:', err);
+          }
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderPhysicsEquations);
+    } else {
+      renderPhysicsEquations();
+    }
   </script>
 </body>
 </html>

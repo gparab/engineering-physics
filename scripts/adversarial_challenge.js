@@ -208,8 +208,15 @@ function probeScriptIntegrity(content, relPath) {
     createElementNS: (ns, tag) => makeElement('', tag),
     addEventListener: noop,
     removeEventListener: noop,
-    body: makeElement('body', 'BODY')
+    body: makeElement('body', 'BODY'),
+    readyState: 'complete'
   };
+
+  const katexMock = {
+    render: noop,
+    renderToString: () => ''
+  };
+  const renderMathInElementMock = noop;
 
   const windowListeners = {};
   const win = {
@@ -228,7 +235,9 @@ function probeScriptIntegrity(content, relPath) {
     getComputedStyle: () => ({
       getPropertyValue: (prop) => (prop.includes('color') || prop.includes('bg') || prop.includes('accent') ? '#4fc3f7' : '16px')
     }),
-    CustomEvent: class CustomEvent { constructor(type, detail) { this.type = type; this.detail = detail; } }
+    CustomEvent: class CustomEvent { constructor(type, detail) { this.type = type; this.detail = detail; } },
+    katex: katexMock,
+    renderMathInElement: renderMathInElementMock
   };
   win.window = win;
   win.self = win;
@@ -240,6 +249,8 @@ function probeScriptIntegrity(content, relPath) {
     document: doc,
     getComputedStyle: win.getComputedStyle,
     CustomEvent: win.CustomEvent,
+    katex: katexMock,
+    renderMathInElement: renderMathInElementMock,
     gsap: {
       to: () => ({}),
       from: () => ({}),
@@ -363,10 +374,10 @@ function runAdversarialSuite() {
 
   console.log('PROBE AUDIT SUMMARY:');
   console.log('-'.repeat(80));
-  console.log(`Probe 1 (Anti-Gimmick AST Patterns):     ${348 - failureMap.antiGimmick.length}/348 passed (${failureMap.antiGimmick.length} failed)`);
-  console.log(`Probe 2 (Theme Toggle Script Integrity): ${348 - failureMap.themeToggle.length}/348 passed (${failureMap.themeToggle.length} failed)`);
-  console.log(`Probe 3 (Viewport CSS Height Bounds):   ${348 - failureMap.viewportBounds.length}/348 passed (${failureMap.viewportBounds.length} failed)`);
-  console.log(`Probe 4 (Script Syntax & Runtime Loop):  ${348 - failureMap.scriptIntegrity.length}/348 passed (${failureMap.scriptIntegrity.length} failed)`);
+  console.log(`Probe 1 (Anti-Gimmick AST Patterns):     ${results.length - failureMap.antiGimmick.length}/${results.length} passed (${failureMap.antiGimmick.length} failed)`);
+  console.log(`Probe 2 (Theme Toggle Script Integrity): ${results.length - failureMap.themeToggle.length}/${results.length} passed (${failureMap.themeToggle.length} failed)`);
+  console.log(`Probe 3 (Viewport CSS Height Bounds):   ${results.length - failureMap.viewportBounds.length}/${results.length} passed (${failureMap.viewportBounds.length} failed)`);
+  console.log(`Probe 4 (Script Syntax & Runtime Loop):  ${results.length - failureMap.scriptIntegrity.length}/${results.length} passed (${failureMap.scriptIntegrity.length} failed)`);
   console.log('-'.repeat(80));
 
   const totalPassing = results.filter(r => r.passed).length;

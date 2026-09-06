@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Molecular Motor (Kinesin) — Physics Simulation</title>
+  <!-- KaTeX LaTeX Typesetting Engine -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <style>
     /* ==========================================================================
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
@@ -294,15 +298,21 @@
     }
 
     /* Equation Block */
+    /* ==========================================================================
+       EQUATION BLOCK & KATEX TYPESETTING STYLES (STANDARDIZED)
+       ========================================================================== */
+    .formula-card,
     .equation,
     .equation-container {
       background: var(--canvas);
       border: 1px solid var(--canvas-border);
       border-radius: 8px;
-      padding: 14px 20px;
+      padding: 16px 20px;
       text-align: center;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
 
+    .formula-label,
     .equation-label {
       font-family: var(--font-mono);
       font-size: 11px;
@@ -310,7 +320,8 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--ink);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      transition: color 0.2s ease;
     }
 
     .equation-formula {
@@ -320,7 +331,71 @@
       letter-spacing: 0.02em;
       color: var(--ink);
       overflow-x: auto;
-      padding: 2px 0;
+      overflow-y: hidden;
+      padding: 4px 0;
+      text-align: center;
+      transition: color 0.2s ease;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* KaTeX Theme Synchronization & Font Scaling */
+    .equation-formula .katex {
+      color: var(--ink);
+      font-size: 1.12em;
+      line-height: 1.25;
+      transition: color 0.2s ease;
+    }
+
+    .equation-formula .katex-display {
+      margin: 0;
+      padding: 4px 0;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .equation-formula .katex-display > .katex {
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* Radicals, fraction rules, and vector arrow SVG fill inherit theme color */
+    .equation-formula .katex * {
+      border-color: currentColor;
+    }
+
+    .equation-formula .katex svg path {
+      fill: currentColor;
+    }
+
+    /* Minimalist Subtly Themed Scrollbar for Overflowing Equations */
+    .equation-formula::-webkit-scrollbar,
+    .equation-formula .katex-display::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .equation-formula::-webkit-scrollbar-track,
+    .equation-formula .katex-display::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .equation-formula::-webkit-scrollbar-thumb,
+    .equation-formula .katex-display::-webkit-scrollbar-thumb {
+      background: var(--canvas-border);
+      border-radius: 4px;
+    }
+
+    .equation-formula,
+    .equation-formula .katex-display {
+      scrollbar-width: thin;
+      scrollbar-color: var(--canvas-border) transparent;
+    }
+
+    @media (max-width: 768px) {
+      .equation-formula .katex {
+        font-size: 0.95em;
+      }
     }
 
     @media (max-width: 768px) {
@@ -364,7 +439,7 @@
     <div class="equation equation-container">
       <div class="equation-label">Governing Equation</div>
       <div class="equation-formula">
-        v = (d_{step} · k_{cat} · [ATP]) / (K_m + [ATP]) , F_{stall} ≈ 6 pN
+        $$ v = \frac{d_{\text{step}} k_{\text{cat}} [\text{ATP}]}{K_m + [\text{ATP}]} \quad\vert\quad F_{\text{stall}} \approx 6\,\text{pN} $$
       </div>
     </div>
   </section>
@@ -602,6 +677,38 @@
             requestAnimationFrame(animate);
           }
           animate();
+  
+    // --- KATEX MATHEMATICAL RENDERING INITIALIZATION ---
+    function renderPhysicsEquations() {
+      if (typeof renderMathInElement === 'function') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\[', right: '\\]', display: true },
+            { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      } else if (typeof katex !== 'undefined') {
+        document.querySelectorAll('.equation-formula').forEach(el => {
+          const raw = el.textContent.trim().replace(/^\$\$|\$\$$/g, '').trim();
+          try {
+            katex.render(raw, el, {
+              displayMode: true,
+              throwOnError: false
+            });
+          } catch (err) {
+            console.warn('KaTeX direct render error:', err);
+          }
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderPhysicsEquations);
+    } else {
+      renderPhysicsEquations();
+    }
   </script>
 </body>
 </html>

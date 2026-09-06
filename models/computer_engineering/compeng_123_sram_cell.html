@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SRAM Cell (6T SRAM) — Physics Simulation</title>
+  <!-- KaTeX LaTeX Typesetting Engine -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
   <style>
     /* ==========================================================================
        FIGMA MARKETING DESIGN SYSTEM TOKENS (ENGINEERING PHYSICS STANDARDIZED)
@@ -299,16 +304,17 @@
       line-height: 1.55;
       margin: 0 0 18px 0;
       color: var(--ink);
-    }
-
-    /* Equation Block */
+    }    /* ==========================================================================
+       EQUATION BLOCK & KATEX TYPESETTING STYLES (STANDARDIZED)
+       ========================================================================== */
     .equation,
     .equation-container {
       background: var(--canvas);
       border: 1px solid var(--canvas-border);
       border-radius: 8px;
-      padding: 14px 20px;
+      padding: 16px 20px;
       text-align: center;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
 
     .equation-label {
@@ -318,7 +324,8 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--ink);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      transition: color 0.2s ease;
     }
 
     .equation-formula {
@@ -328,10 +335,71 @@
       letter-spacing: 0.02em;
       color: var(--ink);
       overflow-x: auto;
-      padding: 2px 0;
+      overflow-y: hidden;
+      padding: 4px 0;
+      text-align: center;
+      transition: color 0.2s ease;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* KaTeX Theme Synchronization & Font Scaling */
+    .equation-formula .katex {
+      color: var(--ink);
+      font-size: 1.12em;
+      line-height: 1.25;
+      transition: color 0.2s ease;
+    }
+
+    .equation-formula .katex-display {
+      margin: 0;
+      padding: 4px 0;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .equation-formula .katex-display > .katex {
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* Radicals, fraction rules, and vector arrow SVG fill inherit theme color */
+    .equation-formula .katex * {
+      border-color: currentColor;
+    }
+
+    .equation-formula .katex svg path {
+      fill: currentColor;
+    }
+
+    /* Minimalist Subtly Themed Scrollbar for Overflowing Equations */
+    .equation-formula::-webkit-scrollbar,
+    .equation-formula .katex-display::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .equation-formula::-webkit-scrollbar-track,
+    .equation-formula .katex-display::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .equation-formula::-webkit-scrollbar-thumb,
+    .equation-formula .katex-display::-webkit-scrollbar-thumb {
+      background: var(--canvas-border);
+      border-radius: 4px;
+    }
+
+    .equation-formula,
+    .equation-formula .katex-display {
+      scrollbar-width: thin;
+      scrollbar-color: var(--canvas-border) transparent;
     }
 
     @media (max-width: 768px) {
+      .equation-formula .katex {
+        font-size: 0.95em;
+      }
       .header {
         padding: 0 16px;
       }
@@ -364,12 +432,12 @@
   <section class="explanation explanation-section">
     <h2>How It Works</h2>
     <p class="explanation-text">
-      A static random-access memory (SRAM) cell employs six MOSFETs (6T topology) to store one bit of digital state without requiring dynamic refreshing. Two cross-coupled CMOS inverters form a bistable latch with two stable equilibrium states (Q=1/Q̄=0 or Q=0/Q̄=1). Access transistors connected to the Wordline (WL) selectively couple internal storage nodes to complementary Bitlines (BL and BL̄) for differential read sensing and write overwrite operations.
+      A static random-access memory (SRAM) cell employs six MOSFETs (6T topology) to store one bit of digital state without requiring dynamic refreshing. Two cross-coupled CMOS inverters form a bistable latch with two stable equilibrium states (Q=1/Q_bar=0 or Q=0/Q_bar=1). Access transistors connected to the Wordline (WL) selectively couple internal storage nodes to complementary Bitlines (BL and BL_bar) for differential read sensing and write overwrite operations.
     </p>
     <div class="equation equation-container">
       <div class="equation-label">Governing Equation</div>
       <div class="equation-formula">
-        V_Q · V_{Q̄} = 0 , I_{cell} = 1 / 2 μ_n C_{ox} (W / L) (V_{GS} - V_{th})^2
+        $$ V_Q \cdot V_{\bar{Q}} = 0 \quad\vert\quad I_{\text{cell}} = \frac{1}{2}\mu_n C_{\text{ox}}\left(\frac{W}{L}\right)(V_{\text{GS}} - V_{\text{th}})^2 $$
       </div>
     </div>
   </section>
@@ -383,10 +451,10 @@
      * Discipline: Computer Engineering
      *
      * 1. PHYSICAL PHENOMENON & SYSTEM DYNAMICS:
-     *    A static random-access memory (SRAM) cell employs six MOSFETs (6T topology) to store one bit of digital state without requiring dynamic refreshing. Two cross-coupled CMOS inverters form a bistable latch with two stable equilibrium states (Q=1/Q̄=0 or Q=0/Q̄=1). Access transistors connected to the Wordline (WL) selectively couple internal storage nodes to complementary Bitlines (BL and BL̄) for differential read sensing and write overwrite operations.
+     *    A static random-access memory (SRAM) cell employs six MOSFETs (6T topology) to store one bit of digital state without requiring dynamic refreshing. Two cross-coupled CMOS inverters form a bistable latch with two stable equilibrium states (Q=1/Q_bar=0 or Q=0/Q_bar=1). Access transistors connected to the Wordline (WL) selectively couple internal storage nodes to complementary Bitlines (BL and BL_bar) for differential read sensing and write overwrite operations.
      *
      * 2. MATHEMATICAL FOUNDATION & FORMULATION:
-     *    Governing Relation: V_Q · V_{Q̄} = 0 , I_{cell} = 1 / 2 μ_n C_{ox} (W / L) (V_{GS} - V_{th})^2
+     *    Governing Relation: V_Q · V_{Q_bar} = 0 , I_{cell} = 1 / 2 μ_n C_{ox} (W / L) (V_{GS} - V_{th})^2
      *    State equations govern dynamic trajectories, probability transitions,
      *    charge distributions, and conservation laws under boundary conditions.
      *
@@ -584,7 +652,7 @@
       let targetBLbar = 1.2;
 
       if (cycleTime < 2.0) {
-        opMode = 'PRECHARGE (BL=1.2V, BL̄=1.2V, WL=0V)';
+        opMode = 'PRECHARGE (BL=1.2V, BL_bar=1.2V, WL=0V)';
         targetWL = 0.0;
         targetBL = 1.2;
         targetBLbar = 1.2;
@@ -597,7 +665,7 @@
         opMode = 'RETENTION / HOLD (WL=0V, Bi-Stable Latch)';
         targetWL = 0.0;
       } else if (cycleTime < 8.5) {
-        opMode = 'WRITE BIT 0 (BL=0.0V, BL̄=1.2V, Overwriting Q)';
+        opMode = 'WRITE BIT 0 (BL=0.0V, BL_bar=1.2V, Overwriting Q)';
         targetWL = 1.2;
         targetBL = 0.0;
         targetBLbar = 1.2;
@@ -605,7 +673,7 @@
         opMode = 'RETENTION / HOLD (WL=0V, Latched Q=0)';
         targetWL = 0.0;
       } else {
-        opMode = 'WRITE BIT 1 (BL=1.2V, BL̄=0.0V, Overwriting Q)';
+        opMode = 'WRITE BIT 1 (BL=1.2V, BL_bar=0.0V, Overwriting Q)';
         targetWL = 1.2;
         targetBL = 1.2;
         targetBLbar = 0.0;
@@ -807,7 +875,7 @@
       ctx.textAlign = 'center';
       ctx.fillStyle = textColor;
       ctx.fillText(`BL: ${V_BL.toFixed(2)}V`, blX, cy + 105 * scale);
-      ctx.fillText(`BL̄: ${V_BLbar.toFixed(2)}V`, blbX, cy + 105 * scale);
+      ctx.fillText(`BL_bar: ${V_BLbar.toFixed(2)}V`, blbX, cy + 105 * scale);
 
       // Dynamic Node Badges for Q and Qbar
       ctx.fillStyle = V_Q > 0.6 ? highColor : lowColor;
@@ -955,6 +1023,38 @@
       ctx.fillText(`Differential ΔV_BL: ${(deltaV * 1000).toFixed(1)}mV | Dynamic Power: ${(0.8 * (V_WL > 0.5 ? 1.4 : 0.05)).toFixed(2)}μW | Bit: ${V_Q > 0.6 ? '1' : '0'}`, cx, ty);
     }
     requestAnimationFrame(animate);
+
+    // --- KATEX MATHEMATICAL RENDERING INITIALIZATION ---
+    function renderPhysicsEquations() {
+      if (typeof renderMathInElement === 'function') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\[', right: '\\]', display: true },
+            { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      } else if (typeof katex !== 'undefined') {
+        document.querySelectorAll('.equation-formula').forEach(el => {
+          const raw = el.textContent.trim().replace(/^\$\$|\$\$$/g, '').trim();
+          try {
+            katex.render(raw, el, {
+              displayMode: true,
+              throwOnError: false
+            });
+          } catch (err) {
+            console.warn('KaTeX direct render error:', err);
+          }
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderPhysicsEquations);
+    } else {
+      renderPhysicsEquations();
+    }
   </script>
 </body>
 </html>
