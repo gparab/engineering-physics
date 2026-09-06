@@ -145,7 +145,7 @@
       align-items: center;
       position: relative;
       text-align: center;
-      padding: 0 48px;
+      padding: 0 160px;
     }
 
     .title-container {
@@ -250,8 +250,6 @@
       max-height: 640px;
       margin: 0 auto 24px auto;
       background-color: var(--sim-bg);
-      border: 1px solid var(--sim-border);
-      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -332,6 +330,18 @@
       color: var(--ink);
       overflow-x: auto;
       padding: 2px 0;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 0 16px;
+      }
+      .figma-pill,
+      .theme-toggle,
+      button#theme-toggle {
+        position: static !important;
+        margin: 12px auto 4px auto !important;
+      }
     }
   </style>
 </head>
@@ -475,6 +485,31 @@
     // --- 2. HIGH-DPI CANVAS INITIALIZATION & RESIZE HANDLING ---
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+
+    // Canvas text label boundary protection & edge-clamping
+    const _origFillText = ctx.fillText.bind(ctx);
+    ctx.fillText = function(text, x, y, maxWidth) {
+      if (typeof x === 'number' && typeof y === 'number' && width > 0 && height > 0) {
+        const pad = 10;
+        const str = String(text);
+        const m = ctx.measureText(str);
+        const tw = (typeof maxWidth === 'number' && maxWidth < m.width) ? maxWidth : m.width;
+        const align = ctx.textAlign || 'left';
+        let minX = pad, maxX = width - pad;
+        let clampedX = x;
+        if (align === 'center') {
+          clampedX = Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x));
+        } else if (align === 'right' || align === 'end') {
+          clampedX = Math.max(minX + tw, Math.min(maxX, x));
+        } else {
+          clampedX = Math.max(minX, Math.min(maxX - tw, x));
+        }
+        const clampedY = Math.max(pad + 12, Math.min(height - pad, y));
+        return maxWidth !== undefined ? _origFillText(str, clampedX, clampedY, maxWidth) : _origFillText(str, clampedX, clampedY);
+      }
+      return maxWidth !== undefined ? _origFillText(text, x, y, maxWidth) : _origFillText(text, x, y);
+    };
     let width = 0, height = 0;
 
     function resize() {
@@ -486,6 +521,7 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+    ctx.lineWidth = 2;
       updateThemePalette();
     }
     window.addEventListener('resize', resize);
@@ -512,7 +548,7 @@
 
       // Coordinate Grid Layer
       ctx.strokeStyle = theme.grid;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       for (let x = 40; x < width - 40; x += 40) {
         ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
       }
@@ -560,7 +596,7 @@
         // Expanding RF microwave wavefront pulses from satellite
         const waveSpeed = 120; // px/sec
         const waveSpacing = 40;
-        ctx.lineWidth = 1.2;
+        ctx.lineWidth = 2;
         for (let w = 0; w < 4; w++) {
           const r = ((time * waveSpeed + w * waveSpacing) % rho);
           const alpha = Math.max(0.05, 0.4 * (1.0 - r / rho));
@@ -572,14 +608,14 @@
 
         // True Pseudorange Circle (intersects at tractor)
         ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(s.x, s.y, rho, 0, Math.PI * 2);
         ctx.stroke();
 
         // Line of Sight Vector
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.setLineDash([2, 2]);
         ctx.beginPath();
         ctx.moveTo(s.x, s.y);
@@ -591,7 +627,7 @@
         ctx.fillStyle = theme.surface;
         ctx.fillRect(s.x - 12, s.y - 8, 24, 16);
         ctx.strokeStyle = theme.teal;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
         ctx.strokeRect(s.x - 12, s.y - 8, 24, 16);
 
         // Solar panels
@@ -614,7 +650,7 @@
 
       ctx.fillStyle = 'rgba(45, 212, 191, 0.15)';
       ctx.strokeStyle = theme.teal;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.ellipse(targetX, targetY, gdopMajor, gdopMinor, gdopAngle, 0, Math.PI * 2);
       ctx.fill();
@@ -629,7 +665,7 @@
       ctx.fillStyle = theme.amber;
       ctx.fillRect(-14, -8, 28, 16);
       ctx.strokeStyle = theme.border;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.strokeRect(-14, -8, 28, 16);
 
       // Cab
@@ -656,7 +692,7 @@
       ctx.fillStyle = theme.surface;
       ctx.fillRect(hudX, hudY, hudW, hudH);
       ctx.strokeStyle = theme.border;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.strokeRect(hudX, hudY, hudW, hudH);
 
       ctx.textAlign = 'left';

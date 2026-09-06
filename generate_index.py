@@ -461,6 +461,216 @@ def generate_dashboard():
       background: #000000;
       color: #ffffff;
     }}
+
+    /* ==========================================================================
+       INLINE MODAL VIEWER (FIGMA MARKETING DESIGN SYSTEM)
+       ========================================================================== */
+    .modal-overlay {{
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+    }}
+
+    .modal-overlay.is-active {{
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }}
+
+    .modal-backdrop {{
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.70);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }}
+
+    .modal-container {{
+      position: relative;
+      z-index: 1001;
+      width: min(1360px, calc(100vw - 32px));
+      height: min(920px, calc(100vh - 32px));
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--rounded-lg);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.50);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.97) translateY(8px);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }}
+
+    .modal-overlay.is-active .modal-container {{
+      transform: scale(1) translateY(0);
+    }}
+
+    @media (max-width: 768px) {{
+      .modal-container {{
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+      }}
+    }}
+
+    .modal-header {{
+      height: 56px;
+      min-height: 56px;
+      background: #0f0f12;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }}
+
+    .modal-header-left {{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }}
+
+    .modal-discipline-badge {{
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: var(--rounded-pill);
+      background: #e0d4fc;
+      color: #000000;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }}
+
+    .modal-title {{
+      font-size: 16px;
+      font-weight: 540;
+      letter-spacing: -0.2px;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }}
+
+    .modal-id-badge {{
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.55);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }}
+
+    @media (max-width: 640px) {{
+      .modal-id-badge {{
+        display: none;
+      }}
+    }}
+
+    .modal-header-actions {{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }}
+
+    .modal-btn {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: var(--rounded-pill);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 480;
+      letter-spacing: -0.1px;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.20);
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+      white-space: nowrap;
+    }}
+
+    .modal-btn:hover {{
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.35);
+      transform: translateY(-1px);
+    }}
+
+    .modal-btn:active {{
+      transform: translateY(0);
+    }}
+
+    .modal-btn svg {{
+      width: 14px;
+      height: 14px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }}
+
+    /* Primary Close Pill (Figma button-secondary on dark chrome) */
+    .modal-close-pill {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 34px;
+      padding: 0 16px;
+      border-radius: var(--rounded-pill);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 540;
+      letter-spacing: -0.1px;
+      cursor: pointer;
+      border: none;
+      background: #ffffff;
+      color: #000000;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }}
+
+    .modal-close-pill:hover {{
+      opacity: 0.92;
+      transform: scale(1.02);
+    }}
+
+    .modal-close-pill:active {{
+      transform: scale(0.98);
+    }}
+
+    .modal-body {{
+      flex: 1;
+      width: 100%;
+      height: calc(100% - 56px);
+      background: #000000;
+      position: relative;
+    }}
+
+    .modal-iframe {{
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background: #000000;
+    }}
   </style>
 </head>
 <body>
@@ -522,14 +732,13 @@ def generate_dashboard():
             rating_score = ratings.get(f.name)
             rating_badge = ""
 
-            html += f"""        <a href="{rel_path}" target="_blank" class="model-card" data-title="{model_name.lower()}">
+            html += f"""        <a href="{rel_path}" class="model-card" data-title="{model_name.lower()}" data-model-id="{f.stem}" data-model-name="{model_name}" data-discipline="{palette['label']}" data-discipline-bg="{palette['bg']}" data-discipline-border="{palette['border']}">
           <div class="card-top">
             <span class="card-title">{model_name}</span>
-            
           </div>
           <div class="card-meta">
             <span class="card-id">{f.stem}</span>
-            <span style="font-size: 12px; font-weight: 540;">View &rarr;</span>
+            <span style="font-size: 12px; font-weight: 540;">Explore &rarr;</span>
           </div>
         </a>\n"""
 
@@ -537,6 +746,41 @@ def generate_dashboard():
     </section>\n"""
 
     html += """  </main>
+
+  <!-- Inline Modal Viewer Overlay (Figma Marketing Design System) -->
+  <div id="modalViewer" class="modal-overlay modal-viewer" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-container" id="modalContainer">
+      <header class="modal-header">
+        <div class="modal-header-left">
+          <span id="modalDisciplineBadge" class="modal-discipline-badge">Discipline</span>
+          <h2 id="modalTitle" class="modal-title">Model Name</h2>
+          <span id="modalIdBadge" class="modal-id-badge">model_id</span>
+        </div>
+        <div class="modal-header-actions">
+          <button id="modalThemeBtn" class="modal-btn" aria-label="Toggle simulation theme" title="Toggle simulation theme">
+            <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <span>Theme</span>
+          </button>
+          <button id="modalReloadBtn" class="modal-btn" aria-label="Reset simulation" title="Reset simulation">
+            <svg viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>Reset</span>
+          </button>
+          <a id="modalStandaloneLink" href="#" target="_blank" class="modal-btn" aria-label="Open model standalone in new tab" title="Open standalone tab">
+            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+            <span>Standalone ↗</span>
+          </a>
+          <button id="modal-close" class="modal-close-pill modal-close" aria-label="Close modal viewer (Escape)" title="Close viewer (Esc)">
+            <span>Close ✕</span>
+          </button>
+        </div>
+      </header>
+      <div class="modal-body">
+        <iframe id="modal-iframe" class="modal-iframe" src="about:blank" title="Physics Simulation Viewer" allow="accelerometer; autoplay; encrypted-media; gyroscope"></iframe>
+      </div>
+    </div>
+  </div>
 
   <script>
     const searchInput = document.getElementById('searchInput');
@@ -569,6 +813,202 @@ def generate_dashboard():
         }
       });
     }
+
+    // --- INLINE MODAL VIEWER ENGINE ---
+    const modalOverlay = document.getElementById('modalViewer') || document.querySelector('.modal-overlay');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalContainer = document.getElementById('modalContainer');
+    const modalIframe = document.getElementById('modal-iframe') || document.getElementById('modalIframe');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBadge = document.getElementById('modalDisciplineBadge');
+    const modalIdBadge = document.getElementById('modalIdBadge');
+    const modalStandaloneLink = document.getElementById('modalStandaloneLink');
+    const modalCloseBtn = document.getElementById('modal-close') || document.querySelector('.modal-close');
+    const modalThemeBtn = document.getElementById('modalThemeBtn');
+    const modalReloadBtn = document.getElementById('modalReloadBtn');
+
+    let lastFocusedElement = null;
+    let currentModelPath = '';
+
+    function openModal(modelUrl, meta, triggerElement) {
+      lastFocusedElement = triggerElement || document.activeElement;
+      currentModelPath = modelUrl;
+
+      if (modalTitle) modalTitle.textContent = meta.title || 'Physics Model';
+      if (modalBadge) {
+        modalBadge.textContent = meta.discipline || 'Engineering';
+        modalBadge.style.backgroundColor = meta.discBg || '#e0d4fc';
+        modalBadge.style.borderColor = meta.discBorder || 'rgba(0,0,0,0.1)';
+      }
+      if (modalIdBadge) modalIdBadge.textContent = meta.id || '';
+      if (modalStandaloneLink) modalStandaloneLink.href = modelUrl;
+
+      if (meta.id) {
+        history.replaceState({ modelId: meta.id }, '', '#' + meta.id);
+      }
+
+      if (modalIframe) modalIframe.src = modelUrl;
+      document.body.style.overflow = 'hidden';
+
+      if (modalOverlay) {
+        modalOverlay.classList.add('is-active');
+        modalOverlay.setAttribute('aria-hidden', 'false');
+      }
+
+      setTimeout(() => {
+        if (modalCloseBtn) modalCloseBtn.focus();
+      }, 50);
+    }
+
+    function closeModal() {
+      if (!modalOverlay || !modalOverlay.classList.contains('is-active')) return;
+
+      modalOverlay.classList.remove('is-active');
+      modalOverlay.setAttribute('aria-hidden', 'true');
+
+      // Halt simulation 60fps rAF loop and free memory
+      if (modalIframe) modalIframe.src = 'about:blank';
+      currentModelPath = '';
+
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      document.body.style.overflow = '';
+
+      if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+        lastFocusedElement.focus();
+      }
+    }
+
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+    if (modalBackdrop) modalBackdrop.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', (e) => {
+      if (!modalOverlay || !modalOverlay.classList.contains('is-active')) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
+      } else if (e.key === 'Tab') {
+        const focusable = modalContainer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    if (modalReloadBtn) {
+      modalReloadBtn.addEventListener('click', () => {
+        if (!currentModelPath || !modalIframe || modalIframe.src === 'about:blank') return;
+        try {
+          modalIframe.contentWindow.location.reload();
+        } catch (err) {
+          modalIframe.src = currentModelPath;
+        }
+      });
+    }
+
+    if (modalThemeBtn) {
+      modalThemeBtn.addEventListener('click', () => {
+        try {
+          if (!modalIframe) return;
+          const iframeDoc = modalIframe.contentDocument;
+          const iframeWin = modalIframe.contentWindow;
+          if (!iframeDoc || !iframeWin) return;
+
+          const currentTheme = iframeDoc.documentElement.getAttribute('data-theme') || 'dark';
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          iframeDoc.documentElement.setAttribute('data-theme', newTheme);
+          iframeWin.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+          updateModalThemeIcon(newTheme);
+        } catch (err) {
+          console.warn('Theme toggle in iframe unavailable:', err);
+        }
+      });
+    }
+
+    function updateModalThemeIcon(theme) {
+      if (!modalThemeBtn) return;
+      const isDark = theme === 'dark';
+      const sun = modalThemeBtn.querySelector('.icon-sun');
+      const moon = modalThemeBtn.querySelector('.icon-moon');
+      if (sun && moon) {
+        sun.style.display = isDark ? 'block' : 'none';
+        moon.style.display = isDark ? 'none' : 'block';
+      }
+    }
+
+    if (modalIframe) {
+      modalIframe.addEventListener('load', () => {
+        try {
+          const iframeDoc = modalIframe.contentDocument;
+          const iframeWin = modalIframe.contentWindow;
+          if (!iframeDoc || !iframeWin) return;
+
+          const activeTheme = iframeDoc.documentElement.getAttribute('data-theme') || 'dark';
+          updateModalThemeIcon(activeTheme);
+
+          iframeWin.addEventListener('themechange', (e) => {
+            const t = e.detail?.theme || iframeDoc.documentElement.getAttribute('data-theme');
+            updateModalThemeIcon(t);
+          });
+        } catch (err) {}
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('.model-card');
+      if (!card) return;
+
+      // Allow middle-click, command-click, control-click, shift-click for power users opening in background tab
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+
+      e.preventDefault();
+      const href = card.getAttribute('href');
+      const title = card.getAttribute('data-model-name') || (card.querySelector('.card-title') ? card.querySelector('.card-title').textContent.trim() : 'Physics Model');
+      const id = card.getAttribute('data-model-id') || '';
+      const discipline = card.getAttribute('data-discipline') || 'Engineering';
+      const discBg = card.getAttribute('data-discipline-bg') || '#e0d4fc';
+      const discBorder = card.getAttribute('data-discipline-border') || 'rgba(0,0,0,0.1)';
+
+      openModal(href, { title, id, discipline, discBg, discBorder }, card);
+    });
+
+    window.addEventListener('popstate', () => {
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        const targetCard = document.querySelector(`.model-card[data-model-id="${hash}"]`);
+        if (targetCard) {
+          const href = targetCard.getAttribute('href');
+          const title = targetCard.getAttribute('data-model-name') || (targetCard.querySelector('.card-title') ? targetCard.querySelector('.card-title').textContent.trim() : 'Physics Model');
+          const id = targetCard.getAttribute('data-model-id') || '';
+          const discipline = targetCard.getAttribute('data-discipline') || 'Engineering';
+          const discBg = targetCard.getAttribute('data-discipline-bg') || '#e0d4fc';
+          const discBorder = targetCard.getAttribute('data-discipline-border') || 'rgba(0,0,0,0.1)';
+          openModal(href, { title, id, discipline, discBg, discBorder }, targetCard);
+          return;
+        }
+      }
+      closeModal();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        const targetCard = document.querySelector(`.model-card[data-model-id="${hash}"]`);
+        if (targetCard) {
+          setTimeout(() => {
+            targetCard.click();
+          }, 100);
+        }
+      }
+    });
   </script>
 </body>
 </html>

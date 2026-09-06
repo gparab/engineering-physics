@@ -135,7 +135,7 @@
       align-items: center;
       position: relative;
       text-align: center;
-      padding: 0 48px;
+      padding: 0 160px;
     }
 
     .title-container {
@@ -241,8 +241,6 @@
       max-height: 640px;
       margin: 0 auto 24px auto;
       background-color: var(--sim-bg);
-      border: 1px solid var(--sim-border);
-      padding: 0;
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -323,6 +321,18 @@
       color: var(--ink);
       overflow-x: auto;
       padding: 2px 0;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 0 16px;
+      }
+      .figma-pill,
+      .theme-toggle,
+      button#theme-toggle {
+        position: static !important;
+        margin: 12px auto 4px auto !important;
+      }
     }
   </style>
 </head>
@@ -471,6 +481,31 @@
     // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+
+    // Canvas text label boundary protection & edge-clamping
+    const _origFillText = ctx.fillText.bind(ctx);
+    ctx.fillText = function(text, x, y, maxWidth) {
+      if (typeof x === 'number' && typeof y === 'number' && width > 0 && height > 0) {
+        const pad = 10;
+        const str = String(text);
+        const m = ctx.measureText(str);
+        const tw = (typeof maxWidth === 'number' && maxWidth < m.width) ? maxWidth : m.width;
+        const align = ctx.textAlign || 'left';
+        let minX = pad, maxX = width - pad;
+        let clampedX = x;
+        if (align === 'center') {
+          clampedX = Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x));
+        } else if (align === 'right' || align === 'end') {
+          clampedX = Math.max(minX + tw, Math.min(maxX, x));
+        } else {
+          clampedX = Math.max(minX, Math.min(maxX - tw, x));
+        }
+        const clampedY = Math.max(pad + 12, Math.min(height - pad, y));
+        return maxWidth !== undefined ? _origFillText(str, clampedX, clampedY, maxWidth) : _origFillText(str, clampedX, clampedY);
+      }
+      return maxWidth !== undefined ? _origFillText(text, x, y, maxWidth) : _origFillText(text, x, y);
+    };
     let width = 0, height = 0, dpr = 1;
 
     function resize() {
@@ -482,6 +517,7 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+    ctx.lineWidth = 2;
       updateThemePalette();
     }
     window.addEventListener('resize', resize);
@@ -518,7 +554,7 @@
 
       // Coordinate Grid Layer
       ctx.strokeStyle = theme.grid;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       for (let x = 40; x < width - 40; x += 40) {
         ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
       }
@@ -571,7 +607,7 @@
       const numRibs = 12;
 
       // (a) Lower Valence Band (pi) - Amber/Orange
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 2;
       for (let rIdx = 1; rIdx <= numRings; rIdx++) {
         const frac = rIdx / numRings;
         const curR = frac * coneMaxR;
@@ -606,7 +642,7 @@
       }
 
       // 3D Rib generatrices passing through Dirac point vertex
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       for (let i = 0; i < numRibs; i++) {
         const ang = (i / numRibs) * Math.PI * 2;
         const topPt = project3D(coneMaxR * Math.cos(ang), coneMaxR * Math.sin(ang), coneHeight);
@@ -672,7 +708,7 @@
 
       // Flashing Dirac point halo
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(diracPt.x, diracPt.y, 8 + Math.sin(time * 8) * 3, 0, Math.PI * 2);
       ctx.stroke();
@@ -701,7 +737,7 @@
         const spinPt = project3D(kx + Math.cos(spinAng) * spinLen, ky + Math.sin(spinAng) * spinLen, curZ);
 
         ctx.strokeStyle = theme.alert;
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(pt.x, pt.y);
         ctx.lineTo(spinPt.x, spinPt.y);
@@ -724,7 +760,7 @@
       ctx.fillStyle = theme.surface;
       ctx.fillRect(dosX, dosY, dosW, dosH);
       ctx.strokeStyle = theme.border;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.strokeRect(dosX, dosY, dosW, dosH);
 
       // Axes
@@ -778,7 +814,7 @@
       ctx.fillStyle = theme.surface;
       ctx.fillRect(hudX, hudY, hudW, hudH);
       ctx.strokeStyle = theme.border;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.strokeRect(hudX, hudY, hudW, hudH);
 
       ctx.textAlign = 'left';

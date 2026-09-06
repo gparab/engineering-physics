@@ -104,7 +104,7 @@
       align-items: center;
       position: relative;
       text-align: center;
-      padding: 0 48px;
+      padding: 0 160px;
     }
 
     .title-container {
@@ -286,6 +286,17 @@
       padding: 2px 0;
     }
 
+    @media (max-width: 768px) {
+      .header {
+        padding: 0 16px;
+      }
+      .figma-pill,
+      .theme-toggle,
+      button#theme-toggle {
+        position: static !important;
+        margin: 12px auto 4px auto !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -354,6 +365,31 @@
     // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+
+    // Canvas text label boundary protection & edge-clamping
+    const _origFillText = ctx.fillText.bind(ctx);
+    ctx.fillText = function(text, x, y, maxWidth) {
+      if (typeof x === 'number' && typeof y === 'number' && width > 0 && height > 0) {
+        const pad = 10;
+        const str = String(text);
+        const m = ctx.measureText(str);
+        const tw = (typeof maxWidth === 'number' && maxWidth < m.width) ? maxWidth : m.width;
+        const align = ctx.textAlign || 'left';
+        let minX = pad, maxX = width - pad;
+        let clampedX = x;
+        if (align === 'center') {
+          clampedX = Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x));
+        } else if (align === 'right' || align === 'end') {
+          clampedX = Math.max(minX + tw, Math.min(maxX, x));
+        } else {
+          clampedX = Math.max(minX, Math.min(maxX - tw, x));
+        }
+        const clampedY = Math.max(pad + 12, Math.min(height - pad, y));
+        return maxWidth !== undefined ? _origFillText(str, clampedX, clampedY, maxWidth) : _origFillText(str, clampedX, clampedY);
+      }
+      return maxWidth !== undefined ? _origFillText(text, x, y, maxWidth) : _origFillText(text, x, y);
+    };
     let width = 0, height = 0;
 
     function resize() {
@@ -365,6 +401,7 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+    ctx.lineWidth = 2;
     }
     window.addEventListener('resize', resize);
     resize();
@@ -445,7 +482,7 @@
 
       // Coordinate Grid
       ctx.strokeStyle = theme.grid;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       for (let x = 40; x < width - 40; x += 40) {
         ctx.beginPath(); ctx.moveTo(x, 30); ctx.lineTo(x, height - 30); ctx.stroke();
       }
@@ -501,7 +538,7 @@
           ? 'rgba(248, 113, 113, 0.35)'
           : (s.type === 'X' ? 'rgba(251, 191, 36, 0.16)' : 'rgba(45, 212, 191, 0.16)');
         ctx.strokeStyle = s.defect ? theme.red : (s.type === 'X' ? theme.amber : theme.teal);
-        ctx.lineWidth = s.defect ? 2.5 : 1.5;
+        ctx.lineWidth = s.defect ? 2.5 : 2;
 
         ctx.fillRect(px - cellSize * 0.45, py - cellSize * 0.45, cellSize * 0.9, cellSize * 0.9);
         ctx.strokeRect(px - cellSize * 0.45, py - cellSize * 0.45, cellSize * 0.9, cellSize * 0.9);
@@ -515,7 +552,7 @@
 
       // 2. Draw Qubit Grid Lines
       ctx.strokeStyle = theme.axis;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       for (let r = 0; r < d; r++) {
         const y = cy + (r - 1) * cellSize;
         ctx.beginPath();
@@ -619,12 +656,12 @@
           ctx.fill();
 
           ctx.strokeStyle = theme.text;
-          ctx.lineWidth = 1;
+          ctx.lineWidth = 2;
           ctx.stroke();
 
           // Rotating superposition phase pointer
           ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
-          ctx.lineWidth = 1.8;
+          ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(qx, qy);
           ctx.lineTo(sx, sy);
@@ -637,7 +674,7 @@
       ctx.fillStyle = theme.surface;
       ctx.fillRect(hudX, hudY, hudW, hudH);
       ctx.strokeStyle = theme.border;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.strokeRect(hudX, hudY, hudW, hudH);
 
       const stages = ['ANCILLA RESET & STATE PREP', 'CNOT ENTANGLING GATE SCHEDULE', 'PROJECTIVE SYNDROME MEASUREMENT', 'MWPM DECODER & CORRECTION'];

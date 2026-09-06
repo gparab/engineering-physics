@@ -104,7 +104,7 @@
       align-items: center;
       position: relative;
       text-align: center;
-      padding: 0 48px;
+      padding: 0 160px;
     }
 
     .title-container {
@@ -286,6 +286,17 @@
       padding: 2px 0;
     }
 
+    @media (max-width: 768px) {
+      .header {
+        padding: 0 16px;
+      }
+      .figma-pill,
+      .theme-toggle,
+      button#theme-toggle {
+        position: static !important;
+        margin: 12px auto 4px auto !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -354,6 +365,31 @@
     // --- 2. CANVAS RESOLUTION & HIGH-DPI SCALING ENGINE ---
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+
+    // Canvas text label boundary protection & edge-clamping
+    const _origFillText = ctx.fillText.bind(ctx);
+    ctx.fillText = function(text, x, y, maxWidth) {
+      if (typeof x === 'number' && typeof y === 'number' && width > 0 && height > 0) {
+        const pad = 10;
+        const str = String(text);
+        const m = ctx.measureText(str);
+        const tw = (typeof maxWidth === 'number' && maxWidth < m.width) ? maxWidth : m.width;
+        const align = ctx.textAlign || 'left';
+        let minX = pad, maxX = width - pad;
+        let clampedX = x;
+        if (align === 'center') {
+          clampedX = Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x));
+        } else if (align === 'right' || align === 'end') {
+          clampedX = Math.max(minX + tw, Math.min(maxX, x));
+        } else {
+          clampedX = Math.max(minX, Math.min(maxX - tw, x));
+        }
+        const clampedY = Math.max(pad + 12, Math.min(height - pad, y));
+        return maxWidth !== undefined ? _origFillText(str, clampedX, clampedY, maxWidth) : _origFillText(str, clampedX, clampedY);
+      }
+      return maxWidth !== undefined ? _origFillText(text, x, y, maxWidth) : _origFillText(text, x, y);
+    };
     let width = 0, height = 0;
 
     function resize() {
@@ -365,6 +401,7 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+    ctx.lineWidth = 2;
     }
     window.addEventListener('resize', resize);
     resize();
@@ -422,7 +459,7 @@
 
       // Draw Qubit Rails
       ctx.strokeStyle = theme.axis;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
 
       // Alice rails
       ctx.beginPath();
@@ -484,7 +521,7 @@
       const hadX = railStartX + railW * 0.44;
       ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
       ctx.strokeStyle = theme.blue;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.fillRect(hadX - 12, railY1 - 12, 24, 24);
       ctx.strokeRect(hadX - 12, railY1 - 12, 24, 24);
 
@@ -496,7 +533,7 @@
       const measX = railStartX + railW * 0.56;
       ctx.fillStyle = 'rgba(217, 119, 6, 0.25)';
       ctx.strokeStyle = theme.amber;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.fillRect(measX - 12, railY1 - 12, 24, 24);
       ctx.strokeRect(measX - 12, railY1 - 12, 24, 24);
       ctx.fillText('M₁', measX - 6, railY1 + 4);
@@ -510,7 +547,7 @@
       const bobGateX = railStartX + railW * 0.82;
 
       ctx.strokeStyle = theme.amber;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       // Classical line 1
       ctx.beginPath();
       ctx.moveTo(feedX, railY1 - 2); ctx.lineTo(bobGateX, railY1 - 2); ctx.lineTo(bobGateX, railY3 - 16);
@@ -520,7 +557,7 @@
       // Bob's Correction Unitary Gates (Z^b1, X^b2)
       ctx.fillStyle = 'rgba(198, 40, 40, 0.25)';
       ctx.strokeStyle = theme.red;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.fillRect(bobGateX - 16, railY3 - 16, 32, 32);
       ctx.strokeRect(bobGateX - 16, railY3 - 16, 32, 32);
 

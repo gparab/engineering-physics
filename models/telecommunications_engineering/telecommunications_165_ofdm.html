@@ -138,7 +138,7 @@
       max-width: var(--max-width);
       margin: 0 auto 20px auto;
       text-align: center;
-      padding: 0 48px;
+      padding: 0 160px;
     }
 
     .title-container {
@@ -243,9 +243,6 @@
       max-height: 640px;
       margin: 0 auto 24px auto;
       background-color: var(--sim-bg);
-      border: 1px solid var(--sim-border);
-      padding: 0;
-      color: var(--block-text);
       border-radius: 24px;
       border: 1px solid var(--block-border);
       padding: 24px;
@@ -328,6 +325,18 @@
       color: var(--ink);
       overflow-x: auto;
       padding: 2px 0;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 0 16px;
+      }
+      .figma-pill,
+      .theme-toggle,
+      button#theme-toggle {
+        position: static !important;
+        margin: 12px auto 4px auto !important;
+      }
     }
   </style>
 </head>
@@ -470,6 +479,31 @@
     // --- 2. CANVAS & HIGH-DPI DISPLAY INITIALIZATION ---
     const canvas = document.getElementById('sim-canvas');
     const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2;
+
+    // Canvas text label boundary protection & edge-clamping
+    const _origFillText = ctx.fillText.bind(ctx);
+    ctx.fillText = function(text, x, y, maxWidth) {
+      if (typeof x === 'number' && typeof y === 'number' && width > 0 && height > 0) {
+        const pad = 10;
+        const str = String(text);
+        const m = ctx.measureText(str);
+        const tw = (typeof maxWidth === 'number' && maxWidth < m.width) ? maxWidth : m.width;
+        const align = ctx.textAlign || 'left';
+        let minX = pad, maxX = width - pad;
+        let clampedX = x;
+        if (align === 'center') {
+          clampedX = Math.max(minX + tw / 2, Math.min(maxX - tw / 2, x));
+        } else if (align === 'right' || align === 'end') {
+          clampedX = Math.max(minX + tw, Math.min(maxX, x));
+        } else {
+          clampedX = Math.max(minX, Math.min(maxX - tw, x));
+        }
+        const clampedY = Math.max(pad + 12, Math.min(height - pad, y));
+        return maxWidth !== undefined ? _origFillText(str, clampedX, clampedY, maxWidth) : _origFillText(str, clampedX, clampedY);
+      }
+      return maxWidth !== undefined ? _origFillText(text, x, y, maxWidth) : _origFillText(text, x, y);
+    };
 
     let width, height;
     function resize() {
@@ -481,6 +515,7 @@
       canvas.height = Math.round(height * dpr);
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+    ctx.lineWidth = 2;
       updateThemePalette();
     }
     window.addEventListener('resize', resize);
@@ -516,7 +551,7 @@
 
       // Coordinate Grid Layer
       ctx.strokeStyle = theme.grid;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       for (let x = 40; x < width - 40; x += 40) {
         ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, height - 40); ctx.stroke();
       }
@@ -573,7 +608,7 @@
       ctx.fillStyle = surfaceColor;
       ctx.fillRect(topX, topY, topW, topH);
       ctx.strokeStyle = surfaceBorder;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.strokeRect(topX, topY, topW, topH);
 
       ctx.font = '600 12px Inter, sans-serif';
@@ -583,7 +618,7 @@
 
       const base0Y = topY + topH - 30;
       ctx.strokeStyle = surfaceBorder;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(topX + 20, base0Y);
       ctx.lineTo(topX + topW - 20, base0Y);
@@ -630,7 +665,7 @@
       const activeScanIdx = (Math.floor(time * 0.8) % numSubcarriers);
       const scanX = subcarrierCenters[activeScanIdx];
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
       ctx.moveTo(scanX, topY + 30);
@@ -647,7 +682,7 @@
         ctx.fillStyle = surfaceColor;
         ctx.fillRect(topX, botY, botWLeft, botH);
         ctx.strokeStyle = surfaceBorder;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.strokeRect(topX, botY, botWLeft, botH);
 
         ctx.font = '600 11px Inter, sans-serif';
@@ -657,7 +692,7 @@
 
         const oscMidY = botY + botH * 0.55;
         ctx.strokeStyle = theme.grid;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(topX + 10, oscMidY);
         ctx.lineTo(topX + botWLeft - 10, oscMidY);
@@ -700,7 +735,7 @@
         ctx.fillStyle = surfaceColor;
         ctx.fillRect(botXRight, botY, botWRight, botH);
         ctx.strokeStyle = surfaceBorder;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.strokeRect(botXRight, botY, botWRight, botH);
 
         ctx.font = '600 11px Inter, sans-serif';
@@ -714,7 +749,7 @@
 
         // Axes
         ctx.strokeStyle = surfaceBorder;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(iqCx - iqRadius - 8, iqCy);
         ctx.lineTo(iqCx + iqRadius + 8, iqCy);
@@ -738,7 +773,7 @@
           const py = iqCy - Math.sin(theta) * (iqRadius * 0.7);
 
           ctx.strokeStyle = subcarrierColors[k];
-          ctx.lineWidth = 1.6;
+          ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(iqCx, iqCy);
           ctx.lineTo(px, py);
